@@ -1,0 +1,3 @@
+# Production dependencies
+chdb>=3.0.0
+

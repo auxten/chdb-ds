@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chdb-ds"
+dynamic = ["version"]
+description = "A Pandas-like data manipulation framework with automatic SQL generation"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Apache License 2.0"}
+authors = [
+    {name = "auxten", email = "auxtenwpc@gmail.com"}
+]
+keywords = [
+    "datastore",
+    "pandas",
+    "polars",
+    "sql",
+    "query",
+    "builder",
+    "database",
+    "clickhouse",
+    "data manipulation",
+    "analytics",
+    "dataframe",
+    "chdb",
+    "pypika"
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: SQL",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "chdb>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/auxten/chdb-ds"
+Documentation = "https://github.com/auxten/chdb-ds"
+Repository = "https://github.com/auxten/chdb-ds"
+Issues = "https://github.com/auxten/chdb-ds/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "__init__.__version__"}
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*"]
+
+[tool.black]
+line-length = 120
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311', 'py312']
+skip-string-normalization = true
+force-exclude = '''
+/(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | tests
+  )/
+  | setup.py
+)
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
