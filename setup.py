@@ -8,7 +8,7 @@ def readme():
 
 
 def version():
-    path = '__init__.py'
+    path = 'datastore/__init__.py'
     with open(path, 'r') as file:
         t = compile(file.read(), path, 'exec', ast.PyCF_ONLY_AST)
         for node in (n for n in t.body if isinstance(n, ast.Assign)):

@@ -12,10 +12,10 @@ A Pandas-like data manipulation framework with automatic SQL generation and exec
 
 ## Features
 
-- **Fluent API**: Pandas/Polars-inspired interface for data manipulation
+- **Fluent API**: Pandas-like interface for data manipulation
 - **Immutable Operations**: Thread-safe method chaining
 - **SQL Generation**: Automatic conversion to optimized SQL queries
-- **Multiple Backends**: Support for ClickHouse, PostgreSQL, Parquet files, and more
+- **Multiple Backends**: Support for ClickHouse, PostgreSQL, Parquet files, etc.
 - **Type-Safe**: Comprehensive type hints and validation
 - **Extensible**: Easy to add custom functions and data sources
 
@@ -36,7 +36,7 @@ from datastore import DataStore
 ds = DataStore(table="customers")
 
 # Build a query with method chaining
-result = (ds
+sql = (ds
     .select("name", "age", "city")
     .filter(ds.age > 18)
     .filter(ds.city == "NYC")
@@ -44,7 +44,7 @@ result = (ds
     .limit(10)
     .to_sql())
 
-print(result)
+print(sql)
 # Output: SELECT "name", "age", "city" FROM "customers" 
 #         WHERE ("age" > 18 AND "city" = 'NYC') 
 #         ORDER BY "name" ASC LIMIT 10
@@ -183,12 +183,16 @@ python -m unittest datastore.tests.test_datastore_core
 - [x] Function system
 - [x] Basic DataStore operations
 - [x] Immutability support
-- [ ] Connection managers
+- [ ] ClickHouse table engines support
+- [ ] DataFrame operations (drop, assign, fillna, etc.)
 - [ ] Query executors
 - [ ] Multiple backend support
 - [ ] Mock data support
-- [ ] Schema management
-- [ ] DataFrame-style operations (drop, assign, fillna, etc.)
+- [ ] Schema management(infer or set manually)
+- [ ] ClickHouse functions support
+- [ ] Connection managers
+- [ ] Image, Video, Audio data support
+- [ ] PyTorch Dataloader support
 
 ## Contributing
 
@@ -201,7 +205,7 @@ Apache License 2.0
 ## Credits
 
 Inspired by:
-- [PyPika](https://github.com/kayak/pypika) - Excellent SQL query builder design
+- [SQLAlchemy](https://www.sqlalchemy.org/) - Excellent SQL query builder
+- [PyPika](https://github.com/kayak/pypika) - Simple SQL query builder
 - [Pandas](https://pandas.pydata.org/) - DataFrame API
-
 

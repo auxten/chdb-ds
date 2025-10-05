@@ -11,6 +11,7 @@ from .utils import immutable, ignore_copy, format_identifier
 from .exceptions import DataStoreError, QueryError, ConnectionError, ExecutionError
 from .connection import Connection, QueryResult
 from .executor import Executor
+from .table_functions import create_table_function, TableFunction
 
 __all__ = ['DataStore']
 
@@ -37,16 +38,68 @@ class DataStore:
         Initialize DataStore.
 
         Args:
-            source_type: Type of data source ('chdb', 'clickhouse', etc.)
-            table: Table name
+            source_type: Type of data source ('file', 's3', 'mysql', 'clickhouse', etc.)
+            table: Table name (for regular tables or remote ClickHouse)
             database: Database path (":memory:" for in-memory, or file path)
             connection: Existing Connection object (creates new if None)
-            **kwargs: Additional connection parameters
+            **kwargs: Additional parameters (path, url, format, host, etc.)
+
+        Examples:
+            >>> # Local file
+            >>> ds = DataStore("file", path="data.csv", format="CSV")
+
+            >>> # S3 data
+            >>> ds = DataStore("s3", path="s3://bucket/data.parquet",
+            ...                access_key_id="KEY", secret_access_key="SECRET",
+            ...                format="Parquet")
+
+            >>> # MySQL database
+            >>> ds = DataStore("mysql", host="localhost:3306",
+            ...                database="mydb", table="users",
+            ...                user="root", password="pass")
+
+            >>> # Regular ClickHouse table (no table function)
+            >>> ds = DataStore(table="my_table")
         """
         self.source_type = source_type or 'chdb'
         self.table_name = table
         self.database = database
         self.connection_params = kwargs
+
+        # Table function support
+        self._table_function: Optional[TableFunction] = None
+        self._format_settings: Dict[str, Any] = {}
+
+        # Create table function if source_type is specified
+        if source_type and source_type.lower() != 'chdb':
+            try:
+                # For database sources with explicit table, pass table name
+                if table and source_type.lower() in [
+                    'clickhouse',
+                    'remote',
+                    'mysql',
+                    'postgresql',
+                    'postgres',
+                    'mongodb',
+                    'mongo',
+                    'sqlite',
+                ]:
+                    kwargs['table'] = table
+
+                # For database sources, also pass database if provided
+                if (
+                    database
+                    and database != ":memory:"
+                    and source_type.lower()
+                    in ['clickhouse', 'remote', 'mysql', 'postgresql', 'postgres', 'mongodb', 'mongo', 'sqlite']
+                ):
+                    kwargs['database'] = database
+
+                self._table_function = create_table_function(source_type, **kwargs)
+            except Exception as e:
+                # If table function creation fails, it might be a regular table
+                # We'll treat it as a regular table and table_function remains None
+                pass
 
         # Query state
         self._select_fields: List[Expression] = []
@@ -79,7 +132,422 @@ class DataStore:
         self.is_immutable = True
         self.quote_char = '"'
 
+    # ========== Static Factory Methods for Data Sources ==========
+
+    @classmethod
+    def from_file(
+        cls, path: str, format: str = None, structure: str = None, compression: str = None, **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from local file.
+
+        Args:
+            path: File path (supports glob patterns)
+            format: File format (optional, auto-detected from extension)
+            structure: Optional table structure
+            compression: Optional compression method
+            **kwargs: Additional connection parameters
+
+        Example:
+            >>> ds = DataStore.from_file("data.parquet")
+            >>> ds = DataStore.from_file("data.csv", format="CSV")
+        """
+        return cls("file", path=path, format=format, structure=structure, compression=compression, **kwargs)
+
+    @classmethod
+    def from_s3(
+        cls,
+        url: str,
+        access_key_id: str = None,
+        secret_access_key: str = None,
+        format: str = None,
+        nosign: bool = False,
+        **kwargs,
+    ) -> 'DataStore':
+        """
+        Create DataStore from S3.
+
+        Args:
+            url: S3 URL
+            access_key_id: AWS access key (optional if nosign=True)
+            secret_access_key: AWS secret key (optional if nosign=True)
+            format: Data format (optional, auto-detected)
+            nosign: Use anonymous access
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_s3("s3://bucket/data.parquet", nosign=True)
+            >>> ds = DataStore.from_s3("s3://bucket/data.csv",
+            ...                        access_key_id="KEY",
+            ...                        secret_access_key="SECRET")
+        """
+        return cls(
+            "s3",
+            url=url,
+            access_key_id=access_key_id,
+            secret_access_key=secret_access_key,
+            format=format,
+            nosign=nosign,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_hdfs(cls, uri: str, format: str = None, structure: str = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from HDFS.
+
+        Args:
+            uri: HDFS URI (e.g., 'hdfs://namenode:9000/path')
+            format: Data format (optional, auto-detected)
+            structure: Optional table structure
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_hdfs("hdfs://namenode:9000/data/*.parquet")
+        """
+        return cls("hdfs", uri=uri, format=format, structure=structure, **kwargs)
+
+    @classmethod
+    def from_mysql(cls, host: str, database: str, table: str, user: str, password: str = "", **kwargs) -> 'DataStore':
+        """
+        Create DataStore from MySQL database.
+
+        Args:
+            host: MySQL server address (host:port)
+            database: Database name
+            table: Table name
+            user: Username
+            password: Password
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_mysql("localhost:3306", "mydb", "users",
+            ...                           user="root", password="pass")
+        """
+        return cls("mysql", host=host, database=database, table=table, user=user, password=password, **kwargs)
+
+    @classmethod
+    def from_postgresql(
+        cls, host: str, database: str, table: str, user: str, password: str = "", **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from PostgreSQL database.
+
+        Args:
+            host: PostgreSQL server address (host:port)
+            database: Database name
+            table: Table name (can include schema like 'schema.table')
+            user: Username
+            password: Password
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_postgresql("localhost:5432", "mydb", "users",
+            ...                                user="postgres", password="pass")
+        """
+        return cls("postgresql", host=host, database=database, table=table, user=user, password=password, **kwargs)
+
+    @classmethod
+    def from_clickhouse(
+        cls,
+        host: str,
+        database: str,
+        table: str,
+        user: str = "default",
+        password: str = "",
+        secure: bool = False,
+        **kwargs,
+    ) -> 'DataStore':
+        """
+        Create DataStore from remote ClickHouse server.
+
+        Args:
+            host: ClickHouse server address (host:port)
+            database: Database name
+            table: Table name
+            user: Username (default: 'default')
+            password: Password
+            secure: Use secure connection (remoteSecure)
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_clickhouse("localhost:9000", "default", "events")
+            >>> ds_secure = DataStore.from_clickhouse("server:9440", "default", "events",
+            ...                                       secure=True)
+        """
+        return cls(
+            "clickhouse",
+            host=host,
+            database=database,
+            table=table,
+            user=user,
+            password=password,
+            secure=secure,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_mongodb(
+        cls, host: str, database: str, collection: str, user: str, password: str = "", **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from MongoDB (read-only).
+
+        Args:
+            host: MongoDB server address (host:port)
+            database: Database name
+            collection: Collection name
+            user: Username
+            password: Password
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_mongodb("localhost:27017", "mydb", "users",
+            ...                             user="admin", password="pass")
+        """
+        return cls(
+            "mongodb", host=host, database=database, collection=collection, user=user, password=password, **kwargs
+        )
+
+    @classmethod
+    def from_url(cls, url: str, format: str, structure: str = None, headers: List[str] = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from HTTP/HTTPS URL.
+
+        Args:
+            url: HTTP(S) URL to the data
+            format: Data format
+            structure: Optional table structure
+            headers: Optional HTTP headers
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_url("https://example.com/data.json",
+            ...                         format="JSONEachRow")
+        """
+        return cls("url", url=url, format=format, structure=structure, headers=headers, **kwargs)
+
+    @classmethod
+    def from_sqlite(cls, database_path: str, table: str, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from SQLite database (read-only).
+
+        Args:
+            database_path: Path to SQLite database file
+            table: Table name
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_sqlite("/path/to/database.db", "users")
+        """
+        return cls("sqlite", database_path=database_path, table=table, **kwargs)
+
+    @classmethod
+    def from_iceberg(cls, url: str, access_key_id: str = None, secret_access_key: str = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from Apache Iceberg table (read-only).
+
+        Args:
+            url: Path to Iceberg table
+            access_key_id: Access key for cloud storage
+            secret_access_key: Secret key for cloud storage
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_iceberg("s3://warehouse/my_table",
+            ...                             access_key_id="KEY",
+            ...                             secret_access_key="SECRET")
+        """
+        return cls("iceberg", url=url, access_key_id=access_key_id, secret_access_key=secret_access_key, **kwargs)
+
+    @classmethod
+    def from_delta(cls, url: str, access_key_id: str = None, secret_access_key: str = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from Delta Lake table (read-only).
+
+        Args:
+            url: Path to Delta Lake table
+            access_key_id: Access key for cloud storage
+            secret_access_key: Secret key for cloud storage
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_delta("s3://bucket/delta_table",
+            ...                           access_key_id="KEY",
+            ...                           secret_access_key="SECRET")
+        """
+        return cls("delta", url=url, access_key_id=access_key_id, secret_access_key=secret_access_key, **kwargs)
+
+    @classmethod
+    def from_numbers(cls, count: int, start: int = None, step: int = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore that generates number sequence.
+
+        Args:
+            count: Number of values to generate
+            start: Start number (optional)
+            step: Step size (optional)
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_numbers(100)  # 0 to 99
+            >>> ds = DataStore.from_numbers(10, start=10)  # 10 to 19
+            >>> ds = DataStore.from_numbers(10, start=0, step=2)  # Even numbers
+        """
+        return cls("numbers", count=count, start=start, step=step, **kwargs)
+
+    @classmethod
+    def from_azure(
+        cls, connection_string: str, container: str, path: str = "", format: str = None, **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from Azure Blob Storage.
+
+        Args:
+            connection_string: Azure connection string
+            container: Container name
+            path: Blob path (supports glob patterns)
+            format: Data format (optional, auto-detected)
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_azure(
+            ...     connection_string="DefaultEndpointsProtocol=https;...",
+            ...     container="mycontainer",
+            ...     path="data/*.parquet"
+            ... )
+        """
+        return cls(
+            "azure", connection_string=connection_string, container=container, path=path, format=format, **kwargs
+        )
+
+    @classmethod
+    def from_gcs(
+        cls, url: str, hmac_key: str = None, hmac_secret: str = None, format: str = None, nosign: bool = False, **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from Google Cloud Storage.
+
+        Args:
+            url: GCS URL (https://storage.googleapis.com/bucket/path)
+            hmac_key: GCS HMAC key (optional if nosign)
+            hmac_secret: GCS HMAC secret (optional if nosign)
+            format: Data format (optional, auto-detected)
+            nosign: Use anonymous access
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_gcs(
+            ...     "gs://bucket/data.parquet",
+            ...     hmac_key="KEY",
+            ...     hmac_secret="SECRET"
+            ... )
+        """
+        return cls("gcs", url=url, hmac_key=hmac_key, hmac_secret=hmac_secret, format=format, nosign=nosign, **kwargs)
+
+    @classmethod
+    def from_redis(
+        cls, host: str, key: str, structure: str, password: str = None, db_index: int = 0, **kwargs
+    ) -> 'DataStore':
+        """
+        Create DataStore from Redis key-value store.
+
+        Args:
+            host: Redis server address (host:port)
+            key: Name of the primary-key column in structure
+            structure: Table structure 'key Type, v1 Type, ...'
+            password: Redis password (optional)
+            db_index: Database index (default: 0)
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_redis(
+            ...     host="localhost:6379",
+            ...     key="key",
+            ...     structure="key String, value String, score UInt32"
+            ... )
+        """
+        return cls("redis", host=host, key=key, structure=structure, password=password, db_index=db_index, **kwargs)
+
+    @classmethod
+    def from_hudi(cls, url: str, access_key_id: str = None, secret_access_key: str = None, **kwargs) -> 'DataStore':
+        """
+        Create DataStore from Apache Hudi table (read-only).
+
+        Args:
+            url: Path to Hudi table in S3
+            access_key_id: AWS access key
+            secret_access_key: AWS secret key
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_hudi(
+            ...     "s3://bucket/hudi_table",
+            ...     access_key_id="KEY",
+            ...     secret_access_key="SECRET"
+            ... )
+        """
+        return cls("hudi", url=url, access_key_id=access_key_id, secret_access_key=secret_access_key, **kwargs)
+
+    @classmethod
+    def from_random(
+        cls,
+        structure: str,
+        random_seed: int = None,
+        max_string_length: int = None,
+        max_array_length: int = None,
+        **kwargs,
+    ) -> 'DataStore':
+        """
+        Create DataStore that generates random data for testing.
+
+        Args:
+            structure: Table structure with column types
+            random_seed: Random seed for reproducibility (optional)
+            max_string_length: Max string length (optional)
+            max_array_length: Max array length (optional)
+            **kwargs: Additional parameters
+
+        Example:
+            >>> ds = DataStore.from_random(
+            ...     structure="id UInt32, name String, value Float64",
+            ...     random_seed=42
+            ... )
+        """
+        return cls(
+            "generaterandom",
+            structure=structure,
+            random_seed=random_seed,
+            max_string_length=max_string_length,
+            max_array_length=max_array_length,
+            **kwargs,
+        )
+
     # ========== Data Source Operations ==========
+
+    def with_format_settings(self, **settings) -> 'DataStore':
+        """
+        Add format-specific settings for table functions.
+
+        Args:
+            **settings: Format settings (e.g., format_csv_delimiter='|',
+                       input_format_parquet_filter_push_down=1, etc.)
+
+        Example:
+            >>> ds = DataStore("file", path="data.csv", format="CSV")
+            >>> ds.with_format_settings(
+            ...     format_csv_delimiter='|',
+            ...     input_format_csv_skip_first_lines=1,
+            ...     input_format_csv_trim_whitespaces=1
+            ... )
+
+        Returns:
+            self for chaining
+        """
+        self._format_settings.update(settings)
+        if self._table_function:
+            self._table_function.with_settings(**settings)
+        return self
 
     def connect(self) -> 'DataStore':
         """
@@ -89,7 +557,12 @@ class DataStore:
             self for chaining
         """
         if self._connection is None:
-            self._connection = Connection(self.database, **self.connection_params)
+            # When using table functions, don't pass table function params to connection
+            # Only pass database parameter
+            if self._table_function is not None:
+                self._connection = Connection(self.database)
+            else:
+                self._connection = Connection(self.database, **self.connection_params)
 
         try:
             self._connection.connect()
@@ -102,6 +575,37 @@ class DataStore:
             return self
         except Exception as e:
             raise ConnectionError(f"Failed to connect: {e}")
+
+    def _get_table_alias(self) -> str:
+        """
+        Get a short alias for table functions.
+
+        For file table functions, extracts filename without extension.
+        For other table functions, uses table name or a generic name.
+        """
+        if self._table_function and hasattr(self._table_function, 'params'):
+            # Try to get a meaningful alias from path
+            path = self._table_function.params.get('path')
+            if path:
+                import os
+
+                # Extract filename without extension
+                basename = os.path.basename(path)
+                name_without_ext = os.path.splitext(basename)[0]
+                return name_without_ext
+
+            # For other table functions, try to use table name
+            table = self._table_function.params.get('table')
+            if table:
+                return table
+
+            # For numbers or other generators
+            if hasattr(self._table_function, '__class__'):
+                class_name = self._table_function.__class__.__name__.replace('TableFunction', '').lower()
+                return class_name
+
+        # Fallback to table name or generic
+        return self.table_name if self.table_name else 'tbl'
 
     def _discover_schema(self):
         """Discover table schema from chdb."""
@@ -430,13 +934,18 @@ class DataStore:
             join_condition = on
         elif left_on and right_on:
             # Create condition from column names
-            left_field = Field(left_on, table=self.table_name)
-            right_field = Field(right_on, table=other.table_name)
+            # Use table alias for table functions
+            left_table = self._get_table_alias() if self._table_function else self.table_name
+            right_table = other._get_table_alias() if other._table_function else other.table_name
+
+            left_field = Field(left_on, table=left_table)
+            right_field = Field(right_on, table=right_table)
             join_condition = left_field == right_field
         else:
             raise QueryError("Either 'on' or both 'left_on' and 'right_on' must be specified")
 
         self._joins.append((other, join_type, join_condition))
+        return self
 
     @immutable
     def groupby(self, *fields: Union[str, Expression]) -> 'DataStore':
@@ -474,6 +983,32 @@ class DataStore:
             if isinstance(field, str):
                 # Don't add table prefix for string fields
                 field = Field(field)
+            elif not isinstance(field, Expression):
+                # Convert other types to Field
+                field = Field(str(field))
+            self._orderby_fields.append((field, ascending))
+
+    @immutable
+    def orderby(self, *fields: Union[str, Expression], ascending: bool = True) -> 'DataStore':
+        """
+        Sort results (ORDER BY clause). Alias for sort().
+
+        Args:
+            *fields: Column names (strings) or Expression objects
+            ascending: Sort direction (default: True)
+
+        Example:
+            >>> ds.orderby("name")
+            >>> ds.orderby("price", ascending=False)
+            >>> ds.orderby(ds.date, ds.amount, ascending=False)
+        """
+        for field in fields:
+            if isinstance(field, str):
+                # Don't add table prefix for string fields
+                field = Field(field)
+            elif not isinstance(field, Expression):
+                # Convert other types to Field
+                field = Field(str(field))
             self._orderby_fields.append((field, ascending))
 
     @immutable
@@ -617,7 +1152,13 @@ class DataStore:
         parts.append(f"SELECT {distinct_keyword}{fields_sql}")
 
         # FROM clause
-        if self.table_name:
+        if self._table_function:
+            # Use table function instead of table name
+            table_func_sql = self._table_function.to_sql(quote_char=quote_char)
+            # Add alias for table function (required by ClickHouse for JOINs)
+            alias = self._get_table_alias()
+            parts.append(f"FROM {table_func_sql} AS {format_identifier(alias, quote_char)}")
+        elif self.table_name:
             parts.append(f"FROM {format_identifier(self.table_name, quote_char)}")
 
         # JOIN clauses
@@ -633,6 +1174,11 @@ class DataStore:
                 # Handle subquery joins
                 if isinstance(other_ds, DataStore) and other_ds._is_subquery:
                     other_table = other_ds.to_sql(quote_char=quote_char, as_subquery=True)
+                elif isinstance(other_ds, DataStore) and other_ds._table_function:
+                    # Use table function for the joined table with alias
+                    table_func_sql = other_ds._table_function.to_sql(quote_char=quote_char)
+                    alias = other_ds._get_table_alias()
+                    other_table = f"{table_func_sql} AS {format_identifier(alias, quote_char)}"
                 else:
                     other_table = format_identifier(other_ds.table_name, quote_char)
 
@@ -672,14 +1218,34 @@ class DataStore:
         if self._offset_value is not None:
             parts.append(f"OFFSET {self._offset_value}")
 
+        # Add format settings if present
+        if self._format_settings:
+            settings_parts = []
+            for key, value in self._format_settings.items():
+                if isinstance(value, str):
+                    settings_parts.append(f"{key}='{value}'")
+                else:
+                    settings_parts.append(f"{key}={value}")
+            parts.append(f"SETTINGS {', '.join(settings_parts)}")
+
         return ' '.join(parts)
 
     def _generate_insert_sql(self, quote_char: str) -> str:
         """Generate INSERT SQL (ClickHouse style)."""
-        if not self.table_name:
-            raise QueryError("Table name required for INSERT")
+        # Determine target (table function or table name)
+        if self._table_function:
+            if not self._table_function.can_write:
+                raise QueryError(
+                    f"Table function '{self.source_type}' does not support writing. "
+                    f"Read-only table functions: mongodb, sqlite, iceberg, deltaLake, hudi, numbers, generateRandom"
+                )
+            target = f"TABLE FUNCTION {self._table_function.to_sql(quote_char=quote_char)}"
+        elif self.table_name:
+            target = format_identifier(self.table_name, quote_char)
+        else:
+            raise QueryError("Table name or table function required for INSERT")
 
-        parts = [f"INSERT INTO {format_identifier(self.table_name, quote_char)}"]
+        parts = [f"INSERT INTO {target}"]
 
         # Columns
         if self._insert_columns:
@@ -807,8 +1373,9 @@ class DataStore:
         new_ds._insert_columns = self._insert_columns.copy()
         new_ds._insert_values = self._insert_values.copy()
         new_ds._update_fields = self._update_fields.copy()
+        new_ds._format_settings = self._format_settings.copy()
 
-        # Share connection and executor (not copied)
+        # Share connection, executor, and table_function (not deep copied)
         # Each copy can share the same connection
 
         return new_ds
