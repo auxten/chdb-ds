@@ -65,7 +65,7 @@ Repository = "https://github.com/auxten/chdb-ds"
 Issues = "https://github.com/auxten/chdb-ds/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "__init__.__version__"}
+version = {attr = "datastore.__init__.__version__"}
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests.*"]

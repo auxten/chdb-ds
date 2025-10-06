@@ -351,8 +351,8 @@ python -m unittest datastore.tests.test_datastore_core
 For more comprehensive examples, see:
 
 - **[examples/examples_table_functions.py](examples/examples_table_functions.py)** - Complete examples for all data sources including:
-  - Local files (CSV, Parquet, JSON)
-  - Cloud storage (S3, Azure, GCS, HDFS)
+  - Local files (CSV, Parquet, JSON, ORC, Avro and [80+ formats](https://clickhouse.com/docs/interfaces/formats))
+  - Cloud storage (S3, Azure, GCS, HDFS, HTTP and [20+ protocols](https://clickhouse.com/docs/integrations/data-sources/index))
   - Databases (MySQL, PostgreSQL, MongoDB, Redis, SQLite, ClickHouse)
   - Data lakes (Iceberg, Delta Lake, Hudi)
   - Data generation (numbers, random data)
