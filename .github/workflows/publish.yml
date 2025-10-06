@@ -53,6 +53,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
+    - name: Update version from git tag
+      run: |
+        python scripts/update_version.py
+    
     - name: Build package
       run: python -m build
     

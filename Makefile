@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-coverage clean build upload-test upload docs format lint
+.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format lint
 
 help:
 	@echo "DataStore Development Commands:"
@@ -8,7 +8,9 @@ help:
 	@echo "  test            Run all tests"
 	@echo "  test-coverage   Run tests with coverage report"
 	@echo "  clean           Clean build artifacts"
-	@echo "  build           Build distribution packages"
+	@echo "  build           Build distribution packages (dev build)"
+	@echo "  build-release   Build distribution packages with version from git tag"
+	@echo "  update-version  Update version from git tag (or pass VERSION=x.y.z)"
 	@echo "  upload-test     Upload to TestPyPI"
 	@echo "  upload          Upload to PyPI (production)"
 	@echo "  format          Format code with black"
@@ -42,6 +44,20 @@ clean:
 build: clean
 	pip install build
 	python -m build
+
+build-release: clean update-version
+	pip install build
+	python -m build
+	@echo "✓ Built package with version from git tag"
+
+update-version:
+	@if [ -n "$(VERSION)" ]; then \
+		echo "Updating version to $(VERSION)..."; \
+		python scripts/update_version.py v$(VERSION); \
+	else \
+		echo "Updating version from git tag..."; \
+		python scripts/update_version.py; \
+	fi
 
 upload-test: build
 	pip install twine

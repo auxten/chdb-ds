@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,14 +8,14 @@ dynamic = ["version"]
 description = "A Pandas-like data manipulation framework with automatic SQL generation"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "Apache License 2.0"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
     {name = "auxten", email = "auxtenwpc@gmail.com"}
 ]
 keywords = [
     "datastore",
     "pandas",
-    "polars",
     "sql",
     "query",
     "builder",
@@ -24,11 +24,9 @@ keywords = [
     "data manipulation",
     "analytics",
     "dataframe",
-    "chdb",
-    "pypika"
+    "chdb"
 ]
 classifiers = [
-    "License :: OSI Approved :: Apache Software License",
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
