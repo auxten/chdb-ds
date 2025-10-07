@@ -107,3 +107,4 @@ To add more test data:
 2. Use consistent data types across related columns
 3. Include edge cases (NULL values, empty strings, boundary values)
 4. Update this README with new column descriptions
+

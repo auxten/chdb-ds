@@ -432,3 +432,4 @@ ds = DataStore.from_mysql("localhost:3306", "db", "users", ...)
 ```
 
 Both styles are supported and produce identical results.
+
