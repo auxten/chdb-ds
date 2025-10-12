@@ -30,7 +30,56 @@ A Pandas-like data manipulation framework powered by chDB (ClickHouse) with auto
 pip install chdb-ds
 ```
 
-### Basic Usage
+### Simplest Way: URI-based Creation (Recommended)
+
+The easiest way to create a DataStore is using a URI string. The source type and format are automatically inferred:
+
+```python
+from datastore import DataStore
+
+# Local files - format auto-detected from extension
+ds = DataStore.uri("/path/to/data.csv")
+ds.connect()
+result = ds.select("*").filter(ds.age > 18).execute()
+
+# S3 with anonymous access
+ds = DataStore.uri("s3://bucket/data.parquet?nosign=true")
+result = ds.select("*").limit(10).execute()
+
+# MySQL with connection string
+ds = DataStore.uri("mysql://root:pass@localhost:3306/mydb/users")
+result = ds.select("*").filter(ds.active == True).execute()
+
+# PostgreSQL
+ds = DataStore.uri("postgresql://user:pass@localhost:5432/mydb/products")
+result = ds.select("*").execute()
+
+# Google Cloud Storage
+ds = DataStore.uri("gs://bucket/data.parquet")
+
+# Azure Blob Storage
+ds = DataStore.uri("az://container/blob.csv?account_name=NAME&account_key=KEY")
+```
+
+**Supported URI formats:**
+- Local files: `file:///path/to/data.csv` or `/path/to/data.csv`
+- S3: `s3://bucket/key`
+- Google Cloud Storage: `gs://bucket/path`
+- Azure Blob Storage: `az://container/blob`
+- HDFS: `hdfs://namenode:port/path`
+- HTTP/HTTPS: `https://example.com/data.json`
+- MySQL: `mysql://user:pass@host:port/database/table`
+- PostgreSQL: `postgresql://user:pass@host:port/database/table`
+- MongoDB: `mongodb://user:pass@host:port/database.collection`
+- SQLite: `sqlite:///path/to/db.db?table=tablename`
+- ClickHouse: `clickhouse://host:port/database/table`
+- Delta Lake: `deltalake:///path/to/table`
+- Apache Iceberg: `iceberg://catalog/namespace/table`
+- Apache Hudi: `hudi:///path/to/table`
+
+### Traditional Way: Factory Methods
+
+You can also use dedicated factory methods for more control:
 
 ```python
 from datastore import DataStore
