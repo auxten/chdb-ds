@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "A Pandas-like data manipulation framework with automatic SQL generation"
 readme = "README.md"
 requires-python = ">=3.7"
-license = "Apache-2.0"
+license = {text = "Apache-2.0"}
 license-files = ["LICENSE"]
 authors = [
     {name = "auxten", email = "auxtenwpc@gmail.com"}
