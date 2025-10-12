@@ -9,7 +9,6 @@ description = "A Pandas-like data manipulation framework with automatic SQL gene
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "Apache-2.0"}
-license-files = ["LICENSE"]
 authors = [
     {name = "auxten", email = "auxtenwpc@gmail.com"}
 ]
@@ -29,6 +28,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
