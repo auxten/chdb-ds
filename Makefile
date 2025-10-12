@@ -1,11 +1,11 @@
-.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format lint
+.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format format-check lint
 
 help:
 	@echo "DataStore Development Commands:"
 	@echo ""
 	@echo "  install         Install package in production mode"
 	@echo "  install-dev     Install package in development mode with dev dependencies"
-	@echo "  test            Run all tests"
+	@echo "  test            Run all tests with linting and format checks"
 	@echo "  test-coverage   Run tests with coverage report"
 	@echo "  clean           Clean build artifacts"
 	@echo "  build           Build distribution packages (dev build)"
@@ -14,6 +14,7 @@ help:
 	@echo "  upload-test     Upload to TestPyPI"
 	@echo "  upload          Upload to PyPI (production)"
 	@echo "  format          Format code with black"
+	@echo "  format-check    Check code formatting without modifying files"
 	@echo "  lint            Run linting checks"
 	@echo ""
 
@@ -23,8 +24,8 @@ install:
 install-dev:
 	pip install -e ".[dev]"
 
-test:
-	python -m unittest discover -s tests -v
+test: lint format-check
+	pytest --cov=datastore --cov-report=xml --cov-report=term-missing
 
 test-coverage:
 	pip install pytest pytest-cov
@@ -68,10 +69,12 @@ upload: build
 	python -m twine upload dist/*
 
 format:
-	pip install black
-	black --line-length 120 .
+	black datastore
+
+format-check:
+	black --check --diff datastore
 
 lint:
-	pip install flake8
-	flake8 --max-line-length=120 --exclude=tests,build,dist .
+	flake8 datastore --count --select=E9,F63,F7,F82 --show-source --statistics
+	flake8 datastore --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
