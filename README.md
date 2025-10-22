@@ -390,14 +390,18 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] Function args completion
 - [ ] Update and Save back data
 - [ ] Chart support
-- [ ] More data exploration functions
+- [ ] More data exploration functions, faster describe()
 - [ ] Multiple backend support
 - [ ] Mock data support
 - [ ] Schema management(infer or set manually)
 - [ ] ClickHouse functions support
 - [ ] Connection managers
-- [ ] Image, Video, Audio data support
+- [ ] Unstructured data support(Images, Audios as a column)
+- [ ] Arrow Table support (read/write directly)
+- [ ] Embedding Generation support
 - [ ] PyTorch DataLoader integration
+- [ ] Python native UDFs support
+- [ ] Hybrid Execution (Local and Remote)
 
 ## Examples
 
