@@ -386,7 +386,11 @@ python -m unittest datastore.tests.test_datastore_core
 - [x] Immutability support
 - [x] ClickHouse table functions and formats support
 - [ ] DataFrame operations (drop, assign, fillna, etc.)
-- [ ] Query executors
+- [x] Query executors
+- [ ] Function args completion
+- [ ] Update and Save back data
+- [ ] Chart support
+- [ ] More data exploration functions
 - [ ] Multiple backend support
 - [ ] Mock data support
 - [ ] Schema management(infer or set manually)
