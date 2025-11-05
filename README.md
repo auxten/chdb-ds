@@ -388,13 +388,13 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] DataFrame operations (drop, assign, fillna, etc.)
 - [x] Query executors
 - [ ] Function args completion
+- [ ] ClickHouse functions support
 - [ ] Update and Save back data
 - [ ] Chart support
 - [ ] More data exploration functions, faster describe()
 - [ ] Multiple backend support
 - [ ] Mock data support
 - [ ] Schema management(infer or set manually)
-- [ ] ClickHouse functions support
 - [ ] Connection managers
 - [ ] Unstructured data support(Images, Audios as a column)
 - [ ] Arrow Table support (read/write directly)
