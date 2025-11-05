@@ -118,6 +118,9 @@ print(query.to_sql())
 
 # Execute query
 result = query.execute()
+
+# exec() is an alias for execute() - use whichever you prefer
+result = query.exec()  # Same as execute()
 ```
 
 ### Working with Expressions

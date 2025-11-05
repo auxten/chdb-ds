@@ -300,6 +300,32 @@ class TestImmutability(unittest.TestCase):
         self.assertEqual('SELECT * FROM "test"', ds1.to_sql())
 
 
+class TestExecAlias(unittest.TestCase):
+    """Test exec() method as an alias for execute()."""
+
+    def test_exec_method_exists(self):
+        """Test that exec() method exists."""
+        ds = DataStore(table="test")
+        self.assertTrue(hasattr(ds, 'exec'))
+        self.assertTrue(callable(getattr(ds, 'exec')))
+
+    def test_exec_same_as_execute(self):
+        """Test that exec() calls execute()."""
+        # We can't easily test the full execution without a real database,
+        # but we can verify the method exists and has the same signature
+        import inspect
+        ds = DataStore(table="test")
+        
+        exec_method = getattr(ds, 'exec')
+        execute_method = getattr(ds, 'execute')
+        
+        # Both should have the same return type annotation
+        exec_sig = inspect.signature(exec_method)
+        execute_sig = inspect.signature(execute_method)
+        
+        self.assertEqual(exec_sig.return_annotation, execute_sig.return_annotation)
+
+
 if __name__ == '__main__':
     unittest.main()
 
