@@ -100,6 +100,54 @@ class TestWhere(unittest.TestCase):
         self.assertEqual('SELECT * FROM "customers" WHERE ("age" > 18 AND "city" = \'NYC\')', sql)
 
 
+class TestWhereAlias(unittest.TestCase):
+    """Test WHERE clause using where() method (alias for filter())."""
+
+    def setUp(self):
+        self.ds = DataStore(table="customers")
+
+    def test_where_equal(self):
+        """Test WHERE with equality using where()."""
+        sql = self.ds.where(Field("age") == 18).to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE "age" = 18', sql)
+
+    def test_where_greater_than(self):
+        """Test WHERE with greater than using where()."""
+        sql = self.ds.where(Field("age") > 18).to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE "age" > 18', sql)
+
+    def test_where_less_than(self):
+        """Test WHERE with less than using where()."""
+        sql = self.ds.where(Field("price") < 100).to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE "price" < 100', sql)
+
+    def test_where_and(self):
+        """Test WHERE with AND condition using where()."""
+        sql = self.ds.where((Field("age") > 18) & (Field("city") == "NYC")).to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE ("age" > 18 AND "city" = \'NYC\')', sql)
+
+    def test_where_or(self):
+        """Test WHERE with OR condition using where()."""
+        sql = self.ds.where((Field("status") == "active") | (Field("status") == "trial")).to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE ("status" = \'active\' OR "status" = \'trial\')', sql)
+
+    def test_multiple_where_calls(self):
+        """Test multiple where() calls (should AND them)."""
+        sql = self.ds.where(Field("age") > 18).where(Field("city") == "NYC").to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE ("age" > 18 AND "city" = \'NYC\')', sql)
+
+    def test_where_same_as_filter(self):
+        """Test that where() produces the same SQL as filter()."""
+        filter_sql = self.ds.filter(Field("age") > 18).to_sql()
+        where_sql = self.ds.where(Field("age") > 18).to_sql()
+        self.assertEqual(filter_sql, where_sql)
+
+    def test_where_and_filter_combined(self):
+        """Test that where() and filter() can be used together."""
+        sql = self.ds.where(Field("age") > 18).filter(Field("city") == "NYC").to_sql()
+        self.assertEqual('SELECT * FROM "customers" WHERE ("age" > 18 AND "city" = \'NYC\')', sql)
+
+
 class TestDynamicFieldAccess(unittest.TestCase):
     """Test dynamic field access (ds.column_name)."""
 

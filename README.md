@@ -146,6 +146,9 @@ ds.groupby("category").select(
 ds.filter(ds.age > 18)
 ds.filter(ds.status == "active")
 
+# where() is an alias for filter() - use whichever you prefer
+ds.where(ds.age > 18)  # Same as filter()
+
 # Complex conditions
 ds.filter(
     ((ds.age > 18) & (ds.age < 65)) | 
