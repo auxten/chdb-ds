@@ -385,6 +385,7 @@ python -m unittest datastore.tests.test_datastore_core
 
 ## Roadmap
 
+### Alpha release
 - [x] Core expression system
 - [x] Condition system
 - [x] Function system
@@ -402,6 +403,8 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] Mock data support
 - [ ] Schema management(infer or set manually)
 - [ ] Connection managers
+
+### Beta release
 - [ ] Unstructured data support(Images, Audios as a column)
 - [ ] Arrow Table support (read/write directly)
 - [ ] Embedding Generation support
