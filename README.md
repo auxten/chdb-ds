@@ -142,6 +142,29 @@ ds.groupby("category").select(
 )
 ```
 
+### Working with Results
+
+DataStore provides convenient methods to get results as pandas DataFrames or dictionaries:
+
+```python
+# Get results as DataFrame (simplified)
+df = ds.select("*").filter(ds.age > 18).to_df()
+
+# Get results as list of dictionaries (simplified)
+records = ds.select("*").filter(ds.age > 18).to_dict()
+
+# Traditional way (also supported)
+result = ds.select("*").execute()
+df = result.to_df()
+records = result.to_dict()
+
+# Access raw result metadata
+result = ds.select("*").execute()
+print(result.column_names)  # ['id', 'name', 'age']
+print(result.row_count)     # 42
+print(result.rows)          # List of tuples
+```
+
 ### Conditions
 
 ```python

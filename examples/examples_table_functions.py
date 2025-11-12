@@ -26,9 +26,12 @@ def example_file_csv():
         format_csv_delimiter=',', input_format_csv_skip_first_lines=1, input_format_csv_trim_whitespaces=1
     )
 
-    # Query the file
-    result = ds.select("*").filter(ds.revenue > 1000).limit(10).execute()
-    print(result.to_dict())
+    # Query the file - simplified way
+    records = ds.select("*").filter(ds.revenue > 1000).limit(10).to_dict()
+    print(records)
+
+    # Or get results as DataFrame
+    # df = ds.select("*").filter(ds.revenue > 1000).limit(10).to_df()
 
 
 def example_file_parquet():
@@ -72,8 +75,11 @@ def example_s3_public():
         nosign=True,  # Public bucket
     )
 
-    result = ds.select("*").limit(5).execute()
-    print(result.to_dict())
+    # Simplified way - directly get results as dict or DataFrame
+    records = ds.select("*").limit(5).to_dict()
+    print(records)
+
+    # Or: df = ds.select("*").limit(5).to_df()
 
 
 def example_s3_with_credentials():

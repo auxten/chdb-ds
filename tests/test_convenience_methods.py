@@ -1,0 +1,159 @@
+"""
+Tests for convenience methods like to_df() and to_dict() that execute queries directly.
+"""
+
+import unittest
+import tempfile
+import os
+
+from datastore import DataStore
+
+
+class TestConvenienceMethods(unittest.TestCase):
+    """Test convenience methods for DataStore."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test data."""
+        # Create a temporary CSV file for testing
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.csv_file = os.path.join(cls.temp_dir, "test_data.csv")
+
+        # Write test data
+        with open(cls.csv_file, "w") as f:
+            f.write("id,name,age,city\n")
+            f.write("1,Alice,25,NYC\n")
+            f.write("2,Bob,30,LA\n")
+            f.write("3,Charlie,35,Chicago\n")
+            f.write("4,Diana,28,Boston\n")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up test data."""
+        if os.path.exists(cls.csv_file):
+            os.unlink(cls.csv_file)
+        if os.path.exists(cls.temp_dir):
+            os.rmdir(cls.temp_dir)
+
+    def test_to_df_method_exists(self):
+        """Test that to_df() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "to_df"))
+        self.assertTrue(callable(ds.to_df))
+
+    def test_to_dict_method_exists(self):
+        """Test that to_dict() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "to_dict"))
+        self.assertTrue(callable(ds.to_dict))
+
+    def test_to_df_returns_dataframe(self):
+        """Test that to_df() returns a pandas DataFrame."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").to_df()
+
+        # Check it's a DataFrame
+        import pandas as pd
+
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEqual(len(df), 4)
+        self.assertEqual(list(df.columns), ["id", "name", "age", "city"])
+
+    def test_to_dict_returns_list_of_dicts(self):
+        """Test that to_dict() returns a list of dictionaries."""
+        ds = DataStore.from_file(self.csv_file)
+        records = ds.select("*").to_dict()
+
+        # Check it's a list of dicts
+        self.assertIsInstance(records, list)
+        self.assertEqual(len(records), 4)
+        self.assertIsInstance(records[0], dict)
+        self.assertIn("id", records[0])
+        self.assertIn("name", records[0])
+
+    def test_to_df_with_filter(self):
+        """Test to_df() with filter applied."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").filter(ds.age > 25).to_df()
+
+        # Should only include Bob, Charlie, and Diana (age > 25)
+        self.assertEqual(len(df), 3)
+
+    def test_to_dict_with_filter(self):
+        """Test to_dict() with filter applied."""
+        ds = DataStore.from_file(self.csv_file)
+        records = ds.select("*").filter(ds.age > 25).to_dict()
+
+        # Should only include Bob, Charlie, and Diana (age > 25)
+        self.assertEqual(len(records), 3)
+        # Verify all ages are > 25
+        for record in records:
+            self.assertGreater(record["age"], 25)
+
+    def test_to_df_with_limit(self):
+        """Test to_df() with limit."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").limit(2).to_df()
+
+        # Should only include 2 rows
+        self.assertEqual(len(df), 2)
+
+    def test_to_dict_with_select_columns(self):
+        """Test to_dict() with specific column selection."""
+        ds = DataStore.from_file(self.csv_file)
+        records = ds.select("name", "age").to_dict()
+
+        # Should only include name and age columns
+        self.assertEqual(len(records), 4)
+        self.assertEqual(set(records[0].keys()), {"name", "age"})
+
+    def test_to_df_same_as_execute_to_df(self):
+        """Test that to_df() produces the same result as execute().to_df()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        # Old way
+        df1 = ds.select("*").filter(ds.age > 25).execute().to_df()
+
+        # New way
+        df2 = ds.select("*").filter(ds.age > 25).to_df()
+
+        # Compare
+        import pandas as pd
+
+        pd.testing.assert_frame_equal(df1, df2)
+
+    def test_to_dict_same_as_execute_to_dict(self):
+        """Test that to_dict() produces the same result as execute().to_dict()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        # Old way
+        dict1 = ds.select("*").filter(ds.age > 25).execute().to_dict()
+
+        # New way
+        dict2 = ds.select("*").filter(ds.age > 25).to_dict()
+
+        # Compare
+        self.assertEqual(dict1, dict2)
+
+    def test_to_df_with_complex_query(self):
+        """Test to_df() with a complex query involving multiple operations."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("name", "age").filter(ds.age >= 28).sort("age").limit(2).to_df()
+
+        # Should return Diana (28) and Bob (30), sorted by age
+        self.assertEqual(len(df), 2)
+        self.assertEqual(list(df["name"]), ["Diana", "Bob"])
+
+    def test_to_dict_with_complex_query(self):
+        """Test to_dict() with a complex query."""
+        ds = DataStore.from_file(self.csv_file)
+        records = ds.select("name", "city").filter(ds.age < 35).sort("name").to_dict()
+
+        # Should return Alice, Bob, Diana (all < 35), sorted by name
+        self.assertEqual(len(records), 3)
+        names = [r["name"] for r in records]
+        self.assertEqual(names, ["Alice", "Bob", "Diana"])
+
+
+if __name__ == "__main__":
+    unittest.main()
