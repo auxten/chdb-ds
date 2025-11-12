@@ -165,6 +165,35 @@ print(result.row_count)     # 42
 print(result.rows)          # List of tuples
 ```
 
+### Pandas-Style Convenience Methods
+
+DataStore supports pandas-like methods for quick data exploration and analysis:
+
+```python
+# Statistical summary (same as df.describe())
+stats = ds.select("*").describe()
+stats = ds.desc()  # Short version
+
+# First/last N rows
+first_5 = ds.select("*").head()      # First 5 rows (default)
+first_10 = ds.head(10)   # First 10 rows
+last_5 = ds.select("*").tail()       # Last 5 rows
+
+# Random sample
+sample = ds.select("*").sample(n=100, random_state=42)
+sample = ds.sample(frac=0.1)  # 10% of rows
+
+# Dataset info
+shape = ds.select("col1", "col2").shape          # (rows, columns) tuple
+cols = ds.columns         # Column names
+counts = ds.select("col1").count()       # Non-null counts per column
+ds.info()                 # Dataset summary
+
+# Chain with filters
+stats = ds.filter(ds.age > 18).describe()
+top_10 = ds.sort("sales", ascending=False).head(10)
+```
+
 ### Conditions
 
 ```python

@@ -154,6 +154,200 @@ class TestConvenienceMethods(unittest.TestCase):
         names = [r["name"] for r in records]
         self.assertEqual(names, ["Alice", "Bob", "Diana"])
 
+    def test_describe_method_exists(self):
+        """Test that describe() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "describe"))
+        self.assertTrue(callable(ds.describe))
+
+    def test_desc_method_exists(self):
+        """Test that desc() method exists as shortcut for describe()."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "desc"))
+        self.assertTrue(callable(ds.desc))
+
+    def test_head_method_exists(self):
+        """Test that head() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "head"))
+        self.assertTrue(callable(ds.head))
+
+    def test_tail_method_exists(self):
+        """Test that tail() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "tail"))
+        self.assertTrue(callable(ds.tail))
+
+    def test_describe_returns_dataframe(self):
+        """Test that describe() returns a DataFrame with statistics."""
+        ds = DataStore.from_file(self.csv_file)
+        stats = ds.select("*").describe()
+
+        import pandas as pd
+
+        self.assertIsInstance(stats, pd.DataFrame)
+        # Should have standard statistics (count, mean, std, etc.)
+        self.assertIn("count", stats.index)
+        self.assertIn("mean", stats.index)
+        self.assertIn("std", stats.index)
+        # Should include numeric columns (id, age)
+        self.assertIn("id", stats.columns)
+        self.assertIn("age", stats.columns)
+
+    def test_desc_same_as_describe(self):
+        """Test that desc() produces the same result as describe()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        stats1 = ds.select("*").describe()
+        stats2 = ds.select("*").desc()
+
+        import pandas as pd
+
+        pd.testing.assert_frame_equal(stats1, stats2)
+
+    def test_describe_with_custom_percentiles(self):
+        """Test describe() with custom percentiles."""
+        ds = DataStore.from_file(self.csv_file)
+        stats = ds.select("*").describe(percentiles=[0.1, 0.5, 0.9])
+
+        # Should include custom percentiles
+        self.assertIn("10%", stats.index)
+        self.assertIn("50%", stats.index)
+        self.assertIn("90%", stats.index)
+
+    def test_head_default(self):
+        """Test head() with default n=5."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").head()
+
+        import pandas as pd
+
+        self.assertIsInstance(df, pd.DataFrame)
+        # We only have 4 rows, so should get all 4
+        self.assertEqual(len(df), 4)
+
+    def test_head_with_n(self):
+        """Test head() with specific n value."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").head(2)
+
+        self.assertEqual(len(df), 2)
+        # Should be first 2 rows
+        self.assertEqual(list(df["name"]), ["Alice", "Bob"])
+
+    def test_head_with_filter(self):
+        """Test head() with filter applied."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").filter(ds.age > 25).head(2)
+
+        # Should get first 2 rows where age > 25
+        self.assertEqual(len(df), 2)
+
+    def test_tail_default(self):
+        """Test tail() with default n=5."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").tail()
+
+        import pandas as pd
+
+        self.assertIsInstance(df, pd.DataFrame)
+        # We only have 4 rows, so should get all 4
+        self.assertEqual(len(df), 4)
+
+    def test_tail_with_n(self):
+        """Test tail() with specific n value."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").tail(2)
+
+        self.assertEqual(len(df), 2)
+        # Should be last 2 rows
+        self.assertEqual(list(df["name"]), ["Charlie", "Diana"])
+
+    def test_sample_method_exists(self):
+        """Test that sample() method exists on DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        self.assertTrue(hasattr(ds, "sample"))
+        self.assertTrue(callable(ds.sample))
+
+    def test_sample_with_n(self):
+        """Test sample() with specific n value."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").sample(n=2, random_state=42)
+
+        self.assertEqual(len(df), 2)
+
+    def test_sample_with_frac(self):
+        """Test sample() with fraction."""
+        ds = DataStore.from_file(self.csv_file)
+        df = ds.select("*").sample(frac=0.5, random_state=42)
+
+        # 50% of 4 rows = 2 rows
+        self.assertEqual(len(df), 2)
+
+    def test_shape_property(self):
+        """Test shape property returns (rows, cols) tuple."""
+        ds = DataStore.from_file(self.csv_file)
+        shape = ds.select("*").shape
+
+        self.assertIsInstance(shape, tuple)
+        self.assertEqual(len(shape), 2)
+        self.assertEqual(shape[0], 4)  # 4 rows
+        self.assertEqual(shape[1], 4)  # 4 columns
+
+    def test_columns_property(self):
+        """Test columns property returns column names."""
+        ds = DataStore.from_file(self.csv_file)
+        cols = ds.select("*").columns
+
+        import pandas as pd
+
+        self.assertIsInstance(cols, pd.Index)
+        self.assertEqual(list(cols), ["id", "name", "age", "city"])
+
+    def test_count_method(self):
+        """Test count() returns counts per column."""
+        ds = DataStore.from_file(self.csv_file)
+        counts = ds.select("*").count()
+
+        import pandas as pd
+
+        self.assertIsInstance(counts, pd.Series)
+        # All columns should have 4 non-null values
+        self.assertEqual(counts["id"], 4)
+        self.assertEqual(counts["name"], 4)
+        self.assertEqual(counts["age"], 4)
+        self.assertEqual(counts["city"], 4)
+
+    def test_info_method(self):
+        """Test info() method exists and can be called."""
+        ds = DataStore.from_file(self.csv_file)
+        # info() prints to stdout, so just verify it doesn't raise
+        result = ds.select("*").info()
+        # info() returns None by default
+        self.assertIsNone(result)
+
+    def test_describe_same_as_to_df_describe(self):
+        """Test that describe() produces the same result as to_df().describe()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        stats1 = ds.select("*").to_df().describe()
+        stats2 = ds.select("*").describe()
+
+        import pandas as pd
+
+        pd.testing.assert_frame_equal(stats1, stats2)
+
+    def test_head_same_as_to_df_head(self):
+        """Test that head() produces the same result as limit().to_df()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        df1 = ds.select("*").limit(3).to_df()
+        df2 = ds.select("*").head(3)
+
+        import pandas as pd
+
+        pd.testing.assert_frame_equal(df1, df2)
+
 
 if __name__ == "__main__":
     unittest.main()
