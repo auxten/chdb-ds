@@ -13,6 +13,8 @@ A Pandas-like data manipulation framework powered by chDB (ClickHouse) with auto
 ## Features
 
 - **Fluent API**: Pandas-like interface for data manipulation
+- **Wide Pandas Compatibility**: 180+ pandas DataFrame methods and properties
+- **Mixed Execution Engine**: Arbitrary mixing of SQL(chDB) and pandas operations
 - **Immutable Operations**: Thread-safe method chaining
 - **Unified Interface**: Query files, databases, and cloud storage with the same API
 - **20+ Data Sources**: Local files, S3, Azure, GCS, HDFS, MySQL, PostgreSQL, MongoDB, Redis, SQLite, ClickHouse, and more
@@ -165,34 +167,66 @@ print(result.row_count)     # 42
 print(result.rows)          # List of tuples
 ```
 
-### Pandas-Style Convenience Methods
+### Pandas DataFrame Compatibility
 
-DataStore supports pandas-like methods for quick data exploration and analysis:
+DataStore now includes **wide pandas DataFrame API compatibility**, allowing you to use all pandas methods directly:
 
 ```python
-# Statistical summary (same as df.describe())
-stats = ds.select("*").describe()
-stats = ds.desc()  # Short version
+# All pandas properties work
+print(ds.shape)        # (rows, columns)
+print(ds.columns)      # Column names
+print(ds.dtypes)       # Data types
+print(ds.values)       # NumPy array
 
-# First/last N rows
-first_5 = ds.select("*").head()      # First 5 rows (default)
-first_10 = ds.head(10)   # First 10 rows
-last_5 = ds.select("*").tail()       # Last 5 rows
+# All pandas statistical methods
+ds.mean()              # Mean values
+ds.median()            # Median values
+ds.std()               # Standard deviation
+ds.corr()              # Correlation matrix
+ds.describe()          # Statistical summary
 
-# Random sample
-sample = ds.select("*").sample(n=100, random_state=42)
-sample = ds.sample(frac=0.1)  # 10% of rows
+# All pandas data manipulation methods
+ds.drop(columns=['col1'])
+ds.rename(columns={'old': 'new'})
+ds.sort_values('column', ascending=False)
+ds.fillna(0)
+ds.dropna()
+ds.drop_duplicates()
+ds.assign(new_col=lambda x: x['col1'] * 2)
 
-# Dataset info
-shape = ds.select("col1", "col2").shape          # (rows, columns) tuple
-cols = ds.columns         # Column names
-counts = ds.select("col1").count()       # Non-null counts per column
-ds.info()                 # Dataset summary
+# Advanced operations
+ds.pivot_table(values='sales', index='region', columns='product')
+ds.melt(id_vars=['id'], value_vars=['col1', 'col2'])
+ds.merge(other_ds, on='id', how='left')
+ds.groupby('category').agg({'amount': 'sum', 'count': 'count'})
 
-# Chain with filters
-stats = ds.filter(ds.age > 18).describe()
-top_10 = ds.sort("sales", ascending=False).head(10)
+# Column selection (pandas style)
+ds['column']           # Single column
+ds[['col1', 'col2']]   # Multiple columns
+
+# Convenience methods
+first_5 = ds.head()      # First 5 rows
+last_5 = ds.tail()       # Last 5 rows
+sample = ds.sample(n=100, random_state=42)
+
+# Mix SQL-style and pandas operations - arbitrary order!
+result = (ds
+    .select('*')
+    .filter(ds.price > 100)              # SQL-style filtering
+    .assign(revenue=lambda x: x['price'] * x['quantity'])  # Pandas assign
+    .filter(ds.revenue > 1000)           # SQL on DataFrame!
+    .add_prefix('sales_')                # Pandas transform
+    .query('sales_revenue > 5000')       # Pandas query
+    .select('sales_id', 'sales_revenue'))  # SQL on DataFrame again!
+
+# Export to various formats
+ds.to_csv('output.csv')
+ds.to_json('output.json')
+ds.to_parquet('output.parquet')
+ds.to_excel('output.xlsx')
 ```
+
+**See [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md) for the complete feature checklist and examples.**
 
 ### Conditions
 
@@ -444,7 +478,7 @@ python -m unittest datastore.tests.test_datastore_core
 - [x] Basic DataStore operations
 - [x] Immutability support
 - [x] ClickHouse table functions and formats support
-- [ ] DataFrame operations (drop, assign, fillna, etc.)
+- [x] DataFrame operations (drop, assign, fillna, etc.) see [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)
 - [x] Query executors
 - [ ] Function args completion
 - [ ] ClickHouse functions support

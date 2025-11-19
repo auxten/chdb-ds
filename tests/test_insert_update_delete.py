@@ -14,7 +14,7 @@ class TestInsert(unittest.TestCase):
     def test_insert_with_values_simple(self):
         """Test simple INSERT with VALUES."""
         ds = DataStore(table="users")
-        query = ds.insert_into('id', 'name', 'age').values(1, 'Alice', 25)
+        query = ds.insert_into('id', 'name', 'age').insert_values(1, 'Alice', 25)
 
         expected = 'INSERT INTO "users" ("id", "name", "age") VALUES (1, \'Alice\', 25)'
         self.assertEqual(expected, query.to_sql())
@@ -22,7 +22,7 @@ class TestInsert(unittest.TestCase):
     def test_insert_with_values_multiple_rows(self):
         """Test INSERT with multiple rows."""
         ds = DataStore(table="users")
-        query = ds.insert_into('id', 'name', 'age').values((1, 'Alice', 25), (2, 'Bob', 30), (3, 'Charlie', 35))
+        query = ds.insert_into('id', 'name', 'age').insert_values((1, 'Alice', 25), (2, 'Bob', 30), (3, 'Charlie', 35))
 
         expected = 'INSERT INTO "users" ("id", "name", "age") VALUES (1, \'Alice\', 25), (2, \'Bob\', 30), (3, \'Charlie\', 35)'
         self.assertEqual(expected, query.to_sql())
@@ -30,7 +30,7 @@ class TestInsert(unittest.TestCase):
     def test_insert_with_values_chained(self):
         """Test INSERT with chained values() calls."""
         ds = DataStore(table="users")
-        query = ds.insert_into('id', 'name').values(1, 'Alice').values(2, 'Bob')
+        query = ds.insert_into('id', 'name').insert_values(1, 'Alice').insert_values(2, 'Bob')
 
         expected = 'INSERT INTO "users" ("id", "name") VALUES (1, \'Alice\'), (2, \'Bob\')'
         self.assertEqual(expected, query.to_sql())
@@ -50,7 +50,7 @@ class TestInsert(unittest.TestCase):
     def test_insert_with_null_values(self):
         """Test INSERT with NULL values."""
         ds = DataStore(table="users")
-        query = ds.insert_into('id', 'name', 'email').values(1, 'Alice', None)
+        query = ds.insert_into('id', 'name', 'email').insert_values(1, 'Alice', None)
 
         expected = 'INSERT INTO "users" ("id", "name", "email") VALUES (1, \'Alice\', NULL)'
         self.assertEqual(expected, query.to_sql())
@@ -58,7 +58,7 @@ class TestInsert(unittest.TestCase):
     def test_insert_with_boolean_values(self):
         """Test INSERT with boolean values."""
         ds = DataStore(table="users")
-        query = ds.insert_into('id', 'name', 'active').values(1, 'Alice', True)
+        query = ds.insert_into('id', 'name', 'active').insert_values(1, 'Alice', True)
 
         expected = 'INSERT INTO "users" ("id", "name", "active") VALUES (1, \'Alice\', 1)'
         self.assertEqual(expected, query.to_sql())
@@ -173,7 +173,7 @@ class TestInsertExecution(unittest.TestCase):
     def test_insert_with_values_execution(self):
         """Test INSERT with VALUES execution."""
         # Insert data
-        query = self.ds.insert_into('id', 'name', 'age').values((1, 'Alice', 25), (2, 'Bob', 30), (3, 'Charlie', 35))
+        query = self.ds.insert_into('id', 'name', 'age').insert_values((1, 'Alice', 25), (2, 'Bob', 30), (3, 'Charlie', 35))
         query.execute()
 
         # Verify data was inserted
@@ -187,7 +187,7 @@ class TestInsertExecution(unittest.TestCase):
 
     def test_insert_with_null_execution(self):
         """Test INSERT with NULL values."""
-        query = self.ds.insert_into('id', 'name', 'email').values((1, 'Alice', None), (2, 'Bob', 'bob@test.com'))
+        query = self.ds.insert_into('id', 'name', 'email').insert_values((1, 'Alice', None), (2, 'Bob', 'bob@test.com'))
         query.execute()
 
         result = self.ds.select('*').execute()
@@ -199,7 +199,7 @@ class TestInsertExecution(unittest.TestCase):
 
     def test_insert_with_boolean_execution(self):
         """Test INSERT with boolean values."""
-        query = self.ds.insert_into('id', 'name', 'active').values((1, 'Alice', True), (2, 'Bob', False))
+        query = self.ds.insert_into('id', 'name', 'active').insert_values((1, 'Alice', True), (2, 'Bob', False))
         query.execute()
 
         result = self.ds.select('name', 'active').execute()

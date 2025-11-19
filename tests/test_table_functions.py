@@ -221,7 +221,7 @@ class TestReadOnlyTableFunctions:
         )
 
         # MongoDB is read-only, so insert should fail
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -232,7 +232,7 @@ class TestReadOnlyTableFunctions:
         """Test that numbers table function rejects writes."""
         ds = DataStore("numbers", count=100)
 
-        ds_insert = ds.insert_into("number").values((42,))
+        ds_insert = ds.insert_into("number").insert_values((42,))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -1016,7 +1016,7 @@ class TestReadOnlyTableFunctionsExtended:
     def test_sqlite_write_error(self):
         """Test that SQLite table function rejects writes."""
         ds = DataStore("sqlite", database_path="/path/to/db.sqlite", table="users")
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -1025,7 +1025,7 @@ class TestReadOnlyTableFunctionsExtended:
     def test_iceberg_write_error(self):
         """Test that Iceberg table function rejects writes."""
         ds = DataStore("iceberg", url="s3://bucket/iceberg/table")
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -1034,7 +1034,7 @@ class TestReadOnlyTableFunctionsExtended:
     def test_deltalake_write_error(self):
         """Test that DeltaLake table function rejects writes."""
         ds = DataStore("delta", url="s3://bucket/delta/table")
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -1043,7 +1043,7 @@ class TestReadOnlyTableFunctionsExtended:
     def test_hudi_write_error(self):
         """Test that Hudi table function rejects writes."""
         ds = DataStore("hudi", url="s3://bucket/hudi/table")
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
@@ -1052,7 +1052,7 @@ class TestReadOnlyTableFunctionsExtended:
     def test_generaterandom_write_error(self):
         """Test that generateRandom table function rejects writes."""
         ds = DataStore("generaterandom", structure="id UInt32, name String")
-        ds_insert = ds.insert_into("id", "name").values((1, "Alice"))
+        ds_insert = ds.insert_into("id", "name").insert_values((1, "Alice"))
 
         with pytest.raises(QueryError) as exc_info:
             ds_insert.to_sql()
