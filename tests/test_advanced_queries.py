@@ -280,9 +280,12 @@ class ComplexQueryExecutionTests(unittest.TestCase):
     def test_string_functions_in_query_execution(self):
         """Test string functions in complex query"""
         ds = DataStore(table="sales_data")
+        # Use Field('product') explicitly since ds.product is a pandas method
+        product_field = Field('product')
+        category_field = Field('category')
         sql = (
-            ds.select(Upper(ds.product).as_("upper_product"), Lower(ds.category).as_("lower_category"))
-            .filter(ds.product.like('%book%'))
+            ds.select(Upper(product_field).as_("upper_product"), Lower(category_field).as_("lower_category"))
+            .filter(product_field.like('%book%'))
             .to_sql()
         )
 
