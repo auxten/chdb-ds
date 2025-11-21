@@ -49,12 +49,14 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test: SQL filter → pandas rename → pandas drop."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('*')
-            .filter(ds.age > 25)  # SQL
-            .rename(columns={'id': 'employee_id'})  # Pandas (materializes)
-            .drop(columns=['active'])
-        )  # Pandas (cached)
+            ds.select('*')                              # SQL (implied)
+            .filter(ds.age > 25)                        # SQL
+            .rename(columns={'id': 'employee_id'})      # Pandas (materializes)
+            .drop(columns=['active'])                   # Pandas (cached)
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -73,11 +75,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.filter(ds.age > 25)  # SQL: WHERE age > 25
-            .add_prefix('emp_')  # Pandas: materializes, renames columns
-            .select('emp_id', 'emp_name', 'emp_age')
-        )  # SQL-style: should select from cached df
+            ds.filter(ds.age > 25)                      # SQL: WHERE age > 25
+            .add_prefix('emp_')                         # Pandas: materializes, renames columns
+            .select('emp_id', 'emp_name', 'emp_age')    # SQL-style: should select from cached df
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -94,11 +98,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test: pandas rename → SQL-style filter → pandas sort."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.rename(columns={'id': 'ID', 'name': 'NAME'})  # Pandas: materializes
-            .filter(ds.age > 28)  # SQL-style: should filter cached df
-            .sort_values('salary', ascending=False)
-        )  # Pandas: sort cached
+            ds.rename(columns={'id': 'ID', 'name': 'NAME'})     # Pandas: materializes
+            .filter(ds.age > 28)                                # SQL-style: should filter cached df
+            .sort_values('salary', ascending=False)             # Pandas: sort cached
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -116,13 +122,15 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test: Multiple consecutive pandas operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.add_prefix('x_')  # Pandas 1: materializes
-            .add_suffix('_y')  # Pandas 2: on cached
-            .drop(columns=['x_active_y'])  # Pandas 3: on cached
-            .fillna(0)  # Pandas 4: on cached
-            .sort_values('x_age_y')
-        )  # Pandas 5: on cached
+            ds.add_prefix('x_')                 # Pandas 1: materializes
+            .add_suffix('_y')                   # Pandas 2: on cached
+            .drop(columns=['x_active_y'])       # Pandas 3: on cached
+            .fillna(0)                          # Pandas 4: on cached
+            .sort_values('x_age_y')             # Pandas 5: on cached
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -137,13 +145,15 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test: SQL → pandas → SQL → pandas alternating."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('*')  # SQL
-            .filter(ds.age > 25)  # SQL
-            .add_prefix('p1_')  # Pandas: materializes
-            .filter(ds.p1_salary > 55000)  # SQL-style on cached df
-            .add_suffix('_p2')
-        )  # Pandas: on cached
+            ds.select('*')                      # SQL
+            .filter(ds.age > 25)                # SQL
+            .add_prefix('p1_')                  # Pandas: materializes
+            .filter(ds.p1_salary > 55000)       # SQL-style on cached df
+            .add_suffix('_p2')                  # Pandas: on cached
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -158,12 +168,14 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test pandas operations after SQL column selection."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('id', 'name', 'age', 'salary')  # SQL: SELECT specific columns
-            .filter(ds.age > 27)  # SQL: WHERE
-            .assign(salary_k=lambda x: x['salary'] / 1000)  # Pandas: add column
-            .drop(columns=['salary'])
-        )  # Pandas: drop original
+            ds.select('id', 'name', 'age', 'salary')            # SQL: SELECT specific columns
+            .filter(ds.age > 27)                                # SQL: WHERE
+            .assign(salary_k=lambda x: x['salary'] / 1000)      # Pandas: add column
+            .drop(columns=['salary'])                           # Pandas: drop original
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -178,7 +190,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test mathematical operations on filtered data."""
         ds = DataStore.from_file(self.csv_file)
 
-        result = ds.select('id', 'salary').filter(ds.salary > 50000).mul(1.1)  # SQL  # SQL  # Pandas: 10% increase
+        # fmt: off
+        result = (
+            ds.select('id', 'salary')       # SQL
+            .filter(ds.salary > 50000)      # SQL
+            .mul(1.1)                       # Pandas: 10% increase
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -194,16 +212,18 @@ class TestComplexMixedScenarios(unittest.TestCase):
         ds = DataStore.from_file(self.csv_file)
 
         # SQL filter, pandas transform, then pandas groupby
+        # fmt: off
         result = (
-            ds.filter(ds.active == 1)  # SQL
+            ds.filter(ds.active == 1)                   # SQL
             .assign(
                 salary_category=lambda x: pd.cut(
                     x['salary'], bins=[0, 55000, 65000, 100000], labels=['Low', 'Medium', 'High']
                 )
-            )  # Pandas
-            .groupby('salary_category')
-            .agg({'salary': ['mean', 'count']})
-        )  # Pandas groupby
+            )                                           # Pandas
+            .groupby('salary_category')                 # Pandas groupby
+            .agg({'salary': ['mean', 'count']})         # Pandas groupby
+        )
+        # fmt: on
 
         # groupby().agg() with multiple functions returns DataFrame
         self.assertIsInstance(result, DataStore)
@@ -214,9 +234,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test pandas where() after SQL filter."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('id', 'age', 'salary').filter(ds.age > 25).where(lambda x: x['salary'] > 55000, 0)  # SQL  # SQL
-        )  # Pandas: conditional replace
+            ds.select('id', 'age', 'salary')            # SQL
+            .filter(ds.age > 25)                        # SQL
+            .where(lambda x: x['salary'] > 55000, 0)    # Pandas: conditional replace
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -274,11 +298,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
             ds1_filtered = ds1.select('id', 'name', 'salary').filter(ds1.active == 1)
 
             # Use pandas merge (which works on materialized DataFrames)
+            # fmt: off
             result = (
-                ds1_filtered.merge(ds2, on='id', how='inner')  # Pandas: merge
+                ds1_filtered.merge(ds2, on='id', how='inner')           # Pandas: merge
                 .assign(total_comp=lambda x: x['salary'] + x['bonus'])  # Pandas
-                .sort_values('total_comp', ascending=False)
-            )  # Pandas
+                .sort_values('total_comp', ascending=False)             # Pandas
+            )
+            # fmt: on
 
             df = result.to_df() if isinstance(result, DataStore) else result
 
@@ -296,11 +322,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test pivot operation after SQL filtering."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('department', 'active', 'salary')  # SQL
-            .filter(ds.salary > 50000)  # SQL
-            .pivot_table(values='salary', index='department', columns='active', aggfunc='mean')
-        )  # Pandas
+            ds.select('department', 'active', 'salary')                                         # SQL
+            .filter(ds.salary > 50000)                                                          # SQL
+            .pivot_table(values='salary', index='department', columns='active', aggfunc='mean') # Pandas
+        )
+        # fmt: on
 
         # pivot_table returns DataFrame, wrapped as DataStore
         self.assertIsInstance(result, DataStore)
@@ -311,11 +339,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test melt (unpivot) after SQL operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('id', 'name', 'age', 'salary')  # SQL
-            .filter(ds.id <= 5)  # SQL
-            .melt(id_vars=['id', 'name'], value_vars=['age', 'salary'], var_name='metric', value_name='value')
-        )  # Pandas
+            ds.select('id', 'name', 'age', 'salary')                                                        # SQL
+            .filter(ds.id <= 5)                                                                             # SQL
+            .melt(id_vars=['id', 'name'], value_vars=['age', 'salary'], var_name='metric', value_name='value')  # Pandas
+        )
+        # fmt: on
 
         df = result.to_df() if isinstance(result, DataStore) else result
 
@@ -384,15 +414,17 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test alternating between SQL and pandas operations multiple times."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('*')  # SQL 1
-            .filter(ds.age > 25)  # SQL 2
-            .add_prefix('p1_')  # Pandas 1: materializes
-            .filter(ds.p1_salary > 55000)  # SQL 3: on cached df?
-            .rename(columns={'p1_id': 'final_id'})  # Pandas 2: on cached df
-            .filter(ds.final_id > 2)  # SQL 4: on cached df?
-            .add_suffix('_end')
-        )  # Pandas 3: on cached df
+            ds.select('*')                              # SQL 1
+            .filter(ds.age > 25)                        # SQL 2
+            .add_prefix('p1_')                          # Pandas 1: materializes
+            .filter(ds.p1_salary > 55000)               # SQL 3: on cached df?
+            .rename(columns={'p1_id': 'final_id'})      # Pandas 2: on cached df
+            .filter(ds.final_id > 2)                    # SQL 4: on cached df?
+            .add_suffix('_end')                         # Pandas 3: on cached df
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -420,11 +452,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test filtering on a column created by pandas assign."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('*')  # SQL
-            .assign(salary_k=lambda x: x['salary'] / 1000)  # Pandas: add column
-            .filter(ds.salary_k > 60)
-        )  # Filter on new column
+            ds.select('*')                                      # SQL
+            .assign(salary_k=lambda x: x['salary'] / 1000)      # Pandas: add column
+            .filter(ds.salary_k > 60)                           # Filter on new column
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -438,9 +472,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test pandas query() method after SQL operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('*').filter(ds.active == 1).query('age > 28 and salary > 55000')  # SQL  # SQL
-        )  # Pandas query
+            ds.select('*')                              # SQL
+            .filter(ds.active == 1)                     # SQL
+            .query('age > 28 and salary > 55000')       # Pandas query
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -455,7 +493,12 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test DataFrame slicing after pandas operations."""
         ds = DataStore.from_file(self.csv_file)
 
-        result = ds.sort_values('salary', ascending=False).head(5)  # Pandas: materializes  # Slice top 5
+        # fmt: off
+        result = (
+            ds.sort_values('salary', ascending=False)   # Pandas: materializes
+            .head(5)                                    # Slice top 5
+        )
+        # fmt: on
 
         # head() returns DataFrame directly
         self.assertIsInstance(result, pd.DataFrame)
@@ -467,9 +510,14 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test chaining multiple mathematical operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('id', 'salary').mul(2).add(1000).div(1000)  # SQL  # Pandas: double all values  # Pandas: add 1000
-        )  # Pandas: convert to thousands
+            ds.select('id', 'salary')       # SQL
+            .mul(2)                         # Pandas: double all values
+            .add(1000)                      # Pandas: add 1000
+            .div(1000)                      # Pandas: convert to thousands
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -514,9 +562,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test reset_index after filtering operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.filter(ds.age > 30).sort_values('salary', ascending=False).reset_index(drop=True)  # SQL  # Pandas
-        )  # Pandas
+            ds.filter(ds.age > 30)                      # SQL
+            .sort_values('salary', ascending=False)     # Pandas
+            .reset_index(drop=True)                     # Pandas
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -541,8 +593,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
             ds2 = DataStore.from_file(csv_file2)
 
             # Apply pandas operations to both
-            ds1_prepared = ds1.select('id', 'name', 'department').add_prefix('emp_')
-            ds2_prepared = ds2.add_prefix('dept_')
+            # fmt: off
+            ds1_prepared = (
+                ds1.select('id', 'name', 'department')  # SQL
+                .add_prefix('emp_')                     # Pandas
+            )
+            ds2_prepared = ds2.add_prefix('dept_')      # Pandas: materializes
+            # fmt: on
 
             # Merge
             result = ds1_prepared.merge(ds2_prepared, left_on='emp_department', right_on='dept_department')
@@ -563,11 +620,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test apply() function after SQL filtering."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('age', 'salary')  # SQL
-            .filter(ds.age > 25)  # SQL
-            .apply(lambda x: x / 1000 if x.dtype in ['int64', 'float64'] else x)
-        )  # Pandas
+            ds.select('age', 'salary')                  # SQL
+            .filter(ds.age > 25)                        # SQL
+            .apply(lambda x: x / 1000 if x.dtype in ['int64', 'float64'] else x)   # Pandas
+        )
+        # fmt: on
 
         # apply returns DataStore
         self.assertIsInstance(result, DataStore)
@@ -582,9 +641,13 @@ class TestComplexMixedScenarios(unittest.TestCase):
         """Test eval() expression after SQL operations."""
         ds = DataStore.from_file(self.csv_file)
 
+        # fmt: off
         result = (
-            ds.select('id', 'age', 'salary').filter(ds.active == 1).eval('salary_per_age = salary / age')  # SQL  # SQL
-        )  # Pandas: add calculated column
+            ds.select('id', 'age', 'salary')            # SQL
+            .filter(ds.active == 1)                     # SQL
+            .eval('salary_per_age = salary / age')      # Pandas: add calculated column
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -623,7 +686,12 @@ class TestEdgeCases(unittest.TestCase):
         """Test pandas operations on empty result set."""
         ds = DataStore.from_file(self.csv_file)
 
-        result = ds.filter(ds.a > 100).add_prefix('x_')  # SQL: returns empty  # Pandas: on empty df
+        # fmt: off
+        result = (
+            ds.filter(ds.a > 100)           # SQL: returns empty
+            .add_prefix('x_')               # Pandas: on empty df
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -635,7 +703,12 @@ class TestEdgeCases(unittest.TestCase):
         """Test applying same pandas operation twice."""
         ds = DataStore.from_file(self.csv_file)
 
-        result = ds.add_prefix('p1_').add_prefix('p2_')  # Pandas 1  # Pandas 2: should add p2_ to p1_*
+        # fmt: off
+        result = (
+            ds.add_prefix('p1_')            # Pandas 1
+            .add_prefix('p2_')              # Pandas 2: should add p2_ to p1_*
+        )
+        # fmt: on
 
         df = result.to_df()
 
@@ -694,9 +767,13 @@ class TestExecutionOptimization(unittest.TestCase):
         ds = DataStore.from_file(self.csv_file)
 
         # Build SQL filter first (should reduce data size)
+        # fmt: off
         ds_filtered = (
-            ds.select('*').filter(ds.value > 500).filter(ds.category == 'B')  # SQL: filters to ~50 rows
-        )  # SQL: further filter
+            ds.select('*')                      # SQL
+            .filter(ds.value > 500)             # SQL: filters to ~50 rows
+            .filter(ds.category == 'B')         # SQL: further filter
+        )
+        # fmt: on
 
         # Not materialized yet
         self.assertFalse(ds_filtered._materialized)
