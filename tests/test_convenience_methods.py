@@ -179,20 +179,23 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertTrue(callable(ds.tail))
 
     def test_describe_returns_dataframe(self):
-        """Test that describe() returns a DataFrame with statistics."""
+        """Test that describe() returns a DataStore with statistics."""
         ds = DataStore.from_file(self.csv_file)
         stats = ds.select("*").describe()
 
         import pandas as pd
 
-        self.assertIsInstance(stats, pd.DataFrame)
+        # Should return DataStore, not DataFrame
+        self.assertIsInstance(stats, DataStore)
+        # Convert to DataFrame to check content
+        stats_df = stats.to_df()
         # Should have standard statistics (count, mean, std, etc.)
-        self.assertIn("count", stats.index)
-        self.assertIn("mean", stats.index)
-        self.assertIn("std", stats.index)
+        self.assertIn("count", stats_df.index)
+        self.assertIn("mean", stats_df.index)
+        self.assertIn("std", stats_df.index)
         # Should include numeric columns (id, age)
-        self.assertIn("id", stats.columns)
-        self.assertIn("age", stats.columns)
+        self.assertIn("id", stats_df.columns)
+        self.assertIn("age", stats_df.columns)
 
     def test_desc_same_as_describe(self):
         """Test that desc() produces the same result as describe()."""
@@ -203,64 +206,82 @@ class TestConvenienceMethods(unittest.TestCase):
 
         import pandas as pd
 
-        pd.testing.assert_frame_equal(stats1, stats2)
+        # Both should return DataStore
+        self.assertIsInstance(stats1, DataStore)
+        self.assertIsInstance(stats2, DataStore)
+        # Compare the underlying DataFrames
+        pd.testing.assert_frame_equal(stats1.to_df(), stats2.to_df())
 
     def test_describe_with_custom_percentiles(self):
         """Test describe() with custom percentiles."""
         ds = DataStore.from_file(self.csv_file)
         stats = ds.select("*").describe(percentiles=[0.1, 0.5, 0.9])
 
+        # Should return DataStore
+        self.assertIsInstance(stats, DataStore)
+        # Convert to DataFrame to check percentiles
+        stats_df = stats.to_df()
         # Should include custom percentiles
-        self.assertIn("10%", stats.index)
-        self.assertIn("50%", stats.index)
-        self.assertIn("90%", stats.index)
+        self.assertIn("10%", stats_df.index)
+        self.assertIn("50%", stats_df.index)
+        self.assertIn("90%", stats_df.index)
 
     def test_head_default(self):
         """Test head() with default n=5."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").head()
+        result = ds.select("*").head()
 
         import pandas as pd
 
-        self.assertIsInstance(df, pd.DataFrame)
+        # Should return DataStore, not DataFrame
+        self.assertIsInstance(result, DataStore)
         # We only have 4 rows, so should get all 4
-        self.assertEqual(len(df), 4)
+        self.assertEqual(len(result), 4)
 
     def test_head_with_n(self):
         """Test head() with specific n value."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").head(2)
+        result = ds.select("*").head(2)
 
-        self.assertEqual(len(df), 2)
-        # Should be first 2 rows
+        # Should return DataStore
+        self.assertIsInstance(result, DataStore)
+        self.assertEqual(len(result), 2)
+        # Should be first 2 rows - convert to DataFrame to check values
+        df = result.to_df()
         self.assertEqual(list(df["name"]), ["Alice", "Bob"])
 
     def test_head_with_filter(self):
         """Test head() with filter applied."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").filter(ds.age > 25).head(2)
+        result = ds.select("*").filter(ds.age > 25).head(2)
 
+        # Should return DataStore
+        self.assertIsInstance(result, DataStore)
         # Should get first 2 rows where age > 25
-        self.assertEqual(len(df), 2)
+        self.assertEqual(len(result), 2)
 
     def test_tail_default(self):
         """Test tail() with default n=5."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").tail()
+        result = ds.select("*").tail()
 
         import pandas as pd
 
-        self.assertIsInstance(df, pd.DataFrame)
+        # Should return DataStore, not DataFrame
+        self.assertIsInstance(result, DataStore)
         # We only have 4 rows, so should get all 4
-        self.assertEqual(len(df), 4)
+        self.assertEqual(len(result), 4)
 
     def test_tail_with_n(self):
         """Test tail() with specific n value."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").tail(2)
+        result = ds.select("*").tail(2)
 
-        self.assertEqual(len(df), 2)
-        # Should be last 2 rows
+        # Should return DataStore
+        self.assertIsInstance(result, DataStore)
+        self.assertEqual(len(result), 2)
+        # Should be last 2 rows - convert to DataFrame to check values
+        df = result.to_df()
         self.assertEqual(list(df["name"]), ["Charlie", "Diana"])
 
     def test_sample_method_exists(self):
@@ -272,17 +293,21 @@ class TestConvenienceMethods(unittest.TestCase):
     def test_sample_with_n(self):
         """Test sample() with specific n value."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").sample(n=2, random_state=42)
+        result = ds.select("*").sample(n=2, random_state=42)
 
-        self.assertEqual(len(df), 2)
+        # Should return DataStore
+        self.assertIsInstance(result, DataStore)
+        self.assertEqual(len(result), 2)
 
     def test_sample_with_frac(self):
         """Test sample() with fraction."""
         ds = DataStore.from_file(self.csv_file)
-        df = ds.select("*").sample(frac=0.5, random_state=42)
+        result = ds.select("*").sample(frac=0.5, random_state=42)
 
+        # Should return DataStore
+        self.assertIsInstance(result, DataStore)
         # 50% of 4 rows = 2 rows
-        self.assertEqual(len(df), 2)
+        self.assertEqual(len(result), 2)
 
     def test_shape_property(self):
         """Test shape property returns (rows, cols) tuple."""
@@ -335,7 +360,9 @@ class TestConvenienceMethods(unittest.TestCase):
 
         import pandas as pd
 
-        pd.testing.assert_frame_equal(stats1, stats2)
+        # stats2 is now a DataStore, convert to DataFrame to compare
+        self.assertIsInstance(stats2, DataStore)
+        pd.testing.assert_frame_equal(stats1, stats2.to_df())
 
     def test_head_same_as_to_df_head(self):
         """Test that head() produces the same result as limit().to_df()."""
@@ -346,7 +373,9 @@ class TestConvenienceMethods(unittest.TestCase):
 
         import pandas as pd
 
-        pd.testing.assert_frame_equal(df1, df2)
+        # df2 is now a DataStore, convert to DataFrame to compare
+        self.assertIsInstance(df2, DataStore)
+        pd.testing.assert_frame_equal(df1, df2.to_df())
 
 
 if __name__ == "__main__":

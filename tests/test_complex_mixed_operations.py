@@ -500,8 +500,8 @@ class TestComplexMixedScenarios(unittest.TestCase):
         )
         # fmt: on
 
-        # head() returns DataFrame directly
-        self.assertIsInstance(result, pd.DataFrame)
+        # head() returns DataStore now
+        self.assertIsInstance(result, DataStore)
         self.assertEqual(len(result), 5)
 
     # ========== Scenario 19: Math Operations Chain ==========
