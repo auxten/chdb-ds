@@ -448,14 +448,14 @@ class TestPandasCompatChaining(unittest.TestCase):
         ds = DataStore.from_file(self.csv_file)
 
         # Chain: select -> filter -> sort_values
-        # Note: head() returns DataFrame (for backward compatibility with existing API)
+        # Note: head() returns DataStore for method chaining
         result = ds.select('id', 'value', 'category').filter(ds.value > 100).sort_values('value', ascending=False)
 
         self.assertIsInstance(result, DataStore)
 
-        # Now apply head() which returns DataFrame
+        # Now apply head() which returns DataStore for chaining
         df_head = result.head(3)
-        self.assertIsInstance(df_head, pd.DataFrame)
+        self.assertIsInstance(df_head, DataStore)
 
     def test_pandas_methods_return_datastore(self):
         """Test that pandas methods return DataStore for chaining."""
