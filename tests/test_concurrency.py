@@ -58,7 +58,7 @@ class TestConcurrency(unittest.TestCase):
         self.assertTrue(ds3._df_var_name.startswith('__ds_df_'))
 
     def test_variable_name_preserved_in_chain(self):
-        """Test that variable name is updated appropriately in chains."""
+        """Test that variable name is preserved in lazy operation chains."""
         ds = DataStore.from_file(self.files[0])
         original_var_name = ds._df_var_name
 
@@ -66,13 +66,12 @@ class TestConcurrency(unittest.TestCase):
         ds1 = ds.select('*').filter(ds.value > 5)
         self.assertEqual(ds1._df_var_name, original_var_name)
 
-        # Pandas operation creates new variable name
+        # Lazy pandas operations also keep the variable name (they return self)
         ds2 = ds1.add_prefix('x_')
-        self.assertNotEqual(ds2._df_var_name, original_var_name)
+        self.assertEqual(ds2._df_var_name, original_var_name)
 
-        # Further pandas operations create new variable names
-        ds3 = ds2.fillna(0)
-        self.assertNotEqual(ds3._df_var_name, ds2._df_var_name)
+        # All lazy operations return the same DataStore
+        self.assertIs(ds1, ds2)
 
         # TODO: Re-enable this test when chDB concurrency issues are resolved
         # def test_concurrent_queries(self):
@@ -196,8 +195,8 @@ class TestVariableNameGeneration(unittest.TestCase):
             if os.path.exists(temp_dir):
                 os.rmdir(temp_dir)
 
-    def test_new_variable_name_on_materialization(self):
-        """Test that new variable names are generated on pandas operations."""
+    def test_lazy_operations_preserve_variable_name(self):
+        """Test that lazy pandas operations preserve variable name (return self)."""
         temp_dir = tempfile.mkdtemp()
         csv_file = os.path.join(temp_dir, "test.csv")
 
@@ -208,20 +207,13 @@ class TestVariableNameGeneration(unittest.TestCase):
             ds = DataStore.from_file(csv_file)
             var1 = ds._df_var_name
 
-            # Materialize with pandas operation
+            # Lazy pandas operation returns self
             ds2 = ds.add_prefix('x_')
             var2 = ds2._df_var_name
 
-            # Should have different variable names
-            self.assertNotEqual(var1, var2)
-
-            # Another pandas operation
-            ds3 = ds2.fillna(0)
-            var3 = ds3._df_var_name
-
-            # Should have yet another unique name
-            self.assertNotEqual(var2, var3)
-            self.assertNotEqual(var1, var3)
+            # Should have same variable name (lazy operation returns self)
+            self.assertEqual(var1, var2)
+            self.assertIs(ds, ds2)
 
         finally:
             if os.path.exists(csv_file):

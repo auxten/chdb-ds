@@ -21,60 +21,68 @@ class TestColumnAssignment:
 
     def test_column_assignment_constant(self):
         """Test assigning a constant value to a column."""
-        # Create a simple DataFrame
-        df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        # Use example dataset (lazy execution compatible)
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        # Create DataStore from DataFrame
-        ds = DataStore('chdb')
-        ds._cached_df = df.copy()
-        ds._materialized = True
-        ds._cache_invalidated = False
+        if not os.path.exists(dataset_path):
+            pytest.skip(f"Dataset not found: {dataset_path}")
 
-        # Assign constant value to new column (pandas-style)
-        ds['c'] = 10
+        # Load data with lazy execution
+        ds = DataStore.from_file(dataset_path)
+
+        # Assign constant value to new column (lazy)
+        ds['constant_col'] = 10
+
+        # Trigger execution
+        result_df = ds.to_df()
 
         # Verify the result
-        result_df = ds.to_df()
-        assert 'c' in result_df.columns
-        assert all(result_df['c'] == 10)
-        assert len(result_df) == 3
+        assert 'constant_col' in result_df.columns
+        assert all(result_df['constant_col'] == 10)
+        assert len(result_df) > 0  # Should have data
 
     def test_column_assignment_expression(self):
         """Test assigning an expression to a column."""
-        # Create a simple DataFrame
-        df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        # Use example dataset (lazy execution compatible)
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        # Create DataStore from DataFrame
-        ds = DataStore('chdb')
-        ds._cached_df = df.copy()
-        ds._materialized = True
-        ds._cache_invalidated = False
+        if not os.path.exists(dataset_path):
+            pytest.skip(f"Dataset not found: {dataset_path}")
 
-        # Assign expression to new column (pandas-style)
-        ds['c'] = ds['a'] * 2
+        # Load data with lazy execution
+        ds = DataStore.from_file(dataset_path)
+
+        # Assign expression to new column (lazy)
+        ds['age_doubled'] = ds['age'] * 2
+
+        # Trigger execution
+        result_df = ds.to_df()
 
         # Verify the result
-        result_df = ds.to_df()
-        assert 'c' in result_df.columns
-        pd.testing.assert_series_equal(result_df['c'], pd.Series([2, 4, 6], name='c'))
+        assert 'age_doubled' in result_df.columns
+        assert (result_df['age_doubled'] == result_df['age'] * 2).all()
 
     def test_column_update_in_place(self):
-        """Test updating an existing column (like pandas)."""
-        # Create a simple DataFrame
-        df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        """Test updating an existing column (lazy execution)."""
+        # Use example dataset
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        # Create DataStore from DataFrame
-        ds = DataStore('chdb')
-        ds._cached_df = df.copy()
-        ds._materialized = True
-        ds._cache_invalidated = False
+        if not os.path.exists(dataset_path):
+            pytest.skip(f"Dataset not found: {dataset_path}")
 
-        # Update existing column (pandas-style: nat["n_nationkey"] = nat["n_nationkey"] - 1)
-        ds['a'] = ds['a'] - 1
+        # Load data with lazy execution
+        ds = DataStore.from_file(dataset_path)
 
-        # Verify the result
+        # Update existing column (lazy: nat["n_nationkey"] = nat["n_nationkey"] - 1)
+        ds['age'] = ds['age'] - 1
+
+        # Trigger execution
         result_df = ds.to_df()
-        pd.testing.assert_series_equal(result_df['a'], pd.Series([0, 1, 2], name='a'))
+
+        # Verify: age should be decreased by 1 from original
+        # Load original data to compare
+        original_df = pd.read_csv(dataset_path)
+        assert (result_df['age'] == original_df['age'] - 1).all()
 
     def test_column_assignment_from_file(self):
         """Test column assignment with data loaded from file."""
@@ -86,19 +94,18 @@ class TestColumnAssignment:
 
         # Load data
         ds = DataStore.from_file(dataset_path)
-        ds = ds.connect()
 
-        # Get original data for comparison
-        original_age = ds['age'].copy()
-
-        # Assign new column (pandas-style)
+        # Assign new column (lazy execution)
         ds['age_plus_10'] = ds['age'] + 10
 
-        # Verify the result
+        # Trigger execution
         result_df = ds.to_df()
+
+        # Verify the result
         assert 'age_plus_10' in result_df.columns
         # Verify values are correct
-        assert all(result_df['age_plus_10'] == original_age + 10)
+        original_df = pd.read_csv(dataset_path)
+        assert (result_df['age_plus_10'] == original_df['age'] + 10).all()
 
     def test_column_assignment_series_compatibility(self):
         """Test that column assignment works with pandas Series."""
@@ -145,26 +152,31 @@ class TestColumnAssignment:
         assert list(result_df['c']) == new_values
 
     def test_column_assignment_multiple_operations(self):
-        """Test chaining multiple column assignments (pandas-style)."""
-        # Create a simple DataFrame
-        df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        """Test chaining multiple column assignments (lazy execution)."""
+        # Use example dataset
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        # Create DataStore from DataFrame
-        ds = DataStore('chdb')
-        ds._cached_df = df.copy()
-        ds._materialized = True
-        ds._cache_invalidated = False
+        if not os.path.exists(dataset_path):
+            pytest.skip(f"Dataset not found: {dataset_path}")
 
-        # Chain multiple assignments (pandas-style)
-        ds['c'] = ds['a'] + ds['b']
-        ds['d'] = ds['c'] * 2
+        # Load data
+        ds = DataStore.from_file(dataset_path)
+
+        # Chain multiple assignments (lazy)
+        ds['age_plus_10'] = ds['age'] + 10
+        ds['age_doubled'] = ds['age_plus_10'] * 2
+
+        # Trigger execution
+        result_df = ds.to_df()
 
         # Verify the result
-        result_df = ds.to_df()
-        assert 'c' in result_df.columns
-        assert 'd' in result_df.columns
-        pd.testing.assert_series_equal(result_df['c'], pd.Series([5, 7, 9], name='c'))
-        pd.testing.assert_series_equal(result_df['d'], pd.Series([10, 14, 18], name='d'))
+        assert 'age_plus_10' in result_df.columns
+        assert 'age_doubled' in result_df.columns
+
+        # Verify calculations
+        original_df = pd.read_csv(dataset_path)
+        assert (result_df['age_plus_10'] == original_df['age'] + 10).all()
+        assert (result_df['age_doubled'] == (original_df['age'] + 10) * 2).all()
 
 
 if __name__ == '__main__':

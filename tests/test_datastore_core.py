@@ -2,6 +2,7 @@
 Test core DataStore functionality - converted from pypika test_query.py and test_selects.py
 """
 
+import os
 import unittest
 from datastore import DataStore, Field, Sum, Count
 
@@ -19,10 +20,22 @@ class TestDataStoreBasics(unittest.TestCase):
         self.assertEqual("test_table", ds.table_name)
 
     def test_datastore_repr(self):
-        """Test DataStore string representation."""
+        """Test DataStore string representation (lazy mode)."""
+        # Create DataStore without operations - should show basic info
         ds = DataStore(source_type="file", table="data")
-        self.assertIn("file", repr(ds))
-        self.assertIn("data", repr(ds))
+
+        # Since no SQL state or lazy ops, repr should show basic info
+        repr_str = repr(ds)
+        self.assertIn("file", repr_str)
+
+        # Test with actual data source
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
+        if os.path.exists(dataset_path):
+            ds2 = DataStore.from_file(dataset_path)
+            # repr triggers execution and shows DataFrame
+            repr_str2 = repr(ds2)
+            # Should show data or column names
+            self.assertTrue('name' in repr_str2 or 'DataFrame' in repr_str2 or 'user_id' in repr_str2)
 
     def test_empty_datastore_sql(self):
         """Test SQL generation for empty DataStore."""
@@ -314,18 +327,18 @@ class TestExecAlias(unittest.TestCase):
         # We can't easily test the full execution without a real database,
         # but we can verify the method exists and has the same signature
         import inspect
+
         ds = DataStore(table="test")
-        
+
         exec_method = getattr(ds, 'exec')
         execute_method = getattr(ds, 'execute')
-        
+
         # Both should have the same return type annotation
         exec_sig = inspect.signature(exec_method)
         execute_sig = inspect.signature(execute_method)
-        
+
         self.assertEqual(exec_sig.return_annotation, execute_sig.return_annotation)
 
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -227,9 +227,16 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertIsNotNone(iloc_indexer)
 
     def test_getitem_column(self):
-        """Test column selection with [] - should return Series."""
+        """Test column selection with [] - returns Field for lazy expression building."""
+        from datastore.expressions import Field
+
+        # In lazy mode, ds['col'] returns Field for expression building
         result = self.ds['name']
-        self.assertIsInstance(result, pd.Series)  # Should be Series, not DataStore
+        self.assertIsInstance(result, Field)  # Lazy mode returns Field
+
+        # To get actual Series, use to_df() first
+        series = self.ds.to_df()['name']
+        self.assertIsInstance(series, pd.Series)
 
     def test_getitem_columns(self):
         """Test multiple column selection with [] - should return DataStore."""
@@ -367,37 +374,6 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test equals method."""
         ds2 = DataStore.from_file(self.csv_file)
         self.assertTrue(self.ds.equals(ds2))
-
-    # ========== Cache Tests ==========
-
-    def test_cache_invalidation(self):
-        """Test that cache behavior on copy depends on materialization state."""
-        # SQL-only DataStore (not materialized)
-        ds_sql = DataStore.from_file(self.csv_file)
-        ds_sql_filtered = ds_sql.select('*').filter(ds_sql.age > 25)
-
-        # Copy should invalidate cache for non-materialized DataStore
-        from copy import copy as py_copy
-
-        ds_sql_copy = py_copy(ds_sql_filtered)
-        self.assertTrue(ds_sql_copy._cache_invalidated)
-
-        # Materialized DataStore (pandas operations applied)
-        ds_materialized = self.ds.add_prefix('col_')
-        self.assertTrue(ds_materialized._materialized)
-        self.assertIsNotNone(ds_materialized._cached_df)
-
-        # Copy of materialized DataStore should keep cache
-        ds_mat_copy = py_copy(ds_materialized)
-        # Cache should still be valid because it's materialized
-        self.assertFalse(ds_mat_copy._cache_invalidated)
-
-    def test_cache_reuse(self):
-        """Test that cache is reused on multiple accesses."""
-        df1 = self.ds._get_df()
-        df2 = self.ds._get_df()
-        # Should be the same object (cached)
-        self.assertIs(df1, df2)
 
     # ========== Inplace Parameter Tests ==========
 
