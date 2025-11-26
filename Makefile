@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format format-check lint
+.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format format-check lint check-charset
 
 help:
 	@echo "DataStore Development Commands:"
@@ -13,8 +13,9 @@ help:
 	@echo "  update-version  Update version from git tag (or pass VERSION=x.y.z)"
 	@echo "  upload-test     Upload to TestPyPI"
 	@echo "  upload          Upload to PyPI (production)"
-	@echo "  format          Format code with black"
+	@echo "  format          Format code with black (includes charset check)"
 	@echo "  format-check    Check code formatting without modifying files"
+	@echo "  check-charset   Check for non-ASCII/non-emoji characters in .md and .py files"
 	@echo "  lint            Run linting checks"
 	@echo ""
 
@@ -68,7 +69,10 @@ upload: build
 	pip install twine
 	python -m twine upload dist/*
 
-format:
+check-charset:
+	@python3 scripts/check_charset.py
+
+format: check-charset
 	black datastore
 
 format-check:
