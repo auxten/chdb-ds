@@ -16,7 +16,7 @@ class SelectTests(unittest.TestCase):
         """Create test table and data"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "String", "bar": "String", "baz": "UInt32"})
+        self.ds.create_table({"foo": "String", "bar": "String", "baz": "UInt32"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": "a", "bar": "x", "baz": 1},
@@ -204,7 +204,7 @@ class WhereTests(unittest.TestCase):
         """Create test table"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "UInt32", "bar": "UInt32", "baz": "UInt32", "name": "String"})
+        self.ds.create_table({"foo": "UInt32", "bar": "UInt32", "baz": "UInt32", "name": "String"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": 1, "bar": 10, "baz": 100, "name": "Alice"},
@@ -344,7 +344,7 @@ class GroupByTests(unittest.TestCase):
         """Create test table"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "String", "bar": "UInt32"})
+        self.ds.create_table({"foo": "String", "bar": "UInt32"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": "A", "bar": 10},
@@ -432,7 +432,7 @@ class HavingTests(unittest.TestCase):
         """Create test table"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "String", "bar": "UInt32"})
+        self.ds.create_table({"foo": "String", "bar": "UInt32"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": "A", "bar": 10},
@@ -477,7 +477,7 @@ class OrderByTests(unittest.TestCase):
         """Create test table"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "String", "bar": "UInt32"})
+        self.ds.create_table({"foo": "String", "bar": "UInt32"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": "c", "bar": 3},
@@ -540,7 +540,7 @@ class AliasTests(unittest.TestCase):
         """Create test table"""
         self.ds = DataStore(table="abc")
         self.ds.connect()
-        self.ds.create_table({"foo": "UInt32", "bar": "UInt32", "fiz": "String"})
+        self.ds.create_table({"foo": "UInt32", "bar": "UInt32", "fiz": "String"}, drop_if_exists=True)
         self.ds.insert(
             [
                 {"foo": 1, "bar": 2, "fiz": "test"},

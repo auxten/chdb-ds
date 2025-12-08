@@ -139,7 +139,7 @@ class TestSubqueryExecution(unittest.TestCase):
         # Create users table
         self.ds_users = DataStore(table="test_subq_users")
         self.ds_users.connect()
-        self.ds_users.create_table({"id": "UInt64", "name": "String", "country": "String", "active": "UInt8"})
+        self.ds_users.create_table({"id": "UInt64", "name": "String", "country": "String", "active": "UInt8"}, drop_if_exists=True)
         self.ds_users.insert(
             [
                 {"id": 1, "name": "Alice", "country": "USA", "active": 1},
@@ -152,7 +152,7 @@ class TestSubqueryExecution(unittest.TestCase):
         # Create orders table
         self.ds_orders = DataStore(table="test_subq_orders")
         self.ds_orders.connect()
-        self.ds_orders.create_table({"order_id": "UInt64", "user_id": "UInt64", "amount": "Float64"})
+        self.ds_orders.create_table({"order_id": "UInt64", "user_id": "UInt64", "amount": "Float64"}, drop_if_exists=True)
         self.ds_orders.insert(
             [
                 {"order_id": 101, "user_id": 1, "amount": 100.0},
@@ -216,7 +216,7 @@ class TestSubqueryExecution(unittest.TestCase):
         # Create archive table
         ds_archive = DataStore(table="test_subq_orders_archive")
         ds_archive.connect()
-        ds_archive.create_table({"order_id": "UInt64", "user_id": "UInt64", "amount": "Float64"})
+        ds_archive.create_table({"order_id": "UInt64", "user_id": "UInt64", "amount": "Float64"}, drop_if_exists=True)
 
         # Copy high-value orders (>= 200)
         subquery = self.ds_orders.select('order_id', 'user_id', 'amount').filter(self.ds_orders.amount >= 200)
@@ -239,7 +239,7 @@ class TestSubqueryExecution(unittest.TestCase):
         # Create premium countries table
         ds_premium = DataStore(table="test_subq_premium")
         ds_premium.connect()
-        ds_premium.create_table({"country_code": "String"})
+        ds_premium.create_table({"country_code": "String"}, drop_if_exists=True)
         ds_premium.insert([{"country_code": "USA"}, {"country_code": "Canada"}])
 
         # Find orders from users in premium countries
