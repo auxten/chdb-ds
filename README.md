@@ -361,6 +361,21 @@ result = (mysql_data
     .select("name", "product", "revenue")
     .filter(csv_data.date >= '2024-01-01')
     .execute())
+
+# Simplified join syntax with USING (when column names match)
+users = DataStore.from_file("users.csv")
+orders = DataStore.from_file("orders.csv")
+products = DataStore.from_file("products.csv")
+
+# Chain multiple joins easily - no table prefix needed!
+result = (users
+    .join(orders, on="user_id")           # USING (user_id)
+    .join(products, on="product_id")      # USING (product_id)
+    .select("name", "amount", "product_name")
+    .to_df())
+
+# Also supports multiple columns
+ds.join(other, on=["user_id", "country"])  # USING (user_id, country)
 ```
 
 ### Format Settings
