@@ -46,8 +46,8 @@ class TestExplainMethod(unittest.TestCase):
 
         output = result.explain()
         self.assertIn("Operations", output)
-        self.assertIn("SQL SELECT", output)
-        self.assertIn("SQL WHERE", output)
+        self.assertIn("SELECT", output)
+        self.assertIn("FILTER", output)
 
     def test_explain_mixed_operations(self):
         """Test explain() with mixed SQL and Pandas operations."""
@@ -127,12 +127,12 @@ class TestExplainMethod(unittest.TestCase):
         output = result.explain()
 
         # Operations should appear in order
-        select_idx = output.find("SQL SELECT")
-        where_idx = output.find("SQL WHERE")
+        select_idx = output.find("SELECT:")
+        filter_idx = output.find("FILTER:")
         prefix_idx = output.find("Add prefix")
 
-        self.assertLess(select_idx, where_idx)
-        self.assertLess(where_idx, prefix_idx)
+        self.assertLess(select_idx, filter_idx)
+        self.assertLess(filter_idx, prefix_idx)
 
     def test_explain_with_no_operations(self):
         """Test explain() with a DataStore that has no operations."""
@@ -357,16 +357,16 @@ class TestExplainMethod(unittest.TestCase):
         output = result.explain()
 
         # Find positions of operations
-        select_pos = output.find("SQL SELECT")
-        where1_pos = output.find("SQL WHERE")
+        select_pos = output.find("SELECT:")
+        filter1_pos = output.find("FILTER:")
         doubled_pos = output.find("doubled")
         tripled_pos = output.find("tripled")
-        order_pos = output.find("SQL ORDER BY")
-        limit_pos = output.find("SQL LIMIT")
+        order_pos = output.find("ORDER BY:")
+        limit_pos = output.find("LIMIT:")
 
-        # Verify order: SELECT < WHERE < doubled < WHERE < tripled < ORDER BY < LIMIT
-        self.assertLess(select_pos, where1_pos, "SELECT should come before WHERE")
-        self.assertLess(where1_pos, doubled_pos, "WHERE should come before doubled assignment")
+        # Verify order: SELECT < FILTER < doubled < FILTER < tripled < ORDER BY < LIMIT
+        self.assertLess(select_pos, filter1_pos, "SELECT should come before FILTER")
+        self.assertLess(filter1_pos, doubled_pos, "FILTER should come before doubled assignment")
         self.assertLess(doubled_pos, tripled_pos, "doubled should come before tripled")
         self.assertLess(tripled_pos, order_pos, "tripled should come before ORDER BY")
         self.assertLess(order_pos, limit_pos, "ORDER BY should come before LIMIT")

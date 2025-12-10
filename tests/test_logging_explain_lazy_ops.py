@@ -23,17 +23,17 @@ def test_explain_reports_lazy_ops_in_order():
 
     output = users.explain()
 
-    assert "SQL SELECT" in output
-    assert "SQL WHERE" in output
+    assert "SELECT:" in output
+    assert "FILTER:" in output
     assert "Assign column 'age_plus_1'" in output
     assert "Select columns: name, age_plus_1" in output
 
-    select_idx = output.index("SQL SELECT")
-    where_idx = output.index("SQL WHERE")
+    select_idx = output.index("SELECT:")
+    filter_idx = output.index("FILTER:")
     assign_idx = output.index("Assign column 'age_plus_1'")
     selection_idx = output.index("Select columns: name, age_plus_1")
 
-    assert select_idx < where_idx < assign_idx < selection_idx
+    assert select_idx < filter_idx < assign_idx < selection_idx
 
 
 def test_materialization_logs_follow_lazy_ops(caplog):
@@ -92,8 +92,9 @@ def test_materialization_logs_mixed_sql_and_pandas(caplog):
         assert "Executing initial SQL query" in log_text
         assert "[LazyOp] Executing ColumnAssignment" in log_text
         assert "[LazyOp] Executing AddPrefix" in log_text
-        assert "SQL ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text
-        assert "SQL LIMIT: 3" in log_text or "LIMIT 3" in log_text
+        # ORDER BY and LIMIT are now logged with [Pandas] prefix since they execute on DataFrame
+        assert "ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text or "df.sort_values" in log_text
+        assert "LIMIT: 3" in log_text or "LIMIT 3" in log_text or "df.head(3)" in log_text
         assert "Materialization complete" in log_text
     finally:
         config.set_log_format(old_format)
@@ -169,5 +170,5 @@ def test_explain_includes_join_and_pandas_ops():
     output = ds.explain()
 
     assert "JOIN" in output
-    assert "SQL WHERE" in output
+    assert "FILTER:" in output
     assert "Add prefix" in output
