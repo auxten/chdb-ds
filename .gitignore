@@ -3,6 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+*.png
+*.svg
+*.pdf
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.webp
+
 # C extensions
 *.so
 
