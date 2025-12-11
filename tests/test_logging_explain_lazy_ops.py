@@ -24,12 +24,12 @@ def test_explain_reports_lazy_ops_in_order():
     output = users.explain()
 
     assert "SELECT:" in output
-    assert "FILTER:" in output
+    assert "WHERE:" in output
     assert "Assign column 'age_plus_1'" in output
     assert "Select columns: name, age_plus_1" in output
 
     select_idx = output.index("SELECT:")
-    filter_idx = output.index("FILTER:")
+    filter_idx = output.index("WHERE:")
     assign_idx = output.index("Assign column 'age_plus_1'")
     selection_idx = output.index("Select columns: name, age_plus_1")
 
@@ -170,5 +170,5 @@ def test_explain_includes_join_and_pandas_ops():
     output = ds.explain()
 
     assert "JOIN" in output
-    assert "FILTER:" in output
+    assert "WHERE:" in output
     assert "Add prefix" in output

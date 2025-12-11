@@ -47,7 +47,7 @@ class TestExplainMethod(unittest.TestCase):
         output = result.explain()
         self.assertIn("Operations", output)
         self.assertIn("SELECT", output)
-        self.assertIn("FILTER", output)
+        self.assertIn("WHERE", output)
 
     def test_explain_mixed_operations(self):
         """Test explain() with mixed SQL and Pandas operations."""
@@ -128,7 +128,7 @@ class TestExplainMethod(unittest.TestCase):
 
         # Operations should appear in order
         select_idx = output.find("SELECT:")
-        filter_idx = output.find("FILTER:")
+        filter_idx = output.find("WHERE:")
         prefix_idx = output.find("Add prefix")
 
         self.assertLess(select_idx, filter_idx)
@@ -358,15 +358,15 @@ class TestExplainMethod(unittest.TestCase):
 
         # Find positions of operations
         select_pos = output.find("SELECT:")
-        filter1_pos = output.find("FILTER:")
+        filter1_pos = output.find("WHERE:")
         doubled_pos = output.find("doubled")
         tripled_pos = output.find("tripled")
         order_pos = output.find("ORDER BY:")
         limit_pos = output.find("LIMIT:")
 
         # Verify order: SELECT < FILTER < doubled < FILTER < tripled < ORDER BY < LIMIT
-        self.assertLess(select_pos, filter1_pos, "SELECT should come before FILTER")
-        self.assertLess(filter1_pos, doubled_pos, "FILTER should come before doubled assignment")
+        self.assertLess(select_pos, filter1_pos, "SELECT should come before WHERE")
+        self.assertLess(filter1_pos, doubled_pos, "WHERE should come before doubled assignment")
         self.assertLess(doubled_pos, tripled_pos, "doubled should come before tripled")
         self.assertLess(tripled_pos, order_pos, "tripled should come before ORDER BY")
         self.assertLess(order_pos, limit_pos, "ORDER BY should come before LIMIT")
