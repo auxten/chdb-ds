@@ -5,6 +5,10 @@
 pytest>=7.0.0
 pytest-cov>=4.0.0
 
+# Benchmarking
+duckdb>=0.9.0
+matplotlib>=3.7.0
+
 # Code quality
 black>=23.0.0
 flake8>=6.0.0
