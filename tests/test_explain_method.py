@@ -357,19 +357,26 @@ class TestExplainMethod(unittest.TestCase):
         output = result.explain()
 
         # Find positions of operations
+        # Note: SQL operations use SQL terminology, Pandas operations use pandas terminology
         select_pos = output.find("SELECT:")
-        filter1_pos = output.find("WHERE:")
+        filter1_pos = output.find("WHERE:")  # First filter is SQL
         doubled_pos = output.find("doubled")
         tripled_pos = output.find("tripled")
-        order_pos = output.find("ORDER BY:")
-        limit_pos = output.find("LIMIT:")
+        # ORDER BY in Pandas phase uses "sort_values" terminology
+        order_pos = output.find("sort_values:")
+        if order_pos == -1:
+            order_pos = output.find("ORDER BY:")  # Fallback for SQL phase
+        # LIMIT in Pandas phase uses "head" terminology
+        limit_pos = output.find("head:")
+        if limit_pos == -1:
+            limit_pos = output.find("LIMIT:")  # Fallback for SQL phase
 
         # Verify order: SELECT < FILTER < doubled < FILTER < tripled < ORDER BY < LIMIT
         self.assertLess(select_pos, filter1_pos, "SELECT should come before WHERE")
         self.assertLess(filter1_pos, doubled_pos, "WHERE should come before doubled assignment")
         self.assertLess(doubled_pos, tripled_pos, "doubled should come before tripled")
-        self.assertLess(tripled_pos, order_pos, "tripled should come before ORDER BY")
-        self.assertLess(order_pos, limit_pos, "ORDER BY should come before LIMIT")
+        self.assertLess(tripled_pos, order_pos, "tripled should come before sort")
+        self.assertLess(order_pos, limit_pos, "sort should come before limit")
 
 
 if __name__ == '__main__':

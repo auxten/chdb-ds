@@ -153,6 +153,12 @@ class JoinExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create test tables"""
+        cls.session = chdb.session.Session()
+        
+        # Drop tables first to ensure clean state
+        cls.session.query("DROP TABLE IF EXISTS customers")
+        cls.session.query("DROP TABLE IF EXISTS orders")
+        
         cls.init_sql = """
         CREATE TABLE customers (
             id UInt32,
@@ -182,13 +188,17 @@ class JoinExecutionTests(unittest.TestCase):
             (106, 2, 125.00, 'completed');
         """
 
-        cls.session = chdb.session.Session()
         cls.session.query(cls.init_sql)
 
     @classmethod
     def tearDownClass(cls):
-        """Clean up session"""
+        """Clean up session and drop tables"""
         if hasattr(cls, 'session'):
+            try:
+                cls.session.query("DROP TABLE IF EXISTS customers")
+                cls.session.query("DROP TABLE IF EXISTS orders")
+            except Exception:
+                pass
             cls.session.cleanup()
 
     def _execute(self, sql):
@@ -265,6 +275,13 @@ class MultipleJoinExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create test tables for complex joins"""
+        cls.session = chdb.session.Session()
+        
+        # Drop tables first to ensure clean state
+        cls.session.query("DROP TABLE IF EXISTS users")
+        cls.session.query("DROP TABLE IF EXISTS posts")
+        cls.session.query("DROP TABLE IF EXISTS comments")
+        
         cls.init_sql = """
         CREATE TABLE users (
             user_id UInt32,
@@ -303,13 +320,18 @@ class MultipleJoinExecutionTests(unittest.TestCase):
             (1004, 103, 1, 'Cool');
         """
 
-        cls.session = chdb.session.Session()
         cls.session.query(cls.init_sql)
 
     @classmethod
     def tearDownClass(cls):
-        """Clean up session"""
+        """Clean up session and drop tables"""
         if hasattr(cls, 'session'):
+            try:
+                cls.session.query("DROP TABLE IF EXISTS users")
+                cls.session.query("DROP TABLE IF EXISTS posts")
+                cls.session.query("DROP TABLE IF EXISTS comments")
+            except Exception:
+                pass
             cls.session.cleanup()
 
     def _execute(self, sql):

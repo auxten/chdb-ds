@@ -58,10 +58,10 @@ def test_materialization_logs_follow_lazy_ops(caplog):
         assert "Starting materialization" in log_text
         assert "Lazy operations chain (3 operations)" in log_text
         assert "Executing initial SQL query" in log_text
-        assert "[LazyOp] Executing ColumnAssignment" in log_text
-        assert "Executing SQL:" in log_text
+        assert "[Pandas] Executing ColumnAssignment" in log_text
+        assert "[chDB]" in log_text  # Unified logging prefix
         assert "SELECT" in log_text
-        assert "Query returned" in log_text
+        assert "[chDB] Result:" in log_text  # Unified result logging
     finally:
         config.set_log_format(old_format)
         config.set_log_level(old_level)
@@ -90,8 +90,8 @@ def test_materialization_logs_mixed_sql_and_pandas(caplog):
         log_text = caplog.text
         assert "Starting materialization" in log_text
         assert "Executing initial SQL query" in log_text
-        assert "[LazyOp] Executing ColumnAssignment" in log_text
-        assert "[LazyOp] Executing AddPrefix" in log_text
+        assert "[Pandas] Executing ColumnAssignment" in log_text
+        assert "[Pandas] Executing AddPrefix" in log_text
         # ORDER BY and LIMIT are now logged with [Pandas] prefix since they execute on DataFrame
         assert "ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text or "df.sort_values" in log_text
         assert "LIMIT: 3" in log_text or "LIMIT 3" in log_text or "df.head(3)" in log_text
@@ -150,9 +150,9 @@ def test_materialization_logs_sql_join_and_pandas(caplog):
 
         log_text = caplog.text
         assert "JOIN" in log_text
-        assert "Executing SQL" in log_text
-        assert "[LazyOp] Executing ColumnAssignment" in log_text
-        assert "[LazyOp] Executing AddSuffix" in log_text
+        assert "[chDB]" in log_text  # Unified logging prefix
+        assert "[Pandas] Executing ColumnAssignment" in log_text
+        assert "[Pandas] Executing AddSuffix" in log_text
         assert "Materialization complete" in log_text
     finally:
         config.set_log_format(old_format)

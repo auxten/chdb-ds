@@ -169,9 +169,12 @@ class TestDynamicFieldAccess(unittest.TestCase):
 
     def test_dynamic_field(self):
         """Test accessing field via ds.field_name."""
+        from datastore import ColumnExpr
         field = self.ds.age
-        self.assertIsInstance(field, Field)
-        self.assertEqual("age", field.name)
+        # ds.field_name now returns ColumnExpr that wraps a Field
+        self.assertIsInstance(field, ColumnExpr)
+        self.assertIsInstance(field._expr, Field)
+        self.assertEqual("age", field._expr.name)
 
     def test_dynamic_field_in_condition(self):
         """Test using dynamic field in condition."""

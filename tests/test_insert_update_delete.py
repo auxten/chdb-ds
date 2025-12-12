@@ -167,7 +167,12 @@ class TestInsertExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS test_insert_users")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_insert_with_values_execution(self):
@@ -273,7 +278,12 @@ class TestUpdateExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS test_update_users")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_update_single_field_execution(self):
@@ -354,7 +364,12 @@ class TestDeleteExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS test_delete_users")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_delete_single_row_execution(self):

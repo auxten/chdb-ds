@@ -31,7 +31,13 @@ class TestChdbBasics(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up"""
+        """Clean up - drop table to ensure test isolation"""
+        try:
+            # Drop table before closing to ensure clean state
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS users")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_select_all(self):
@@ -197,7 +203,12 @@ class TestChdbComplexQueries(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up"""
+        """Clean up - drop table to ensure test isolation"""
+        try:
+            if self.orders_ds._connection and self.orders_ds._connection._conn:
+                self.orders_ds._connection._conn.query("DROP TABLE IF EXISTS orders")
+        except Exception:
+            pass
         self.orders_ds.close()
 
     def test_aggregation_sum(self):

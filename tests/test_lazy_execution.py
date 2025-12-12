@@ -81,13 +81,15 @@ def test_getitem_returns_field():
     """Test that ds['col'] returns Field for expression building."""
     users = ds.from_file(get_dataset_path('users.csv'))
 
-    # This should return a Field, not execute
+    # This should return a ColumnExpr that wraps a Field
     field = users["age"]
 
     from datastore.expressions import Field
+    from datastore.column_expr import ColumnExpr
 
-    assert isinstance(field, Field)
-    assert field.name == "age"
+    assert isinstance(field, ColumnExpr)
+    assert isinstance(field._expr, Field)
+    assert field._expr.name == "age"
 
 
 def test_expression_building():

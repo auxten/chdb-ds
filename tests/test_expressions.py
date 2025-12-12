@@ -177,7 +177,12 @@ class TestArithmeticExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS numbers")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_addition_execution(self):
@@ -277,7 +282,12 @@ class TestComparisonExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS data")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_equal_comparison_execution(self):
@@ -373,7 +383,12 @@ class TestComplexExpressionExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS sales")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_calculated_total_execution(self):
@@ -438,7 +453,12 @@ class TestFieldAliasExecution(unittest.TestCase):
         )
 
     def tearDown(self):
-        """Clean up."""
+        """Clean up - drop table to ensure test isolation."""
+        try:
+            if self.ds._connection and self.ds._connection._conn:
+                self.ds._connection._conn.query("DROP TABLE IF EXISTS users")
+        except Exception:
+            pass
         self.ds.close()
 
     def test_field_alias_in_result(self):

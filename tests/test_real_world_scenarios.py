@@ -152,6 +152,12 @@ class ECommerceExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create test tables with realistic data"""
+        cls.session = chdb.session.Session()
+        
+        # Drop tables first to ensure clean state
+        cls.session.query("DROP TABLE IF EXISTS products")
+        cls.session.query("DROP TABLE IF EXISTS orders")
+        
         cls.init_sql = """
         CREATE TABLE products (
             id UInt32,
@@ -191,13 +197,17 @@ class ECommerceExecutionTests(unittest.TestCase):
             (12, 'Books', 59.99, 'completed');
         """
 
-        cls.session = chdb.session.Session()
         cls.session.query(cls.init_sql)
 
     @classmethod
     def tearDownClass(cls):
-        """Clean up session"""
+        """Clean up session and drop tables"""
         if hasattr(cls, 'session'):
+            try:
+                cls.session.query("DROP TABLE IF EXISTS products")
+                cls.session.query("DROP TABLE IF EXISTS orders")
+            except Exception:
+                pass
             cls.session.cleanup()
 
     def _execute(self, sql):
@@ -279,6 +289,11 @@ class DataAnalysisExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create analysis test data"""
+        cls.session = chdb.session.Session()
+        
+        # Drop tables first to ensure clean state
+        cls.session.query("DROP TABLE IF EXISTS metrics")
+        
         cls.init_sql = """
         CREATE TABLE metrics (
             id UInt32,
@@ -299,13 +314,16 @@ class DataAnalysisExecutionTests(unittest.TestCase):
             (9, 'disk_usage', 61.7, '2023-01-03');
         """
 
-        cls.session = chdb.session.Session()
         cls.session.query(cls.init_sql)
 
     @classmethod
     def tearDownClass(cls):
-        """Clean up session"""
+        """Clean up session and drop tables"""
         if hasattr(cls, 'session'):
+            try:
+                cls.session.query("DROP TABLE IF EXISTS metrics")
+            except Exception:
+                pass
             cls.session.cleanup()
 
     def _execute(self, sql):
@@ -384,6 +402,11 @@ class ComplexQueryExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create user activity data"""
+        cls.session = chdb.session.Session()
+        
+        # Drop tables first to ensure clean state
+        cls.session.query("DROP TABLE IF EXISTS user_activity")
+        
         cls.init_sql = """
         CREATE TABLE user_activity (
             user_id UInt32,
@@ -404,13 +427,16 @@ class ComplexQueryExecutionTests(unittest.TestCase):
             (6, 'frank', 'frank@example.com', 31, 'LA', 78, '2023-12-08');
         """
 
-        cls.session = chdb.session.Session()
         cls.session.query(cls.init_sql)
 
     @classmethod
     def tearDownClass(cls):
-        """Clean up session"""
+        """Clean up session and drop tables"""
         if hasattr(cls, 'session'):
+            try:
+                cls.session.query("DROP TABLE IF EXISTS user_activity")
+            except Exception:
+                pass
             cls.session.cleanup()
 
     def _execute(self, sql):
