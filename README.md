@@ -144,6 +144,44 @@ ds.groupby("category").select(
 )
 ```
 
+### ClickHouse SQL Functions
+
+DataStore provides 100+ ClickHouse SQL functions through Pandas-like accessors:
+
+```python
+# String functions via .str accessor
+ds['name'].str.upper()              # upper(name)
+ds['name'].str.length()             # length(name)
+ds['text'].str.replace('old', 'new') # replace(text, 'old', 'new')
+ds['email'].str.contains('@')       # position(email, '@') > 0
+
+# DateTime functions via .dt accessor
+ds['date'].dt.year                  # toYear(date)
+ds['date'].dt.month                 # toMonth(date)
+ds['date'].dt.add_days(7)           # addDays(date, 7)
+ds['start'].dt.days_diff(ds['end']) # dateDiff('day', start, end)
+
+# Math functions as expression methods
+ds['value'].abs()                   # abs(value)
+ds['price'].round(2)                # round(price, 2)
+ds['value'].sqrt()                  # sqrt(value)
+
+# Type conversion
+ds['value'].cast('Float64')         # CAST(value AS Float64)
+ds['id'].to_string()                # toString(id)
+
+# Aggregate functions
+ds['amount'].sum()                  # sum(amount)
+ds['price'].avg()                   # avg(price)
+ds['user_id'].count_distinct()      # uniq(user_id)
+
+# Column assignment with functions
+ds['upper_name'] = ds['name'].str.upper()
+ds['age_group'] = ds['age'] // 10 * 10
+```
+
+**See [Function Reference](docs/FUNCTIONS.md) for the complete list of 100+ functions.**
+
 ### Working with Results
 
 DataStore provides convenient methods to get results as pandas DataFrames or dictionaries:
@@ -495,8 +533,9 @@ python -m unittest datastore.tests.test_datastore_core
 - [x] ClickHouse table functions and formats support
 - [x] DataFrame operations (drop, assign, fillna, etc.) see [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)
 - [x] Query executors
+- [x] ClickHouse SQL functions support (100+ functions via `.str`, `.dt` accessors) see [Function Reference](docs/FUNCTIONS.md)
+- [x] Hybrid execution engine (configurable chDB/Pandas execution)
 - [ ] Function args completion
-- [ ] ClickHouse functions support
 - [ ] Update and Save back data
 - [ ] Chart support
 - [ ] More data exploration functions, faster describe()
@@ -512,6 +551,11 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] PyTorch DataLoader integration
 - [ ] Python native UDFs support
 - [ ] Hybrid Execution (Local and Remote)
+
+## Documentation
+
+- **[Function Reference](docs/FUNCTIONS.md)** - Complete list of 100+ ClickHouse SQL functions with examples
+- **[Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)** - 180+ pandas DataFrame methods and properties
 
 ## Examples
 

@@ -227,14 +227,19 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertIsNotNone(iloc_indexer)
 
     def test_getitem_column(self):
-        """Test column selection with [] - returns Field for lazy expression building."""
+        """Test column selection with [] - returns ColumnExpr that displays like Series."""
         from datastore.expressions import Field
+        from datastore.column_expr import ColumnExpr
 
-        # In lazy mode, ds['col'] returns Field for expression building
+        # ds['col'] returns ColumnExpr that wraps a Field
         result = self.ds['name']
-        self.assertIsInstance(result, Field)  # Lazy mode returns Field
+        self.assertIsInstance(result, ColumnExpr)  # Returns ColumnExpr
+        self.assertIsInstance(result._expr, Field)  # Wrapping a Field
 
-        # To get actual Series, use to_df() first
+        # ColumnExpr materializes and displays actual values like Series
+        self.assertIsInstance(result._materialize(), pd.Series)
+
+        # To get actual Series, use to_df() first (still works)
         series = self.ds.to_df()['name']
         self.assertIsInstance(series, pd.Series)
 
