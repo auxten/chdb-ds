@@ -2135,6 +2135,40 @@ class TestSQLMethodInPipeline(unittest.TestCase):
         self.assertLessEqual(len(df), 5)
         self.assertIn('step3', df.columns)
 
+    def test_sql_method_with_where_prefix(self):
+        """
+        Test that .sql() handles queries starting with WHERE keyword.
+
+        Regression test for issue where queries starting with WHERE
+        would be double-prefixed, producing invalid SQL like:
+        SELECT * FROM __df__ WHERE WHERE value > 100
+        """
+        ds = DataStore.from_file(self.csv_file)
+
+        # Test 1: Query starting with WHERE keyword
+        ds1 = ds.sql("WHERE value > 50")
+        df1 = ds1.to_df()
+        self.assertTrue(all(df1['value'] > 50))
+        print(f"\n=== Query with WHERE prefix ===")
+        print(f"Query: 'WHERE value > 50'")
+        print(f"Rows: {len(df1)}")
+
+        # Test 2: Verify it produces the same result as short form without WHERE
+        ds2 = ds.sql("value > 50")
+        df2 = ds2.to_df()
+        pd.testing.assert_frame_equal(df1, df2)
+        print(f"Confirmed: 'WHERE value > 50' === 'value > 50'")
+
+        # Test 3: WHERE with ORDER BY and LIMIT
+        ds3 = ds.sql("WHERE value > 30 ORDER BY value DESC LIMIT 3")
+        df3 = ds3.to_df()
+        self.assertEqual(len(df3), 3)
+        self.assertTrue(all(df3['value'] > 30))
+        values = df3['value'].tolist()
+        self.assertEqual(values, sorted(values, reverse=True))
+        print(f"\n=== WHERE with ORDER BY and LIMIT ===")
+        print(df3.to_string())
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
