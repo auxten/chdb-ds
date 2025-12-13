@@ -544,7 +544,7 @@ result = (ds
     .select('*')
     .filter(ds.price > 100)              # SQL filter
     .assign(revenue=lambda x: x['price'] * x['quantity'])  # Pandas operation
-    .filter(ds.revenue > 1000)           # SQL on new column (after pandas)
+    .sql("revenue > 1000")               # SQL on new column (after pandas)
     .to_df())
 
 # Execution flow:
