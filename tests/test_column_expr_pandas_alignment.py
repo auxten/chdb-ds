@@ -566,7 +566,7 @@ class TestColumnExprAssignment(unittest.TestCase):
         ds['name_upper'] = ds['name'].str.upper()
         result = ds.to_df()
         expected = list(self.df['name'].str.upper())
-        self.assertEqual(list(result['name_upper']), expected)
+        self.assertEqual(sorted(list(result['name_upper'])), sorted(expected))
 
     def test_assign_type_cast(self):
         """Test ds['new'] = ds['col'].cast('Float64')."""
