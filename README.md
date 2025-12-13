@@ -265,6 +265,48 @@ print(result.row_count)     # 42
 print(result.rows)          # List of tuples
 ```
 
+### Working with Existing DataFrames
+
+Use `from_df()` or `from_dataframe()` to wrap an existing pandas DataFrame and leverage DataStore's query building, SQL operations, and lazy execution:
+
+```python
+import pandas as pd
+from datastore import DataStore
+
+# Create or load a DataFrame
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Charlie', 'Diana'],
+    'age': [25, 30, 35, 28],
+    'department': ['Sales', 'Engineering', 'Sales', 'Marketing']
+})
+
+# Wrap with DataStore
+ds = DataStore.from_df(df, name='employees')
+
+# Use DataStore features: filtering, SQL, lazy operations
+result = ds.filter(ds.age > 26).to_df()
+
+# Execute SQL on DataFrame via chDB
+result = ds.sql('age > 28 ORDER BY name').to_df()
+
+# Complex query mixing SQL and pandas
+ds['salary_band'] = (ds.age // 10) * 10000  # Lazy column assignment
+result = (ds
+    .filter(ds.department == 'Sales')
+    .sql('salary_band >= 30000')
+    .select('name', 'age', 'salary_band')
+    .to_df())
+
+# Alias: from_dataframe() works the same way
+ds = DataStore.from_dataframe(df, name='employees')
+```
+
+**Key benefits:**
+- Apply SQL queries to in-memory DataFrames via chDB's Python() table function
+- Mix SQL and pandas operations in any order
+- Use explain() to see the execution plan
+- Leverage 100+ ClickHouse SQL functions on DataFrame data
+
 ### Pandas DataFrame Compatibility
 
 DataStore now includes **wide pandas DataFrame API compatibility**, allowing you to use all pandas methods directly:
@@ -398,6 +440,22 @@ ds = DataStore.from_postgresql("localhost:5432", "mydb", "users",
 
 # ClickHouse (remote)
 ds = DataStore.from_clickhouse("localhost:9000", "default", "events")
+```
+
+**From pandas DataFrame**:
+```python
+import pandas as pd
+
+# Wrap an existing DataFrame
+df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [25, 30]})
+ds = DataStore.from_df(df)  # or from_dataframe(df)
+
+# Use DataStore features on DataFrame
+result = ds.filter(ds.age > 26).to_df()
+
+# Mix SQL and pandas operations
+ds['doubled'] = ds.age * 2
+result = ds.sql('doubled > 50').to_df()
 ```
 
 **Data Generation** (for testing):
