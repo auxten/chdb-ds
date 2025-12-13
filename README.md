@@ -544,14 +544,14 @@ result = (ds
     .select('*')
     .filter(ds.price > 100)              # SQL filter
     .assign(revenue=lambda x: x['price'] * x['quantity'])  # Pandas operation
-    .sql("revenue > 1000")               # SQL on new column (after pandas)
+    .sql("revenue > 1000")               # SQL filter on new column with chDB (after pandas)
     .to_df())
 
 # Execution flow:
 # 1. Execute SQL: SELECT * FROM ... WHERE price > 100
 # 2. Apply pandas: add revenue column
-# 3. Apply pandas filter: revenue > 1000
-# 4. Return result
+# 3. Apply SQL filter: SELECT * FROM ... WHERE revenue > 1000
+# 4. Return result, triggered by `to_df()`
 ```
 
 ## Design Philosophy
