@@ -343,6 +343,65 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertEqual(counts["age"], 4)
         self.assertEqual(counts["city"], 4)
 
+    def test_count_rows_method(self):
+        """Test count_rows() returns total row count using SQL COUNT(*)."""
+        ds = DataStore.from_file(self.csv_file)
+        total = ds.select("*").count_rows()
+
+        # Should return integer
+        self.assertIsInstance(total, int)
+        self.assertEqual(total, 4)
+
+    def test_count_rows_with_filter(self):
+        """Test count_rows() respects filter conditions."""
+        ds = DataStore.from_file(self.csv_file)
+        total = ds.select("*").filter(ds.age > 28).count_rows()
+
+        # Only Bob (30) and Charlie (35) should match
+        self.assertEqual(total, 2)
+
+    def test_count_uses_sql(self):
+        """Test that count() uses SQL and produces same results as DataFrame.count()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        # Get counts via optimized SQL method
+        sql_counts = ds.select("*").count()
+
+        # Get counts via DataFrame materialization
+        df_counts = ds.select("*").to_df().count()
+
+        import pandas as pd
+
+        # Both should be Series with same values
+        self.assertIsInstance(sql_counts, pd.Series)
+        self.assertIsInstance(df_counts, pd.Series)
+
+        # Values should match
+        for col in ["id", "name", "age", "city"]:
+            self.assertEqual(sql_counts[col], df_counts[col])
+
+    def test_count_with_filter(self):
+        """Test count() respects filter conditions."""
+        ds = DataStore.from_file(self.csv_file)
+        counts = ds.select("*").filter(ds.age > 28).count()
+
+        import pandas as pd
+
+        self.assertIsInstance(counts, pd.Series)
+        # Only Bob (30) and Charlie (35) should match
+        self.assertEqual(counts["id"], 2)
+        self.assertEqual(counts["name"], 2)
+        self.assertEqual(counts["age"], 2)
+        self.assertEqual(counts["city"], 2)
+
+    def test_len_uses_count_rows(self):
+        """Test len() uses efficient SQL-based count_rows()."""
+        ds = DataStore.from_file(self.csv_file)
+
+        # len() should use count_rows() internally
+        self.assertEqual(len(ds.select("*")), 4)
+        self.assertEqual(len(ds.select("*").filter(ds.age > 28)), 2)
+
     def test_info_method(self):
         """Test info() method exists and can be called."""
         ds = DataStore.from_file(self.csv_file)
