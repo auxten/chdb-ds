@@ -175,10 +175,28 @@ ds['amount'].sum()                  # sum(amount)
 ds['price'].avg()                   # avg(price)
 ds['user_id'].count_distinct()      # uniq(user_id)
 
-# Column assignment with functions
+# Column assignment with functions (lazy evaluation)
 ds['upper_name'] = ds['name'].str.upper()
 ds['age_group'] = ds['age'] // 10 * 10
 ```
+
+> **⚠️ Important: Lazy Column Assignment**
+>
+> Column assignments using `ds['col'] = ...` are **lazy** - they are recorded but not executed immediately.
+> The operations are applied when you materialize the data with `to_df()`, `execute()`, or access properties like `shape`.
+>
+> ```python
+> ds['new_col'] = ds['old_col'] * 2  # Recorded (lazy)
+> print(ds.to_sql())                 # Won't show new_col in SQL yet
+>
+> result = ds.to_df()                # NOW it executes and applies assignment
+> print(result.columns)              # Will include 'new_col'
+> ```
+>
+> For **immutable** column creation that returns a new DataStore, use `assign()`:
+> ```python
+> ds2 = ds.assign(new_col=lambda x: x['old_col'] * 2)  # Returns new DataStore
+> ```
 
 **See [Function Reference](docs/FUNCTIONS.md) for the complete list of 100+ functions.**
 
