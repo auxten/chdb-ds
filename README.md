@@ -444,6 +444,155 @@ ds = ds.with_format_settings(
 )
 ```
 
+## Performance Tips
+
+### 1. Push Operations to SQL
+
+DataStore's power comes from executing operations in SQL (chDB). Keep operations in the SQL layer as long as possible:
+
+```python
+# ✅ Excellent: Everything in SQL (single query)
+result = (ds
+    .select('category', 'product', 'revenue')
+    .filter(ds.date >= '2024-01-01')
+    .filter(ds.revenue > 1000)
+    .groupby('category', 'product')
+    .agg({'revenue': 'sum'})
+    .sort('revenue', ascending=False)
+    .limit(100)
+    .to_df())  # Executes once
+
+# ❌ Poor: Materializes too early, filters in pandas (slow)
+df = ds.to_df()  # Loads ALL data into memory
+df = df[df['date'] >= '2024-01-01']
+df = df[df['revenue'] > 1000]
+df = df.groupby(['category', 'product'])['revenue'].sum()
+df = df.sort_values(ascending=False).head(100)
+```
+
+### 2. Select Only What You Need
+
+Reduce data transfer by selecting specific columns:
+
+```python
+# ✅ Good: Select only needed columns
+ds.select('id', 'name', 'value').to_df()
+
+# ❌ Bad: Select everything then subset in pandas
+df = ds.select('*').to_df()
+df = df[['id', 'name', 'value']]
+```
+
+### 3. Use Appropriate File Formats
+
+Choose the right format for your use case:
+
+```python
+# For large datasets: Use Parquet (compressed, columnar, fast)
+ds.to_parquet("large_data.parquet")
+
+# For human readability: Use CSV
+ds.to_csv("readable_data.csv")
+
+# For nested data: Use JSON
+ds.to_json("nested_data.json")
+```
+
+**Format Comparison:**
+- **Parquet**: Best for large datasets, supports compression and column pruning
+- **CSV**: Human-readable, but slow for large files
+- **JSON**: Flexible schema, moderate performance
+
+### 4. Optimize Cloud Storage Access
+
+Enable filter pushdown for remote data sources:
+
+```python
+# Enable Parquet optimizations for S3
+ds = (DataStore.from_s3("s3://bucket/data.parquet", nosign=True)
+      .with_format_settings(
+          input_format_parquet_filter_push_down=1,
+          input_format_parquet_bloom_filter_push_down=1,
+          input_format_parquet_use_native_reader=1
+      ))
+
+# Now filters are pushed to S3, reducing data transfer
+result = ds.filter(ds.date >= '2024-01-01').to_df()
+```
+
+### 5. Reuse Query Objects
+
+Build query objects once and reuse them:
+
+```python
+# Build base query
+base = ds.select('*').filter(ds.status == 'active')
+
+# Reuse for different analyses (each is independent)
+high_value = base.filter(ds.value > 1000).to_df()
+recent = base.filter(ds.date >= '2024-01-01').to_df()
+summary = base.groupby('category').agg({'value': 'sum'}).to_df()
+```
+
+### 6. Use Batching for Large Results
+
+For very large datasets, process in batches:
+
+```python
+# Process data in chunks
+batch_size = 10000
+for offset in range(0, total_rows, batch_size):
+    batch = (ds
+        .select('*')
+        .limit(batch_size)
+        .offset(offset)
+        .to_df())
+
+    # Process batch
+    process_batch(batch)
+```
+
+### 7. Leverage ClickHouse Functions
+
+Use ClickHouse SQL functions for better performance:
+
+```python
+# ✅ Good: Use ClickHouse string function (fast)
+ds.select(ds['name'].str.upper().as_('upper_name'))
+
+# ❌ Slower: Load data then apply pandas operation
+df = ds.to_df()
+df['upper_name'] = df['name'].str.upper()
+```
+
+### Common Pitfalls to Avoid
+
+```python
+# ❌ 1. Calling to_df() multiple times
+df1 = ds.filter(ds.value > 100).to_df()  # Query 1
+df2 = ds.filter(ds.value > 200).to_df()  # Query 2
+
+# ✅ Better: Build both queries, execute once each
+query1 = ds.filter(ds.value > 100)
+query2 = ds.filter(ds.value > 200)
+df1 = query1.to_df()
+df2 = query2.to_df()
+
+# ❌ 2. Using Python loops for row operations
+for _, row in ds.to_df().iterrows():  # Loads all data!
+    process(row)
+
+# ✅ Better: Push logic to SQL or use vectorized pandas
+ds['new_col'] = ds['col1'] * ds['col2']  # Vectorized
+
+# ❌ 3. Mixing data sources without filters
+big_table.join(small_table, on='id').to_df()  # Loads everything
+
+# ✅ Better: Filter first
+filtered = big_table.filter(big_table.important == True)
+filtered.join(small_table, on='id').to_df()
+```
+
 ## Design Philosophy
 
 DataStore is inspired by pypika's excellent query builder design but focuses on:
