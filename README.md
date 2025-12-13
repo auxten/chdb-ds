@@ -444,6 +444,116 @@ ds = ds.with_format_settings(
 )
 ```
 
+## Execution Model
+
+Understanding when and how DataStore executes operations is key to using it effectively.
+
+### 1. Query Building (Lazy)
+
+These operations build the SQL query but **don't execute** it immediately:
+
+```python
+ds = DataStore.from_file("data.csv")
+ds = ds.select("name", "age")           # Lazy - builds query
+ds = ds.filter(ds.age > 18)              # Lazy - adds WHERE clause
+ds = ds.sort("name")                     # Lazy - adds ORDER BY
+ds = ds.limit(10)                        # Lazy - adds LIMIT
+
+# Nothing executed yet! Just building the query.
+print(ds.to_sql())  # Shows the SQL that will be executed
+# Output: SELECT "name", "age" FROM file('data.csv') WHERE "age" > 18 ORDER BY "name" ASC LIMIT 10
+```
+
+All these methods return a new DataStore instance (immutable) without executing any query.
+
+### 2. Lazy Operations (Recorded)
+
+Column assignments are **recorded** and applied during materialization:
+
+```python
+ds['new_col'] = ds['old_col'] * 2    # Recorded, not executed
+ds['category'] = ds['value'] // 100  # Recorded, not executed
+
+# Still not executed - new columns won't appear in SQL yet
+print(ds.to_sql())  # Won't include new_col or category
+```
+
+See the warning box in [Column Assignment](#clickhouse-sql-functions) for details.
+
+### 3. Execution (Eager)
+
+These operations trigger **immediate** query execution:
+
+```python
+# Execute and get different result formats
+result = ds.execute()    # Returns QueryResult object
+df = ds.to_df()          # Returns pandas DataFrame
+records = ds.to_dict()   # Returns list of dictionaries
+
+# These also trigger execution
+shape = ds.shape         # Executes to count rows/columns
+cols = ds.columns        # Executes to get column names
+stats = ds.describe()    # Executes and computes statistics
+first_5 = ds.head()      # Executes and returns first 5 rows
+```
+
+### Best Practice: Push Operations to SQL
+
+For optimal performance, keep operations in the SQL layer (lazy) as long as possible:
+
+```python
+# ✅ Good: Everything pushed to SQL (fast)
+result = (ds
+    .select('name', 'age', 'city')
+    .filter(ds.age > 18)
+    .filter(ds.city == 'NYC')
+    .sort('name')
+    .limit(100)
+    .to_df())  # Single query execution
+
+# ❌ Bad: Materializes early, filters in pandas (slow)
+df = ds.to_df()  # Loads ALL data into memory
+df = df[df['age'] > 18]
+df = df[df['city'] == 'NYC']
+df = df.sort_values('name')
+df = df.head(100)
+```
+
+### Query Reuse
+
+DataStore is immutable (except column assignment), so you can reuse query objects:
+
+```python
+# Build base query once
+base_query = ds.select("*").filter(ds.status == "active")
+
+# Create different queries from the same base
+recent = base_query.filter(ds.date >= '2024-01-01').to_df()
+high_value = base_query.filter(ds.value > 1000).to_df()
+summary = base_query.groupby('category').agg({'value': 'sum'}).to_df()
+
+# Each executes independently without affecting others
+```
+
+### Mixed Execution
+
+DataStore supports mixing SQL and pandas operations:
+
+```python
+result = (ds
+    .select('*')
+    .filter(ds.price > 100)              # SQL filter
+    .assign(revenue=lambda x: x['price'] * x['quantity'])  # Pandas operation
+    .filter(ds.revenue > 1000)           # SQL on new column (after pandas)
+    .to_df())
+
+# Execution flow:
+# 1. Execute SQL: SELECT * FROM ... WHERE price > 100
+# 2. Apply pandas: add revenue column
+# 3. Apply pandas filter: revenue > 1000
+# 4. Return result
+```
+
 ## Design Philosophy
 
 DataStore is inspired by pypika's excellent query builder design but focuses on:
