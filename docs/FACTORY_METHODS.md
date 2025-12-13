@@ -312,6 +312,61 @@ def from_numbers(cls, count: int, start: int = None,
                  step: int = None, **kwargs) -> 'DataStore'
 ```
 
+### From pandas DataFrame
+
+#### `DataStore.from_df()`
+Create DataStore from an existing pandas DataFrame.
+
+```python
+import pandas as pd
+from datastore import DataStore
+
+# Create a DataFrame
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Charlie'],
+    'age': [25, 30, 35],
+    'city': ['NYC', 'LA', 'Chicago']
+})
+
+# Wrap with DataStore
+ds = DataStore.from_df(df, name='users')
+
+# Use DataStore features
+result = ds.filter(ds.age > 26).to_df()
+
+# Execute SQL on DataFrame
+result = ds.sql('age > 28 ORDER BY name').to_df()
+
+# Mix SQL and pandas operations
+ds['age_group'] = ds.age // 10 * 10
+result = ds.sql('age_group >= 30').to_df()
+```
+
+**Signature**:
+```python
+@classmethod
+def from_df(cls, df, name: str = None) -> 'DataStore'
+```
+
+**Parameters**:
+- `df`: pandas DataFrame to wrap
+- `name`: Optional name for the data source (appears in explain output)
+
+#### `DataStore.from_dataframe()`
+Alias for `from_df()` with identical functionality.
+
+```python
+# Both are equivalent
+ds = DataStore.from_df(df, name='users')
+ds = DataStore.from_dataframe(df, name='users')
+```
+
+**Signature**:
+```python
+@classmethod
+def from_dataframe(cls, df, name: str = None) -> 'DataStore'
+```
+
 ## Comparison: Factory Methods vs Generic Constructor
 
 ### Using Factory Methods (Recommended)
