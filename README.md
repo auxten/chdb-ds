@@ -32,35 +32,77 @@ A Pandas-like data manipulation framework powered by chDB (ClickHouse) with auto
 pip install chdb-ds
 ```
 
-### Simplest Way: URI-based Creation (Recommended)
+### Your First Query (30 seconds)
 
-The easiest way to create a DataStore is using a URI string. The source type and format are automatically inferred:
+Start with generated data to learn the basics:
 
 ```python
 from datastore import DataStore
 
-# Local files - format auto-detected from extension
-ds = DataStore.uri("/path/to/data.csv")
-ds.connect()
-result = ds.select("*").filter(ds.age > 18).execute()
+# Generate test data (numbers 0-99)
+ds = DataStore.from_numbers(100)
+
+# Query with pandas-like syntax
+result = (ds
+    .select('*')
+    .filter(ds.number > 50)
+    .limit(5)
+    .to_df())  # Returns pandas DataFrame
+
+print(result)
+#    number
+# 0      51
+# 1      52
+# 2      53
+# 3      54
+# 4      55
+```
+
+### Working with Real Data (1 minute)
+
+Query local files with automatic format detection:
+
+```python
+from datastore import DataStore
+
+# Load a CSV file
+ds = DataStore.from_file("sales.csv")
+
+# Explore your data
+print(ds.head())       # Preview first 5 rows
+print(ds.shape)        # (10000, 7) - rows × columns
+print(ds.columns)      # ['id', 'product', 'revenue', 'date', ...]
+
+# Build and execute queries
+result = (ds
+    .select("product", "revenue", "date")
+    .filter(ds.revenue > 1000)
+    .filter(ds.date >= "2024-01-01")
+    .sort("revenue", ascending=False)
+    .limit(10)
+    .to_df())
+
+print(result)
+```
+
+### URI-based Creation (For Remote Sources)
+
+For cloud storage and databases, use URI strings with automatic type inference:
+
+```python
+from datastore import DataStore
 
 # S3 with anonymous access
 ds = DataStore.uri("s3://bucket/data.parquet?nosign=true")
-result = ds.select("*").limit(10).execute()
+result = ds.select("*").limit(10).to_df()
 
 # MySQL with connection string
 ds = DataStore.uri("mysql://root:pass@localhost:3306/mydb/users")
-result = ds.select("*").filter(ds.active == True).execute()
+result = ds.select("*").filter(ds.active == True).to_df()
 
 # PostgreSQL
 ds = DataStore.uri("postgresql://user:pass@localhost:5432/mydb/products")
-result = ds.select("*").execute()
-
-# Google Cloud Storage
-ds = DataStore.uri("gs://bucket/data.parquet")
-
-# Azure Blob Storage
-ds = DataStore.uri("az://container/blob.csv?account_name=NAME&account_key=KEY")
+result = ds.select("*").to_df()
 ```
 
 **Supported URI formats:**
