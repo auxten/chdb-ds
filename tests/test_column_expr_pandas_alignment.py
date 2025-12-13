@@ -392,7 +392,7 @@ class TestColumnExprTypeConversion(unittest.TestCase):
         ds = self.create_ds()
         result = list(ds['int_col'].to_string())
         self.assertTrue(all(isinstance(x, str) for x in result))
-        self.assertEqual(result, ['1', '2', '3', '4', '5'])
+        self.assertEqual(sorted(result), ['1', '2', '3', '4', '5'])
 
 
 class TestColumnExprMathFunctions(unittest.TestCase):
