@@ -288,41 +288,45 @@ ds.filter(~(ds.deleted == True))
 
 ## Supported Data Sources
 
-DataStore provides factory methods for easy data source creation:
+DataStore supports 20+ data sources through a unified interface:
 
-### Local Files
+| Category | Sources | Quick Example |
+|----------|---------|---------------|
+| **Local Files** | CSV, Parquet, JSON, ORC, Avro<br/>[+ 80 more formats](https://clickhouse.com/docs/interfaces/formats) | `DataStore.from_file("data.csv")` |
+| **Cloud Storage** | S3, GCS, Azure Blob, HDFS | `DataStore.from_s3("s3://bucket/data.parquet")` |
+| **Databases** | MySQL, PostgreSQL, ClickHouse,<br/>MongoDB, SQLite, Redis | `DataStore.from_mysql(host, db, table)` |
+| **Data Lakes** | Apache Iceberg, Delta Lake, Hudi | `DataStore.from_delta("s3://bucket/table")` |
+| **Other** | HTTP/HTTPS, Number generation,<br/>Random data | `DataStore.from_url("https://...")` |
+
+### Quick Examples
+
+**Local Files** (auto-detects format):
 ```python
-# Automatically detect format from extension
 ds = DataStore.from_file("data.parquet")
-ds = DataStore.from_file("data.csv", format="CSV")
-ds = DataStore.from_file("data.json", format="JSONEachRow")
+ds = DataStore.from_file("data.csv")
+ds = DataStore.from_file("data.json")
 ```
 
-### Cloud Storage
+**Cloud Storage**:
 ```python
-# Amazon S3
+# S3 with public access
 ds = DataStore.from_s3("s3://bucket/data.parquet", nosign=True)
-ds = DataStore.from_s3("s3://bucket/*.csv", 
+
+# S3 with credentials
+ds = DataStore.from_s3("s3://bucket/*.csv",
                        access_key_id="KEY",
                        secret_access_key="SECRET")
 
-# Azure Blob Storage
-ds = DataStore.from_azure(
-    connection_string="DefaultEndpointsProtocol=https;...",
-    container="mycontainer",
-    path="data/*.parquet"
-)
-
 # Google Cloud Storage
-ds = DataStore.from_gcs("gs://bucket/data.parquet",
-                        hmac_key="KEY",
-                        hmac_secret="SECRET")
+ds = DataStore.from_gcs("gs://bucket/data.parquet")
 
-# HDFS
-ds = DataStore.from_hdfs("hdfs://namenode:9000/data/*.parquet")
+# Azure Blob Storage
+ds = DataStore.from_azure(container="mycontainer",
+                          path="data/*.parquet",
+                          connection_string="...")
 ```
 
-### Databases
+**Databases**:
 ```python
 # MySQL
 ds = DataStore.from_mysql("localhost:3306", "mydb", "users",
@@ -334,58 +338,21 @@ ds = DataStore.from_postgresql("localhost:5432", "mydb", "users",
 
 # ClickHouse (remote)
 ds = DataStore.from_clickhouse("localhost:9000", "default", "events")
-
-# MongoDB (read-only)
-ds = DataStore.from_mongodb("localhost:27017", "mydb", "users",
-                            user="admin", password="pass")
-
-# SQLite (read-only)
-ds = DataStore.from_sqlite("/path/to/database.db", "users")
-
-# Redis
-ds = DataStore.from_redis("localhost:6379", 
-                          key="key",
-                          structure="key String, value String")
 ```
 
-### Data Lakes
+**Data Generation** (for testing):
 ```python
-# Apache Iceberg (read-only)
-ds = DataStore.from_iceberg("s3://warehouse/my_table",
-                            access_key_id="KEY",
-                            secret_access_key="SECRET")
+# Number sequence
+ds = DataStore.from_numbers(100)  # 0-99
 
-# Delta Lake (read-only)
-ds = DataStore.from_delta("s3://bucket/delta_table",
-                          access_key_id="KEY",
-                          secret_access_key="SECRET")
-
-# Apache Hudi (read-only)
-ds = DataStore.from_hudi("s3://bucket/hudi_table",
-                         access_key_id="KEY",
-                         secret_access_key="SECRET")
-```
-
-### Data Generation
-```python
-# Generate number sequences
-ds = DataStore.from_numbers(100)  # 0 to 99
-ds = DataStore.from_numbers(10, start=10)  # 10 to 19
-ds = DataStore.from_numbers(10, start=0, step=2)  # Even numbers
-
-# Generate random data for testing
+# Random data
 ds = DataStore.from_random(
     structure="id UInt32, name String, value Float64",
-    random_seed=42,
-    max_string_length=20
+    random_seed=42
 )
 ```
 
-### URL/HTTP
-```python
-ds = DataStore.from_url("https://example.com/data.json",
-                        format="JSONEachRow")
-```
+📖 **For comprehensive examples of all data sources, see [examples/examples_table_functions.py](examples/examples_table_functions.py)**
 
 ### Multi-Source Queries
 ```python
