@@ -268,7 +268,28 @@ result = (ds
 
 ## Key Differences from Pandas
 
-### 1. Immutability
+### 1. Row Ordering is Not Guaranteed
+
+**Important**: Unlike pandas, DataStore uses ClickHouse as its underlying SQL engine, which does **not guarantee row order** by default. This means:
+
+```python
+# ❌ Order may vary between executions
+ds = DataStore.from_file("data.csv")
+result = ds.filter(ds.value > 50).to_df()
+# Row order is NOT guaranteed to match the original file order
+
+# ✅ Explicitly specify ORDER BY for deterministic order
+result = ds.filter(ds.value > 50).order_by('id').to_df()
+# Rows are ordered by 'id' column
+```
+
+**Why?** ClickHouse is optimized for analytical workloads and may return rows in any order for better performance. This is standard SQL behavior - without `ORDER BY`, result order is undefined.
+
+**Impact on comparisons**:
+- When comparing results, sort both DataFrames first or use set-based comparisons
+- Use `df.sort_values('col').reset_index(drop=True)` before `pd.testing.assert_frame_equal()`
+
+### 2. Immutability
 DataStore operations are immutable - `inplace=True` is not supported:
 
 ```python
@@ -279,7 +300,7 @@ df.drop(columns=['col'], inplace=True)
 df = df.drop(columns=['col'])
 ```
 
-### 2. Return Types
+### 3. Return Types
 Methods behavior matches pandas:
 
 ```python
@@ -296,7 +317,7 @@ series_result = ds.mean()  # Returns pd.Series
 scalar_result = ds['age'].mean()  # Returns scalar
 ```
 
-### 3. Series Handling
+### 4. Series Handling
 Operations that return Series in pandas also return Series in DataStore (not wrapped):
 
 ```python
@@ -311,7 +332,7 @@ print(type(datastore))  # <class 'datastore.core.DataStore'>
 
 **Why?** This maintains pandas semantics and user expectations.
 
-### 4. Method Naming
+### 5. Method Naming
 The INSERT VALUES method has been renamed to avoid conflicts:
 
 ```python
