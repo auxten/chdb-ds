@@ -170,7 +170,7 @@ result = query.exec()  # Same as execute()
 ### Working with Expressions
 
 ```python
-from datastore import Field, Sum, Count
+from datastore import Field, Sum, Count, col
 
 # Arithmetic operations
 ds.select(
@@ -178,12 +178,22 @@ ds.select(
     (ds.revenue - ds.cost).as_("profit")
 )
 
-# Aggregate functions
+# Aggregate functions (traditional style)
 ds.groupby("category").select(
     Field("category"),
     Sum(Field("amount"), alias="total"),
     Count("*", alias="count")
 )
+
+# Aggregate functions (SQL-style with agg())
+ds.groupby("region").agg(
+    total_revenue=col("revenue").sum(),
+    avg_quantity=col("quantity").mean(),
+    order_count=col("order_id").count()
+)
+
+# Pandas-style aggregation
+ds.agg({'amount': 'sum', 'price': ['mean', 'max']})
 ```
 
 ### ClickHouse SQL Functions

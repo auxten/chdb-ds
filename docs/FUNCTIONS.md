@@ -344,6 +344,34 @@ F.to_int64(Field('str_num'))
 
 Control whether overlapping functions use chDB SQL or Pandas:
 
+### Global Execution Engine (Recommended)
+
+Use `config` to set the global execution engine for all operations:
+
+```python
+from datastore import DataStore, config
+
+# Set execution engine globally
+config.set_execution_engine('pandas')      # Force Pandas for all operations
+config.set_execution_engine('clickhouse')  # Force ClickHouse/chDB
+config.set_execution_engine('auto')        # Auto-select best engine (default)
+
+# Shortcut methods
+config.use_pandas()       # Force Pandas
+config.use_clickhouse()   # Force ClickHouse
+config.use_auto()         # Auto-select
+
+# Access via DataStore.config
+DataStore.config.execution_engine = 'pandas'
+DataStore.config.use_pandas()
+DataStore.config.use_clickhouse()
+DataStore.config.use_auto()
+```
+
+### Per-Function Configuration
+
+For fine-grained control over specific functions:
+
 ```python
 from datastore import function_config, use_chdb, use_pandas
 
