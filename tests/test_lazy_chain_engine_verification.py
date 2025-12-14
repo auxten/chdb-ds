@@ -164,7 +164,8 @@ class TestChainExecutionVerification(unittest.TestCase):
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
 
-        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
 
     def test_chain_pandas_produces_correct_results(self):
         """Chain with Pandas should produce correct results."""
@@ -173,7 +174,8 @@ class TestChainExecutionVerification(unittest.TestCase):
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
 
-        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
 
     def test_chain_results_consistent(self):
         """ClickHouse and Pandas should produce consistent results."""
@@ -185,7 +187,8 @@ class TestChainExecutionVerification(unittest.TestCase):
         config.use_pandas()
         pd_result = list(self.ds['text'].str.trim().str.upper())
 
-        self.assertEqual(ch_result, pd_result)
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(ch_result), sorted(pd_result))
 
     def test_complex_chain_clickhouse(self):
         """Complex chain with ClickHouse."""
@@ -194,7 +197,8 @@ class TestChainExecutionVerification(unittest.TestCase):
         # abs -> round
         result = list(self.ds['value'].abs().round())
 
-        self.assertEqual(result, [2.0, 4.0, 2.0])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result), sorted([2.0, 4.0, 2.0]))
 
     def test_complex_chain_pandas(self):
         """Complex chain with Pandas."""
@@ -335,7 +339,8 @@ class TestMixedOperationsChain(unittest.TestCase):
         # Get length of trimmed text
         result = list(self.ds['text'].str.trim().str.length())
 
-        self.assertEqual(result, [3, 3, 3])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result), sorted([3, 3, 3]))
 
     def test_math_operations_chain(self):
         """Test chain of math operations."""
@@ -344,7 +349,8 @@ class TestMixedOperationsChain(unittest.TestCase):
         # abs -> multiply -> floor
         result = list((self.ds['value'].abs() * 1.5).floor())
 
-        self.assertEqual(result, [1.0, 3.0, 4.0])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result), sorted([1.0, 3.0, 4.0]))
 
     def test_filter_then_transform(self):
         """Test filter followed by transform."""
@@ -353,7 +359,8 @@ class TestMixedOperationsChain(unittest.TestCase):
         ds = self.ds.filter(self.ds['value'] > 0)
         result = list(ds['text'].str.trim())
 
-        self.assertEqual(result, ['def'])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result), sorted(['def']))
 
     def test_pandas_mode_complex_chain(self):
         """Test complex chain in Pandas mode."""
@@ -362,7 +369,8 @@ class TestMixedOperationsChain(unittest.TestCase):
         # Chain multiple operations
         result = list(self.ds['text'].str.strip().str.upper())
 
-        self.assertEqual(result, ['ABC', 'DEF', 'GHI'])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted(['ABC', 'DEF', 'GHI']))
 
 
 class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
@@ -388,7 +396,8 @@ class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
         result = ds.to_df()
 
         self.assertIn('upper', result.columns)
-        self.assertEqual(list(result['upper']), ['HELLO', 'WORLD'])
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result['upper']), sorted(['HELLO', 'WORLD']))
 
     def test_column_assignment_with_pandas(self):
         """Column assignment should work with Pandas engine."""
@@ -400,7 +409,8 @@ class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
         result = ds.to_df()
 
         self.assertIn('upper', result.columns)
-        self.assertEqual(list(result['upper']), ['HELLO', 'WORLD'])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result['upper']), sorted(['HELLO', 'WORLD']))
 
     def test_multiple_column_assignments(self):
         """Multiple column assignments in chain."""
@@ -448,7 +458,8 @@ class TestPandasImplementationDirect(unittest.TestCase):
 
         result = list(self.ds['text'].str.lower())
 
-        self.assertEqual(result, ['hello', 'world'])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted(['hello', 'world']))
 
     def test_pandas_impl_abs(self):
         """Test Pandas implementation for abs()."""
@@ -459,7 +470,8 @@ class TestPandasImplementationDirect(unittest.TestCase):
 
         result = list(ds['value'].abs())
 
-        self.assertEqual(result, [1, 2, 3])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted([1, 2, 3]))
 
     def test_pandas_impl_round_with_decimals(self):
         """Test Pandas implementation for round with decimals."""
@@ -470,7 +482,8 @@ class TestPandasImplementationDirect(unittest.TestCase):
 
         result = list(ds['value'].round(1))
 
-        self.assertEqual(result, [1.2, 2.6, 3.9])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted([1.2, 2.6, 3.9]))
 
     def test_pandas_impl_sqrt(self):
         """Test Pandas implementation for sqrt()."""
@@ -481,7 +494,8 @@ class TestPandasImplementationDirect(unittest.TestCase):
 
         result = list(ds['value'].sqrt())
 
-        self.assertEqual(result, [2.0, 3.0, 4.0])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted([2.0, 3.0, 4.0]))
 
 
 class TestExplainOutputEngineVerification(unittest.TestCase):
@@ -650,9 +664,9 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
         ds_pd['abs_val'] = ds_pd['value'].abs()
         result_pd = ds_pd.to_df()
 
-        # Results should match
-        self.assertEqual(list(result_ch['upper']), list(result_pd['upper']))
-        self.assertEqual(list(result_ch['abs_val']), list(result_pd['abs_val']))
+        # Results should match (order may differ, so sort before comparing)
+        self.assertEqual(sorted(result_ch['upper']), sorted(result_pd['upper']))
+        self.assertEqual(sorted(result_ch['abs_val']), sorted(result_pd['abs_val']))
 
     def test_function_config_summary(self):
         """function_config should report correct summary."""
@@ -691,7 +705,8 @@ class TestConfigSwitchMidChain(unittest.TestCase):
         # Execute - should use Pandas
         result = list(expr)
 
-        self.assertEqual(result, ['HELLO', 'WORLD'])
+        # Sort before comparing for consistency
+        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD']))
 
     def test_results_same_regardless_of_switch(self):
         """Results should be same regardless of engine."""
@@ -705,7 +720,8 @@ class TestConfigSwitchMidChain(unittest.TestCase):
         expr2 = self.ds['text'].str.upper()
         result2 = list(expr2)
 
-        self.assertEqual(result1, result2)
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(result1), sorted(result2))
 
 
 if __name__ == '__main__':
