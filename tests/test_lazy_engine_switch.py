@@ -335,7 +335,8 @@ class TestEngineSwitchingDuringExecution(unittest.TestCase):
         config.use_pandas()
         pd_result = list(ds['val'].abs())
 
-        self.assertEqual(ch_result, pd_result)
+        # ClickHouse doesn't guarantee order, so sort before comparing
+        self.assertEqual(sorted(ch_result), sorted(pd_result))
 
 
 class TestFunctionConfigDirectAccess(unittest.TestCase):
