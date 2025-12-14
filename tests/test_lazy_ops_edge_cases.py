@@ -27,17 +27,10 @@ class TestGroupByWithLazyOps:
 
         # GROUP BY with aggregation
         ds = users.select("country").groupby("country")
-        # This should fail or behave unexpectedly - groupby needs aggregation
-        # Let's see what happens
-        ds["new_col"] = ds["country"]  # Try to add column after groupby
+        ds["new_col"] = ds["country"]  # Add column after groupby
 
-        # This is likely to fail - documenting the behavior
-        try:
-            df = ds.to_df()
-            # If it doesn't fail, check the result
-            assert "new_col" in df.columns
-        except Exception as e:
-            pytest.skip(f"GROUP BY + lazy ops not fully supported: {e}")
+        df = ds.to_df()
+        assert "new_col" in df.columns
 
     def test_groupby_with_aggregation_then_pandas(self):
         """GROUP BY with aggregation followed by pandas ops."""
@@ -48,11 +41,8 @@ class TestGroupByWithLazyOps:
         ds = users.select("country", Count("*").as_("cnt")).groupby("country")
         ds["cnt_doubled"] = ds["cnt"] * 2
 
-        try:
-            df = ds.to_df()
-            assert "cnt_doubled" in df.columns
-        except Exception as e:
-            pytest.skip(f"GROUP BY aggregation + lazy ops not supported: {e}")
+        df = ds.to_df()
+        assert "cnt_doubled" in df.columns
 
 
 class TestDistinctWithLazyOps:
@@ -261,15 +251,12 @@ class TestHavingWithLazyOps:
 
         users = DataStore.from_file(dataset_path("users.csv"))
 
-        try:
-            ds = users.select("country", Count("*").as_("cnt")).groupby("country")
-            ds = ds.having(Count("*") > 1)
-            ds["cnt_doubled"] = ds["cnt"] * 2
+        ds = users.select("country", Count("*").as_("cnt")).groupby("country")
+        ds = ds.having(Count("*") > 1)
+        ds["cnt_doubled"] = ds["cnt"] * 2
 
-            df = ds.to_df()
-            assert "cnt_doubled" in df.columns
-        except Exception as e:
-            pytest.skip(f"HAVING + lazy ops not supported: {e}")
+        df = ds.to_df()
+        assert "cnt_doubled" in df.columns
 
 
 class TestImmutabilityAndCopies:
@@ -286,10 +273,8 @@ class TestImmutabilityAndCopies:
         df1 = ds1.to_df()
         df2 = ds2.to_df()
 
-        assert len(df1) >= len(df2)
-        # If they're equal, filter wasn't effective
-        if len(df1) == len(df2):
-            pytest.skip("No records filtered - can't test immutability")
+        # ds1 should have more records than ds2 (filter was effective)
+        assert len(df1) > len(df2)
 
     def test_assignment_modifies_in_place(self):
         """Column assignment modifies in place (adds lazy op to same instance)."""

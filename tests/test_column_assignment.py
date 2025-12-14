@@ -24,9 +24,6 @@ class TestColumnAssignment:
         # Use example dataset (lazy execution compatible)
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        if not os.path.exists(dataset_path):
-            pytest.skip(f"Dataset not found: {dataset_path}")
-
         # Load data with lazy execution
         ds = DataStore.from_file(dataset_path)
 
@@ -46,9 +43,6 @@ class TestColumnAssignment:
         # Use example dataset (lazy execution compatible)
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
-        if not os.path.exists(dataset_path):
-            pytest.skip(f"Dataset not found: {dataset_path}")
-
         # Load data with lazy execution
         ds = DataStore.from_file(dataset_path)
 
@@ -66,9 +60,6 @@ class TestColumnAssignment:
         """Test updating an existing column (lazy execution)."""
         # Use example dataset
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
-
-        if not os.path.exists(dataset_path):
-            pytest.skip(f"Dataset not found: {dataset_path}")
 
         # Load data with lazy execution
         ds = DataStore.from_file(dataset_path)
@@ -88,9 +79,6 @@ class TestColumnAssignment:
         """Test column assignment with data loaded from file."""
         # Use example dataset
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
-
-        if not os.path.exists(dataset_path):
-            pytest.skip(f"Dataset not found: {dataset_path}")
 
         # Load data
         ds = DataStore.from_file(dataset_path)
@@ -155,9 +143,6 @@ class TestColumnAssignment:
         """Test chaining multiple column assignments (lazy execution)."""
         # Use example dataset
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
-
-        if not os.path.exists(dataset_path):
-            pytest.skip(f"Dataset not found: {dataset_path}")
 
         # Load data
         ds = DataStore.from_file(dataset_path)
