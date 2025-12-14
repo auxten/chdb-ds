@@ -195,14 +195,11 @@ class TestAggregationPipeline:
         """SQL groupby with aggregation, then pandas transform."""
         users = DataStore.from_file(dataset_path("users.csv"))
 
-        try:
-            ds = users.select("country", Count("*").as_("user_count")).groupby("country")
-            df = ds.to_df()
-            # Apply pandas transform
-            df["count_doubled"] = df["user_count"] * 2
-            assert "count_doubled" in df.columns
-        except Exception as e:
-            pytest.skip(f"GROUP BY + transform not fully supported: {e}")
+        ds = users.select("country", Count("*").as_("user_count")).groupby("country")
+        df = ds.to_df()
+        # Apply pandas transform
+        df["count_doubled"] = df["user_count"] * 2
+        assert "count_doubled" in df.columns
 
     def test_pandas_agg_after_sql_filter(self):
         """Pandas aggregation after SQL filtering."""
@@ -728,7 +725,7 @@ class TestExtremeMixedPipeline:
         users = DataStore.from_file(dataset_path("users.csv"))
         orders = DataStore.from_file(dataset_path("orders.csv"))
 
-        ds = users.select("user_id", "name", "age") # "amount" is not in the selected columns
+        ds = users.select("user_id", "name", "age")  # "amount" is not in the selected columns
         # This should work:
         # ds = users.select("user_id", "name", "age", "amount")
         ds["user_score"] = ds["age"] * 10  # Lazy op BEFORE join
