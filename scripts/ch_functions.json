@@ -1,0 +1,7601 @@
+{
+  "categories": {
+    "aggregate": [
+      {
+        "name": "aggThrow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "analysisOfVariance",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "any",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "anyHeavy",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "anyLast",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "anyLast_respect_nulls",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "any_respect_nulls",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "approx_top_k",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "approx_top_sum",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "argMax",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "argMin",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "avg",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "avgWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "boundingRatio",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "categoricalInformationValue",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "contingency",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "corr",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "corrMatrix",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "corrStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "count",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "covarPop",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "covarPopMatrix",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "covarPopStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "covarSamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "covarSampMatrix",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "covarSampStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "cramersV",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "cramersVBiasCorrected",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "deltaSum",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "deltaSumTimestamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "distinctDynamicTypes",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "distinctJSONPaths",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "distinctJSONPathsAndTypes",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "entropy",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "estimateCompressionRatio",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "exponentialMovingAverage",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "exponentialTimeDecayedAvg",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "exponentialTimeDecayedCount",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "exponentialTimeDecayedMax",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "exponentialTimeDecayedSum",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "flameGraph",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArray",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArrayInsertAt",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArrayIntersect",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArrayLast",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArrayMovingAvg",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArrayMovingSum",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArraySample",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupArraySorted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitAnd",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitOr",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitXor",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitmap",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitmapAnd",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitmapOr",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupBitmapXor",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupConcat",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupNumericIndexedVector",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "groupUniqArray",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "histogram",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "intervalLengthSum",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "kolmogorovSmirnovTest",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "kurtPop",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "kurtSamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "largestTriangleThreeBuckets",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "mannWhitneyUTest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "max",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "maxIntersections",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "maxIntersectionsPosition",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "maxMappedArrays",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "meanZTest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "min",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "minMappedArrays",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "nonNegativeDerivative",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "nothing",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "nothingNull",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "nothingUInt64",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "retention",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sequenceCount",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sequenceMatch",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sequenceMatchEvents",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sequenceNextNode",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleLinearRegression",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "singleValueOrNull",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "skewPop",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "skewSamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sparkbar",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stddevPop",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stddevPopStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stddevSamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stddevSampStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stochasticLinearRegression",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "stochasticLogisticRegression",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "studentTTest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sum",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "sumCount",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumKahan",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumMapFiltered",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumMapFilteredWithOverflow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumMapWithOverflow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumMappedArrays",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "sumWithOverflow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "theilsU",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesDeltaToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesDerivToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesGroupArray",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesInstantDeltaToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesInstantRateToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesLastTwoSamples",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesPredictLinearToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesRateToGrid",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesResampleToGridWithStaleness",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "topK",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "topKWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniq",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniqCombined",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniqCombined64",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniqExact",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniqHLL12",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "uniqUpTo",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "varPop",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "varPopStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "varSamp",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "varSampStable",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "welchTTest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "windowFunnel",
+        "is_aggregate": true,
+        "case_insensitive": false
+      }
+    ],
+    "array": [
+      {
+        "name": "IPv4CIDRToRange",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv6CIDRToRange",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONHas",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "URLHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__bitSwapLastTwo",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "array",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayAUCPR",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayAvg",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayCompact",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayCount",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayCumSum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayCumSumNonNegative",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayDifference",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayDistinct",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayDotProduct",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayElement",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayElementOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayEnumerate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayEnumerateDense",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayEnumerateDenseRanked",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayEnumerateUniq",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayEnumerateUniqRanked",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayExists",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFill",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFilter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFirst",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFirstIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFirstOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFlatten",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayFold",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayIntersect",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayJaccardIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayLast",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayLastIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayLastOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayLevenshteinDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayLevenshteinDistanceWeighted",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayMap",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayMax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayMin",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayNormalizedGini",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPartialShuffle",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "arrayPartialSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPopBack",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPopFront",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayProduct",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPushBack",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPushFront",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayROCAUC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayRandomSample",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReduce",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReduceInRanges",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayResize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayRotateLeft",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayRotateRight",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayShiftLeft",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayShiftRight",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayShingles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayShuffle",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "arraySimilarity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arraySlice",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arraySort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arraySum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arraySymmetricDifference",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayUnion",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayUniq",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayWithConstant",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayZip",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayZipUnaligned",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitPositionsToArray",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitSlice",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapAnd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapAndCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapAndnot",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapAndnotCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapBuild",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapContains",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapHasAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapHasAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapMax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapMin",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapOr",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapOrCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapSubsetInRange",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapSubsetLimit",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapToArray",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapTransform",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapXor",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmapXorCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmaskToArray",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cityHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countEqual",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomain",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainCustom",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainCustomRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainCustomWithWWW",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainCustomWithWWWRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainWithWWW",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutToFirstSignificantSubdomainWithWWWRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictHas",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dynamicElement",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "empty",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayDate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayFloat32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayFloat64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayToSingle",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayUInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayUInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayUInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayUInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "farmHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "firstLine",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "firstSignificantSubdomain",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "firstSignificantSubdomainCustom",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "firstSignificantSubdomainCustomRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "firstSignificantSubdomainRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "flattenTuple",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "gccMurmurHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "geohashesInBox",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "has",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasColumnInTable",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasSubsequence",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasSubsequenceCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasSubsequenceCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasSubsequenceUTF8",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasThreadFuzzer",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hiveHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "icebergHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "indexOf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "indexOfAssumeSorted",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intHash32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isDynamicElementInSharedData",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isNotDistinctFrom",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "javaHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "javaHashUTF16LE",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "jumpConsistentHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "kafkaMurmurHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "kostikConsistentHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "kql_array_sort_asc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "kql_array_sort_desc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "map",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapApply",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapContainsKey",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapContainsValue",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapExists",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapFilter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapFromArrays",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapKeys",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapPartialSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapPopulateSeries",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapSubtract",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapUpdate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapValues",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "metroHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstIndexCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstIndexCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstIndexUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstPosition",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstPositionCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstPositionCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchFirstPositionUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "murmurHash2_32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "murmurHash2_64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "murmurHash3_128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "murmurHash3_32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "murmurHash3_64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "normalizedQueryHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "normalizedQueryHashKeepNames",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notEmpty",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorToMap",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsIntersectCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsIntersectSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsIntersectionCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsIntersectionSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "range",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToPopulation",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "runningDifferenceStartingWithFirstValue",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONHas",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash128Keyed",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash128Reference",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash128ReferenceKeyed",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sipHash64Keyed",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sparseGramsHashes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sparseGramsHashesUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subBitmap",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleElement",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "validateNestedArraySizes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "variantElement",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashArg",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashArgCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashArgCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashArgUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleMinHashUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleSimHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleSimHashCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleSimHashCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wordShingleSimHashUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wyHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "xxHash32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "xxHash64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "conditional": [
+      {
+        "name": "L1Norm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "L2Norm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LinfNorm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LpNorm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__bitBoolMaskAnd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__bitBoolMaskOr",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "and",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitNot",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitOr",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitShiftRight",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitXor",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "colorOKLCHToSRGB",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "colorSRGBToOKLCH",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalNotIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "if",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "multiIf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "not",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "notIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "or",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "rand",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "rand64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randBinomial",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randCanonical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randNormal",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randPoisson",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randUniform",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "throwIf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "transform",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "xor",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "datetime": [
+      {
+        "name": "DATE",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "dateDiff",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "dateName",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "dateTime64ToSnowflake",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dateTime64ToSnowflakeID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dateTimeToSnowflake",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dateTimeToSnowflakeID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dateTimeToUUIDv7",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dateTrunc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatDateTimeInJodaSyntax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatReadableTimeDelta",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "generateSnowflakeID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "now",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "now64",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "nowInBlock",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "nowInBlock64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime32BestEffort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime32BestEffortOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime32BestEffortOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffortOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffortOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffortUS",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffortUSOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64BestEffortUSOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64InJodaSyntax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64InJodaSyntaxOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64InJodaSyntaxOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTime64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffortOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffortOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffortUS",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffortUSOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeBestEffortUSOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeInJodaSyntax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeInJodaSyntaxOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeInJodaSyntaxOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseDateTimeOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseTimeDelta",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "snowflakeIDToDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "snowflakeIDToDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "snowflakeToDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "snowflakeToDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeDiff",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "timeSeriesFromGrid",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesIdToTags",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesIdToTagsGroup",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesRange",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesStoreTags",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSeriesTagsGroupToTags",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSlot",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timeSlots",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timestamp",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "timezone",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "timezoneOf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "timezoneOffset",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDate32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDate32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDate32OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDate32OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTime64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTimeOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTimeOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDateTimeOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDayOfMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDayOfWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDayOfYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDaysSinceYearZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toHour",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toISOWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toISOYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInterval",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalDay",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalHour",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalMicrosecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalMillisecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalMinute",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalNanosecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalQuarter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalSecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIntervalYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toLastDayOfMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toLastDayOfWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toMillisecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toMinute",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toModifiedJulianDay",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toModifiedJulianDayOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toMonday",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toMonthNumSinceEpoch",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toQuarter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeDayNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeHourNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeMinuteNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeMonthNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeQuarterNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeSecondNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeWeekNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toRelativeYearNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toSecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfDay",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfFifteenMinutes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfFiveMinutes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfHour",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfISOYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfInterval",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfMicrosecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfMillisecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfMinute",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfNanosecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfQuarter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfSecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfTenMinutes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStartOfYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTime64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTime64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTimeOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTimeOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTimeWithFixedDate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTimezone",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUTCTimestamp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUnixTimestamp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUnixTimestamp64Micro",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUnixTimestamp64Milli",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUnixTimestamp64Nano",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUnixTimestamp64Second",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYearNumSinceEpoch",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYearWeek",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "today",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "yesterday",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "encoding": [
+      {
+        "name": "bin",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "bitCount",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitmaskToList",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "unbin",
+        "is_aggregate": false,
+        "case_insensitive": true
+      }
+    ],
+    "geo": [
+      {
+        "name": "L1Distance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "L2Distance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "L2SquaredDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LinfDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LpDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitHammingDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "byteHammingDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cosineDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "damerauLevenshteinDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "editDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "editDistanceUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "geoDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "geoToH3",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "greatCircleDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3CellAreaM2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3CellAreaRads2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3Distance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3EdgeAngle",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetBaseCell",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetDestinationIndexFromUnidirectionalEdge",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetFaces",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetIndexesFromUnidirectionalEdge",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetOriginIndexFromUnidirectionalEdge",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetPentagonIndexes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetRes0Indexes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetResolution",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetUnidirectionalEdge",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetUnidirectionalEdgeBoundary",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3IndexesAreNeighbors",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3IsPentagon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3IsResClassIII",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3IsValid",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3Line",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3PointDistKm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3PointDistM",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3PointDistRads",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToCenterChild",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToChildren",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToGeo",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToGeoBoundary",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToParent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3UnidirectionalEdgeIsValid",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3kRing",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseAdd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseDivide",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseEqual",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseGreater",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseGreaterEqual",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseLess",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseLessEqual",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseNotEqual",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseSubtract",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "pointInPolygon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonAreaCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonAreaSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonConvexHullCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonPerimeterCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonPerimeterSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsDistanceCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsDistanceSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsEqualsCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsSymDifferenceCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsSymDifferenceSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsUnionCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsUnionSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsWithinCartesian",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "polygonsWithinSpherical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKBPoint",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKBPolygon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTPoint",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTPolygon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleHammingDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "xxh3",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "hash": [
+      {
+        "name": "CRC32",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "CRC32IEEE",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "CRC64",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "JSONSharedDataPaths",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONSharedDataPathsWithTypes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "MD5",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA1",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA224",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA384",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA512",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "SHA512_256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "farmFingerprint64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "halfMD5",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToCity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "shardCount",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "shardNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "ip": [
+      {
+        "name": "IPv4ToIPv6",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "RIPEMD160",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutIPv6",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetIPv4",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetIPv4OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetIPv6",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetIPv6OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiply",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiplyDecimal",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorPointwiseMultiply",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "pointInEllipses",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKBMultiPolygon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTMultiPolygon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv4",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv4OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv4OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv4OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv6",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv6OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv6OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toIPv6OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleMultiply",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleMultiplyByNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "json": [
+      {
+        "name": "JSONAllPaths",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONAllPathsWithTypes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONDynamicPaths",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONDynamicPathsWithTypes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONKey",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONMergePatch",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONType",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSON_EXISTS",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSON_QUERY",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSON_VALUE",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isValidJSON",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "math": [
+      {
+        "name": "L1Normalize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "L2Normalize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "L2SquaredNorm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LinfNormalize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "LpNormalize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "UTCTimestamp",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "YYYYMMDDToDate",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "YYYYMMDDToDate32",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "YYYYMMDDhhmmssToDateTime",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "YYYYMMDDhhmmssToDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__actionName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__bitWrapperFunc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__getScalar",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "abs",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "accurateCast",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "accurateCastOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "accurateCastOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "acos",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "acosh",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addDate",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "addInterval",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addMicroseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addMilliseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addMinutes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addNanoseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addQuarters",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addSeconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addTupleOfIntervals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addWeeks",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addYears",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "aes_decrypt_mysql",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "aes_encrypt_mysql",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "age",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "asin",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "asinh",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "assumeNotNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "atan",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "atan2",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "atanh",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "basename",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitAnd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitRotateLeft",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitRotateRight",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitShiftLeft",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitTest",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitTestAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bitTestAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "blockNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "blockSerializedSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "blockSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "byteSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "byteSwap",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "catboostEvaluate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cbrt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ceil",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "changeDay",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "changeHour",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "changeMinute",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "changeMonth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "changeSecond",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "changeYear",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "coalesce",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "connectionId",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "cos",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "cosh",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "currentDatabase",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "currentProfiles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "currentRoles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "currentSchemas",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "currentUser",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "decrypt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "defaultProfiles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "defaultRoles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "defaultValueOfArgumentType",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "defaultValueOfTypeName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "degrees",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "demangle",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetChildren",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetDate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetDateOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetDateTimeOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetDescendants",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetFloat32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetFloat32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetFloat64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetFloat64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetHierarchy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt16OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetInt8OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt16OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUInt8OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictIsIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "displayName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "divide",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "divideDecimal",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "divideOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dumpColumnStructure",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dynamicType",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "e",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "enabledProfiles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "enabledRoles",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "encrypt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "endsWith",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "endsWithUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "equals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "erf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "erfc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "errorCodeToName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "evalMLMethod",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "exp",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "exp10",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "exp2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "factorial",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "file",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "finalizeAggregation",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "financialInternalRateOfReturn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "financialInternalRateOfReturnExtended",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "financialNetPresentValue",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "financialNetPresentValueExtended",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "floor",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "fromDaysSinceYearZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromDaysSinceYearZero32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromModifiedJulianDay",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromModifiedJulianDayOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUTCTimestamp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestamp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestamp64Micro",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestamp64Milli",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestamp64Nano",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestamp64Second",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fromUnixTimestampInJodaSyntax",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "gcd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "generateRandomStructure",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "generateSerialID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getClientHTTPHeader",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getMacro",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getMergeTreeSetting",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getOSKernelVersion",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getServerSetting",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getSetting",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getSettingOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getSizeOfEnumType",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getSubcolumn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getTypeSerializationStreams",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalNotInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalNotNullInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalNullInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalVariable",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "greatCircleAngle",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "greater",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "greaterOrEquals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "greatest",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hopEnd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hostName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "icebergBucket",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "icebergTruncate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "identity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ifNotFinite",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ignore",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "inIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "indexHint",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "initializeAggregation",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intDivOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intExp10",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intExp2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isConstant",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isDecimalOverflow",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isFinite",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isInfinite",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isMergeTreePartCoveredBy",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "isNullable",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isZeroOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "jaroWinklerSimilarity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "keccak256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lcm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "least",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "left",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "leftUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "less",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lessOrEquals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lgamma",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "locate",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "log",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "log10",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "log1p",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "log2",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "logTrace",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lowCardinalityIndices",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lowCardinalityKeys",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "makeDate",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "makeDate32",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "makeDateTime",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "makeDateTime64",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "materialize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mergeTreePartInfo",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "minSampleSizeContinuous",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "minSampleSizeConversion",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "modulo",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "moduloLegacy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "moduloOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "moduloOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "monthName",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "multiSearchAllPositions",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAllPositionsCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAllPositionsCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAllPositionsUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAnyCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAnyCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiSearchAnyUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "negate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "neighbor",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "nested",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "netloc",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notEquals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notNullInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "nullInIgnoreSet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorAllValueSum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorBuild",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorGetValue",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "overlay",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "overlayUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseReadableSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseReadableSizeOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "parseReadableSizeOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "pi",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "positionCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "positionCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "positiveModulo",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "positiveModuloOrNull",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "pow",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "randBernoulli",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randChiSquared",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randConstant",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randExponential",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randFisherF",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randLogNormal",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randNegativeBinomial",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randStudentT",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTRing",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regexpQuoteMeta",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionHierarchy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToArea",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToContinent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToCountry",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToDistrict",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regionToTopContinent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpret",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsDate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsFloat32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsFloat64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "repeat",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "replicate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "revision",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "round",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "roundAge",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "roundBankers",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "roundDown",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "roundDuration",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "roundToExp2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "rowNumberInAllBlocks",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "rowNumberInBlock",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "runningAccumulate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "runningConcurrency",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "runningDifference",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "searchAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "searchAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "seriesDecomposeSTL",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "seriesOutliersDetectTukey",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "serverTimezone",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "showCertificate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sign",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "sin",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "sinh",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sleep",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sleepEachRow",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "soundex",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "space",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "sparseGrams",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sparseGramsUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sqrt",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "structureToCapnProtoSchema",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "structureToProtobufSchema",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subDate",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "subtractInterval",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractMicroseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractMilliseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractMinutes",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractNanoseconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractQuarters",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractSeconds",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractTupleOfIntervals",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractWeeks",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractYears",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tan",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "tanh",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "tgamma",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toBFloat16OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toColumnTypeName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal128OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal128OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal128OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal256OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal256OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal256OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal32OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal32OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimal64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat32OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt128OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt128OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt16OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt16OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt256OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt256OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt32OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt8OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt8OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toNullable",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toTypeName",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt128OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt128OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt16OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt16OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt256OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt256OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt32OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt32OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt64OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt64OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt8OrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt8OrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "transactionLatestSnapshot",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "transactionOldestSnapshot",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "translate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "translateUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "trunc",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "tryDecrypt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tumble",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tumbleEnd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tumbleStart",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tuple",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleDivide",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleDivideByNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleIntDiv",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleIntDivByNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleIntDivOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleIntDivOrZeroByNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleMinus",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleModulo",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleModuloByNumber",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleNames",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleNegate",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tuplePlus",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleToNameValuePairs",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "uptime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "variantType",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "version",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "visibleWidth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "widthBucket",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "zookeeperSessionUptime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "other": [
+      {
+        "name": "FQDN",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "MD4",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__patchPartitionID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addDays",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addHours",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "addMonths",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "bar",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "chdb",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "clamp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countDigits",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutWWW",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dotProduct",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fuzzBits",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hop",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hopStart",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hypot",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "in",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "initcap",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "initcapUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "intDiv",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isNaN",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isValidUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "jaroSimilarity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "max2",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "min2",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "minus",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "partitionId",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "plus",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "position",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "positionUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "printf",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "radians",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "right",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "rightUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "sigmoid",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "startsWith",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "startsWithUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractDays",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractHours",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "subtractMonths",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "svg",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tid",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toBFloat16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toBool",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toLowCardinality",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toValidUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYYYYMM",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYYYYMMDD",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toYYYYMMDDhhmmss",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "transactionID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "windowID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wkb",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "wkt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "string": [
+      {
+        "name": "IPv4NumToString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv4NumToStringClassC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv4StringToNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv4StringToNumOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv4StringToNumOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv6NumToString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv6StringToNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv6StringToNumOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "IPv6StringToNumOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONArrayLength",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtract",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractArrayRaw",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractArrayRawCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractBool",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractBoolCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractFloat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractFloatCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractInt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractIntCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeys",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeysAndValues",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeysAndValuesCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeysAndValuesRaw",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeysAndValuesRawCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractKeysCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractRaw",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractRawCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractStringCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractUInt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONExtractUIntCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "JSONLength",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "MACNumToString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "MACStringToNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "MACStringToOUI",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "UUIDNumToString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "UUIDStringToNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "alphaTokens",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "appendTrailingCharIfAbsent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayConcat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayJoin",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayPartialReverseSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReverse",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReverseFill",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReverseSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayReverseSplit",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arraySplit",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "arrayStringConcat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ascii",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "base32Decode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "base32Encode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "base58Decode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "base58Encode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "caseWithExpression",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "char",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "compareSubstrings",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "concat",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "concatAssumeInjective",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "concatWithSeparator",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "concatWithSeparatorAssumeInjective",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countMatches",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countMatchesCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countSubstrings",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "countSubstringsCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "countSubstringsCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutQueryString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutQueryStringAndFragment",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "decodeHTMLComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "decodeURLComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "decodeURLFormComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "decodeXMLComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetStringOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "emptyArrayString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "encodeURLComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "encodeURLFormComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "encodeXMLComponent",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extract",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractAllGroupsHorizontal",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractAllGroupsVertical",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractGroups",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractKeyValuePairs",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractKeyValuePairsWithEscaping",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractTextFromHTML",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractURLParameter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractURLParameterNames",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "extractURLParameters",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "filesystemAvailable",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "filesystemCapacity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "filesystemUnreserved",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "format",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatQuery",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatQueryOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatQuerySingleLine",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatQuerySingleLineOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatReadableDecimalSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatReadableQuantity",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatReadableSize",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatRow",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "formatRowNoNewline",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "geohashDecode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "geohashEncode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getMaxTableNameLengthForDatabase",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3EdgeLengthKm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3EdgeLengthM",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ExactEdgeLengthKm",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ExactEdgeLengthM",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ExactEdgeLengthRads",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3GetUnidirectionalEdgesFromHexagon",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3HexAreaKm2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3HexAreaM2",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3HexRing",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3NumHexagons",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "h3ToString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasSubstr",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasToken",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hasTokenCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasTokenCaseInsensitiveOrNull",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hasTokenOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hex",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "hilbertDecode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "hilbertEncode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ilike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isIPAddressInRange",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isIPv4String",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isIPv6String",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "joinGet",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "joinGetOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "leftPad",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "leftPadUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "length",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "lengthUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "like",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "lower",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "mapAdd",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapConcat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapContainsKeyLike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapContainsValueLike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapExtractKeyLike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapExtractValueLike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapPartialReverseSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mapReverseSort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "match",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mortonDecode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "mortonEncode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiFuzzyMatchAllIndices",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiFuzzyMatchAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiFuzzyMatchAnyIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiMatchAllIndices",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiMatchAny",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "multiMatchAnyIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramDistance",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramDistanceCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramDistanceCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramDistanceUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashArg",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashArgCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashArgCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashArgUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramMinHashUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSearch",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSearchCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSearchCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSearchUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSimHash",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSimHashCaseInsensitive",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSimHashCaseInsensitiveUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngramSimHashUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ngrams",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notILike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "notLike",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "numericIndexedVectorShortDebugString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "queryString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "queryStringAndFragment",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randomFixedString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randomPrintableASCII",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randomString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "randomStringUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKBLineString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKBMultiLineString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTLineString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "readWKTMultiLineString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "regexpExtract",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsFixedString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "replaceAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "replaceOne",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "replaceRegexpAll",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "replaceRegexpOne",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reverse",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "reverseUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "rightPad",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "rightPadUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractBool",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractFloat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractInt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractRaw",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "simpleJSONExtractUInt",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "splitByChar",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "splitByNonAlpha",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "splitByRegexp",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "splitByString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "splitByWhitespace",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "stringBytesEntropy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "stringBytesUniq",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "stringJaccardIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "stringJaccardIndexUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "stringToH3",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "substring",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "substringIndex",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "substringIndexUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "substringUTF8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toDecimalString",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "toFixedString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toJSONString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toString",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toStringCutToZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tokens",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "trimBoth",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "trimLeft",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "trimRight",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tryBase32Decode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tryBase58Decode",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tupleConcat",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "unhex",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "upper",
+        "is_aggregate": false,
+        "case_insensitive": true
+      }
+    ],
+    "type": [
+      {
+        "name": "CAST",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "_CAST",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "globalNotNullIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "globalNullIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "ifNull",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "intDivOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isNotNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "isNull",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "notNullIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "nullIf",
+        "is_aggregate": false,
+        "case_insensitive": true
+      },
+      {
+        "name": "nullIn",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toBFloat16OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat32OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toFloat64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt128OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt16OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt256OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt32OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toInt8OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt128",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt128OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt16",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt16OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt256",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt256OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt32",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt32OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt64",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt64OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt8",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUInt8OrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "url": [
+      {
+        "name": "URLHierarchy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "URLPathHierarchy",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "__scalarSubqueryResult",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "currentQueryID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutFragment",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "cutURLParameter",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "domain",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "domainRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "domainWithoutWWW",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "domainWithoutWWWRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "fragment",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "getServerPort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "initialQueryID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "initialQueryStartTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "normalizeQuery",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "normalizeQueryKeepNames",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "path",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "pathFull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "port",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "portRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "proportionsZTest",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "protocol",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "queryID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "tcpPort",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "topLevelDomain",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "topLevelDomainRFC",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "uuid": [
+      {
+        "name": "UUIDToNum",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "UUIDv7ToDateTime",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUUID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "dictGetUUIDOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "generateUUIDv4",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "generateUUIDv7",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "reinterpretAsUUID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "serverUUID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUUID",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUUIDOrDefault",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUUIDOrNull",
+        "is_aggregate": false,
+        "case_insensitive": false
+      },
+      {
+        "name": "toUUIDOrZero",
+        "is_aggregate": false,
+        "case_insensitive": false
+      }
+    ],
+    "window": [
+      {
+        "name": "denseRank",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "lag",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "lagInFrame",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "lead",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "leadInFrame",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "nth_value",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "ntile",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "percentRank",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantile",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileBFloat16",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileBFloat16Weighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileDD",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileDeterministic",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExact",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactExclusive",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactHigh",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactInclusive",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactLow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileExactWeightedInterpolated",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileGK",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileInterpolatedWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileTDigest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileTDigestWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileTiming",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantileTimingWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantiles",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesBFloat16",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesBFloat16Weighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesDD",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesDeterministic",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExact",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactExclusive",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactHigh",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactInclusive",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactLow",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesExactWeightedInterpolated",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesGK",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesInterpolatedWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesTDigest",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesTDigestWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesTiming",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "quantilesTimingWeighted",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "rank",
+        "is_aggregate": true,
+        "case_insensitive": true
+      },
+      {
+        "name": "rankCorr",
+        "is_aggregate": true,
+        "case_insensitive": false
+      },
+      {
+        "name": "row_number",
+        "is_aggregate": true,
+        "case_insensitive": true
+      }
+    ]
+  },
+  "aliases": {
+    "BIT_AND": "groupBitAnd",
+    "BIT_OR": "groupBitOr",
+    "BIT_XOR": "groupBitXor",
+    "CHARACTER_LENGTH": "lengthUTF8",
+    "CHAR_LENGTH": "lengthUTF8",
+    "COVAR_POP": "covarPop",
+    "COVAR_SAMP": "covarSamp",
+    "DATABASE": "currentDatabase",
+    "DATE_DIFF": "dateDiff",
+    "DATE_FORMAT": "formatDateTime",
+    "DATE_TRUNC": "dateTrunc",
+    "DAY": "toDayOfMonth",
+    "DAYOFMONTH": "toDayOfMonth",
+    "DAYOFWEEK": "toDayOfWeek",
+    "DAYOFYEAR": "toDayOfYear",
+    "FORMAT_BYTES": "formatReadableSize",
+    "FROM_DAYS": "fromDaysSinceYearZero",
+    "FROM_UNIXTIME": "fromUnixTimestamp",
+    "HOUR": "toHour",
+    "INET6_ATON": "IPv6StringToNum",
+    "INET6_NTOA": "IPv6NumToString",
+    "INET_ATON": "IPv4StringToNum",
+    "INET_NTOA": "IPv4NumToString",
+    "JSON_ARRAY_LENGTH": "JSONArrayLength",
+    "LAST_DAY": "toLastDayOfMonth",
+    "MAP_FROM_ARRAYS": "mapFromArrays",
+    "MILLISECOND": "toMillisecond",
+    "MINUTE": "toMinute",
+    "MONTH": "toMonth",
+    "OCTET_LENGTH": "length",
+    "QUARTER": "toQuarter",
+    "REGEXP_EXTRACT": "regexpExtract",
+    "REGEXP_MATCHES": "match",
+    "REGEXP_REPLACE": "replaceRegexpAll",
+    "SCHEMA": "currentDatabase",
+    "SECOND": "toSecond",
+    "STD": "stddevPop",
+    "STDDEV_POP": "stddevPop",
+    "STDDEV_SAMP": "stddevSamp",
+    "ST_LineFromWKB": "readWKBLineString",
+    "ST_MLineFromWKB": "readWKBMultiLineString",
+    "ST_MPolyFromWKB": "readWKBMultiPolygon",
+    "ST_PointFromWKB": "readWKBPoint",
+    "ST_PolyFromWKB": "readWKBPolygon",
+    "SUBSTRING_INDEX": "substringIndex",
+    "SVG": "svg",
+    "TIMESTAMP_DIFF": "dateDiff",
+    "TO_DAYS": "toDaysSinceYearZero",
+    "TO_UNIXTIME": "parseDateTime",
+    "UTC_timestamp": "UTCTimestamp",
+    "VAR_POP": "varPop",
+    "VAR_SAMP": "varSamp",
+    "YEAR": "toYear",
+    "anova": "analysisOfVariance",
+    "anyLastRespectNulls": "anyLast_respect_nulls",
+    "anyRespectNulls": "any_respect_nulls",
+    "anyValueRespectNulls": "any_respect_nulls",
+    "any_value": "any",
+    "any_value_respect_nulls": "any_respect_nulls",
+    "approx_top_count": "approx_top_k",
+    "arrayAUC": "arrayROCAUC",
+    "arrayPRAUC": "arrayAUCPR",
+    "array_agg": "groupArray",
+    "array_concat_agg": "groupArrayArray",
+    "byteSlice": "substring",
+    "caseWithExpr": "caseWithExpression",
+    "caseWithoutExpr": "multiIf",
+    "caseWithoutExpression": "multiIf",
+    "ceiling": "ceil",
+    "concat_ws": "concatWithSeparator",
+    "connection_id": "connectionID",
+    "curdate": "today",
+    "current_database": "currentDatabase",
+    "current_date": "today",
+    "current_query_id": "currentQueryID",
+    "current_schemas": "currentSchemas",
+    "current_timestamp": "now",
+    "current_user": "currentUser",
+    "date_bin": "toStartOfInterval",
+    "date_diff": "dateDiff",
+    "dense_rank": "denseRank",
+    "distanceL1": "L1Distance",
+    "distanceL2": "L2Distance",
+    "distanceL2Squared": "L2SquaredDistance",
+    "distanceLinf": "LinfDistance",
+    "distanceLp": "LpDistance",
+    "extractAllGroups": "extractAllGroupsVertical",
+    "firstValueRespectNulls": "any_respect_nulls",
+    "first_value": "any",
+    "first_value_respect_nulls": "any_respect_nulls",
+    "flatten": "arrayFlatten",
+    "from_utc_timestamp": "fromUTCTimestamp",
+    "fullHostName": "FQDN",
+    "group_concat": "groupConcat",
+    "hostname": "hostName",
+    "initial_query_id": "initialQueryID",
+    "initial_query_start_time": "initialQueryStartTime",
+    "instr": "positionCaseInsensitive",
+    "jsonMergePatch": "JSONMergePatch",
+    "lastValueRespectNulls": "anyLast_respect_nulls",
+    "last_value": "anyLast",
+    "last_value_respect_nulls": "anyLast_respect_nulls",
+    "lcase": "lower",
+    "levenshteinDistance": "editDistance",
+    "levenshteinDistanceUTF8": "editDistanceUTF8",
+    "ln": "log",
+    "lpad": "leftPad",
+    "ltrim": "trimLeft",
+    "lttb": "largestTriangleThreeBuckets",
+    "mapContains": "mapContainsKey",
+    "mapFromString": "extractKeyValuePairs",
+    "median": "quantile",
+    "medianBFloat16": "quantileBFloat16",
+    "medianBFloat16Weighted": "quantileBFloat16Weighted",
+    "medianDD": "quantileDD",
+    "medianDeterministic": "quantileDeterministic",
+    "medianExact": "quantileExact",
+    "medianExactHigh": "quantileExactHigh",
+    "medianExactLow": "quantileExactLow",
+    "medianExactWeighted": "quantileExactWeighted",
+    "medianExactWeightedInterpolated": "quantileExactWeightedInterpolated",
+    "medianGK": "quantileGK",
+    "medianInterpolatedWeighted": "quantileInterpolatedWeighted",
+    "medianTDigest": "quantileTDigest",
+    "medianTDigestWeighted": "quantileTDigestWeighted",
+    "medianTiming": "quantileTiming",
+    "medianTimingWeighted": "quantileTimingWeighted",
+    "mid": "substring",
+    "minSampleSizeContinous": "minSampleSizeContinuous",
+    "mismatches": "byteHammingDistance",
+    "mod": "modulo",
+    "modOrNull": "moduloOrNull",
+    "normL1": "L1Norm",
+    "normL2": "L2Norm",
+    "normL2Squared": "L2SquaredNorm",
+    "normLinf": "LinfNorm",
+    "normLp": "LpNorm",
+    "normalizeL1": "L1Normalize",
+    "normalizeL2": "L2Normalize",
+    "normalizeLinf": "LinfNormalize",
+    "normalizeLp": "LpNormalize",
+    "partitionID": "partitionId",
+    "percent_rank": "percentRank",
+    "pmod": "positiveModulo",
+    "pmodOrNull": "positiveModuloOrNull",
+    "positive_modulo": "positiveModulo",
+    "positive_modulo_or_null": "positiveModuloOrNull",
+    "power": "pow",
+    "query_id": "queryID",
+    "rand32": "rand",
+    "replace": "replaceAll",
+    "rpad": "rightPad",
+    "rtrim": "trimRight",
+    "scalarProduct": "dotProduct",
+    "serverTimeZone": "serverTimezone",
+    "sparkBar": "sparkbar",
+    "splitByAlpha": "alphaTokens",
+    "str_to_date": "parseDateTimeOrNull",
+    "str_to_map": "extractKeyValuePairs",
+    "substr": "substring",
+    "timeSeriesLastToGrid": "timeSeriesResampleToGridWithStaleness",
+    "timeZone": "timezone",
+    "timeZoneOf": "timezoneOf",
+    "timeZoneOffset": "timezoneOffset",
+    "time_bucket": "toStartOfInterval",
+    "timestampDiff": "dateDiff",
+    "timestamp_diff": "dateDiff",
+    "toStartOfFiveMinute": "toStartOfFiveMinutes",
+    "toTimeZone": "toTimezone",
+    "to_utc_timestamp": "toUTCTimestamp",
+    "trim": "trimBoth",
+    "truncate": "trunc",
+    "ucase": "upper",
+    "user": "currentUser",
+    "vectorDifference": "tupleMinus",
+    "vectorSum": "tuplePlus",
+    "visitParamExtractBool": "simpleJSONExtractBool",
+    "visitParamExtractFloat": "simpleJSONExtractFloat",
+    "visitParamExtractInt": "simpleJSONExtractInt",
+    "visitParamExtractRaw": "simpleJSONExtractRaw",
+    "visitParamExtractString": "simpleJSONExtractString",
+    "visitParamExtractUInt": "simpleJSONExtractUInt",
+    "visitParamHas": "simpleJSONHas",
+    "week": "toWeek",
+    "width_bucket": "widthBucket",
+    "yandexConsistentHash": "kostikConsistentHash",
+    "yearweek": "toYearWeek"
+  },
+  "total_functions": 1662
+}
