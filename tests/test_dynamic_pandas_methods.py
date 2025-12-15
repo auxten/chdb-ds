@@ -62,7 +62,7 @@ class TestDynamicFallbackToChdb(unittest.TestCase):
 
     def test_clickhouse_specific_function(self):
         """Test ClickHouse-specific function via fallback."""
-        nat = ds.from_file('tests/dataset/users.csv').limit(3)
+        nat = ds.from_file('tests/dataset/users.csv').orderby('user_id').limit(3)
         nat['name_len'] = Function('lengthUTF8', Field('name'))
         df = nat.to_df()
         self.assertEqual(df['name_len'].iloc[0], 11)  # 'Alice Smith'
@@ -97,4 +97,3 @@ class TestDynamicWithNumbers(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
