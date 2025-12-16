@@ -75,8 +75,8 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         # Execute and get result
         result = list(self.ds['text'].str.upper())
 
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
+        # Row order is now preserved
+        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
 
     def test_upper_with_pandas(self):
         """Test upper() executes via Pandas."""
@@ -85,36 +85,36 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         # Execute and get result
         result = list(self.ds['text'].str.upper())
 
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
+        # Row order is now preserved
+        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
 
     def test_lower_with_clickhouse(self):
         """Test lower() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['text'].str.lower())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['hello', 'world', 'test']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hello', 'world', 'test'])
 
     def test_lower_with_pandas(self):
         """Test lower() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['text'].str.lower())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted(['hello', 'world', 'test']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hello', 'world', 'test'])
 
     def test_length_with_clickhouse(self):
         """Test length() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['text'].str.length())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([5, 5, 4]))
+        # Row order is now preserved
+        self.assertEqual(result, [5, 5, 4])
 
     def test_length_with_pandas(self):
         """Test length() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['text'].str.length())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted([5, 5, 4]))
+        # Row order is now preserved
+        self.assertEqual(result, [5, 5, 4])
 
     def test_trim_with_clickhouse(self):
         """Test trim() executes via ClickHouse."""
@@ -122,8 +122,8 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         df = pd.DataFrame({'text': ['  hello  ', '  world  ']})
         ds = DataStore.from_dataframe(df)
         result = list(ds['text'].str.trim())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['hello', 'world']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hello', 'world'])
 
     def test_trim_with_pandas(self):
         """Test trim() executes via Pandas."""
@@ -131,8 +131,8 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         df = pd.DataFrame({'text': ['  hello  ', '  world  ']})
         ds = DataStore.from_dataframe(df)
         result = list(ds['text'].str.trim())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted(['hello', 'world']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hello', 'world'])
 
 
 class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
@@ -152,22 +152,22 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         """Test abs() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['value'].abs())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1.5, 2.7, 3.2]))
+        # Row order is now preserved
+        self.assertEqual(result, [1.5, 2.7, 3.2])
 
     def test_abs_with_pandas(self):
         """Test abs() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['value'].abs())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted([1.5, 2.7, 3.2]))
+        # Row order is now preserved
+        self.assertEqual(result, [1.5, 2.7, 3.2])
 
     def test_round_with_clickhouse(self):
         """Test round() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['value'].round())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-2.0, 3.0, -3.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-2.0, 3.0, -3.0])
 
     def test_round_with_pandas(self):
         """Test round() executes via Pandas."""
@@ -180,43 +180,43 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         """Test sqrt() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['positive'].sqrt())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([2.0, 3.0, 4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [2.0, 3.0, 4.0])
 
     def test_sqrt_with_pandas(self):
         """Test sqrt() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['positive'].sqrt())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted([2.0, 3.0, 4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [2.0, 3.0, 4.0])
 
     def test_floor_with_clickhouse(self):
         """Test floor() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['value'].floor())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-2.0, 2.0, -4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-2.0, 2.0, -4.0])
 
     def test_floor_with_pandas(self):
         """Test floor() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['value'].floor())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted([-2.0, 2.0, -4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-2.0, 2.0, -4.0])
 
     def test_ceil_with_clickhouse(self):
         """Test ceil() executes via ClickHouse."""
         config.use_clickhouse()
         result = list(self.ds['value'].ceil())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-1.0, 3.0, -3.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-1.0, 3.0, -3.0])
 
     def test_ceil_with_pandas(self):
         """Test ceil() executes via Pandas."""
         config.use_pandas()
         result = list(self.ds['value'].ceil())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted([-1.0, 3.0, -3.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-1.0, 3.0, -3.0])
 
 
 class TestLazyPandasOnlyFunctions(unittest.TestCase):
@@ -272,8 +272,8 @@ class TestLazyChainedOperations(unittest.TestCase):
 
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
+        # Row order is now preserved
+        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
 
     def test_chained_string_ops_pandas(self):
         """Test chained string operations with Pandas."""
@@ -281,8 +281,8 @@ class TestLazyChainedOperations(unittest.TestCase):
 
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
-        # Sort before comparing for consistency
-        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST']))
+        # Row order is now preserved
+        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
 
     def test_mixed_operations(self):
         """Test mixed math and comparison operations."""
@@ -290,8 +290,8 @@ class TestLazyChainedOperations(unittest.TestCase):
 
         # abs then filter
         abs_values = list(self.ds['value'].abs())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(abs_values), sorted([1, 2, 3]))
+        # Row order is now preserved
+        self.assertEqual(abs_values, [1, 2, 3])
 
 
 class TestEngineSwitchingDuringExecution(unittest.TestCase):
@@ -320,9 +320,9 @@ class TestEngineSwitchingDuringExecution(unittest.TestCase):
         config.use_clickhouse()
         result2 = list(self.ds['value'].abs())
 
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result1), [1, 2, 3, 4, 5])
-        self.assertEqual(sorted(result2), [1, 2, 3, 4, 5])
+        # Row order is now preserved
+        self.assertEqual(result1, [1, 2, 3, 4, 5])
+        self.assertEqual(result2, [1, 2, 3, 4, 5])
 
     def test_results_consistent_across_engines(self):
         """Results should be consistent regardless of engine."""
@@ -335,8 +335,8 @@ class TestEngineSwitchingDuringExecution(unittest.TestCase):
         config.use_pandas()
         pd_result = list(ds['val'].abs())
 
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(ch_result), sorted(pd_result))
+        # Row order is now preserved
+        self.assertEqual(ch_result, pd_result)
 
 
 class TestFunctionConfigDirectAccess(unittest.TestCase):

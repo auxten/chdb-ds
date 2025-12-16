@@ -84,14 +84,14 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list(ds['age'] + 10)
         pd_result = list(self.df['age'] + 10)
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_subtraction(self):
         """Test column - scalar."""
         ds = self.create_ds()
         ds_result = list(ds['age'] - 5)
         pd_result = list(self.df['age'] - 5)
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_multiplication(self):
         """Test column * scalar."""
@@ -112,22 +112,22 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list(ds['age'] // 10)
         pd_result = list(self.df['age'] // 10)
-        # Compare as sorted integers
-        self.assertEqual(sorted([int(x) for x in ds_result]), sorted([int(x) for x in pd_result]))
+        # Row order is now preserved
+        self.assertEqual([int(x) for x in ds_result], [int(x) for x in pd_result])
 
     def test_modulo(self):
         """Test column % scalar."""
         ds = self.create_ds()
         ds_result = list(ds['age'] % 10)
         pd_result = list(self.df['age'] % 10)
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_power(self):
         """Test column ** scalar."""
         ds = self.create_ds()
         ds_result = list(ds['age'] ** 2)
         pd_result = list(self.df['age'] ** 2)
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     # ========== Reverse Arithmetic Operations ==========
 
@@ -136,14 +136,14 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list(100 + ds['age'])
         pd_result = list(100 + self.df['age'])
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_reverse_subtraction(self):
         """Test scalar - column."""
         ds = self.create_ds()
         ds_result = list(1000 - ds['age'])
         pd_result = list(1000 - self.df['age'])
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_reverse_multiplication(self):
         """Test scalar * column."""
@@ -159,7 +159,7 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list(-ds['age'])
         pd_result = list(-self.df['age'])
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     # ========== Column-Column Operations ==========
 
@@ -177,7 +177,7 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list((ds['age'] - 20) * 2 + 10)
         pd_result = list((self.df['age'] - 20) * 2 + 10)
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_complex_chained_operations(self):
         """Test complex chained operations."""
@@ -211,49 +211,49 @@ class TestColumnExprStringOperations(unittest.TestCase):
         ds = self.create_ds()
         ds_result = list(ds['name'].str.upper())
         pd_result = list(self.df['name'].str.upper())
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_lower(self):
         """Test str.lower()."""
         ds = self.create_ds()
         ds_result = list(ds['name'].str.lower())
         pd_result = list(self.df['name'].str.lower())
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_length(self):
         """Test str.length() / str.len()."""
         ds = self.create_ds()
         ds_result = list(ds['name'].str.length())
         pd_result = list(self.df['name'].str.len())
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_trim(self):
         """Test str.trim() / str.strip()."""
         ds = self.create_ds()
         ds_result = list(ds['text'].str.trim())
         pd_result = list(self.df['text'].str.strip())
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_left(self):
         """Test str.left(n)."""
         ds = self.create_ds()
         ds_result = list(ds['text'].str.left(5))
         pd_result = list(self.df['text'].str[:5])
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_right(self):
         """Test str.right(n)."""
         ds = self.create_ds()
         ds_result = list(ds['text'].str.right(3))
         pd_result = list(self.df['text'].str[-3:])
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
     def test_str_reverse(self):
         """Test str.reverse()."""
         ds = self.create_ds()
         ds_result = list(ds['text'].str.reverse())
         pd_result = list(self.df['text'].apply(lambda x: x[::-1]))
-        self.assertEqual(sorted(ds_result), sorted(pd_result))
+        self.assertEqual(ds_result, pd_result)
 
 
 class TestColumnExprComparisonOperations(unittest.TestCase):
@@ -392,7 +392,7 @@ class TestColumnExprTypeConversion(unittest.TestCase):
         ds = self.create_ds()
         result = list(ds['int_col'].to_string())
         self.assertTrue(all(isinstance(x, str) for x in result))
-        self.assertEqual(sorted(result), ['1', '2', '3', '4', '5'])
+        self.assertEqual(result, ['1', '2', '3', '4', '5'])
 
 
 class TestColumnExprMathFunctions(unittest.TestCase):
@@ -566,7 +566,7 @@ class TestColumnExprAssignment(unittest.TestCase):
         ds['name_upper'] = ds['name'].str.upper()
         result = ds.to_df()
         expected = list(self.df['name'].str.upper())
-        self.assertEqual(sorted(list(result['name_upper'])), sorted(expected))
+        self.assertEqual(list(result['name_upper']), expected)
 
     def test_assign_type_cast(self):
         """Test ds['new'] = ds['col'].cast('Float64')."""

@@ -2156,10 +2156,8 @@ class TestSQLMethodInPipeline(unittest.TestCase):
         # Test 2: Verify it produces the same result as short form without WHERE
         ds2 = ds.sql("value > 50")
         df2 = ds2.to_df()
-        # Sort both DataFrames before comparing since SQL order is not guaranteed
-        df1_sorted = df1.sort_values(by='id').reset_index(drop=True)
-        df2_sorted = df2.sort_values(by='id').reset_index(drop=True)
-        pd.testing.assert_frame_equal(df1_sorted, df2_sorted)
+        # Row order is now preserved with the pre-added index column solution
+        pd.testing.assert_frame_equal(df1.reset_index(drop=True), df2.reset_index(drop=True))
         print(f"Confirmed: 'WHERE value > 50' === 'value > 50'")
 
         # Test 3: WHERE with ORDER BY and LIMIT
