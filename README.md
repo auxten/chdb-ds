@@ -741,7 +741,6 @@ python -m unittest datastore.tests.test_datastore_core
 - [x] Query executors
 - [x] ClickHouse SQL functions support (100+ functions via `.str`, `.dt` accessors) see [Function Reference](docs/FUNCTIONS.md)
 - [x] Hybrid execution engine (configurable chDB/Pandas execution)
-- [ ] Function args completion
 - [ ] Update and Save back data
 - [ ] Chart support
 - [ ] More data exploration functions, faster describe()
@@ -749,6 +748,7 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] Mock data support
 - [ ] Schema management(infer or set manually)
 - [ ] Connection managers
+- [ ] MCP for data science functions
 
 ### Beta release
 - [ ] Unstructured data support(Images, Audios as a column)

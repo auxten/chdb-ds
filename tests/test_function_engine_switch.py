@@ -129,20 +129,20 @@ class TestStringFunctionsExecution(unittest.TestCase):
     def test_upper(self):
         """Test upper() function."""
         result = list(self.ds['text'].str.upper())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['HELLO', 'WORLD', 'TEST STRING', '  SPACES  ']))
+        # Row order is now preserved
+        self.assertEqual(result, ['HELLO', 'WORLD', 'TEST STRING', '  SPACES  '])
 
     def test_lower(self):
         """Test lower() function."""
         result = list(self.ds['text'].str.lower())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['hello', 'world', 'test string', '  spaces  ']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hello', 'world', 'test string', '  spaces  '])
 
     def test_length(self):
         """Test length() function."""
         result = list(self.ds['text'].str.length())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([5, 5, 11, 10]))
+        # Row order is now preserved
+        self.assertEqual(result, [5, 5, 11, 10])
 
     def test_trim(self):
         """Test trim() function."""
@@ -153,14 +153,14 @@ class TestStringFunctionsExecution(unittest.TestCase):
     def test_left(self):
         """Test left() function."""
         result = list(self.ds['text'].str.left(3))
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['hel', 'WOR', 'Tes', '  s']))
+        # Row order is now preserved
+        self.assertEqual(result, ['hel', 'WOR', 'Tes', '  s'])
 
     def test_right(self):
         """Test right() function."""
         result = list(self.ds['text'].str.right(3))
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted(['llo', 'RLD', 'ing', 's  ']))
+        # Row order is now preserved
+        self.assertEqual(result, ['llo', 'RLD', 'ing', 's  '])
 
     def test_replace(self):
         """Test replace() function."""
@@ -202,14 +202,14 @@ class TestDateTimeFunctionsExecution(unittest.TestCase):
     def test_month(self):
         """Test month extraction."""
         result = list(self.ds['date'].dt.month)
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1, 6, 12]))
+        # Row order is now preserved
+        self.assertEqual(result, [1, 6, 12])
 
     def test_day(self):
         """Test day extraction."""
         result = list(self.ds['date'].dt.day)
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([15, 20, 25]))
+        # Row order is now preserved
+        self.assertEqual(result, [15, 20, 25])
 
     def test_hour(self):
         """Test hour extraction."""
@@ -220,14 +220,14 @@ class TestDateTimeFunctionsExecution(unittest.TestCase):
     def test_minute(self):
         """Test minute extraction."""
         result = list(self.ds['date'].dt.minute)
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([30, 15, 0]))
+        # Row order is now preserved
+        self.assertEqual(result, [30, 15, 0])
 
     def test_second(self):
         """Test second extraction."""
         result = list(self.ds['date'].dt.second)
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([45, 30, 0]))
+        # Row order is now preserved
+        self.assertEqual(result, [45, 30, 0])
 
     def test_day_of_week(self):
         """Test day_of_week extraction."""
@@ -238,8 +238,8 @@ class TestDateTimeFunctionsExecution(unittest.TestCase):
     def test_quarter(self):
         """Test quarter extraction."""
         result = list(self.ds['date'].dt.quarter)
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1, 2, 4]))
+        # Row order is now preserved
+        self.assertEqual(result, [1, 2, 4])
 
 
 class TestMathFunctionsExecution(unittest.TestCase):
@@ -253,32 +253,32 @@ class TestMathFunctionsExecution(unittest.TestCase):
     def test_abs(self):
         """Test abs() function."""
         result = list(self.ds['value'].abs())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1.5, 2.7, 3.2, 4.9]))
+        # Row order is now preserved
+        self.assertEqual(result, [1.5, 2.7, 3.2, 4.9])
 
     def test_round(self):
         """Test round() function."""
         result = list(self.ds['value'].round())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-2.0, 3.0, -3.0, 5.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-2.0, 3.0, -3.0, 5.0])
 
     def test_floor(self):
         """Test floor() function."""
         result = list(self.ds['value'].floor())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-2.0, 2.0, -4.0, 4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-2.0, 2.0, -4.0, 4.0])
 
     def test_ceil(self):
         """Test ceil() function."""
         result = list(self.ds['value'].ceil())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-1.0, 3.0, -3.0, 5.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [-1.0, 3.0, -3.0, 5.0])
 
     def test_sqrt(self):
         """Test sqrt() function."""
         result = list(self.ds['positive'].sqrt())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1.0, 2.0, 3.0, 4.0]))
+        # Row order is now preserved
+        self.assertEqual(result, [1.0, 2.0, 3.0, 4.0])
 
     def test_exp(self):
         """Test exp() function."""
@@ -441,14 +441,14 @@ class TestNewPandasMethods(unittest.TestCase):
         df = pd.DataFrame({'text': ['123', 'abc', '456']})
         ds = DataStore.from_dataframe(df)
         result = list(ds['text'].str.isdigit())
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([1, 0, 1]))
+        # Row order is now preserved
+        self.assertEqual(result, [1, 0, 1])
 
     def test_clip(self):
         """Test clip() method."""
         result = list(self.ds['value'].clip(lower=-2, upper=2))
-        # ClickHouse doesn't guarantee order, so sort before comparing
-        self.assertEqual(sorted(result), sorted([-1, 2, -2]))
+        # Row order is now preserved
+        self.assertEqual(result, [-1, 2, -2])
 
     def test_fillna(self):
         """Test fillna() method via SQL generation."""
