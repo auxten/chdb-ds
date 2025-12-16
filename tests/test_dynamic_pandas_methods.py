@@ -46,7 +46,7 @@ class TestDynamicPandasMethods(unittest.TestCase):
         nat = ds.from_numbers(5)
         nat['squared'] = Function('pow', Field('number'), 2)
         df = nat.to_df()
-        self.assertEqual(sorted([int(x) for x in df['squared'].tolist()]), [0, 1, 4, 9, 16])
+        self.assertEqual([int(x) for x in df['squared'].tolist()], [0, 1, 4, 9, 16])
 
     def test_str_slice(self):
         """Test str.slice - unregistered, uses dynamic invocation."""
@@ -92,7 +92,7 @@ class TestDynamicWithNumbers(unittest.TestCase):
         nat['value'] = Field('number') + 10  # 10, 11, 12, 13, 14
         nat['mod3'] = Function('modulo', Field('value'), 3)  # ClickHouse function
         df = nat.to_df()
-        self.assertEqual(sorted(df['mod3'].tolist()), sorted([1, 2, 0, 1, 2]))
+        self.assertEqual(df['mod3'].tolist(), [1, 2, 0, 1, 2])
 
 
 if __name__ == '__main__':
