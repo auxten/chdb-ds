@@ -172,28 +172,28 @@ class TestColumnAssignment:
 
         Reproduces the issue from: bilstm-fake-news.ipynb
         """
-        # Use fakenews dataset (similar to the notebook)
-        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'fakenews', 'train.csv')
+        # Use users dataset
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
         # Load data
         ds = DataStore.from_file(dataset_path)
         original_columns = list(ds.columns)
 
         # Add a new column using apply (similar to notebook's clean_title)
-        ds['clean_title'] = ds['title'].apply(lambda x: str(x).lower()[:20])
+        ds['clean_name'] = ds['name'].apply(lambda x: str(x).lower()[:10])
 
         # Select subset of columns (this should NOT modify ds)
-        subset = ds[['title', 'clean_title']]
+        subset = ds[['name', 'clean_name']]
 
         # Verify subset has only 2 columns
         subset_df = subset.to_df()
         assert len(subset_df.columns) == 2
-        assert 'title' in subset_df.columns
-        assert 'clean_title' in subset_df.columns
+        assert 'name' in subset_df.columns
+        assert 'clean_name' in subset_df.columns
 
         # CRITICAL: Original ds should still have ALL columns
         result_df = ds.to_df()
-        expected_columns = original_columns + ['clean_title']
+        expected_columns = original_columns + ['clean_name']
         assert len(result_df.columns) == len(
             expected_columns
         ), f"Expected {len(expected_columns)} columns, got {len(result_df.columns)}: {list(result_df.columns)}"
