@@ -3,7 +3,7 @@ Test Series.str accessor lazy execution behavior.
 
 Verifies that:
 1. SQL-based string methods remain lazy until materialization
-2. Materializing methods (cat, extractall, get_dummies, partition, rpartition) 
+2. Materializing methods (cat, extractall, get_dummies, partition, rpartition)
    explicitly execute and return proper results
 3. Mixed usage patterns work correctly
 """
@@ -20,11 +20,14 @@ class TestStrAccessorLazy:
     @pytest.fixture
     def ds(self):
         """Create a test DataStore from DataFrame."""
-        df = pd.DataFrame({
-            'name': ['John|Doe', 'Jane|Smith', 'Bob|Brown'],
-            'text': ['hello world', 'foo bar baz', 'test string'],
-            'numbers': ['abc123def456', 'xyz789', 'test123test456'],
-        })
+        df = pd.DataFrame(
+            {
+                'id': [1, 2, 3],
+                'name': ['John|Doe', 'Jane|Smith', 'Bob|Brown'],
+                'text': ['hello world', 'foo bar baz', 'test string'],
+                'numbers': ['abc123def456', 'xyz789', 'test123test456'],
+            }
+        )
         return DataStore.from_df(df)
 
     # ==================== SQL-Based Methods (Lazy) ====================
@@ -86,10 +89,10 @@ class TestStrAccessorLazy:
         """Test that chaining lazy str methods doesn't trigger execution."""
         # Chain multiple operations
         result = ds['name'].str.upper().str.lower().str.len()
-        
+
         # All should be lazy - returning ColumnExpr
         assert isinstance(result, ColumnExpr)
-        
+
         # No execution should have happened - verify by checking _lazy_ops
         # Original ds should still have minimal lazy ops
         assert len(ds._lazy_ops) <= 2  # Initial DataFrame source + maybe one more
@@ -98,21 +101,18 @@ class TestStrAccessorLazy:
         """Test that assigning str result to column is lazy."""
         # This should be recorded as lazy operation
         ds['upper_name'] = ds['name'].str.upper()
-        
+
         # Should have recorded a lazy operation
-        has_lazy_assignment = any(
-            op.__class__.__name__ == 'LazyColumnAssignment' 
-            for op in ds._lazy_ops
-        )
+        has_lazy_assignment = any(op.__class__.__name__ == 'LazyColumnAssignment' for op in ds._lazy_ops)
         assert has_lazy_assignment
 
     def test_lazy_str_executes_on_to_df(self, ds):
         """Test that lazy str operations execute when calling to_df()."""
         ds['upper_name'] = ds['name'].str.upper()
-        
+
         # Execute
         df = ds.to_df()
-        
+
         # Verify result
         assert 'upper_name' in df.columns
 
@@ -121,10 +121,10 @@ class TestStrAccessorLazy:
     def test_partition_materializes(self, ds):
         """Test that .str.partition() materializes and returns DataStore."""
         result = ds['name'].str.partition('|')
-        
+
         # Should return a DataStore (materialized)
         assert isinstance(result, DataStore)
-        
+
         # Verify result structure
         df = result.to_df()
         assert df.shape[1] == 3  # Three columns: left, sep, right
@@ -133,10 +133,10 @@ class TestStrAccessorLazy:
     def test_rpartition_materializes(self, ds):
         """Test that .str.rpartition() materializes and returns DataStore."""
         result = ds['name'].str.rpartition('|')
-        
+
         # Should return a DataStore (materialized)
         assert isinstance(result, DataStore)
-        
+
         # Verify result
         df = result.to_df()
         assert df.shape[1] == 3
@@ -144,10 +144,10 @@ class TestStrAccessorLazy:
     def test_get_dummies_materializes(self, ds):
         """Test that .str.get_dummies() materializes and returns DataStore."""
         result = ds['name'].str.get_dummies('|')
-        
+
         # Should return a DataStore (materialized)
         assert isinstance(result, DataStore)
-        
+
         # Verify result has dummy columns
         df = result.to_df()
         assert df.shape[1] > 0
@@ -155,10 +155,10 @@ class TestStrAccessorLazy:
     def test_extractall_materializes(self, ds):
         """Test that .str.extractall() materializes and returns DataStore."""
         result = ds['numbers'].str.extractall(r'(\d+)')
-        
+
         # Should return a DataStore (materialized)
         assert isinstance(result, DataStore)
-        
+
         # Verify result
         df = result.to_df()
         assert len(df) > 0  # Should have extracted numbers
@@ -166,7 +166,7 @@ class TestStrAccessorLazy:
     def test_cat_materializes_to_string(self, ds):
         """Test that .str.cat() materializes and returns string."""
         result = ds['name'].str.cat(sep='-')
-        
+
         # Should return a string (fully materialized)
         assert isinstance(result, str)
         assert 'John|Doe' in result
@@ -175,7 +175,7 @@ class TestStrAccessorLazy:
     def test_partition_expand_false_returns_series(self, ds):
         """Test that partition with expand=False returns Series."""
         result = ds['name'].str.partition('|', expand=False)
-        
+
         # Should return a Series of tuples
         assert isinstance(result, pd.Series)
         assert all(isinstance(x, tuple) for x in result)
@@ -187,32 +187,29 @@ class TestStrAccessorLazy:
         # First materialize with partition
         partitioned = ds['name'].str.partition('|')
         assert isinstance(partitioned, DataStore)
-        
+
         # Get column names from the partitioned result
         df = partitioned.to_df()
         first_col = df.columns[0]
-        
+
         # Create fresh DataStore from the DataFrame for lazy ops test
         partitioned2 = DataStore.from_df(df)
         partitioned2['first_upper'] = partitioned2[str(first_col)].str.upper()
-        
+
         # Should have lazy assignment
-        has_lazy = any(
-            op.__class__.__name__ == 'LazyColumnAssignment'
-            for op in partitioned2._lazy_ops
-        )
+        has_lazy = any(op.__class__.__name__ == 'LazyColumnAssignment' for op in partitioned2._lazy_ops)
         assert has_lazy
 
     def test_materializing_method_preserves_parent(self, ds):
         """Test that materializing method doesn't modify parent DataStore."""
         original_lazy_ops_count = len(ds._lazy_ops)
-        
+
         # Call materializing method
         result = ds['name'].str.partition('|')
-        
+
         # Parent should be unchanged
         assert len(ds._lazy_ops) == original_lazy_ops_count
-        
+
         # Can still do operations on parent
         ds['new_col'] = ds['text'].str.upper()
         assert len(ds._lazy_ops) == original_lazy_ops_count + 1
@@ -222,16 +219,16 @@ class TestStrAccessorLazy:
     def test_lazy_str_upper_correct_result(self, ds):
         """Test that lazy .str.upper() produces correct result."""
         ds['upper_name'] = ds['name'].str.upper()
-        df = ds.to_df()
-        
+        df = ds.order_by('id').to_df()
+
         expected = ['JOHN|DOE', 'JANE|SMITH', 'BOB|BROWN']
         assert list(df['upper_name']) == expected
 
     def test_lazy_str_len_correct_result(self, ds):
         """Test that lazy .str.len() produces correct result."""
         ds['name_len'] = ds['name'].str.len()
-        df = ds.to_df()
-        
+        df = ds.order_by('id').to_df()
+
         # Lengths: 'John|Doe'=8, 'Jane|Smith'=10, 'Bob|Brown'=9
         assert list(df['name_len']) == [8, 10, 9]
 
@@ -239,7 +236,7 @@ class TestStrAccessorLazy:
         """Test that .str.partition() produces correct result."""
         result = ds['name'].str.partition('|')
         df = result.to_df()
-        
+
         assert list(df[0]) == ['John', 'Jane', 'Bob']
         assert list(df[1]) == ['|', '|', '|']
         assert list(df[2]) == ['Doe', 'Smith', 'Brown']
@@ -248,7 +245,7 @@ class TestStrAccessorLazy:
         """Test that .str.get_dummies() produces correct result."""
         result = ds['name'].str.get_dummies('|')
         df = result.to_df()
-        
+
         # Should have columns for each unique value
         assert 'John' in df.columns
         assert 'Doe' in df.columns
@@ -258,7 +255,7 @@ class TestStrAccessorLazy:
         """Test that .str.extractall() produces correct result."""
         result = ds['numbers'].str.extractall(r'(\d+)')
         df = result.to_df()
-        
+
         # First row 'abc123def456' should have matches '123', '456'
         first_row_matches = df[df['level_0'] == 0][0].tolist()
         assert '123' in first_row_matches
@@ -272,11 +269,11 @@ class TestStrAccessorEdgeCases:
         """Test str accessor on empty DataFrame."""
         df = pd.DataFrame({'name': pd.Series([], dtype=str)})
         ds = DataStore.from_df(df)
-        
+
         # Lazy method should work
         result = ds['name'].str.upper()
         assert isinstance(result, ColumnExpr)
-        
+
         # Materializing method should work
         result = ds['name'].str.partition('|')
         assert isinstance(result, DataStore)
@@ -286,7 +283,7 @@ class TestStrAccessorEdgeCases:
         """Test str accessor with null values."""
         df = pd.DataFrame({'name': ['hello', None, 'world']})
         ds = DataStore.from_df(df)
-        
+
         # Should handle nulls gracefully
         result = ds['name'].str.partition(' ')
         assert isinstance(result, DataStore)
@@ -294,4 +291,3 @@ class TestStrAccessorEdgeCases:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
-
