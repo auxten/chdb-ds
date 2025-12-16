@@ -14,6 +14,7 @@ A Pandas-like data manipulation framework powered by chDB (ClickHouse) with auto
 
 - **Fluent API**: Pandas-like interface for data manipulation
 - **Wide Pandas Compatibility**: 180+ pandas DataFrame methods and properties
+- **Full NumPy Compatibility**: Direct use with all NumPy functions (mean, std, corrcoef, etc.)
 - **Mixed Execution Engine**: Arbitrary mixing of SQL(chDB) and pandas operations
 - **Immutable Operations**: Thread-safe method chaining
 - **Unified Interface**: Query files, databases, and cloud storage with the same API
@@ -378,6 +379,47 @@ ds.to_excel('output.xlsx')
 ```
 
 **See [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md) for the complete feature checklist and examples.**
+
+### NumPy Compatibility
+
+DataStore is **fully compatible with NumPy**, allowing direct use with all common NumPy functions:
+
+```python
+import numpy as np
+from datastore import DataStore
+
+ds = DataStore.from_file("data.csv")
+
+# ✅ All NumPy functions work directly - no conversion needed!
+np.mean(ds['column'])                   # Compute mean
+np.std(ds['column'])                    # Standard deviation
+np.sum(ds['column'])                    # Sum
+np.min(ds['column'])                    # Minimum
+np.max(ds['column'])                    # Maximum
+np.median(ds['column'])                 # Median
+np.var(ds['column'])                    # Variance
+np.allclose(ds['a'], ds['b'])           # Compare columns
+np.corrcoef(ds['a'], ds['b'])           # Correlation
+np.dot(ds['a'], ds['b'])                # Dot product
+np.percentile(ds['column'], [25, 50, 75])  # Percentiles
+np.histogram(ds['column'], bins=10)     # Histogram
+
+# Data normalization
+values = ds['price']
+normalized = (np.asarray(values) - np.mean(values)) / np.std(values)
+
+# SQL filtering + NumPy computation
+filtered = ds.filter(ds['age'] > 25)
+mean_salary = np.mean(filtered['salary'])
+```
+
+**Key features:**
+- `__array__` interface implemented for seamless NumPy integration
+- `.values` property and `.to_numpy()` method available (pandas compatible)
+- All statistical methods (`mean()`, `sum()`, `std()`, etc.) accept NumPy-style parameters
+- Same usage experience as Pandas DataFrame/Series
+
+**See [NUMPY_QUICK_REFERENCE.md](NUMPY_QUICK_REFERENCE.md) for complete compatibility list.**
 
 ### Conditions
 
@@ -762,6 +804,7 @@ python -m unittest datastore.tests.test_datastore_core
 
 - **[Function Reference](docs/FUNCTIONS.md)** - Complete list of 100+ ClickHouse SQL functions with examples
 - **[Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)** - 180+ pandas DataFrame methods and properties
+- **[NumPy Compatibility](NUMPY_QUICK_REFERENCE.md)** - Full NumPy function compatibility guide
 
 ## Examples
 
