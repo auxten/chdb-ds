@@ -60,9 +60,9 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
     def test_column_access_materializes_correctly(self):
         """Test that column access materializes to correct values."""
         ds = self.create_ds()
-        result = list(ds['age']._materialize())
-        expected = list(self.df['age'])
-        self.assertEqual(result, expected)
+        result = ds['age']._materialize()
+        expected = self.df['age']
+        np.testing.assert_array_equal(result, expected)
 
     def test_attribute_access_returns_column_expr(self):
         """Test that ds.col returns ColumnExpr."""
@@ -73,118 +73,117 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
     def test_attribute_access_materializes_correctly(self):
         """Test that attribute access materializes to correct values."""
         ds = self.create_ds()
-        result = list(ds.age._materialize())
-        expected = list(self.df['age'])
-        self.assertEqual(result, expected)
+        result = ds.age._materialize()
+        expected = self.df['age']
+        np.testing.assert_array_equal(result, expected)
 
     # ========== Arithmetic Operations ==========
 
     def test_addition(self):
         """Test column + scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] + 10)
-        pd_result = list(self.df['age'] + 10)
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['age'] + 10
+        pd_result = self.df['age'] + 10
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_subtraction(self):
         """Test column - scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] - 5)
-        pd_result = list(self.df['age'] - 5)
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['age'] - 5
+        pd_result = self.df['age'] - 5
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_multiplication(self):
         """Test column * scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['salary'] * 1.1)
-        pd_result = list(self.df['salary'] * 1.1)
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['salary'] * 1.1
+        pd_result = self.df['salary'] * 1.1
+        np.testing.assert_allclose(ds_result, pd_result)
 
     def test_division(self):
         """Test column / scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['salary'] / 1000)
-        pd_result = list(self.df['salary'] / 1000)
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['salary'] / 1000
+        pd_result = self.df['salary'] / 1000
+        np.testing.assert_allclose(ds_result, pd_result)
 
     def test_floor_division(self):
         """Test column // scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] // 10)
-        pd_result = list(self.df['age'] // 10)
-        # Row order is now preserved
-        self.assertEqual([int(x) for x in ds_result], [int(x) for x in pd_result])
+        ds_result = ds['age'] // 10
+        pd_result = self.df['age'] // 10
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_modulo(self):
         """Test column % scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] % 10)
-        pd_result = list(self.df['age'] % 10)
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['age'] % 10
+        pd_result = self.df['age'] % 10
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_power(self):
         """Test column ** scalar."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] ** 2)
-        pd_result = list(self.df['age'] ** 2)
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['age'] ** 2
+        pd_result = self.df['age'] ** 2
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     # ========== Reverse Arithmetic Operations ==========
 
     def test_reverse_addition(self):
         """Test scalar + column."""
         ds = self.create_ds()
-        ds_result = list(100 + ds['age'])
-        pd_result = list(100 + self.df['age'])
-        self.assertEqual(ds_result, pd_result)
+        ds_result = 100 + ds['age']
+        pd_result = 100 + self.df['age']
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_reverse_subtraction(self):
         """Test scalar - column."""
         ds = self.create_ds()
-        ds_result = list(1000 - ds['age'])
-        pd_result = list(1000 - self.df['age'])
-        self.assertEqual(ds_result, pd_result)
+        ds_result = 1000 - ds['age']
+        pd_result = 1000 - self.df['age']
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_reverse_multiplication(self):
         """Test scalar * column."""
         ds = self.create_ds()
-        ds_result = list(2 * ds['salary'])
-        pd_result = list(2 * self.df['salary'])
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = 2 * ds['salary']
+        pd_result = 2 * self.df['salary']
+        np.testing.assert_allclose(ds_result, pd_result)
 
     # ========== Unary Operations ==========
 
     def test_negation(self):
         """Test -column."""
         ds = self.create_ds()
-        ds_result = list(-ds['age'])
-        pd_result = list(-self.df['age'])
-        self.assertEqual(ds_result, pd_result)
+        ds_result = -ds['age']
+        pd_result = -self.df['age']
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     # ========== Column-Column Operations ==========
 
     def test_column_column_addition(self):
         """Test column + column."""
         ds = self.create_ds()
-        ds_result = list(ds['age'] + ds['salary'] / 1000)
-        pd_result = list(self.df['age'] + self.df['salary'] / 1000)
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['age'] + ds['salary'] / 1000
+        pd_result = self.df['age'] + self.df['salary'] / 1000
+        np.testing.assert_allclose(ds_result, pd_result)
 
     # ========== Chained Operations ==========
 
     def test_chained_arithmetic(self):
         """Test (column - scalar) * scalar + scalar."""
         ds = self.create_ds()
-        ds_result = list((ds['age'] - 20) * 2 + 10)
-        pd_result = list((self.df['age'] - 20) * 2 + 10)
-        self.assertEqual(ds_result, pd_result)
+        ds_result = (ds['age'] - 20) * 2 + 10
+        pd_result = (self.df['age'] - 20) * 2 + 10
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_complex_chained_operations(self):
         """Test complex chained operations."""
         ds = self.create_ds()
-        ds_result = list(ds['salary'] / 1000 - ds['age'])
-        pd_result = list(self.df['salary'] / 1000 - self.df['age'])
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['salary'] / 1000 - ds['age']
+        pd_result = self.df['salary'] / 1000 - self.df['age']
+        np.testing.assert_allclose(ds_result, pd_result)
 
 
 class TestColumnExprStringOperations(unittest.TestCase):
@@ -416,23 +415,23 @@ class TestColumnExprMathFunctions(unittest.TestCase):
     def test_abs(self):
         """Test abs()."""
         ds = self.create_ds()
-        ds_result = list(ds['value'].abs())
-        pd_result = list(self.df['value'].abs())
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['value'].abs()
+        pd_result = self.df['value'].abs()
+        np.testing.assert_allclose(ds_result, pd_result)
 
     def test_round(self):
         """Test round()."""
         ds = self.create_ds()
-        ds_result = list(ds['value'].round(0))
-        pd_result = list(self.df['value'].round(0))
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['value'].round(0)
+        pd_result = self.df['value'].round(0)
+        np.testing.assert_allclose(ds_result, pd_result)
 
     def test_sqrt(self):
         """Test sqrt()."""
         ds = self.create_ds()
-        ds_result = list(ds['positive'].sqrt())
-        pd_result = list(np.sqrt(self.df['positive']))
-        self.assertTrue(np.allclose(sorted(ds_result), sorted(pd_result)))
+        ds_result = ds['positive'].sqrt()
+        pd_result = np.sqrt(self.df['positive'])
+        np.testing.assert_allclose(ds_result, pd_result)
 
 
 class TestColumnExprDisplayBehavior(unittest.TestCase):
@@ -557,8 +556,8 @@ class TestColumnExprAssignment(unittest.TestCase):
         ds = self.create_ds()
         ds['complex'] = (ds['salary'] / 1000) + (ds['age'] * 2)
         result = ds.to_df()
-        expected = list((self.df['salary'] / 1000) + (self.df['age'] * 2))
-        self.assertTrue(np.allclose(list(result['complex']), expected))
+        expected = (self.df['salary'] / 1000) + (self.df['age'] * 2)
+        np.testing.assert_allclose(result['complex'], expected)
 
     def test_assign_string_operation(self):
         """Test ds['new'] = ds['col'].str.upper()."""
@@ -606,7 +605,7 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
         expected_df = self.df[self.df['salary'] > 50000].copy()
         expected_df['bonus'] = expected_df['salary'] * 0.1
 
-        self.assertTrue(np.allclose(list(result['bonus']), list(expected_df['bonus'])))
+        np.testing.assert_allclose(result['bonus'], expected_df['bonus'])
 
     def test_assign_then_filter(self):
         """Test assign -> filter pipeline."""
@@ -626,9 +625,9 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
         """Test accessing column from filtered DataStore."""
         ds = self.create_ds()
         filtered = ds.filter(ds.salary > 50000)
-        col_result = list(filtered['salary']._materialize())
-        expected = list(self.df[self.df['salary'] > 50000]['salary'])
-        self.assertTrue(np.allclose(col_result, expected))
+        col_result = filtered['salary']._materialize()
+        expected = self.df[self.df['salary'] > 50000]['salary']
+        np.testing.assert_allclose(col_result, expected)
 
 
 if __name__ == '__main__':
