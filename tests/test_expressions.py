@@ -72,6 +72,41 @@ class TestLiteral(unittest.TestCase):
         lit = Literal(False)
         self.assertEqual('FALSE', lit.to_sql())
 
+    def test_literal_with_expression_value(self):
+        """Test Literal wrapping an Expression delegates to_sql correctly."""
+        # This can happen in edge cases - Literal should handle it gracefully
+        inner_field = Field('age')
+        lit = Literal(inner_field)
+        # Should delegate to the expression's to_sql
+        self.assertEqual('"age"', lit.to_sql())
+
+    def test_literal_with_column_expr_value(self):
+        """Test Literal wrapping a ColumnExpr delegates to_sql without infinite recursion."""
+        import pandas as pd
+        from datastore.column_expr import ColumnExpr
+        from datastore.lazy_ops import LazyDataFrameSource
+
+        # Create a ColumnExpr
+        df = pd.DataFrame({'value': [1, 2, 3]})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df)]
+        col_expr = ds['value']
+
+        # Wrap in Literal (edge case that could cause infinite recursion)
+        lit = Literal(col_expr)
+
+        # Should NOT cause infinite recursion - should delegate to ColumnExpr.to_sql()
+        sql = lit.to_sql()
+        self.assertEqual('"value"', sql)
+
+    def test_literal_with_nested_expression(self):
+        """Test Literal with nested arithmetic expression."""
+        # Create (a + 1)
+        expr = ArithmeticExpression('+', Field('a'), Literal(1))
+        lit = Literal(expr)
+        # Should delegate to expression's to_sql
+        self.assertEqual('("a"+1)', lit.to_sql())
+
 
 class TestArithmeticExpression(unittest.TestCase):
     """Test arithmetic operations."""

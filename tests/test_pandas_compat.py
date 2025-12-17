@@ -43,174 +43,170 @@ class TestPandasCompatibility(unittest.TestCase):
             os.rmdir(cls.temp_dir)
 
     def setUp(self):
-        """Set up test DataStore."""
+        """Set up test DataStore and reference DataFrame."""
         self.ds = DataStore.from_file(self.csv_file)
+        self.df = pd.read_csv(self.csv_file)  # Reference pandas DataFrame
 
     # ========== Properties Tests ==========
 
     def test_dtypes(self):
-        """Test dtypes property."""
-        dtypes = self.ds.dtypes
-        self.assertIsInstance(dtypes, pd.Series)
-        self.assertIn('id', dtypes.index)
-        self.assertIn('name', dtypes.index)
+        """Test dtypes property matches pandas."""
+        ds_dtypes = self.ds.dtypes
+        pd_dtypes = self.df.dtypes
+        # Column names should match
+        self.assertEqual(list(ds_dtypes.index), list(pd_dtypes.index))
 
     def test_shape(self):
-        """Test shape property."""
-        shape = self.ds.shape
-        self.assertEqual(shape, (10, 6))  # 10 rows, 6 columns
+        """Test shape property matches pandas."""
+        self.assertEqual(self.ds.shape, self.df.shape)
 
     def test_columns(self):
-        """Test columns property."""
-        cols = self.ds.columns
-        self.assertIsInstance(cols, pd.Index)
-        self.assertEqual(len(cols), 6)
-        self.assertIn('id', cols)
-        self.assertIn('name', cols)
+        """Test columns property matches pandas."""
+        pd.testing.assert_index_equal(self.ds.columns, self.df.columns)
 
     def test_values(self):
-        """Test values property (pandas compatible)."""
-        values = self.ds.values
-        self.assertIsInstance(values, np.ndarray)
-        self.assertEqual(values.shape, (10, 6))
+        """Test values property matches pandas."""
+        np.testing.assert_array_equal(self.ds.values, self.df.values)
 
     def test_empty(self):
-        """Test empty property."""
-        self.assertFalse(self.ds.empty)
+        """Test empty property matches pandas."""
+        self.assertEqual(self.ds.empty, self.df.empty)
 
     def test_size(self):
-        """Test size property."""
-        size = self.ds.size
-        self.assertEqual(size, 60)  # 10 rows * 6 columns
+        """Test size property matches pandas."""
+        self.assertEqual(self.ds.size, self.df.size)
 
     # ========== Statistical Methods Tests ==========
 
     def test_mean(self):
-        """Test mean method."""
-        mean_vals = self.ds.mean(numeric_only=True)
-        self.assertIsInstance(mean_vals, pd.Series)
-        self.assertIn('age', mean_vals.index)
-        self.assertIn('salary', mean_vals.index)
+        """Test mean method matches pandas."""
+        ds_mean = self.ds.mean(numeric_only=True)
+        pd_mean = self.df.mean(numeric_only=True)
+        pd.testing.assert_series_equal(ds_mean, pd_mean, check_names=False)
 
     def test_median(self):
-        """Test median method."""
-        median_vals = self.ds.median(numeric_only=True)
-        self.assertIsInstance(median_vals, pd.Series)
+        """Test median method matches pandas."""
+        ds_median = self.ds.median(numeric_only=True)
+        pd_median = self.df.median(numeric_only=True)
+        pd.testing.assert_series_equal(ds_median, pd_median, check_names=False)
 
     def test_std(self):
-        """Test std method."""
-        std_vals = self.ds.std(numeric_only=True)
-        self.assertIsInstance(std_vals, pd.Series)
+        """Test std method matches pandas."""
+        ds_std = self.ds.std(numeric_only=True)
+        pd_std = self.df.std(numeric_only=True)
+        pd.testing.assert_series_equal(ds_std, pd_std, check_names=False, rtol=1e-5)
 
     def test_min_max(self):
-        """Test min and max methods."""
-        min_vals = self.ds.min(numeric_only=True)
-        max_vals = self.ds.max(numeric_only=True)
-        self.assertIsInstance(min_vals, pd.Series)
-        self.assertIsInstance(max_vals, pd.Series)
+        """Test min and max methods match pandas."""
+        ds_min = self.ds.min(numeric_only=True)
+        pd_min = self.df.min(numeric_only=True)
+        pd.testing.assert_series_equal(ds_min, pd_min, check_names=False)
+
+        ds_max = self.ds.max(numeric_only=True)
+        pd_max = self.df.max(numeric_only=True)
+        pd.testing.assert_series_equal(ds_max, pd_max, check_names=False)
 
     def test_sum(self):
-        """Test sum method."""
-        sum_vals = self.ds.sum(numeric_only=True)
-        self.assertIsInstance(sum_vals, pd.Series)
+        """Test sum method matches pandas."""
+        ds_sum = self.ds.sum(numeric_only=True)
+        pd_sum = self.df.sum(numeric_only=True)
+        pd.testing.assert_series_equal(ds_sum, pd_sum, check_names=False)
 
     def test_corr(self):
-        """Test correlation method."""
-        corr_matrix = self.ds.corr(numeric_only=True)
-        self.assertIsInstance(corr_matrix, pd.DataFrame)
+        """Test correlation method matches pandas."""
+        ds_corr = self.ds.corr(numeric_only=True)
+        pd_corr = self.df.corr(numeric_only=True)
+        pd.testing.assert_frame_equal(ds_corr, pd_corr, rtol=1e-5)
 
     def test_quantile(self):
-        """Test quantile method."""
-        q50 = self.ds.quantile(0.5, numeric_only=True)
-        self.assertIsInstance(q50, pd.Series)
+        """Test quantile method matches pandas."""
+        ds_q50 = self.ds.quantile(0.5, numeric_only=True)
+        pd_q50 = self.df.quantile(0.5, numeric_only=True)
+        pd.testing.assert_series_equal(ds_q50, pd_q50, check_names=False)
 
     def test_nunique(self):
-        """Test nunique method."""
-        unique_counts = self.ds.nunique()
-        self.assertIsInstance(unique_counts, pd.Series)
+        """Test nunique method matches pandas."""
+        ds_nunique = self.ds.nunique()
+        pd_nunique = self.df.nunique()
+        pd.testing.assert_series_equal(ds_nunique, pd_nunique)
 
     # ========== Data Manipulation Tests ==========
 
     def test_drop_columns(self):
-        """Test drop method for columns."""
-        result = self.ds.drop(columns=['active'])
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertNotIn('active', df.columns)
-        self.assertIn('name', df.columns)
+        """Test drop method matches pandas."""
+        ds_result = self.ds.drop(columns=['active'])
+        pd_result = self.df.drop(columns=['active'])
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_drop_duplicates(self):
-        """Test drop_duplicates method."""
-        result = self.ds.drop_duplicates(subset=['department'])
-        self.assertIsInstance(result, DataStore)
+        """Test drop_duplicates matches pandas."""
+        ds_result = self.ds.drop_duplicates(subset=['department'])
+        pd_result = self.df.drop_duplicates(subset=['department'])
+        # Compare length (order may differ due to implementation)
+        self.assertEqual(len(ds_result), len(pd_result))
 
     def test_dropna(self):
-        """Test dropna method."""
-        result = self.ds.dropna()
-        self.assertIsInstance(result, DataStore)
+        """Test dropna matches pandas."""
+        ds_result = self.ds.dropna()
+        pd_result = self.df.dropna()
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_fillna(self):
-        """Test fillna method."""
-        result = self.ds.fillna(0)
-        self.assertIsInstance(result, DataStore)
+        """Test fillna matches pandas."""
+        ds_result = self.ds.fillna(0)
+        pd_result = self.df.fillna(0)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_rename(self):
-        """Test rename method."""
-        result = self.ds.rename(columns={'name': 'employee_name'})
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertIn('employee_name', df.columns)
-        self.assertNotIn('name', df.columns)
+        """Test rename matches pandas."""
+        ds_result = self.ds.rename(columns={'name': 'employee_name'})
+        pd_result = self.df.rename(columns={'name': 'employee_name'})
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_sort_values(self):
-        """Test sort_values method."""
-        result = self.ds.sort_values('age')
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        # Check if sorted
-        ages = df['age'].tolist()
-        self.assertEqual(ages, sorted(ages))
+        """Test sort_values matches pandas."""
+        ds_result = self.ds.sort_values('age').reset_index(drop=True)
+        pd_result = self.df.sort_values('age').reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_reset_index(self):
-        """Test reset_index method."""
-        result = self.ds.reset_index(drop=True)
-        self.assertIsInstance(result, DataStore)
+        """Test reset_index matches pandas."""
+        ds_result = self.ds.reset_index(drop=True)
+        pd_result = self.df.reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_assign(self):
-        """Test assign method."""
-        result = self.ds.assign(bonus=lambda x: x['salary'] * 0.1)
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertIn('bonus', df.columns)
+        """Test assign matches pandas."""
+        ds_result = self.ds.assign(bonus=lambda x: x['salary'] * 0.1)
+        pd_result = self.df.assign(bonus=lambda x: x['salary'] * 0.1)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_nlargest(self):
-        """Test nlargest method."""
-        result = self.ds.nlargest(3, 'salary')
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertEqual(len(df), 3)
+        """Test nlargest matches pandas."""
+        ds_result = self.ds.nlargest(3, 'salary').reset_index(drop=True)
+        pd_result = self.df.nlargest(3, 'salary').reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_nsmallest(self):
-        """Test nsmallest method."""
-        result = self.ds.nsmallest(3, 'age')
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertEqual(len(df), 3)
+        """Test nsmallest matches pandas."""
+        ds_result = self.ds.nsmallest(3, 'age').reset_index(drop=True)
+        pd_result = self.df.nsmallest(3, 'age').reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
 
     # ========== Function Application Tests ==========
 
     def test_apply(self):
-        """Test apply method."""
-        # Apply on axis=0 (columns) - double numeric values
-        result = self.ds.apply(lambda x: x * 2 if x.dtype in ['int64', 'float64'] else x, axis=0)
-        # Apply returns DataStore
-        self.assertIsInstance(result, DataStore)
+        """Test apply method matches pandas."""
+        func = lambda x: x * 2 if x.dtype in ['int64', 'float64'] else x
+        ds_result = self.ds.apply(func, axis=0)
+        pd_result = self.df.apply(func, axis=0)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_agg(self):
-        """Test aggregate method."""
-        result = self.ds.agg({'age': 'mean', 'salary': 'sum'})
-        # agg with dict returns Series
-        self.assertIsInstance(result, pd.Series)
+        """Test aggregate method matches pandas."""
+        ds_result = self.ds.agg({'age': 'mean', 'salary': 'sum'})
+        pd_result = self.df.agg({'age': 'mean', 'salary': 'sum'})
+        pd.testing.assert_series_equal(ds_result, pd_result)
 
     # ========== Indexing Tests ==========
 
@@ -244,57 +240,71 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertIsInstance(series, pd.Series)
 
     def test_getitem_columns(self):
-        """Test multiple column selection with [] - should return DataStore."""
-        result = self.ds[['name', 'age']]
-        self.assertIsInstance(result, DataStore)  # Multiple columns return DataStore
-        df = result._get_df()
-        self.assertEqual(len(df.columns), 2)
+        """Test multiple column selection with [] matches pandas."""
+        ds_result = self.ds[['name', 'age']]
+        pd_result = self.df[['name', 'age']]
+        self.assertTrue(ds_result.equals(pd_result))
 
     # ========== Transformation Tests ==========
 
     def test_abs(self):
-        """Test abs method (only numeric columns)."""
-        result = self.ds.abs()
-        # abs() returns DataFrame (numeric columns only)
-        self.assertIsInstance(result, DataStore)
+        """Test abs method matches pandas."""
+        ds_result = self.ds.abs()
+        pd_result = self.df.select_dtypes(include=[np.number]).abs()
+        # Compare only numeric columns using values
+        np.testing.assert_array_equal(ds_result.select_dtypes(include=[np.number]).values, pd_result.values)
 
     def test_round(self):
-        """Test round method."""
-        result = self.ds.round(decimals=2)
-        self.assertIsInstance(result, DataStore)
+        """Test round method matches pandas."""
+        ds_result = self.ds.round(decimals=2)
+        pd_result = self.df.round(decimals=2)
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_transpose(self):
-        """Test transpose method."""
-        result = self.ds.transpose()
-        self.assertIsInstance(result, DataStore)
+        """Test transpose method matches pandas."""
+        ds_result = self.ds.transpose()
+        pd_result = self.df.transpose()
+        # Check shape matches
+        self.assertEqual(ds_result.shape, pd_result.shape)
 
     # ========== Reshaping Tests ==========
 
     def test_melt(self):
-        """Test melt method."""
-        result = self.ds.melt(id_vars=['id'], value_vars=['age', 'salary'])
-        self.assertIsInstance(result, DataStore)
+        """Test melt method matches pandas."""
+        ds_result = self.ds.melt(id_vars=['id'], value_vars=['age', 'salary'])
+        pd_result = self.df.melt(id_vars=['id'], value_vars=['age', 'salary'])
+        # Sort and compare using equals
+        ds_sorted = ds_result.sort_values(['id', 'variable']).reset_index(drop=True)
+        pd_sorted = pd_result.sort_values(['id', 'variable']).reset_index(drop=True)
+        self.assertTrue(ds_sorted.equals(pd_sorted))
 
     # ========== Boolean Methods Tests ==========
 
     def test_isna(self):
-        """Test isna method."""
-        result = self.ds.isna()
-        self.assertIsInstance(result, DataStore)
+        """Test isna method matches pandas."""
+        ds_result = self.ds.isna()
+        pd_result = self.df.isna()
+        self.assertTrue(ds_result.equals(pd_result))
+
+    def test_isna_sum(self):
+        """Test isna().sum() matches pandas."""
+        ds_result = self.ds.isna().sum()
+        pd_result = self.df.isna().sum()
+        pd.testing.assert_series_equal(ds_result, pd_result)
 
     def test_notna(self):
-        """Test notna method."""
-        result = self.ds.notna()
-        self.assertIsInstance(result, DataStore)
+        """Test notna method matches pandas."""
+        ds_result = self.ds.notna()
+        pd_result = self.df.notna()
+        self.assertTrue(ds_result.equals(pd_result))
 
     # ========== Conversion Tests ==========
 
     def test_astype(self):
-        """Test astype method."""
-        result = self.ds.astype({'age': 'float64'})
-        self.assertIsInstance(result, DataStore)
-        df = result._get_df()
-        self.assertEqual(df['age'].dtype, np.float64)
+        """Test astype method matches pandas."""
+        ds_result = self.ds.astype({'age': 'float64'})
+        pd_result = self.df.astype({'age': 'float64'})
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_copy(self):
         """Test copy method."""
@@ -332,22 +342,23 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertTrue(all(isinstance(item, dict) for item in result))
 
     def test_to_numpy(self):
-        """Test to_numpy method."""
-        arr = self.ds.to_numpy()
-        self.assertIsInstance(arr, np.ndarray)
-        self.assertEqual(arr.shape, (10, 6))
+        """Test to_numpy method matches pandas."""
+        ds_arr = self.ds.to_numpy()
+        pd_arr = self.df.to_numpy()
+        np.testing.assert_array_equal(ds_arr, pd_arr)
 
     # ========== Iteration Tests ==========
 
     def test_iterrows(self):
-        """Test iterrows method."""
-        rows = list(self.ds.iterrows())
-        self.assertEqual(len(rows), 10)
-        for idx, row in rows:
-            self.assertIsInstance(row, pd.Series)
+        """Test iterrows method matches pandas."""
+        ds_rows = list(self.ds.iterrows())
+        pd_rows = list(self.df.iterrows())
+        self.assertEqual(len(ds_rows), len(pd_rows))
+        for (ds_idx, ds_row), (pd_idx, pd_row) in zip(ds_rows, pd_rows):
+            pd.testing.assert_series_equal(ds_row, pd_row)
 
     def test_itertuples(self):
-        """Test itertuples method."""
+        """Test itertuples method matches pandas."""
         tuples = list(self.ds.itertuples())
         self.assertEqual(len(tuples), 10)
 
@@ -367,7 +378,7 @@ class TestPandasCompatibility(unittest.TestCase):
             ds2 = DataStore.from_file(csv_file2)
             result = self.ds.merge(ds2, on='id', how='inner')
             self.assertIsInstance(result, DataStore)
-            df = result._get_df()
+            df = result.to_df()
             self.assertIn('bonus', df.columns)
         finally:
             if os.path.exists(csv_file2):

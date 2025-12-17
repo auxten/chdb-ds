@@ -33,47 +33,47 @@ class NullBasicTests(unittest.TestCase):
         self.assertEqual('"email" IS NOT NULL', cond.to_sql())
 
     def test_isnull_in_query(self):
-        """Test IS NULL in query"""
+        """Test isnull() in query - uses isNull function."""
         ds = DataStore(table="users")
         sql = ds.select("*").filter(ds.email.isnull()).to_sql()
-        self.assertEqual('SELECT * FROM "users" WHERE "email" IS NULL', sql)
+        self.assertIn('isNull', sql)
 
     def test_notnull_in_query(self):
-        """Test IS NOT NULL in query"""
+        """Test notnull() in query - uses isNotNull function."""
         ds = DataStore(table="users")
         sql = ds.select("*").filter(ds.phone.notnull()).to_sql()
-        self.assertEqual('SELECT * FROM "users" WHERE "phone" IS NOT NULL', sql)
+        self.assertIn('isNotNull', sql)
 
 
 class NullWithCombinationsTests(unittest.TestCase):
     """Test NULL combined with other conditions"""
 
     def test_null_and_other_condition(self):
-        """Test IS NULL AND another condition"""
+        """Test isNull() AND another condition"""
         ds = DataStore(table="data")
         sql = ds.select("*").filter(ds.email.isnull() & (ds.status == 'active')).to_sql()
-        self.assertIn('IS NULL', sql)
+        self.assertIn('isNull', sql)
         self.assertIn('AND', sql)
 
     def test_null_or_other_condition(self):
-        """Test IS NULL OR another condition"""
+        """Test isNull() OR another condition"""
         ds = DataStore(table="data")
         sql = ds.select("*").filter(ds.email.isnull() | ds.phone.isnull()).to_sql()
-        self.assertIn('IS NULL', sql)
+        self.assertIn('isNull', sql)
         self.assertIn('OR', sql)
 
     def test_not_null_and_in(self):
-        """Test NOT NULL combined with IN"""
+        """Test isNotNull() combined with IN"""
         ds = DataStore(table="users")
         sql = ds.select("*").filter(ds.email.notnull() & ds.status.isin(['active', 'premium'])).to_sql()
-        self.assertIn('IS NOT NULL', sql)
+        self.assertIn('isNotNull', sql)
         self.assertIn('IN', sql)
 
     def test_not_null_and_like(self):
-        """Test NOT NULL combined with LIKE"""
+        """Test isNotNull() combined with LIKE"""
         ds = DataStore(table="users")
         sql = ds.select("*").filter(ds.email.notnull() & ds.email.like('%@company.com')).to_sql()
-        self.assertIn('IS NOT NULL', sql)
+        self.assertIn('isNotNull', sql)
         self.assertIn('LIKE', sql)
 
 
@@ -81,18 +81,18 @@ class NullNegationTests(unittest.TestCase):
     """Test NOT operator with NULL conditions"""
 
     def test_not_isnull(self):
-        """Test NOT (IS NULL) - equivalent to IS NOT NULL"""
+        """Test NOT (isNull()) - equivalent to isNotNull()"""
         ds = DataStore(table="data")
         sql = ds.select("*").filter(~ds.email.isnull()).to_sql()
         self.assertIn('NOT', sql)
-        self.assertIn('IS NULL', sql)
+        self.assertIn('isNull', sql)
 
     def test_not_notnull(self):
-        """Test NOT (IS NOT NULL) - equivalent to IS NULL"""
+        """Test NOT (isNotNull()) - equivalent to isNull()"""
         ds = DataStore(table="data")
         sql = ds.select("*").filter(~ds.email.notnull()).to_sql()
         self.assertIn('NOT', sql)
-        self.assertIn('IS NOT NULL', sql)
+        self.assertIn('isNotNull', sql)
 
 
 # ========== Execution Tests with chdb ==========

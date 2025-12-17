@@ -50,10 +50,11 @@ class ComplexFilterTests(unittest.TestCase):
         self.assertIn('NOT', sql)
 
     def test_complex_null_handling(self):
-        """Test complex NULL handling"""
+        """Test complex NULL handling with isNull/isNotNull functions"""
         ds = DataStore(table="data")
         sql = ds.select("*").filter((ds.email.notnull()) & (ds.phone.notnull()) & ~(ds.name.isnull())).to_sql()
-        self.assertIn('IS NOT NULL', sql)
+        # notnull() returns ColumnExpr wrapping isNotNull()
+        self.assertIn('isNotNull', sql)
         self.assertIn('NOT', sql)
 
 
