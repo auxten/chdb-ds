@@ -310,6 +310,76 @@ class TestColumnExprComparisonOperations(unittest.TestCase):
         self.assertIsInstance(result, BinaryCondition)
 
 
+class TestColumnExprNullMethods(unittest.TestCase):
+    """Test isnull/notnull methods on ColumnExpr."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'value': [100, 200, 150, 300, 50],
+                'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve'],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_notnull_returns_column_expr(self):
+        """Test that notnull() returns ColumnExpr wrapping isNotNull()."""
+        from datastore.column_expr import ColumnExpr
+
+        ds = self.create_ds()
+        result = ds['value'].notnull()
+        # notnull() returns ColumnExpr wrapping isNotNull() function
+        self.assertIsInstance(result, ColumnExpr)
+
+    def test_isnull_returns_column_expr(self):
+        """Test that isnull() returns ColumnExpr wrapping isNull()."""
+        from datastore.column_expr import ColumnExpr
+
+        ds = self.create_ds()
+        result = ds['value'].isnull()
+        # isnull() returns ColumnExpr wrapping isNull() function
+        self.assertIsInstance(result, ColumnExpr)
+
+    def test_notnull_astype_int_matches_pandas(self):
+        """Test notnull().astype(int) matches pandas behavior (no NaN in data)."""
+        ds = self.create_ds()
+        result = ds['value'].notnull().astype(int)
+        expected = self.df['value'].notnull().astype(int)
+        # Compare with pandas result (this works when there's no NaN in data)
+        pd.testing.assert_series_equal(result, expected, check_names=False)
+
+    def test_isnull_astype_int_matches_pandas(self):
+        """Test isnull().astype(int) matches pandas behavior (no NaN in data)."""
+        ds = self.create_ds()
+        result = ds['value'].isnull().astype(int)
+        expected = self.df['value'].isnull().astype(int)
+        # Compare with pandas result (this works when there's no NaN in data)
+        pd.testing.assert_series_equal(result, expected, check_names=False)
+
+    def test_notnull_condition_for_filtering(self):
+        """Test notnull_condition() returns Condition for filtering."""
+        ds = self.create_ds()
+        result = ds['value'].notnull_condition()
+        # Should be a Condition, not ColumnExpr
+        from datastore.conditions import Condition
+
+        self.assertIsInstance(result, Condition)
+
+    def test_isnull_condition_for_filtering(self):
+        """Test isnull_condition() returns Condition for filtering."""
+        ds = self.create_ds()
+        result = ds['value'].isnull_condition()
+        from datastore.conditions import Condition
+
+        self.assertIsInstance(result, Condition)
+
+
 class TestColumnExprConditionMethods(unittest.TestCase):
     """Test condition methods on ColumnExpr."""
 
@@ -348,17 +418,37 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         result = ds['text'].like('%World%')
         self.assertIn('LIKE', str(result))
 
-    def test_isnull_returns_condition(self):
-        """Test that isnull() returns Condition with IS NULL."""
+    @unittest.expectedFailure  # TODO: chDB should convert NaN to NULL for full pandas compatibility
+    def test_isnull_matches_pandas(self):
+        """Test that isnull() result matches pandas when materialized."""
+        ds = self.create_ds()
+        # Materialize and compare with pandas
+        ds_result = ds['nullable'].isnull().astype(int)
+        pd_result = self.df['nullable'].isnull().astype(int)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    @unittest.expectedFailure  # TODO: chDB should convert NaN to NULL for full pandas compatibility
+    def test_notnull_matches_pandas(self):
+        """Test that notnull() result matches pandas when materialized."""
+        ds = self.create_ds()
+        # Materialize and compare with pandas
+        ds_result = ds['nullable'].notnull().astype(int)
+        pd_result = self.df['nullable'].notnull().astype(int)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_isnull_generates_sql(self):
+        """Test that isnull() generates proper SQL with isNull function."""
         ds = self.create_ds()
         result = ds['nullable'].isnull()
-        self.assertIn('IS NULL', str(result))
+        sql = result.to_sql()
+        self.assertIn('isNull', sql)
 
-    def test_notnull_returns_condition(self):
-        """Test that notnull() returns Condition with IS NOT NULL."""
+    def test_notnull_generates_sql(self):
+        """Test that notnull() generates proper SQL with isNotNull function."""
         ds = self.create_ds()
         result = ds['nullable'].notnull()
-        self.assertIn('IS NOT NULL', str(result))
+        sql = result.to_sql()
+        self.assertIn('isNotNull', sql)
 
 
 class TestColumnExprTypeConversion(unittest.TestCase):
@@ -392,6 +482,100 @@ class TestColumnExprTypeConversion(unittest.TestCase):
         result = list(ds['int_col'].to_string())
         self.assertTrue(all(isinstance(x, str) for x in result))
         self.assertEqual(result, ['1', '2', '3', '4', '5'])
+
+
+class TestColumnExprAggregateFunctions(unittest.TestCase):
+    """Test aggregate functions return correct values like pandas."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'value': [28, 31, 29, 45, 22],
+                'with_nan': [28.0, 31.0, np.nan, 45.0, 22.0],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_mean_returns_scalar(self):
+        """Test mean() returns a LazyAggregate that behaves like a scalar."""
+        from datastore.column_expr import LazyAggregate
+
+        ds = self.create_ds()
+        result = ds['value'].mean()
+        expected = self.df['value'].mean()
+        # mean() returns LazyAggregate which displays as scalar and can be converted
+        self.assertIsInstance(result, LazyAggregate)
+        # Should be able to compare with expected value (triggers execution)
+        self.assertAlmostEqual(float(result), expected)
+
+    def test_mean_with_nan_skipna(self):
+        """Test mean() correctly skips NaN values like pandas."""
+        ds = self.create_ds()
+        result = ds['with_nan'].mean()
+        expected = self.df['with_nan'].mean()  # pandas skips NaN by default
+        self.assertAlmostEqual(result, expected)
+
+    def test_sum_returns_scalar(self):
+        """Test sum() returns a scalar like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].sum()
+        expected = self.df['value'].sum()
+        self.assertEqual(result, expected)
+
+    def test_min_returns_scalar(self):
+        """Test min() returns a scalar like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].min()
+        expected = self.df['value'].min()
+        self.assertEqual(result, expected)
+
+    def test_max_returns_scalar(self):
+        """Test max() returns a scalar like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].max()
+        expected = self.df['value'].max()
+        self.assertEqual(result, expected)
+
+    def test_std_returns_scalar(self):
+        """Test std() returns a scalar like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].std()
+        expected = self.df['value'].std()
+        self.assertAlmostEqual(result, expected, places=4)
+
+    def test_count_returns_int(self):
+        """Test count() returns an integer like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].count()
+        expected = self.df['value'].count()
+        self.assertEqual(result, expected)
+
+    def test_median_returns_scalar(self):
+        """Test median() returns a scalar like pandas."""
+        ds = self.create_ds()
+        result = ds['value'].median()
+        expected = self.df['value'].median()
+        self.assertEqual(result, expected)
+
+    def test_round_mean(self):
+        """Test round(mean(), 2) works with scalar result."""
+        ds = self.create_ds()
+        result = round(ds['value'].mean(), 2)
+        expected = round(self.df['value'].mean(), 2)
+        self.assertEqual(result, expected)
+
+    def test_mean_sql_returns_column_expr(self):
+        """Test mean_sql() returns ColumnExpr for SQL building."""
+        ds = self.create_ds()
+        result = ds['value'].mean_sql()
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIn('avg', result.to_sql().lower())
 
 
 class TestColumnExprMathFunctions(unittest.TestCase):
@@ -432,6 +616,114 @@ class TestColumnExprMathFunctions(unittest.TestCase):
         ds_result = ds['positive'].sqrt()
         pd_result = np.sqrt(self.df['positive'])
         np.testing.assert_allclose(ds_result, pd_result)
+
+    def test_builtin_round(self):
+        """Test Python's built-in round() function on ColumnExpr."""
+        ds = self.create_ds()
+        ds_result = round(ds['value'], 1)
+        # Should return ColumnExpr
+        self.assertIsInstance(ds_result, ColumnExpr)
+        # Materialize and compare
+        pd_result = self.df['value'].round(1)
+        np.testing.assert_allclose(list(ds_result), list(pd_result))
+
+    def test_builtin_round_no_decimals(self):
+        """Test round() without decimal places."""
+        ds = self.create_ds()
+        ds_result = round(ds['value'])
+        self.assertIsInstance(ds_result, ColumnExpr)
+        pd_result = self.df['value'].round(0)
+        np.testing.assert_allclose(list(ds_result), list(pd_result))
+
+    def test_builtin_round_on_aggregate(self):
+        """Test round() on aggregate result like mean()."""
+        from datastore.column_expr import LazyAggregate
+
+        ds = self.create_ds()
+        # round(ds['value'].mean(), 2) should work
+        mean_expr = ds['value'].mean()
+        # mean() returns LazyAggregate which supports both display and SQL building
+        self.assertIsInstance(mean_expr, (ColumnExpr, LazyAggregate))
+        rounded = round(mean_expr, 2)
+        self.assertIsInstance(rounded, ColumnExpr)
+        # The SQL should contain round(avg(...))
+        sql = rounded.to_sql()
+        self.assertIn('round', sql.lower())
+        self.assertIn('avg', sql.lower())
+
+    def test_fillna_with_aggregate_expression(self):
+        """Test fillna() with aggregate expression like mean()."""
+        ds = self.create_ds()
+        # fillna with mean should work
+        result = ds['value'].fillna(ds['value'].mean())
+        # Now returns pandas Series (always uses pandas fillna)
+        self.assertIsInstance(result, pd.Series)
+        self.assertEqual(len(result), 5)
+
+
+class TestColumnExprFillna(unittest.TestCase):
+    """Test fillna() method for proper NaN handling."""
+
+    def test_fillna_string_column(self):
+        """Test fillna() on string column with NaN values."""
+        df = pd.DataFrame(
+            {
+                'Cabin': ['A1', np.nan, 'B2', np.nan, 'C3'],
+            }
+        )
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        result = ds['Cabin'].fillna('Unknown')
+        expected = df['Cabin'].fillna('Unknown')
+
+        self.assertIsInstance(result, pd.Series)
+        self.assertEqual(list(result), list(expected))
+
+    def test_fillna_numeric_column(self):
+        """Test fillna() on numeric column with NaN values."""
+        df = pd.DataFrame(
+            {
+                'Age': [28.0, np.nan, 29.0, np.nan, 22.0],
+            }
+        )
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        result = ds['Age'].fillna(0)
+        expected = df['Age'].fillna(0)
+
+        self.assertEqual(list(result), list(expected))
+
+    def test_fillna_with_mean(self):
+        """Test fillna() with mean value."""
+        df = pd.DataFrame(
+            {
+                'Age': [28.0, np.nan, 29.0, np.nan, 22.0],
+            }
+        )
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        result = ds['Age'].fillna(ds['Age'].mean())
+        expected = df['Age'].fillna(df['Age'].mean())
+
+        np.testing.assert_array_almost_equal(list(result), list(expected))
+
+    def test_fillna_with_mode(self):
+        """Test fillna() with mode value for string column."""
+        df = pd.DataFrame(
+            {
+                'Embarked': ['S', 'C', np.nan, 'S', np.nan, 'S'],
+            }
+        )
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        result = ds['Embarked'].fillna(ds['Embarked'].mode()[0])
+        expected = df['Embarked'].fillna(df['Embarked'].mode()[0])
+
+        self.assertEqual(list(result), list(expected))
 
 
 class TestColumnExprDisplayBehavior(unittest.TestCase):
@@ -481,6 +773,33 @@ class TestColumnExprDisplayBehavior(unittest.TestCase):
         ds = self.create_ds()
         values = ds['name'].tolist()
         self.assertEqual(values, ['Alice', 'Bob', 'Charlie'])
+
+    def test_getitem_index(self):
+        """Test subscripting with integer index."""
+        ds = self.create_ds()
+        # ds['col'][0] should return first value
+        first_value = ds['value'][0]
+        self.assertEqual(first_value, 100.5)
+
+    def test_getitem_slice(self):
+        """Test subscripting with slice."""
+        ds = self.create_ds()
+        values = ds['value'][:2]
+        self.assertEqual(len(values), 2)
+
+    def test_mode_returns_series(self):
+        """Test mode() returns a pandas Series."""
+        ds = self.create_ds()
+        result = ds['name'].mode()
+        self.assertIsInstance(result, pd.Series)
+
+    def test_mode_subscript(self):
+        """Test mode()[0] pattern - regression test for TypeError."""
+        ds = self.create_ds()
+        # This used to fail with: TypeError: 'ColumnExpr' object is not subscriptable
+        first_mode = ds['name'].mode()[0]
+        # Should return a scalar value
+        self.assertIsInstance(first_mode, str)
 
 
 class TestColumnExprFilterIntegration(unittest.TestCase):

@@ -23,19 +23,19 @@ from datastore.conditions import UnaryCondition, InCondition, BetweenCondition, 
 
 
 class NullConditionTests(unittest.TestCase):
-    """IS NULL / IS NOT NULL condition tests"""
+    """isNull / isNotNull condition tests"""
 
     def test_isnull(self):
-        """Test IS NULL condition"""
+        """Test isNull() condition"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.foo.isnull()).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE "foo" IS NULL', sql)
+        self.assertEqual('SELECT * FROM "test" WHERE isNull("foo") = 1', sql)
 
     def test_notnull(self):
-        """Test IS NOT NULL condition"""
+        """Test isNotNull() condition"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.foo.notnull()).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE "foo" IS NOT NULL', sql)
+        self.assertEqual('SELECT * FROM "test" WHERE isNotNull("foo") = 1', sql)
 
     def test_isnull_with_field_object(self):
         """Test IS NULL with explicit Field"""
@@ -144,10 +144,10 @@ class CombinedConditionTests(unittest.TestCase):
     """Test combining advanced conditions"""
 
     def test_isnull_and_isin(self):
-        """Test IS NULL combined with IN"""
+        """Test isNull() combined with IN"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.name.isnull() | ds.id.isin([1, 2, 3])).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE ("name" IS NULL OR "id" IN (1,2,3))', sql)
+        self.assertEqual('SELECT * FROM "test" WHERE (isNull("name") = 1 OR "id" IN (1,2,3))', sql)
 
     def test_between_and_like(self):
         """Test BETWEEN combined with LIKE"""
@@ -160,8 +160,9 @@ class CombinedConditionTests(unittest.TestCase):
         ds = DataStore(table="test")
         cond = (ds.age > 18) & (ds.name.notnull()) & (ds.city.isin(['NYC', 'LA']))
         sql = ds.select("*").filter(cond).to_sql()
+        # notnull() returns ColumnExpr wrapping isNotNull(), which is converted to isNotNull() = 1
         self.assertEqual(
-            'SELECT * FROM "test" WHERE (("age" > 18 AND "name" IS NOT NULL) AND "city" IN (\'NYC\',\'LA\'))', sql
+            'SELECT * FROM "test" WHERE (("age" > 18 AND isNotNull("name") = 1) AND "city" IN (\'NYC\',\'LA\'))', sql
         )
 
 

@@ -81,7 +81,7 @@ class ECommerceQueryTests(unittest.TestCase):
             .to_sql()
         )
 
-        self.assertIn('IS NOT NULL', sql)
+        self.assertIn('isNotNull', sql)
         self.assertIn('LIKE', sql)
         self.assertIn('ORDER BY', sql)
 
@@ -121,7 +121,7 @@ class DataAnalysisQueryTests(unittest.TestCase):
             .to_sql()
         )
 
-        self.assertIn('IS NULL', sql)
+        self.assertIn('isNull', sql)
         self.assertIn('OR', sql)
         self.assertIn('LIKE', sql)
 

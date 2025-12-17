@@ -451,8 +451,10 @@ class TestNewPandasMethods(unittest.TestCase):
         self.assertEqual(result, [-1, 2, -2])
 
     def test_fillna(self):
-        """Test fillna() method via SQL generation."""
-        sql = self.ds['value'].fillna(0).to_sql()
+        """Test fillna_sql() method via SQL generation."""
+        # fillna() returns pandas Series (for pandas compatibility)
+        # fillna_sql() returns ColumnExpr for SQL generation
+        sql = self.ds['value'].fillna_sql(0).to_sql()
         self.assertIn('ifnull', sql.lower())
 
 
