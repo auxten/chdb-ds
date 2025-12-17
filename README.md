@@ -791,6 +791,7 @@ python -m unittest datastore.tests.test_datastore_core
 - [ ] Schema management(infer or set manually)
 - [ ] Connection managers
 - [ ] MCP for data science functions
+- [ ] Support 'datastore.core.DataStore' in [VSCode Data Wrangler](https://github.com/microsoft/vscode-data-wrangler/issues)
 
 ### Beta release
 - [ ] Unstructured data support(Images, Audios as a column)
