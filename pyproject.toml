@@ -45,7 +45,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "chdb>=2.0.0",
+    "chdb>=4.0.0b2",
 ]
 
 [project.optional-dependencies]
