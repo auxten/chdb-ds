@@ -949,5 +949,171 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
         np.testing.assert_allclose(col_result, expected)
 
 
+class TestLazySlice(unittest.TestCase):
+    """Test LazySlice class for lazy head()/tail() operations."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'category': ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E'],
+                'value': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_column_head_returns_lazy_slice(self):
+        """Test that ColumnExpr.head() returns LazySlice."""
+        from datastore.lazy_result import LazySlice
+
+        ds = self.create_ds()
+        result = ds['value'].head(5)
+
+        # Should return LazySlice, not pd.Series
+        self.assertIsInstance(result, LazySlice)
+
+    def test_column_tail_returns_lazy_slice(self):
+        """Test that ColumnExpr.tail() returns LazySlice."""
+        from datastore.lazy_result import LazySlice
+
+        ds = self.create_ds()
+        result = ds['value'].tail(5)
+
+        # Should return LazySlice, not pd.Series
+        self.assertIsInstance(result, LazySlice)
+
+    def test_lazy_slice_materializes_on_repr(self):
+        """Test that LazySlice materializes when displayed."""
+        ds = self.create_ds()
+        result = ds['value'].head(3)
+
+        # repr() should trigger materialization
+        repr_str = repr(result)
+
+        # Should show actual values
+        self.assertIn('10', repr_str)
+
+    def test_lazy_slice_to_pandas(self):
+        """Test explicit materialization with to_pandas()."""
+        ds = self.create_ds()
+        result = ds['value'].head(3).to_pandas()
+
+        # Should return pd.Series
+        self.assertIsInstance(result, pd.Series)
+        self.assertEqual(len(result), 3)
+
+    def test_lazy_slice_chainable(self):
+        """Test that LazySlice.head() and tail() return new LazySlice."""
+        from datastore.lazy_result import LazySlice
+
+        ds = self.create_ds()
+        result = ds['value'].head(5).tail(2)
+
+        # Should still be LazySlice
+        self.assertIsInstance(result, LazySlice)
+
+        # Should work correctly
+        final = result.to_pandas()
+        self.assertEqual(len(final), 2)
+
+    def test_lazy_slice_iteration(self):
+        """Test iteration triggers materialization."""
+        ds = self.create_ds()
+        result = ds['value'].head(3)
+
+        # Iteration should work
+        values = list(result)
+        self.assertEqual(len(values), 3)
+
+    def test_lazy_slice_indexing(self):
+        """Test indexing triggers materialization."""
+        ds = self.create_ds()
+        result = ds['value'].head(5)
+
+        # Indexing should work
+        first_value = result[0]
+        self.assertEqual(first_value, 10)
+
+    def test_lazy_slice_len(self):
+        """Test len() triggers materialization."""
+        ds = self.create_ds()
+        result = ds['value'].head(3)
+
+        self.assertEqual(len(result), 3)
+
+    def test_lazy_slice_properties(self):
+        """Test properties like values, index, dtype."""
+        ds = self.create_ds()
+        result = ds['value'].head(3)
+
+        # Properties should work
+        self.assertEqual(len(result.values), 3)
+        self.assertEqual(len(result.index), 3)
+        self.assertIsNotNone(result.dtype)
+
+    def test_lazy_slice_arithmetic(self):
+        """Test arithmetic on LazySlice."""
+        ds = self.create_ds()
+        result = ds['value'].head(3)
+
+        # Arithmetic should work
+        doubled = result * 2
+        self.assertEqual(list(doubled), [20, 40, 60])
+
+    def test_lazy_aggregate_head_returns_lazy_slice(self):
+        """Test that LazyAggregate.head() returns LazySlice."""
+        from datastore.lazy_result import LazySlice
+        from datastore.column_expr import LazyAggregate
+
+        ds = self.create_ds()
+        agg_result = ds.groupby('category')['value'].mean()
+
+        # Should be LazyAggregate
+        self.assertIsInstance(agg_result, LazyAggregate)
+
+        # head() should return LazySlice
+        head_result = agg_result.head(3)
+        self.assertIsInstance(head_result, LazySlice)
+
+        # Materialized result should have correct length
+        self.assertEqual(len(head_result), 3)
+
+    def test_lazy_aggregate_tail_returns_lazy_slice(self):
+        """Test that LazyAggregate.tail() returns LazySlice."""
+        from datastore.lazy_result import LazySlice
+
+        ds = self.create_ds()
+        result = ds.groupby('category')['value'].sum().tail(2)
+
+        self.assertIsInstance(result, LazySlice)
+        self.assertEqual(len(result), 2)
+
+    def test_lazy_slice_on_scalar_aggregate(self):
+        """Test LazySlice on scalar aggregate (no groupby)."""
+        ds = self.create_ds()
+        result = ds['value'].mean().head(5)
+
+        # Scalar aggregates don't have head(), should return scalar
+        # The scalar value should be preserved
+        expected = self.df['value'].mean()
+        self.assertAlmostEqual(float(result), expected)
+
+    def test_lazy_slice_aggregations(self):
+        """Test calling aggregation methods on LazySlice."""
+        ds = self.create_ds()
+        slice_result = ds['value'].head(5)
+
+        # Aggregation methods should work
+        self.assertEqual(slice_result.sum(), 10 + 20 + 30 + 40 + 50)
+        self.assertEqual(slice_result.mean(), 30.0)
+        self.assertEqual(slice_result.min(), 10)
+        self.assertEqual(slice_result.max(), 50)
+
+
 if __name__ == '__main__':
     unittest.main()
