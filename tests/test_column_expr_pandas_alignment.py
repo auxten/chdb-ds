@@ -418,7 +418,6 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         result = ds['text'].like('%World%')
         self.assertIn('LIKE', str(result))
 
-    @unittest.expectedFailure  # TODO: chDB should convert NaN to NULL for full pandas compatibility
     def test_isnull_matches_pandas(self):
         """Test that isnull() result matches pandas when materialized."""
         ds = self.create_ds()
@@ -427,7 +426,6 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         pd_result = self.df['nullable'].isnull().astype(int)
         pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
 
-    @unittest.expectedFailure  # TODO: chDB should convert NaN to NULL for full pandas compatibility
     def test_notnull_matches_pandas(self):
         """Test that notnull() result matches pandas when materialized."""
         ds = self.create_ds()

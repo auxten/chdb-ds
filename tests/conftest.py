@@ -12,20 +12,16 @@ import pytest
 def reset_global_executor():
     """
     Reset the global executor before and after each test.
-    
+
     This ensures test isolation because chdb's :memory: database
     shares state across connections in the same process.
     """
     from datastore.executor import reset_executor
-    
+
     # Reset before test
     reset_executor()
-    
+
     yield
-    
+
     # Reset after test
     reset_executor()
-
-
-
-
