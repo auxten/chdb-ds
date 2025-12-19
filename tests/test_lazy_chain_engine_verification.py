@@ -40,7 +40,7 @@ class TestLongChainWithExplain(unittest.TestCase):
 
     def test_explain_shows_chdb_for_sql_operations(self):
         """explain() should show [chDB] for SQL operations when using clickhouse."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Build a chain of operations
         ds = self.ds.select('text', 'value')
@@ -69,7 +69,7 @@ class TestLongChainWithExplain(unittest.TestCase):
 
     def test_long_chain_string_operations_explain(self):
         """Test explain output for long chain of string operations."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         # Chain: trim -> upper
@@ -84,7 +84,7 @@ class TestLongChainWithExplain(unittest.TestCase):
 
     def test_long_chain_math_operations_explain(self):
         """Test explain output for long chain of math operations."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         # Chain: abs -> + 10 -> sqrt
@@ -157,9 +157,9 @@ class TestChainExecutionVerification(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_chain_clickhouse_produces_correct_results(self):
+    def test_chain_chdb_produces_correct_results(self):
         """Chain with ClickHouse should produce correct results."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
@@ -180,7 +180,7 @@ class TestChainExecutionVerification(unittest.TestCase):
     def test_chain_results_consistent(self):
         """ClickHouse and Pandas should produce consistent results."""
         # Execute with ClickHouse
-        config.use_clickhouse()
+        config.use_chdb()
         ch_result = list(self.ds['text'].str.trim().str.upper())
 
         # Execute with Pandas
@@ -190,9 +190,9 @@ class TestChainExecutionVerification(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(ch_result, pd_result)
 
-    def test_complex_chain_clickhouse(self):
+    def test_complex_chain_chdb(self):
         """Complex chain with ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # abs -> round
         result = list(self.ds['value'].abs().round())
@@ -334,7 +334,7 @@ class TestMixedOperationsChain(unittest.TestCase):
 
     def test_string_then_math_chain(self):
         """Test chain: string op -> length (returns number) -> can do math."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Get length of trimmed text
         result = list(self.ds['text'].str.trim().str.length())
@@ -344,7 +344,7 @@ class TestMixedOperationsChain(unittest.TestCase):
 
     def test_math_operations_chain(self):
         """Test chain of math operations."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # abs -> multiply -> floor
         result = list((self.ds['value'].abs() * 1.5).floor())
@@ -354,7 +354,7 @@ class TestMixedOperationsChain(unittest.TestCase):
 
     def test_filter_then_transform(self):
         """Test filter followed by transform."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.filter(self.ds['value'] > 0)
         result = list(ds['text'].str.trim())
@@ -386,9 +386,9 @@ class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_column_assignment_with_clickhouse(self):
+    def test_column_assignment_with_chdb(self):
         """Column assignment should work with ClickHouse engine."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         ds['upper'] = ds['text'].str.upper()
@@ -414,7 +414,7 @@ class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
 
     def test_multiple_column_assignments(self):
         """Multiple column assignments in chain."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         ds['upper'] = ds['text'].str.upper()
@@ -427,7 +427,7 @@ class TestEngineVerificationWithColumnAssignment(unittest.TestCase):
 
     def test_column_assignment_explain(self):
         """Column assignment should appear in explain() with correct engine marker."""
-        config.use_clickhouse()
+        config.use_chdb()
         ds = self.ds.copy()
         ds['upper'] = ds['text'].str.upper()
 
@@ -516,9 +516,9 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_clickhouse_engine_shows_chdb_markers(self):
+    def test_chdb_engine_shows_chdb_markers(self):
         """With ClickHouse engine, explain should show [chDB] for function ops."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         ds['upper'] = ds['text'].str.trim().str.upper()
@@ -560,9 +560,9 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
             f"Explain output:\n{explain_output}",
         )
 
-    def test_clickhouse_no_pandas_in_function_ops(self):
+    def test_chdb_no_pandas_in_function_ops(self):
         """With ClickHouse engine, function ops should not show [Pandas]."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         ds['upper'] = ds['text'].str.upper()
@@ -602,7 +602,7 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
 
     def test_chain_operations_all_use_same_engine(self):
         """All chained operations should use the same configured engine."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         ds = self.ds.copy()
         # Multiple column assignments
@@ -627,7 +627,7 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
     def test_switch_engine_changes_explain_output(self):
         """Switching engine should change explain output markers."""
         # First with ClickHouse
-        config.use_clickhouse()
+        config.use_chdb()
         ds1 = self.ds.copy()
         ds1['upper'] = ds1['text'].str.upper()
         explain_ch = ds1.explain()
@@ -651,7 +651,7 @@ class TestExplainOutputEngineVerification(unittest.TestCase):
     def test_results_consistent_between_engines(self):
         """Results should be the same regardless of which engine is used."""
         # Execute with ClickHouse
-        config.use_clickhouse()
+        config.use_chdb()
         ds_ch = self.ds.copy()
         ds_ch['upper'] = ds_ch['text'].str.trim().str.upper()
         ds_ch['abs_val'] = ds_ch['value'].abs()
@@ -694,7 +694,7 @@ class TestConfigSwitchMidChain(unittest.TestCase):
 
     def test_switch_before_execution(self):
         """Switching before execution uses new engine."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Create lazy expression
         expr = self.ds['text'].str.upper()
@@ -711,7 +711,7 @@ class TestConfigSwitchMidChain(unittest.TestCase):
     def test_results_same_regardless_of_switch(self):
         """Results should be same regardless of engine."""
         # Create expression with chDB
-        config.use_clickhouse()
+        config.use_chdb()
         expr1 = self.ds['text'].str.upper()
         result1 = list(expr1)
 
