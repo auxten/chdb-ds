@@ -1,0 +1,689 @@
+"""
+Comprehensive test comparing DataStore with pandas using Titanic dataset.
+
+This test file validates:
+1. All operations produce identical results to pandas
+2. Lazy execution and checkpoint work correctly
+3. Debug logs confirm expected execution flow
+4. FamilySize assignment is only executed once across groupby and to_df
+
+Based on: https://www.kaggle.com/code/amrahmed2121/titanic/notebook
+"""
+
+import unittest
+import logging
+import io
+import re
+import pandas as pd
+import numpy as np
+import warnings
+
+from datastore import DataStore, LazyGroupBy
+from datastore.config import config
+from datastore.lazy_ops import LazyColumnAssignment
+
+# Suppress warnings
+warnings.filterwarnings("ignore")
+
+
+def dataset_path(filename: str) -> str:
+    """Get path to test dataset."""
+    import os
+
+    return os.path.join(os.path.dirname(__file__), "dataset", filename)
+
+
+class TitanicPandasComparisonTest(unittest.TestCase):
+    """Compare DataStore operations with pandas on Titanic dataset."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Load Titanic dataset once for all tests."""
+        cls.titanic_path = dataset_path("Titanic-Dataset.csv")
+        cls.pd_df = pd.read_csv(cls.titanic_path)
+
+    def setUp(self):
+        """Create fresh DataStore for each test."""
+        self.ds = DataStore.from_file(self.titanic_path)
+        config.enable_cache()
+        config.disable_debug()
+
+    def tearDown(self):
+        """Clean up after each test."""
+        config.disable_debug()
+
+    # ========== Basic Operations ==========
+
+    def test_head(self):
+        """Test head() returns same result as pandas."""
+        ds_result = self.ds.head(5).to_df()
+        pd_result = self.pd_df.head(5)
+
+        pd.testing.assert_frame_equal(ds_result, pd_result)
+
+    def test_tail(self):
+        """Test tail() returns same result as pandas."""
+        ds_result = self.ds.tail(5).to_df()
+        pd_result = self.pd_df.tail(5)
+
+        # Check shape and columns
+        self.assertEqual(ds_result.shape, pd_result.shape)
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+        # Compare numeric columns strictly
+        numeric_cols = ['PassengerId', 'Survived', 'Pclass', 'SibSp', 'Parch', 'Fare']
+        for col in numeric_cols:
+            if col in ds_result.columns:
+                np.testing.assert_array_almost_equal(ds_result[col].values, pd_result[col].values)
+
+        # Compare string columns (handle None/NaN differences)
+        for col in ['Name', 'Sex', 'Ticket', 'Embarked']:
+            if col in ds_result.columns:
+                ds_vals = ds_result[col].fillna('').values
+                pd_vals = pd_result[col].fillna('').values
+                np.testing.assert_array_equal(ds_vals, pd_vals)
+
+    def test_shape(self):
+        """Test shape property."""
+        ds_shape = self.ds.shape
+        pd_shape = self.pd_df.shape
+
+        self.assertEqual(ds_shape, pd_shape)
+
+    def test_columns(self):
+        """Test columns property."""
+        ds_columns = list(self.ds.columns)
+        pd_columns = list(self.pd_df.columns)
+
+        self.assertEqual(ds_columns, pd_columns)
+
+    def test_describe_numeric(self):
+        """Test describe() for numeric columns."""
+        ds_result = self.ds.describe()
+        pd_result = self.pd_df.describe()
+
+        # Compare shapes and column names
+        self.assertEqual(ds_result.shape, pd_result.shape)
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+        # Compare values with tolerance for floating point
+        for col in ds_result.columns:
+            np.testing.assert_array_almost_equal(ds_result[col].values, pd_result[col].values, decimal=5)
+
+    def test_describe_object(self):
+        """Test describe(include='O') for object columns."""
+        ds_result = self.ds.to_df().describe(include="O")
+        pd_result = self.pd_df.describe(include="O")
+
+        pd.testing.assert_frame_equal(ds_result, pd_result)
+
+    # ========== Missing Value Operations ==========
+
+    def test_isna_sum(self):
+        """Test isna().sum() returns same result as pandas."""
+        ds_result = self.ds.isna().sum()
+        pd_result = self.pd_df.isna().sum()
+
+        pd.testing.assert_series_equal(ds_result, pd_result)
+
+    def test_duplicated_sum(self):
+        """Test duplicated().sum() returns same result as pandas."""
+        ds_result = self.ds.duplicated().sum()
+        pd_result = self.pd_df.duplicated().sum()
+
+        self.assertEqual(ds_result, pd_result)
+
+    def test_column_mean(self):
+        """Test column mean calculation."""
+        ds_mean = self.ds['Age'].mean()
+        pd_mean = self.pd_df['Age'].mean()
+
+        # Both should be approximately equal
+        self.assertAlmostEqual(float(ds_mean), float(pd_mean), places=5)
+
+    def test_fillna(self):
+        """Test fillna() operation."""
+        age_mean = round(self.pd_df['Age'].mean(), 2)
+
+        # DataStore
+        ds = DataStore.from_file(self.titanic_path)
+        ds['Age'] = ds['Age'].fillna(age_mean)
+        ds_result = ds['Age'].isna().sum()
+
+        # Pandas
+        pd_df = self.pd_df.copy()
+        pd_df['Age'] = pd_df['Age'].fillna(age_mean)
+        pd_result = pd_df['Age'].isna().sum()
+
+        self.assertEqual(ds_result, pd_result)
+        self.assertEqual(ds_result, 0)
+
+    def test_notnull_astype(self):
+        """Test notnull().astype(int) operation."""
+        # DataStore
+        ds = DataStore.from_file(self.titanic_path)
+        ds["Has_Cabin"] = ds['Cabin'].notnull().astype(int)
+        ds_result = ds["Has_Cabin"].sum()
+
+        # Pandas
+        pd_df = self.pd_df.copy()
+        pd_df["Has_Cabin"] = pd_df['Cabin'].notnull().astype(int)
+        pd_result = pd_df["Has_Cabin"].sum()
+
+        self.assertEqual(ds_result, pd_result)
+
+    def test_value_counts(self):
+        """Test value_counts() operation."""
+        ds_result = self.ds['Embarked'].value_counts()
+        pd_result = self.pd_df['Embarked'].value_counts()
+
+        # Sort both for comparison
+        ds_sorted = ds_result.sort_index()
+        pd_sorted = pd_result.sort_index()
+
+        pd.testing.assert_series_equal(ds_sorted, pd_sorted, check_names=False)
+
+    # ========== GroupBy Operations ==========
+
+    def test_groupby_returns_lazy_groupby(self):
+        """Test that groupby() returns LazyGroupBy object."""
+        result = self.ds.groupby('Sex')
+        self.assertIsInstance(result, LazyGroupBy)
+
+    def test_groupby_sum(self):
+        """Test groupby().sum() operation."""
+        ds_result = self.ds.groupby('Sex')['Survived'].sum()
+        pd_result = self.pd_df.groupby('Sex')['Survived'].sum()
+
+        # Compare values (index order might differ)
+        for idx in pd_result.index:
+            self.assertEqual(ds_result[idx], pd_result[idx])
+
+    def test_groupby_mean(self):
+        """Test groupby().mean() operation with column that has no NaN."""
+        # Use a column without NaN (SibSp) to avoid chDB NaN handling differences
+        ds_result = self.ds.groupby('Survived')['SibSp'].mean()
+        pd_result = self.pd_df.groupby('Survived')['SibSp'].mean()
+
+        # Compare with tolerance
+        for idx in pd_result.index:
+            self.assertAlmostEqual(ds_result[idx], pd_result[idx], places=5)
+
+    def test_groupby_embarked_survived_mean(self):
+        """Test groupby('Embarked')['Survived'].mean()."""
+        ds_result = self.ds.groupby('Embarked')['Survived'].mean()
+        pd_result = self.pd_df.groupby('Embarked')['Survived'].mean()
+
+        for idx in pd_result.index:
+            self.assertAlmostEqual(ds_result[idx], pd_result[idx], places=5)
+
+    def test_groupby_pclass_survived_mean(self):
+        """Test groupby('Pclass')['Survived'].mean()."""
+        ds_result = self.ds.groupby('Pclass')['Survived'].mean()
+        pd_result = self.pd_df.groupby('Pclass')['Survived'].mean()
+
+        for idx in pd_result.index:
+            self.assertAlmostEqual(ds_result[idx], pd_result[idx], places=5)
+
+    def test_groupby_mean_head_order(self):
+        """Test that groupby().mean().head() returns results in sorted order like pandas."""
+        # Create FamilySize column
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        pd_df = self.pd_df.copy()
+        pd_df["FamilySize"] = pd_df["SibSp"] + pd_df["Parch"] + 1
+
+        # Get head(5) results
+        ds_head = ds.groupby("FamilySize")["Survived"].mean().head(5)
+        pd_head = pd_df.groupby("FamilySize")["Survived"].mean().head(5)
+
+        # Compare index order - should be sorted like pandas
+        ds_index = list(ds_head.index)
+        pd_index = list(pd_head.index)
+
+        self.assertEqual(ds_index, pd_index, f"Index order mismatch: DS={ds_index}, Pandas={pd_index}")
+
+        # Compare values
+        for idx in pd_head.index:
+            self.assertAlmostEqual(ds_head[idx], pd_head[idx], places=5)
+
+    # ========== Column Assignment + GroupBy (Critical Test) ==========
+
+    def test_family_size_assignment_and_groupby(self):
+        """
+        Test the critical pattern:
+        df["FamilySize"] = df["SibSp"] + df["Parch"] + 1
+        df.groupby("FamilySize")["Survived"].mean()
+        df.to_df()
+
+        This should only execute FamilySize assignment ONCE.
+        """
+        # DataStore
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        ds_groupby_result = ds.groupby("FamilySize")["Survived"].mean()
+        ds_df = ds.to_df()
+
+        # Pandas
+        pd_df = self.pd_df.copy()
+        pd_df["FamilySize"] = pd_df["SibSp"] + pd_df["Parch"] + 1
+
+        pd_groupby_result = pd_df.groupby("FamilySize")["Survived"].mean()
+
+        # Compare groupby results
+        for idx in pd_groupby_result.index:
+            self.assertAlmostEqual(
+                ds_groupby_result[idx], pd_groupby_result[idx], places=5, msg=f"Mismatch at FamilySize={idx}"
+            )
+
+        # Compare final DataFrame
+        self.assertEqual(ds_df.shape[1], pd_df.shape[1])
+        self.assertIn("FamilySize", ds_df.columns)
+
+        # Compare FamilySize values
+        pd.testing.assert_series_equal(
+            ds_df["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True)
+        )
+
+
+class TitanicExecutionLogicTest(unittest.TestCase):
+    """Test execution logic and checkpoint behavior with debug logs."""
+
+    def setUp(self):
+        """Set up logging capture."""
+        self.titanic_path = dataset_path("Titanic-Dataset.csv")
+
+        # Set up log capture
+        self.log_stream = io.StringIO()
+        self.log_handler = logging.StreamHandler(self.log_stream)
+        self.log_handler.setLevel(logging.DEBUG)
+
+        # Get datastore logger
+        self.logger = logging.getLogger('datastore')
+        self.original_level = self.logger.level
+        self.original_handlers = self.logger.handlers.copy()
+
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.handlers = [self.log_handler]
+
+        config.enable_cache()
+
+    def tearDown(self):
+        """Restore logging state."""
+        self.logger.level = self.original_level
+        self.logger.handlers = self.original_handlers
+        config.disable_debug()
+
+    def _get_logs(self) -> str:
+        """Get captured log output."""
+        self.log_handler.flush()
+        return self.log_stream.getvalue()
+
+    def _clear_logs(self):
+        """Clear captured logs."""
+        self.log_stream.truncate(0)
+        self.log_stream.seek(0)
+
+    def _count_pattern(self, pattern: str) -> int:
+        """Count occurrences of pattern in logs."""
+        logs = self._get_logs()
+        return len(re.findall(pattern, logs, re.IGNORECASE))
+
+    def test_family_size_executed_once(self):
+        """
+        CRITICAL TEST: Verify FamilySize is executed only ONCE
+        across groupby().mean() and to_df() calls.
+        """
+        # Monkey-patch to count executions
+        execution_counts = {}
+        original_execute = LazyColumnAssignment.execute
+
+        def patched_execute(self, df, context):
+            col = self.column
+            execution_counts[col] = execution_counts.get(col, 0) + 1
+            return original_execute(self, df, context)
+
+        LazyColumnAssignment.execute = patched_execute
+
+        try:
+            ds = DataStore.from_file(self.titanic_path)
+            ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+            # First access: groupby + mean
+            result = ds.groupby("FamilySize")["Survived"].mean()
+            _ = repr(result)  # Force execution
+
+            # Second access: to_df
+            _ = ds.to_df()
+
+            # FamilySize should be executed exactly once
+            self.assertEqual(
+                execution_counts.get("FamilySize", 0),
+                1,
+                f"FamilySize should be executed once, but was executed "
+                f"{execution_counts.get('FamilySize', 0)} times",
+            )
+        finally:
+            LazyColumnAssignment.execute = original_execute
+
+    def test_checkpoint_applied_after_groupby_mean(self):
+        """Verify checkpoint is applied after groupby().mean() execution."""
+        # Use from_dataframe to ensure we have lazy ops
+        pd_df = pd.read_csv(self.titanic_path)
+        ds = DataStore.from_dataframe(pd_df)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        # Before groupby, should have 2 lazy ops (DataFrameSource + ColumnAssignment)
+        initial_ops_count = len(ds._lazy_ops)
+        self.assertEqual(initial_ops_count, 2, f"Expected 2 lazy ops, got {initial_ops_count}")
+
+        # Trigger materialization via groupby
+        result = ds.groupby("FamilySize")["Survived"].mean()
+        _ = repr(result)  # Force execution
+
+        # After checkpoint, should have 1 lazy op (LazyDataFrameSource with materialized result)
+        self.assertEqual(len(ds._lazy_ops), 1, f"Expected 1 lazy op after checkpoint, got {len(ds._lazy_ops)}")
+
+        # The lazy op should be LazyDataFrameSource (materialized DataFrame)
+        from datastore.lazy_ops import LazyDataFrameSource
+
+        self.assertIsInstance(
+            ds._lazy_ops[0], LazyDataFrameSource, f"Expected LazyDataFrameSource, got {type(ds._lazy_ops[0]).__name__}"
+        )
+
+        # Verify the DataFrame includes FamilySize column
+        df = ds._lazy_ops[0]._df
+        self.assertIn("FamilySize", df.columns)
+
+    def test_cache_used_on_second_to_df(self):
+        """Verify cached result is used on second to_df() call."""
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        # First call
+        _ = ds.to_df()
+        self._clear_logs()
+
+        # Second call should use cache
+        config.enable_debug()
+        _ = ds.to_df()
+        config.disable_debug()
+
+        logs = self._get_logs()
+        self.assertIn("Using cached result", logs)
+
+    def test_materialization_log_sequence(self):
+        """Verify correct log sequence during materialization."""
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        config.enable_debug()
+        _ = ds.to_df()
+        config.disable_debug()
+
+        logs = self._get_logs()
+
+        # Should see materialization start
+        self.assertIn("Starting materialization", logs)
+
+        # Should see lazy ops chain
+        self.assertIn("Lazy operations chain", logs)
+
+        # Should see FamilySize assignment
+        self.assertIn("FamilySize", logs)
+
+        # Should see materialization complete
+        self.assertIn("Materialization complete", logs)
+
+        # Should see checkpoint
+        self.assertIn("checkpointed", logs)
+
+    def test_groupby_with_sql_aggregation(self):
+        """Verify groupby uses SQL for aggregation."""
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        self._clear_logs()
+        config.enable_debug()
+
+        result = ds.groupby("FamilySize")["Survived"].mean()
+        _ = repr(result)
+
+        config.disable_debug()
+        logs = self._get_logs()
+
+        # Should see chDB SQL execution for aggregation
+        self.assertIn("chDB", logs)
+        self.assertIn("GROUP BY", logs)
+
+    def test_groupby_respects_pandas_engine(self):
+        """Verify groupby respects execution_engine=pandas setting."""
+        ds = DataStore.from_file(self.titanic_path)
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        # Set pandas execution engine
+        config.execution_engine = 'pandas'
+
+        try:
+            self._clear_logs()
+            config.enable_debug()
+
+            result = ds.groupby("FamilySize")["Survived"].mean()
+            _ = repr(result)
+
+            config.disable_debug()
+            logs = self._get_logs()
+
+            # Should NOT see chDB SQL for groupby aggregation when using pandas engine
+            # (materialization may still use chDB, but the groupby should be pandas)
+            self.assertNotIn("GROUP BY", logs, "Should not use SQL GROUP BY when engine is pandas")
+
+            # Verify result is correct
+            pd_df = pd.read_csv(self.titanic_path)
+            pd_df["FamilySize"] = pd_df["SibSp"] + pd_df["Parch"] + 1
+            pd_result = pd_df.groupby("FamilySize")["Survived"].mean()
+
+            for idx in pd_result.index:
+                self.assertAlmostEqual(result[idx], pd_result[idx], places=5)
+        finally:
+            # Restore default engine
+            config.execution_engine = 'auto'
+
+
+class TitanicFullWorkflowTest(unittest.TestCase):
+    """Test complete Titanic analysis workflow matching notebook."""
+
+    def setUp(self):
+        """Set up for workflow tests."""
+        self.titanic_path = dataset_path("Titanic-Dataset.csv")
+        config.enable_cache()
+
+    def test_complete_titanic_workflow(self):
+        """
+        Complete Titanic workflow as in the notebook.
+
+        This replicates the exact sequence of operations from the notebook
+        and verifies results match pandas at each step.
+        """
+        # ========== Setup ==========
+        ds = DataStore.from_file(self.titanic_path)
+        pd_df = pd.read_csv(self.titanic_path)
+
+        # ========== Step 1: Basic exploration ==========
+        self.assertEqual(ds.shape, pd_df.shape)
+        self.assertEqual(list(ds.columns), list(pd_df.columns))
+
+        # ========== Step 2: Handle Age missing values ==========
+        age_mean = round(pd_df['Age'].mean(), 2)
+
+        ds['Age'] = ds['Age'].fillna(age_mean)
+        pd_df['Age'] = pd_df['Age'].fillna(age_mean)
+
+        ds_age_na = ds.isna()['Age'].sum()
+        pd_age_na = pd_df['Age'].isna().sum()
+        self.assertEqual(ds_age_na, pd_age_na)
+        self.assertEqual(ds_age_na, 0)
+
+        # ========== Step 3: Create Has_Cabin column ==========
+        ds["Has_Cabin"] = ds['Cabin'].notnull().astype(int)
+        pd_df["Has_Cabin"] = pd_df['Cabin'].notnull().astype(int)
+
+        ds_has_cabin_sum = ds["Has_Cabin"].sum()
+        pd_has_cabin_sum = pd_df["Has_Cabin"].sum()
+        self.assertEqual(ds_has_cabin_sum, pd_has_cabin_sum)
+
+        # ========== Step 4: Handle Cabin missing values ==========
+        ds['Cabin'] = ds['Cabin'].fillna('Unknown')
+        pd_df['Cabin'] = pd_df['Cabin'].fillna('Unknown')
+
+        # ========== Step 5: Handle Embarked missing values ==========
+        embarked_mode = pd_df['Embarked'].mode()[0]
+        ds['Embarked'] = ds['Embarked'].fillna(embarked_mode)
+        pd_df['Embarked'] = pd_df['Embarked'].fillna(embarked_mode)
+
+        # ========== Step 6: GroupBy analyses ==========
+        # Sex -> Survived sum
+        ds_sex_survived = ds.groupby('Sex')['Survived'].sum()
+        pd_sex_survived = pd_df.groupby('Sex')['Survived'].sum()
+        for idx in pd_sex_survived.index:
+            self.assertEqual(ds_sex_survived[idx], pd_sex_survived[idx])
+
+        # Survived -> Age mean
+        ds_survived_age = ds.groupby('Survived')['Age'].mean()
+        pd_survived_age = pd_df.groupby('Survived')['Age'].mean()
+        for idx in pd_survived_age.index:
+            self.assertAlmostEqual(ds_survived_age[idx], pd_survived_age[idx], places=5)
+
+        # Embarked -> Survived mean
+        ds_embarked = ds.groupby("Embarked")["Survived"].mean()
+        pd_embarked = pd_df.groupby("Embarked")["Survived"].mean()
+        for idx in pd_embarked.index:
+            self.assertAlmostEqual(ds_embarked[idx], pd_embarked[idx], places=5)
+
+        # Pclass -> Survived mean
+        ds_pclass = ds.groupby("Pclass")["Survived"].mean()
+        pd_pclass = pd_df.groupby("Pclass")["Survived"].mean()
+        for idx in pd_pclass.index:
+            self.assertAlmostEqual(ds_pclass[idx], pd_pclass[idx], places=5)
+
+        # Has_Cabin -> Survived mean
+        ds_cabin = ds.groupby("Has_Cabin")["Survived"].mean()
+        pd_cabin = pd_df.groupby("Has_Cabin")["Survived"].mean()
+        for idx in pd_cabin.index:
+            self.assertAlmostEqual(ds_cabin[idx], pd_cabin[idx], places=5)
+
+        # ========== Step 7: FamilySize (CRITICAL) ==========
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+        pd_df["FamilySize"] = pd_df["SibSp"] + pd_df["Parch"] + 1
+
+        ds_family = ds.groupby("FamilySize")["Survived"].mean()
+        pd_family = pd_df.groupby("FamilySize")["Survived"].mean()
+        for idx in pd_family.index:
+            self.assertAlmostEqual(ds_family[idx], pd_family[idx], places=5, msg=f"Mismatch at FamilySize={idx}")
+
+        # ========== Step 8: Final DataFrame ==========
+        ds_final = ds.to_df()
+
+        # Check all columns present
+        expected_cols = list(pd_df.columns)
+        actual_cols = list(ds_final.columns)
+        self.assertEqual(sorted(actual_cols), sorted(expected_cols))
+
+        # Check shapes match
+        self.assertEqual(ds_final.shape, pd_df.shape)
+
+        # Check FamilySize values match
+        pd.testing.assert_series_equal(
+            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True)
+        )
+
+
+class TitanicExecutionCountTest(unittest.TestCase):
+    """
+    Detailed test to verify each lazy operation is executed exactly once.
+    """
+
+    def setUp(self):
+        """Set up execution tracking."""
+        self.titanic_path = dataset_path("Titanic-Dataset.csv")
+        config.enable_cache()
+
+        # Track execution counts
+        self.execution_counts = {}
+
+        # Patch LazyColumnAssignment.execute
+        self.original_execute = LazyColumnAssignment.execute
+
+        def patched_execute(op_self, df, context):
+            col = op_self.column
+            self.execution_counts[col] = self.execution_counts.get(col, 0) + 1
+            return self.original_execute(op_self, df, context)
+
+        LazyColumnAssignment.execute = patched_execute
+
+    def tearDown(self):
+        """Restore original execute."""
+        LazyColumnAssignment.execute = self.original_execute
+
+    def test_multiple_assignments_each_executed_once(self):
+        """Test multiple column assignments are each executed once."""
+        ds = DataStore.from_file(self.titanic_path)
+
+        # Multiple assignments
+        ds["Col1"] = ds["SibSp"] + 1
+        ds["Col2"] = ds["Parch"] + 2
+        ds["Col3"] = ds["Age"] * 0.5
+
+        # Trigger materialization
+        _ = ds.to_df()
+
+        # Each should be executed exactly once
+        for col in ["Col1", "Col2", "Col3"]:
+            self.assertEqual(self.execution_counts.get(col, 0), 1, f"{col} should be executed once")
+
+    def test_assignment_then_groupby_then_todf(self):
+        """Test assignment + groupby + to_df executes assignment once."""
+        ds = DataStore.from_file(self.titanic_path)
+
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        # groupby + mean
+        result = ds.groupby("FamilySize")["Survived"].mean()
+        _ = repr(result)
+
+        # to_df
+        _ = ds.to_df()
+
+        self.assertEqual(self.execution_counts.get("FamilySize", 0), 1, "FamilySize should be executed exactly once")
+
+    def test_assignment_then_multiple_groupby(self):
+        """Test assignment + multiple groupby operations."""
+        ds = DataStore.from_file(self.titanic_path)
+
+        ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
+
+        # Multiple groupby operations
+        r1 = ds.groupby("FamilySize")["Survived"].mean()
+        _ = repr(r1)
+
+        r2 = ds.groupby("FamilySize")["Survived"].sum()
+        _ = repr(r2)
+
+        r3 = ds.groupby("FamilySize")["Age"].mean()
+        _ = repr(r3)
+
+        # to_df
+        _ = ds.to_df()
+
+        # FamilySize should still only be executed once!
+        self.assertEqual(
+            self.execution_counts.get("FamilySize", 0),
+            1,
+            f"FamilySize should be executed once, got {self.execution_counts.get('FamilySize', 0)}",
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()
