@@ -31,9 +31,9 @@ class TestLazyEngineConfigSync(unittest.TestCase):
         config.use_pandas()
         self.assertEqual(function_config.default_engine, FuncExecEngine.PANDAS)
 
-    def test_config_syncs_to_clickhouse(self):
+    def test_config_syncs_to_chdb(self):
         """Setting config to clickhouse should sync with function_config."""
-        config.use_clickhouse()
+        config.use_chdb()
         self.assertEqual(function_config.default_engine, FuncExecEngine.CHDB)
 
     def test_config_syncs_to_auto(self):
@@ -47,7 +47,7 @@ class TestLazyEngineConfigSync(unittest.TestCase):
         config.execution_engine = 'pandas'
         self.assertEqual(function_config.default_engine, FuncExecEngine.PANDAS)
 
-        config.execution_engine = 'clickhouse'
+        config.execution_engine = 'chdb'
         self.assertEqual(function_config.default_engine, FuncExecEngine.CHDB)
 
 
@@ -68,9 +68,9 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_upper_with_clickhouse(self):
+    def test_upper_with_chdb(self):
         """Test upper() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Execute and get result
         result = list(self.ds['text'].str.upper())
@@ -88,9 +88,9 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, ['HELLO', 'WORLD', 'TEST'])
 
-    def test_lower_with_clickhouse(self):
+    def test_lower_with_chdb(self):
         """Test lower() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['text'].str.lower())
         # Row order is now preserved
         self.assertEqual(result, ['hello', 'world', 'test'])
@@ -102,9 +102,9 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, ['hello', 'world', 'test'])
 
-    def test_length_with_clickhouse(self):
+    def test_length_with_chdb(self):
         """Test length() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['text'].str.length())
         # Row order is now preserved
         self.assertEqual(result, [5, 5, 4])
@@ -116,9 +116,9 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, [5, 5, 4])
 
-    def test_trim_with_clickhouse(self):
+    def test_trim_with_chdb(self):
         """Test trim() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         df = pd.DataFrame({'text': ['  hello  ', '  world  ']})
         ds = DataStore.from_dataframe(df)
         result = list(ds['text'].str.trim())
@@ -148,9 +148,9 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_abs_with_clickhouse(self):
+    def test_abs_with_chdb(self):
         """Test abs() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['value'].abs())
         # Row order is now preserved
         self.assertEqual(result, [1.5, 2.7, 3.2])
@@ -162,9 +162,9 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, [1.5, 2.7, 3.2])
 
-    def test_round_with_clickhouse(self):
+    def test_round_with_chdb(self):
         """Test round() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['value'].round())
         # Row order is now preserved
         self.assertEqual(result, [-2.0, 3.0, -3.0])
@@ -176,9 +176,9 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         # Pandas may have different rounding behavior
         self.assertEqual(len(result), 3)
 
-    def test_sqrt_with_clickhouse(self):
+    def test_sqrt_with_chdb(self):
         """Test sqrt() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['positive'].sqrt())
         # Row order is now preserved
         self.assertEqual(result, [2.0, 3.0, 4.0])
@@ -190,9 +190,9 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, [2.0, 3.0, 4.0])
 
-    def test_floor_with_clickhouse(self):
+    def test_floor_with_chdb(self):
         """Test floor() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['value'].floor())
         # Row order is now preserved
         self.assertEqual(result, [-2.0, 2.0, -4.0])
@@ -204,9 +204,9 @@ class TestLazyMathFunctionsEngineSwitch(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, [-2.0, 2.0, -4.0])
 
-    def test_ceil_with_clickhouse(self):
+    def test_ceil_with_chdb(self):
         """Test ceil() executes via ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
         result = list(self.ds['value'].ceil())
         # Row order is now preserved
         self.assertEqual(result, [-1.0, 3.0, -3.0])
@@ -266,9 +266,9 @@ class TestLazyChainedOperations(unittest.TestCase):
         """Reset config."""
         config.use_auto()
 
-    def test_chained_string_ops_clickhouse(self):
+    def test_chained_string_ops_chdb(self):
         """Test chained string operations with ClickHouse."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # Chain: trim -> upper
         result = list(self.ds['text'].str.trim().str.upper())
@@ -286,7 +286,7 @@ class TestLazyChainedOperations(unittest.TestCase):
 
     def test_mixed_operations(self):
         """Test mixed math and comparison operations."""
-        config.use_clickhouse()
+        config.use_chdb()
 
         # abs then filter
         abs_values = list(self.ds['value'].abs())
@@ -317,7 +317,7 @@ class TestEngineSwitchingDuringExecution(unittest.TestCase):
         result1 = list(lazy_expr)
 
         # Switch to clickhouse
-        config.use_clickhouse()
+        config.use_chdb()
         result2 = list(self.ds['value'].abs())
 
         # Row order is now preserved
@@ -329,7 +329,7 @@ class TestEngineSwitchingDuringExecution(unittest.TestCase):
         df = pd.DataFrame({'val': [-2.5, 1.5, -0.5]})
         ds = DataStore.from_dataframe(df)
 
-        config.use_clickhouse()
+        config.use_chdb()
         ch_result = list(ds['val'].abs())
 
         config.use_pandas()

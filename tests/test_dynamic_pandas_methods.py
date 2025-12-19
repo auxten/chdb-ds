@@ -60,7 +60,7 @@ class TestDynamicPandasMethods(unittest.TestCase):
 class TestDynamicFallbackToChdb(unittest.TestCase):
     """Test that unknown functions fallback to chDB."""
 
-    def test_clickhouse_specific_function(self):
+    def test_chdb_specific_function(self):
         """Test ClickHouse-specific function via fallback."""
         nat = ds.from_file('tests/dataset/users.csv').orderby('user_id').limit(3)
         nat['name_len'] = Function('lengthUTF8', Field('name'))

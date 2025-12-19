@@ -35,18 +35,18 @@ class TestEngineConfig(unittest.TestCase):
         config.use_pandas()
         self.assertEqual(config.execution_engine, ExecutionEngine.PANDAS)
 
-    def test_set_clickhouse_engine(self):
+    def test_set_chdb_engine(self):
         """Can switch to clickhouse engine."""
-        config.use_clickhouse()
-        self.assertEqual(config.execution_engine, ExecutionEngine.CLICKHOUSE)
+        config.use_chdb()
+        self.assertEqual(config.execution_engine, ExecutionEngine.CHDB)
 
     def test_set_engine_via_property(self):
         """Can set engine via property."""
         config.execution_engine = 'pandas'
         self.assertEqual(config.execution_engine, 'pandas')
 
-        config.execution_engine = 'clickhouse'
-        self.assertEqual(config.execution_engine, 'clickhouse')
+        config.execution_engine = 'chdb'
+        self.assertEqual(config.execution_engine, 'chdb')
 
         config.execution_engine = 'auto'
         self.assertEqual(config.execution_engine, 'auto')
