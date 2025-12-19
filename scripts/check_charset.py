@@ -89,8 +89,8 @@ def main():
     found = False
 
     for root, dirs, files in os.walk(root_dir):
-        # Skip certain directories
-        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        # Skip certain directories (including those starting with .venv)
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith(".venv")]
 
         for f in files:
             if f.endswith((".md", ".py")):
