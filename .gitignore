@@ -14,6 +14,7 @@ __pycache__/
 *.ico
 *.webp
 
+.venv*/
 # C extensions
 *.so
 
