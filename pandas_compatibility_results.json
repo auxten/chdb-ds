@@ -1,0 +1,670 @@
+[
+  {
+    "category": "dataframe_creation",
+    "description": "Create DataFrame from dict",
+    "pandas_code": "result = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})",
+    "datastore_code": "result = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "   a  b\n0  1  4\n1  2  5\n2  3  6",
+    "datastore_result": "   a  b\n0  1  4\n1  2  5\n2  3  6",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "dataframe_creation",
+    "description": "Create DataFrame with index",
+    "pandas_code": "result = pd.DataFrame({'a': [1, 2, 3]}, index=['x', 'y', 'z'])",
+    "datastore_code": "result = pd.DataFrame({'a': [1, 2, 3]}, index=['x', 'y', 'z'])",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "   a\nx  1\ny  2\nz  3",
+    "datastore_result": "   a\nx  1\ny  2\nz  3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_selection",
+    "description": "Select single column",
+    "pandas_code": "result = df['name']",
+    "datastore_code": "result = df['name']",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0      Alice\n1        Bob\n2    Charlie\n3      David\n4        Eve\n5      Frank\n6       None\n7      Grace\nName: name, dtype: object",
+    "datastore_result": "0      Alice\n1        Bob\n2    Charlie\n3      David\n4        Eve\n5      Frank\n6       None\n7      Grace\nName: name, dtype: object",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_selection",
+    "description": "Select multiple columns",
+    "pandas_code": "result = df[['name', 'age']]",
+    "datastore_code": "result = df[['name', 'age']]",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0\n3    David   NaN\n4      Eve  28.0\n5    Frank  32.0\n6     None  45.0\n7    Grace  27.0",
+    "datastore_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0\n3    David   NaN\n4      Eve  28.0\n5    Frank  32.0\n6     None  45.0\n7    Grace  27.0",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_selection",
+    "description": "Select rows by slice",
+    "pandas_code": "result = df[:3]",
+    "datastore_code": "result = df[:3]",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_selection",
+    "description": "Select with boolean indexing",
+    "pandas_code": "result = df[df['age'] > 30]",
+    "datastore_code": "result = df[df['age'] > 30]",
+    "pandas_success": true,
+    "datastore_success": false,
+    "pandas_result": "      name   age     city   salary department  hire_date  performance_score\n2  Charlie  35.0    Paris      NaN         IT 2018-03-10                9.1\n5    Frank  32.0   Sydney  80000.0         IT 2019-02-28                9.5\n6     None  45.0  Toronto  70000.0         HR 2017-08-15                7.5",
+    "datastore_result": null,
+    "pandas_error": null,
+    "datastore_error": "TypeError: DataStore indices must be slices, strings, or lists, not BinaryCondition",
+    "results_match": false,
+    "notes": [
+      "Datastore error: DataStore indices must be slices, strings, or lists, not BinaryCondition"
+    ]
+  },
+  {
+    "category": "data_selection",
+    "description": "Select with loc",
+    "pandas_code": "result = df.loc[0:2, ['name', 'age']]",
+    "datastore_code": "result = df.loc[0:2, ['name', 'age']]",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0",
+    "datastore_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_selection",
+    "description": "Select with iloc",
+    "pandas_code": "result = df.iloc[0:3, 0:2]",
+    "datastore_code": "result = df.iloc[0:3, 0:2]",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0",
+    "datastore_result": "      name   age\n0    Alice  25.0\n1      Bob  30.0\n2  Charlie  35.0",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_cleaning",
+    "description": "Drop NA values",
+    "pandas_code": "result = df.dropna()",
+    "datastore_code": "result = df.dropna()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "    name   age      city   salary department  hire_date  performance_score\n0  Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n1    Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n4    Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n5  Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5",
+    "datastore_result": "    name   age      city   salary department   hire_date  performance_score\n0  Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n1    Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n4    Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n5  Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_cleaning",
+    "description": "Fill NA values",
+    "pandas_code": "result = df.fillna(0)",
+    "datastore_code": "result = df.fillna(0)",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n2  Charlie  35.0     Paris      0.0         IT 2018-03-10                9.1\n3    David   0.0     Tokyo  75000.0         HR 2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n6        0  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n7    Grace  27.0         0  52000.0    Finance 2021-04-30                8.3",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n2  Charlie  35.0     Paris      0.0         IT  2018-03-10                9.1\n3    David   0.0     Tokyo  75000.0         HR  2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n6        0  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n7    Grace  27.0         0  52000.0    Finance  2021-04-30                8.3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_cleaning",
+    "description": "Drop duplicates",
+    "pandas_code": "result = df.drop_duplicates()",
+    "datastore_code": "result = df.drop_duplicates()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1\n3    David   NaN     Tokyo  75000.0         HR 2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n6     None  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n7    Grace  27.0      None  52000.0    Finance 2021-04-30                8.3",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_cleaning",
+    "description": "Replace values",
+    "pandas_code": "result = df.replace('HR', 'Human Resources')",
+    "datastore_code": "result = df.replace('HR', 'Human Resources')",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city  ...       department  hire_date performance_score\n0    Alice  25.0  New York  ...  Human Resources 2020-01-15               8.5\n1      Bob  30.0    London  ...               IT 2019-06-20               7.2\n2  Charlie  35.0     Paris  ...               IT 2018-03-10               9.1\n3    David   NaN     Tokyo  ...  Human Resources 2021-09-05               6.8\n4      Eve  28.0    Berlin  ...          Finance 2020-11-12               8.0\n5    Frank  32.0    Sydney  ...               IT 2019-02-28               9.5\n6     None  45.0   Toronto  ...  Human Resources 2017-08-15               7.5\n7    Grace  27.0      None  ...          Finance 2021-04-30               8.3\n\n[8 rows x 7 columns]",
+    "datastore_result": "      name   age      city  ...       department   hire_date performance_score\n0    Alice  25.0  New York  ...  Human Resources  2020-01-15               8.5\n1      Bob  30.0    London  ...               IT  2019-06-20               7.2\n2  Charlie  35.0     Paris  ...               IT  2018-03-10               9.1\n3    David   NaN     Tokyo  ...  Human Resources  2021-09-05               6.8\n4      Eve  28.0    Berlin  ...          Finance  2020-11-12               8.0\n5    Frank  32.0    Sydney  ...               IT  2019-02-28               9.5\n6     None  45.0   Toronto  ...  Human Resources  2017-08-15               7.5\n7    Grace  27.0      None  ...          Finance  2021-04-30               8.3\n\n[8 rows x 7 columns]",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_cleaning",
+    "description": "Drop column",
+    "pandas_code": "result = df.drop('salary', axis=1)",
+    "datastore_code": "result = df.drop('salary', axis=1)",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city department  hire_date  performance_score\n0    Alice  25.0  New York         HR 2020-01-15                8.5\n1      Bob  30.0    London         IT 2019-06-20                7.2\n2  Charlie  35.0     Paris         IT 2018-03-10                9.1\n3    David   NaN     Tokyo         HR 2021-09-05                6.8\n4      Eve  28.0    Berlin    Finance 2020-11-12                8.0\n5    Frank  32.0    Sydney         IT 2019-02-28                9.5\n6     None  45.0   Toronto         HR 2017-08-15                7.5\n7    Grace  27.0      None    Finance 2021-04-30                8.3",
+    "datastore_result": "      name   age      city department   hire_date  performance_score\n0    Alice  25.0  New York         HR  2020-01-15                8.5\n1      Bob  30.0    London         IT  2019-06-20                7.2\n2  Charlie  35.0     Paris         IT  2018-03-10                9.1\n3    David   NaN     Tokyo         HR  2021-09-05                6.8\n4      Eve  28.0    Berlin    Finance  2020-11-12                8.0\n5    Frank  32.0    Sydney         IT  2019-02-28                9.5\n6     None  45.0   Toronto         HR  2017-08-15                7.5\n7    Grace  27.0      None    Finance  2021-04-30                8.3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "statistics",
+    "description": "Compute mean",
+    "pandas_code": "result = df['age'].mean()",
+    "datastore_code": "result = df['age'].mean()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": 31.714285714285715,
+    "datastore_result": "31.714285714285715",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "statistics",
+    "description": "Compute sum",
+    "pandas_code": "result = df['salary'].sum()",
+    "datastore_code": "result = df['salary'].sum()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": 442000.0,
+    "datastore_result": "442000.0",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "statistics",
+    "description": "Compute median",
+    "pandas_code": "result = df['age'].median()",
+    "datastore_code": "result = df['age'].median()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": 30.0,
+    "datastore_result": 30.0,
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "statistics",
+    "description": "Compute std",
+    "pandas_code": "result = df['age'].std()",
+    "datastore_code": "result = df['age'].std()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": 6.7259270913454925,
+    "datastore_result": "6.7259270913454925",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "statistics",
+    "description": "Describe DataFrame",
+    "pandas_code": "result = df.describe()",
+    "datastore_code": "result = df.describe()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "             age        salary            hire_date  performance_score\ncount   7.000000      7.000000                    8           8.000000\nmean   31.714286  63142.857143  2019-10-17 09:00:00           8.112500\nmin    25.000000  50000.000000  2017-08-15 00:00:00           6.800000\n25%    27.500000  53500.000000  2018-12-01 06:00:00           7.425000\n50%    30.000000  60000.000000  2019-10-02 12:00:00           8.150000\n75%    33.500000  72500.000000  2020-12-24 06:00:00           8.650000\nmax    45.000000  80000.000000  2021-09-05 00:00:00           9.500000\nstd     6.725927  11866.318882                  NaN           0.928036",
+    "datastore_result": "             age        salary  performance_score\ncount   7.000000      7.000000           8.000000\nmean   31.714286  63142.857143           8.112500\nstd     6.725927  11866.318882           0.928036\nmin    25.000000  50000.000000           6.800000\n25%    27.500000  53500.000000           7.425000\n50%    30.000000  60000.000000           8.150000\n75%    33.500000  72500.000000           8.650000\nmax    45.000000  80000.000000           9.500000",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "statistics",
+    "description": "Value counts",
+    "pandas_code": "result = df['department'].value_counts()",
+    "datastore_code": "result = df['department'].value_counts()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "department\nHR         3\nIT         3\nFinance    2\nName: count, dtype: int64",
+    "datastore_result": "department\nHR         3\nIT         3\nFinance    2\nName: count, dtype: int64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "statistics",
+    "description": "Correlation",
+    "pandas_code": "result = df[['age', 'salary']].corr()",
+    "datastore_code": "result = df[['age', 'salary']].corr()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "             age    salary\nage     1.000000  0.633255\nsalary  0.633255  1.000000",
+    "datastore_result": "             age    salary\nage     1.000000  0.633255\nsalary  0.633255  1.000000",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_transformation",
+    "description": "Apply function to column",
+    "pandas_code": "result = df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)",
+    "datastore_code": "result = df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)",
+    "pandas_success": false,
+    "datastore_success": false,
+    "pandas_result": null,
+    "datastore_result": null,
+    "pandas_error": "NameError: name 'pd' is not defined",
+    "datastore_error": "NameError: name 'pd' is not defined",
+    "results_match": false,
+    "notes": [
+      "Datastore error: name 'pd' is not defined"
+    ]
+  },
+  {
+    "category": "data_transformation",
+    "description": "Map values",
+    "pandas_code": "result = df['department'].map({'HR': 1, 'IT': 2, 'Finance': 3})",
+    "datastore_code": "result = df['department'].map({'HR': 1, 'IT': 2, 'Finance': 3})",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    1\n1    2\n2    2\n3    1\n4    3\n5    2\n6    1\n7    3\nName: department, dtype: int64",
+    "datastore_result": "0    1\n1    2\n2    2\n3    1\n4    3\n5    2\n6    1\n7    3\nName: department, dtype: int64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_transformation",
+    "description": "Rename columns",
+    "pandas_code": "result = df.rename(columns={'name': 'employee_name'})",
+    "datastore_code": "result = df.rename(columns={'name': 'employee_name'})",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "  employee_name   age      city  ...  department  hire_date performance_score\n0         Alice  25.0  New York  ...          HR 2020-01-15               8.5\n1           Bob  30.0    London  ...          IT 2019-06-20               7.2\n2       Charlie  35.0     Paris  ...          IT 2018-03-10               9.1\n3         David   NaN     Tokyo  ...          HR 2021-09-05               6.8\n4           Eve  28.0    Berlin  ...     Finance 2020-11-12               8.0\n5         Frank  32.0    Sydney  ...          IT 2019-02-28               9.5\n6          None  45.0   Toronto  ...          HR 2017-08-15               7.5\n7         Grace  27.0      None  ...     Finance 2021-04-30               8.3\n\n[8 rows x 7 columns]",
+    "datastore_result": "  employee_name   age      city  ...  department   hire_date performance_score\n0         Alice  25.0  New York  ...          HR  2020-01-15               8.5\n1           Bob  30.0    London  ...          IT  2019-06-20               7.2\n2       Charlie  35.0     Paris  ...          IT  2018-03-10               9.1\n3         David   NaN     Tokyo  ...          HR  2021-09-05               6.8\n4           Eve  28.0    Berlin  ...     Finance  2020-11-12               8.0\n5         Frank  32.0    Sydney  ...          IT  2019-02-28               9.5\n6          None  45.0   Toronto  ...          HR  2017-08-15               7.5\n7         Grace  27.0      None  ...     Finance  2021-04-30               8.3\n\n[8 rows x 7 columns]",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "data_transformation",
+    "description": "Convert type (astype)",
+    "pandas_code": "result = df['age'].astype(str)",
+    "datastore_code": "result = df['age'].astype(str)",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    25.0\n1    30.0\n2    35.0\n3     nan\n4    28.0\n5    32.0\n6    45.0\n7    27.0\nName: age, dtype: object",
+    "datastore_result": "0    25.0\n1    30.0\n2    35.0\n3     nan\n4    28.0\n5    32.0\n6    45.0\n7    27.0\nName: age, dtype: object",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "data_transformation",
+    "description": "Add new column",
+    "pandas_code": "df['bonus'] = df['salary'] * 0.1; result = df",
+    "datastore_code": "df['bonus'] = df['salary'] * 0.1; result = df",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city  ...  hire_date performance_score   bonus\n0    Alice  25.0  New York  ... 2020-01-15               8.5  5000.0\n1      Bob  30.0    London  ... 2019-06-20               7.2  6000.0\n2  Charlie  35.0     Paris  ... 2018-03-10               9.1     NaN\n3    David   NaN     Tokyo  ... 2021-09-05               6.8  7500.0\n4      Eve  28.0    Berlin  ... 2020-11-12               8.0  5500.0\n5    Frank  32.0    Sydney  ... 2019-02-28               9.5  8000.0\n6     None  45.0   Toronto  ... 2017-08-15               7.5  7000.0\n7    Grace  27.0      None  ... 2021-04-30               8.3  5200.0\n\n[8 rows x 8 columns]",
+    "datastore_result": "      name   age      city  ...   hire_date performance_score   bonus\n0    Alice  25.0  New York  ...  2020-01-15               8.5  5000.0\n1      Bob  30.0    London  ...  2019-06-20               7.2  6000.0\n2  Charlie  35.0     Paris  ...  2018-03-10               9.1     NaN\n3    David   NaN     Tokyo  ...  2021-09-05               6.8  7500.0\n4      Eve  28.0    Berlin  ...  2020-11-12               8.0  5500.0\n5    Frank  32.0    Sydney  ...  2019-02-28               9.5  8000.0\n6     None  45.0   Toronto  ...  2017-08-15               7.5  7000.0\n7    Grace  27.0      None  ...  2021-04-30               8.3  5200.0\n\n[8 rows x 8 columns]",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "sorting",
+    "description": "Sort by single column",
+    "pandas_code": "result = df.sort_values('age')",
+    "datastore_code": "result = df.sort_values('age')",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n7    Grace  27.0      None  52000.0    Finance 2021-04-30                8.3\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1\n6     None  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n3    David   NaN     Tokyo  75000.0         HR 2021-09-05                6.8",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "sorting",
+    "description": "Sort by multiple columns",
+    "pandas_code": "result = df.sort_values(['department', 'age'])",
+    "datastore_code": "result = df.sort_values(['department', 'age'])",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n7    Grace  27.0      None  52000.0    Finance 2021-04-30                8.3\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n6     None  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n3    David   NaN     Tokyo  75000.0         HR 2021-09-05                6.8\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "sorting",
+    "description": "Sort descending",
+    "pandas_code": "result = df.sort_values('salary', ascending=False)",
+    "datastore_code": "result = df.sort_values('salary', ascending=False)",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n3    David   NaN     Tokyo  75000.0         HR 2021-09-05                6.8\n6     None  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n7    Grace  27.0      None  52000.0    Finance 2021-04-30                8.3\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "sorting",
+    "description": "Sort index",
+    "pandas_code": "result = df.sort_index()",
+    "datastore_code": "result = df.sort_index()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "      name   age      city   salary department  hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR 2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT 2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT 2018-03-10                9.1\n3    David   NaN     Tokyo  75000.0         HR 2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance 2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT 2019-02-28                9.5\n6     None  45.0   Toronto  70000.0         HR 2017-08-15                7.5\n7    Grace  27.0      None  52000.0    Finance 2021-04-30                8.3",
+    "datastore_result": "      name   age      city   salary department   hire_date  performance_score\n0    Alice  25.0  New York  50000.0         HR  2020-01-15                8.5\n1      Bob  30.0    London  60000.0         IT  2019-06-20                7.2\n2  Charlie  35.0     Paris      NaN         IT  2018-03-10                9.1\n3    David   NaN     Tokyo  75000.0         HR  2021-09-05                6.8\n4      Eve  28.0    Berlin  55000.0    Finance  2020-11-12                8.0\n5    Frank  32.0    Sydney  80000.0         IT  2019-02-28                9.5\n6     None  45.0   Toronto  70000.0         HR  2017-08-15                7.5\n7    Grace  27.0      None  52000.0    Finance  2021-04-30                8.3",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "aggregation",
+    "description": "GroupBy with single aggregation",
+    "pandas_code": "result = df.groupby('department')['salary'].mean()",
+    "datastore_code": "result = df.groupby('department')['salary'].mean()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "department\nFinance    53500.0\nHR         65000.0\nIT         70000.0\nName: salary, dtype: float64",
+    "datastore_result": "department\nFinance    53500.0\nHR         65000.0\nIT         70000.0\nName: salary, dtype: float64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "aggregation",
+    "description": "GroupBy with multiple aggregations",
+    "pandas_code": "result = df.groupby('department').agg({'salary': 'mean', 'age': 'max'})",
+    "datastore_code": "result = df.groupby('department').agg({'salary': 'mean', 'age': 'max'})",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "             salary   age\ndepartment               \nFinance     53500.0  28.0\nHR          65000.0  45.0\nIT          70000.0  35.0",
+    "datastore_result": "salary    63142.857143\nage          45.000000\ndtype: float64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "aggregation",
+    "description": "GroupBy with sum",
+    "pandas_code": "result = df.groupby('department')['salary'].sum()",
+    "datastore_code": "result = df.groupby('department')['salary'].sum()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "department\nFinance    107000.0\nHR         195000.0\nIT         140000.0\nName: salary, dtype: float64",
+    "datastore_result": "department\nFinance    107000.0\nHR         195000.0\nIT         140000.0\nName: salary, dtype: float64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "aggregation",
+    "description": "GroupBy with count",
+    "pandas_code": "result = df.groupby('department').size()",
+    "datastore_code": "result = df.groupby('department').size()",
+    "pandas_success": true,
+    "datastore_success": false,
+    "pandas_result": "department\nFinance    2\nHR         3\nIT         3\ndtype: int64",
+    "datastore_result": null,
+    "pandas_error": null,
+    "datastore_error": "TypeError: 'ColumnExpr' object is not callable",
+    "results_match": false,
+    "notes": [
+      "Datastore error: 'ColumnExpr' object is not callable"
+    ]
+  },
+  {
+    "category": "string_operations",
+    "description": "String upper",
+    "pandas_code": "result = df['name'].str.upper()",
+    "datastore_code": "result = df['name'].str.upper()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0      ALICE\n1        BOB\n2    CHARLIE\n3      DAVID\n4        EVE\n5      FRANK\n6       None\n7      GRACE\nName: name, dtype: object",
+    "datastore_result": "0      ALICE\n1        BOB\n2    CHARLIE\n3      DAVID\n4        EVE\n5      FRANK\n6           \n7      GRACE\nName: __result__, dtype: object",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "string_operations",
+    "description": "String lower",
+    "pandas_code": "result = df['city'].str.lower()",
+    "datastore_code": "result = df['city'].str.lower()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    new york\n1      london\n2       paris\n3       tokyo\n4      berlin\n5      sydney\n6     toronto\n7        None\nName: city, dtype: object",
+    "datastore_result": "0    new york\n1      london\n2       paris\n3       tokyo\n4      berlin\n5      sydney\n6     toronto\n7            \nName: __result__, dtype: object",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "string_operations",
+    "description": "String contains",
+    "pandas_code": "result = df['name'].str.contains('a', na=False)",
+    "datastore_code": "result = df['name'].str.contains('a', na=False)",
+    "pandas_success": true,
+    "datastore_success": false,
+    "pandas_result": "0    False\n1    False\n2     True\n3     True\n4    False\n5     True\n6    False\n7     True\nName: name, dtype: bool",
+    "datastore_result": null,
+    "pandas_error": null,
+    "datastore_error": "TypeError: _build_contains() got an unexpected keyword argument 'na'",
+    "results_match": false,
+    "notes": [
+      "Datastore error: _build_contains() got an unexpected keyword argument 'na'"
+    ]
+  },
+  {
+    "category": "string_operations",
+    "description": "String length",
+    "pandas_code": "result = df['name'].str.len()",
+    "datastore_code": "result = df['name'].str.len()",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    5.0\n1    3.0\n2    7.0\n3    5.0\n4    3.0\n5    5.0\n6    NaN\n7    5.0\nName: name, dtype: float64",
+    "datastore_result": "0    5\n1    3\n2    7\n3    5\n4    3\n5    5\n6    0\n7    5\nName: __result__, dtype: uint64",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "string_operations",
+    "description": "String replace",
+    "pandas_code": "result = df['city'].str.replace('York', 'Amsterdam')",
+    "datastore_code": "result = df['city'].str.replace('York', 'Amsterdam')",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    New Amsterdam\n1           London\n2            Paris\n3            Tokyo\n4           Berlin\n5           Sydney\n6          Toronto\n7             None\nName: city, dtype: object",
+    "datastore_result": "0    New Amsterdam\n1           London\n2            Paris\n3            Tokyo\n4           Berlin\n5           Sydney\n6          Toronto\n7                 \nName: __result__, dtype: object",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "merging",
+    "description": "Concat DataFrames",
+    "pandas_code": "\ndf1 = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})\ndf2 = pd.DataFrame({'a': [5, 6], 'b': [7, 8]})\nresult = pd.concat([df1, df2])\n",
+    "datastore_code": "\ndf1 = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})\ndf2 = pd.DataFrame({'a': [5, 6], 'b': [7, 8]})\nresult = pd.concat([df1, df2])\n",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "   a  b\n0  1  3\n1  2  4\n0  5  7\n1  6  8",
+    "datastore_result": "   a  b\n0  1  3\n1  2  4\n0  5  7\n1  6  8",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "merging",
+    "description": "Merge DataFrames",
+    "pandas_code": "\ndf1 = pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})\ndf2 = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})\nresult = pd.merge(df1, df2, on='key', how='inner')\n",
+    "datastore_code": "\ndf1 = pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})\ndf2 = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})\nresult = pd.merge(df1, df2, on='key', how='inner')\n",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "  key  value1  value2\n0   A       1       4\n1   B       2       5",
+    "datastore_result": "  key  value1  value2\n0   A       1       4\n1   B       2       5",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
+  },
+  {
+    "category": "datetime_operations",
+    "description": "Convert to datetime",
+    "pandas_code": "result = pd.to_datetime(df['hire_date'])",
+    "datastore_code": "result = pd.to_datetime(df['hire_date'])",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0   2020-01-15\n1   2019-06-20\n2   2018-03-10\n3   2021-09-05\n4   2020-11-12\n5   2019-02-28\n6   2017-08-15\n7   2021-04-30\nName: hire_date, dtype: datetime64[ns]",
+    "datastore_result": "DatetimeIndex(['2020-01-15', '2019-06-20', '2018-03-10', '2021-09-05',\n               '2020-11-12', '2019-02-28', '2017-08-15', '2021-04-30'],\n              dtype='datetime64[ns]', freq=None)",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "datetime_operations",
+    "description": "Extract year from date",
+    "pandas_code": "result = df['hire_date'].dt.year",
+    "datastore_code": "result = df['hire_date'].dt.year",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    2020\n1    2019\n2    2018\n3    2021\n4    2020\n5    2019\n6    2017\n7    2021\nName: hire_date, dtype: int32",
+    "datastore_result": "toYear(\"hire_date\")",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "datetime_operations",
+    "description": "Extract month from date",
+    "pandas_code": "result = df['hire_date'].dt.month",
+    "datastore_code": "result = df['hire_date'].dt.month",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0     1\n1     6\n2     3\n3     9\n4    11\n5     2\n6     8\n7     4\nName: hire_date, dtype: int32",
+    "datastore_result": "toMonth(\"hire_date\")",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  },
+  {
+    "category": "datetime_operations",
+    "description": "Date formatting",
+    "pandas_code": "result = df['hire_date'].dt.strftime('%Y-%m')",
+    "datastore_code": "result = df['hire_date'].dt.strftime('%Y-%m')",
+    "pandas_success": true,
+    "datastore_success": true,
+    "pandas_result": "0    2020-01\n1    2019-06\n2    2018-03\n3    2021-09\n4    2020-11\n5    2019-02\n6    2017-08\n7    2021-04\nName: hire_date, dtype: object",
+    "datastore_result": "formatDateTime(\"hire_date\",'%Y-%m')",
+    "pandas_error": null,
+    "datastore_error": null,
+    "results_match": false,
+    "notes": [
+      "Results differ between pandas and datastore"
+    ]
+  }
+]

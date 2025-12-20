@@ -1,0 +1,301 @@
+
+================================================================================
+PANDAS COMPATIBILITY REPORT
+================================================================================
+
+Total Tests: 44
+Pandas Success Rate: 43/44 (97.7%)
+DataStore Success Rate: 40/44 (90.9%)
+Both Libraries Succeeded: 40/44 (90.9%)
+Results Match (when both succeed): 18/40 (45.0%)
+
+================================================================================
+
+
+AGGREGATION
+--------------------------------------------------------------------------------
+
+1. GroupBy with single aggregation
+   Code: result = df.groupby('department')['salary'].mean()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+2. GroupBy with multiple aggregations
+   Code: result = df.groupby('department').agg({'salary': 'mean', 'ag...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+3. GroupBy with sum
+   Code: result = df.groupby('department')['salary'].sum()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+4. GroupBy with count
+   Code: result = df.groupby('department').size()...
+   Status: ✓ Pandas | ✗ DataStore (TypeError: 'ColumnExpr' object is not callable)
+   Notes: Datastore error: 'ColumnExpr' object is not callable
+
+DATA CLEANING
+--------------------------------------------------------------------------------
+
+1. Drop NA values
+   Code: result = df.dropna()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+2. Fill NA values
+   Code: result = df.fillna(0)...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+3. Drop duplicates
+   Code: result = df.drop_duplicates()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+4. Replace values
+   Code: result = df.replace('HR', 'Human Resources')...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+5. Drop column
+   Code: result = df.drop('salary', axis=1)...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+DATA SELECTION
+--------------------------------------------------------------------------------
+
+1. Select single column
+   Code: result = df['name']...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+2. Select multiple columns
+   Code: result = df[['name', 'age']]...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+3. Select rows by slice
+   Code: result = df[:3]...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+4. Select with boolean indexing
+   Code: result = df[df['age'] > 30]...
+   Status: ✓ Pandas | ✗ DataStore (TypeError: DataStore indices must be slices, strings, or lists, not BinaryCondition)
+   Notes: Datastore error: DataStore indices must be slices, strings, or lists, not BinaryCondition
+
+5. Select with loc
+   Code: result = df.loc[0:2, ['name', 'age']]...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+6. Select with iloc
+   Code: result = df.iloc[0:3, 0:2]...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+DATA TRANSFORMATION
+--------------------------------------------------------------------------------
+
+1. Apply function to column
+   Code: result = df['age'].apply(lambda x: x * 2 if pd.notna(x) else...
+   Status: ✗ Pandas (NameError: name 'pd' is not defined) | ✗ DataStore (NameError: name 'pd' is not defined)
+   Notes: Datastore error: name 'pd' is not defined
+
+2. Map values
+   Code: result = df['department'].map({'HR': 1, 'IT': 2, 'Finance': ...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+3. Rename columns
+   Code: result = df.rename(columns={'name': 'employee_name'})...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+4. Convert type (astype)
+   Code: result = df['age'].astype(str)...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+5. Add new column
+   Code: df['bonus'] = df['salary'] * 0.1; result = df...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+DATAFRAME CREATION
+--------------------------------------------------------------------------------
+
+1. Create DataFrame from dict
+   Code: result = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+2. Create DataFrame with index
+   Code: result = pd.DataFrame({'a': [1, 2, 3]}, index=['x', 'y', 'z'...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+DATETIME OPERATIONS
+--------------------------------------------------------------------------------
+
+1. Convert to datetime
+   Code: result = pd.to_datetime(df['hire_date'])...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+2. Extract year from date
+   Code: result = df['hire_date'].dt.year...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+3. Extract month from date
+   Code: result = df['hire_date'].dt.month...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+4. Date formatting
+   Code: result = df['hire_date'].dt.strftime('%Y-%m')...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+MERGING
+--------------------------------------------------------------------------------
+
+1. Concat DataFrames
+   Code: 
+df1 = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
+df2 = pd.Dat...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+2. Merge DataFrames
+   Code: 
+df1 = pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+SORTING
+--------------------------------------------------------------------------------
+
+1. Sort by single column
+   Code: result = df.sort_values('age')...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+2. Sort by multiple columns
+   Code: result = df.sort_values(['department', 'age'])...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+3. Sort descending
+   Code: result = df.sort_values('salary', ascending=False)...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+4. Sort index
+   Code: result = df.sort_index()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+STATISTICS
+--------------------------------------------------------------------------------
+
+1. Compute mean
+   Code: result = df['age'].mean()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+2. Compute sum
+   Code: result = df['salary'].sum()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+3. Compute median
+   Code: result = df['age'].median()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+4. Compute std
+   Code: result = df['age'].std()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+5. Describe DataFrame
+   Code: result = df.describe()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+6. Value counts
+   Code: result = df['department'].value_counts()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+7. Correlation
+   Code: result = df[['age', 'salary']].corr()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
+
+STRING OPERATIONS
+--------------------------------------------------------------------------------
+
+1. String upper
+   Code: result = df['name'].str.upper()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+2. String lower
+   Code: result = df['city'].str.lower()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+3. String contains
+   Code: result = df['name'].str.contains('a', na=False)...
+   Status: ✓ Pandas | ✗ DataStore (TypeError: _build_contains() got an unexpected keyword argument 'na')
+   Notes: Datastore error: _build_contains() got an unexpected keyword argument 'na'
+
+4. String length
+   Code: result = df['name'].str.len()...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+5. String replace
+   Code: result = df['city'].str.replace('York', 'Amsterdam')...
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
+
+================================================================================
+COMPATIBILITY IMPROVEMENT RECOMMENDATIONS
+================================================================================
+
+1. Enhance data selection operations (loc, iloc, boolean indexing) to match pandas behavior
+2. Implement apply, map, and other transformation methods with support for lambda functions
+3. Improve groupby operations to support all pandas aggregation functions and multiple aggregations
+4. Implement .str accessor with all common string methods (upper, lower, contains, replace, len)
+5. Review method signatures to ensure they accept the same parameter types as pandas
+6. Add comprehensive unit tests covering all pandas-compatible operations
+7. Create a compatibility matrix documenting which pandas operations are supported and their limitations
+8. Implement lazy evaluation where possible to maintain compatibility with pandas' eager evaluation model

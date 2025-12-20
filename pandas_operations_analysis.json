@@ -1,0 +1,631 @@
+{
+  "metadata": {
+    "num_notebooks_analyzed": 15,
+    "total_operation_types": 10,
+    "total_unique_examples": 331
+  },
+  "operation_types": {
+    "aggregation": {
+      "count": 6,
+      "description": "Aggregating data with groupby, pivot tables, rolling windows, and resampling"
+    },
+    "data_cleaning": {
+      "count": 24,
+      "description": "Cleaning data by handling missing values, duplicates, and replacements"
+    },
+    "data_selection": {
+      "count": 207,
+      "description": "Selecting data using loc, iloc, query, and indexing operations"
+    },
+    "data_transformation": {
+      "count": 17,
+      "description": "Transforming data with apply, map, rename, type conversions, and index operations"
+    },
+    "dataframe_creation": {
+      "count": 26,
+      "description": "Creating DataFrames and reading data from various sources (CSV, Excel, JSON, SQL, etc.)"
+    },
+    "datetime_operations": {
+      "count": 4,
+      "description": "Date and time operations using the .dt accessor and to_datetime"
+    },
+    "merging": {
+      "count": 5,
+      "description": "Merging, joining, and concatenating DataFrames"
+    },
+    "sorting": {
+      "count": 12,
+      "description": "Sorting and ranking data by values or index"
+    },
+    "statistics": {
+      "count": 24,
+      "description": "Computing statistical measures like mean, median, sum, correlation, etc."
+    },
+    "string_operations": {
+      "count": 6,
+      "description": "String manipulation operations using the .str accessor"
+    }
+  },
+  "detailed_operations": {
+    "aggregation": {
+      "description": "Aggregating data with groupby, pivot tables, rolling windows, and resampling",
+      "total_examples_found": 6,
+      "examples": [
+        {
+          "code": "weather_2012['Temp (C)'].resample('M').apply(np.median).plot(kind='bar')",
+          "operation": ".resample("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean)",
+          "operation": ".resample("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean).plot(kind='bar')",
+          "operation": ".resample("
+        },
+        {
+          "code": "temperature = weather_2012['Temp (C)'].resample('M').apply(np.median)",
+          "operation": ".resample("
+        },
+        {
+          "code": "weekday_counts = berri_bikes.groupby('weekday').sum()",
+          "operation": ".groupby("
+        },
+        {
+          "code": "temperatures.groupby('Hour').aggregate(np.median).plot()",
+          "operation": ".groupby("
+        }
+      ]
+    },
+    "data_cleaning": {
+      "description": "Cleaning data by handling missing values, duplicates, and replacements",
+      "total_examples_found": 24,
+      "examples": [
+        {
+          "code": "data.dropna()",
+          "operation": ".dropna("
+        },
+        {
+          "code": "df.dropna()",
+          "operation": ".dropna("
+        },
+        {
+          "code": "df.dropna(axis='columns')",
+          "operation": ".dropna("
+        },
+        {
+          "code": "df.dropna(axis='columns', how='all')",
+          "operation": ".dropna("
+        },
+        {
+          "code": "df.dropna(axis='rows', thresh=3)",
+          "operation": ".dropna("
+        },
+        {
+          "code": "data.fillna(0)",
+          "operation": ".fillna("
+        },
+        {
+          "code": "df.fillna(method='ffill', axis=1)",
+          "operation": ".fillna("
+        },
+        {
+          "code": "df_7 = df_6.drop([0, 1])",
+          "operation": ".drop("
+        },
+        {
+          "code": "df_7 = df_7.drop('unempl', axis=1)",
+          "operation": ".drop("
+        },
+        {
+          "code": "df_1.replace('VA', 'VIRGINIA', inplace=True)",
+          "operation": ".replace("
+        },
+        {
+          "code": "df_1.replace({'state' : { 'MD' : 'MARYLAND' }}, inplace=True)",
+          "operation": ".replace("
+        },
+        {
+          "code": "df_2 = df_1.drop('population', axis=1)",
+          "operation": ".drop("
+        },
+        {
+          "code": "temp_df = temp_df.drop_duplicates()",
+          "operation": ".drop_duplicates("
+        },
+        {
+          "code": "temp_df.drop_duplicates(inplace=True)",
+          "operation": ".drop_duplicates("
+        },
+        {
+          "code": "temp_df.drop_duplicates(inplace=True, keep=False)",
+          "operation": ".drop_duplicates("
+        },
+        {
+          "code": "movies_df.dropna()",
+          "operation": ".dropna("
+        },
+        {
+          "code": "movies_df.dropna(axis=1)",
+          "operation": ".dropna("
+        },
+        {
+          "code": "revenue.fillna(revenue_mean, inplace=True)",
+          "operation": ".fillna("
+        },
+        {
+          "code": "rows_with_dashes = requests['Incident Zip'].str.contains('-').fillna(False)",
+          "operation": ".fillna("
+        },
+        {
+          "code": "weather_mar2012 = weather_mar2012.dropna(axis=1, how='any')",
+          "operation": ".dropna("
+        }
+      ]
+    },
+    "data_selection": {
+      "description": "Selecting data using loc, iloc, query, and indexing operations",
+      "total_examples_found": 207,
+      "examples": [
+        {
+          "code": "complaints['Complaint Type']",
+          "operation": "['Complaint Type']"
+        },
+        {
+          "code": "complaints[:5]",
+          "operation": "[:5]"
+        },
+        {
+          "code": "complaints['Complaint Type'][:5]",
+          "operation": "['Complaint Type']"
+        },
+        {
+          "code": "complaints[:5]['Complaint Type']",
+          "operation": "[:5]"
+        },
+        {
+          "code": "complaints[['Complaint Type', 'Borough']]",
+          "operation": "[['Complaint Type', 'Borough']"
+        },
+        {
+          "code": "complaints[['Complaint Type', 'Borough']][:10]",
+          "operation": "[['Complaint Type', 'Borough']"
+        },
+        {
+          "code": "complaints['Complaint Type'].value_counts()",
+          "operation": "['Complaint Type']"
+        },
+        {
+          "code": "complaint_counts = complaints['Complaint Type'].value_counts()",
+          "operation": "['Complaint Type']"
+        },
+        {
+          "code": "complaint_counts[:10]",
+          "operation": "[:10]"
+        },
+        {
+          "code": "complaint_counts[:10].plot(kind='bar')",
+          "operation": "[:10]"
+        },
+        {
+          "code": "vals1 = np.array([1, None, 3, 4])",
+          "operation": "[1, None, 3, 4]"
+        },
+        {
+          "code": "for dtype in ['object', 'int']:",
+          "operation": "['object', 'int']"
+        },
+        {
+          "code": "vals2 = np.array([1, np.nan, 3, 4])",
+          "operation": "[1, np.nan, 3, 4]"
+        },
+        {
+          "code": "pd.Series([1, np.nan, 2, None])",
+          "operation": "[1, np.nan, 2, None]"
+        },
+        {
+          "code": "data = pd.Series([1, np.nan, 'hello', None])",
+          "operation": "[1, np.nan, 'hello', None]"
+        },
+        {
+          "code": "data[data.notnull()]",
+          "operation": "[data.notnull()]"
+        },
+        {
+          "code": "df = pd.DataFrame([[1,      np.nan, 2],",
+          "operation": "[[1,      np.nan, 2]"
+        },
+        {
+          "code": "[2,      3,      5],",
+          "operation": "[2,      3,      5]"
+        },
+        {
+          "code": "[np.nan, 4,      6]])",
+          "operation": "[np.nan, 4,      6]"
+        },
+        {
+          "code": "data = pd.Series([1, np.nan, 2, None, 3], index=list('abcde'))",
+          "operation": "[1, np.nan, 2, None, 3]"
+        }
+      ]
+    },
+    "data_transformation": {
+      "description": "Transforming data with apply, map, rename, type conversions, and index operations",
+      "total_examples_found": 17,
+      "examples": [
+        {
+          "code": "weather_2012['Temp (C)'].resample('M').apply(np.median).plot(kind='bar')",
+          "operation": ".apply("
+        },
+        {
+          "code": "is_snowing.astype(float)[:10]",
+          "operation": ".astype("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean)",
+          "operation": ".apply("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean).plot(kind='bar')",
+          "operation": ".apply("
+        },
+        {
+          "code": "temperature = weather_2012['Temp (C)'].resample('M').apply(np.median)",
+          "operation": ".apply("
+        },
+        {
+          "code": "snowiness = is_snowing.astype(float).resample('M').apply(np.mean)",
+          "operation": ".astype("
+        },
+        {
+          "code": "df_11.apply(func_1)",
+          "operation": ".apply("
+        },
+        {
+          "code": "df_11.apply(func_1, axis=1)",
+          "operation": ".apply("
+        },
+        {
+          "code": "df_11.apply(func_2)",
+          "operation": ".apply("
+        },
+        {
+          "code": "df_11.applymap(func_3)",
+          "operation": ".applymap("
+        },
+        {
+          "code": "df_11['a'].map(func_3)",
+          "operation": ".map("
+        },
+        {
+          "code": "noise_complaint_counts / complaint_counts.astype(float)",
+          "operation": ".astype("
+        },
+        {
+          "code": "(noise_complaint_counts / complaint_counts.astype(float)).plot(kind='bar')",
+          "operation": ".astype("
+        },
+        {
+          "code": "df = df.set_index('index')",
+          "operation": ".set_index("
+        },
+        {
+          "code": "movies_df.rename(columns={",
+          "operation": ".rename("
+        },
+        {
+          "code": "movies_df[\"rating_category\"] = movies_df[\"rating\"].apply(rating_function)",
+          "operation": ".apply("
+        },
+        {
+          "code": "movies_df[\"rating_category\"] = movies_df[\"rating\"].apply(lambda x: 'good' if x >= 8.0 else 'bad')",
+          "operation": ".apply("
+        }
+      ]
+    },
+    "dataframe_creation": {
+      "description": "Creating DataFrames and reading data from various sources (CSV, Excel, JSON, SQL, etc.)",
+      "total_examples_found": 26,
+      "examples": [
+        {
+          "code": "weather_2012 = pd.read_csv('./data/weather_2012.csv', parse_dates=True, index_col='Date/Time')",
+          "operation": "pd.read_csv('./data/weather_2012.csv', parse_dates=True, index_col='Date/Time')"
+        },
+        {
+          "code": "df_1 = pd.read_csv(\"../data/ozone.csv\")",
+          "operation": "pd.read_csv(\"../data/ozone.csv\")"
+        },
+        {
+          "code": "purchases = pd.DataFrame(data)",
+          "operation": "pd.DataFrame(data)"
+        },
+        {
+          "code": "purchases = pd.DataFrame(data, index=['June', 'Robert', 'Lily', 'David'])",
+          "operation": "pd.DataFrame(data, index=['June', 'Robert', 'Lily', 'David'])"
+        },
+        {
+          "code": "df = pd.read_csv('purchases.csv')",
+          "operation": "pd.read_csv('purchases.csv')"
+        },
+        {
+          "code": "df = pd.read_csv('purchases.csv', index_col=0)",
+          "operation": "pd.read_csv('purchases.csv', index_col=0)"
+        },
+        {
+          "code": "df = pd.read_json('purchases.json')",
+          "operation": "pd.read_json('purchases.json')"
+        },
+        {
+          "code": "movies_df = pd.read_csv(\"IMDB-Movie-Data.csv\", index_col=\"Title\")",
+          "operation": "pd.read_csv(\"IMDB-Movie-Data.csv\", index_col=\"Title\")"
+        },
+        {
+          "code": "broken_df = pd.read_csv('./data/bikes.csv',encoding = \"ISO-8859-1\")",
+          "operation": "pd.read_csv('./data/bikes.csv',encoding = \"ISO-8859-1\")"
+        },
+        {
+          "code": "fixed_df = pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')",
+          "operation": "pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')"
+        },
+        {
+          "code": "df = pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')",
+          "operation": "pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')"
+        },
+        {
+          "code": "bikes = pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')",
+          "operation": "pd.read_csv('./data/bikes.csv', sep=';', encoding='latin1', parse_dates=['Date'], dayfirst=True, index_col='Date')"
+        },
+        {
+          "code": "requests = pd.read_csv('./data/311-service-requests.csv', dtype='unicode')",
+          "operation": "pd.read_csv('./data/311-service-requests.csv', dtype='unicode')"
+        },
+        {
+          "code": "requests = pd.read_csv('./data/311-service-requests.csv', na_values=na_values, dtype={'Incident Zip': str})",
+          "operation": "pd.read_csv('./data/311-service-requests.csv', na_values=na_values, dtype={'Incident Zip': str})"
+        },
+        {
+          "code": "pd.DataFrame(population, columns=['population'])",
+          "operation": "pd.DataFrame(population, columns=['population'])"
+        },
+        {
+          "code": "pd.DataFrame(data)",
+          "operation": "pd.DataFrame(data)"
+        },
+        {
+          "code": "pd.DataFrame([{'a': 1, 'b': 2}, {'b': 3, 'c': 4}])",
+          "operation": "pd.DataFrame([{'a': 1, 'b': 2}, {'b': 3, 'c': 4}])"
+        },
+        {
+          "code": "pd.DataFrame(np.random.rand(3, 2),",
+          "operation": "pd.DataFrame(np.random.rand(3, 2)"
+        },
+        {
+          "code": "pd.DataFrame(A)",
+          "operation": "pd.DataFrame(A)"
+        },
+        {
+          "code": "weather_2012_final = pd.read_csv('./data/weather_2012.csv', index_col='Date/Time')",
+          "operation": "pd.read_csv('./data/weather_2012.csv', index_col='Date/Time')"
+        }
+      ]
+    },
+    "datetime_operations": {
+      "description": "Date and time operations using the .dt accessor and to_datetime",
+      "total_examples_found": 4,
+      "examples": [
+        {
+          "code": "weather_2012['Temp (C)'].resample('M').apply(np.median).plot(kind='bar')",
+          "operation": ".resample("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean)",
+          "operation": ".resample("
+        },
+        {
+          "code": "is_snowing.astype(float).resample('M').apply(np.mean).plot(kind='bar')",
+          "operation": ".resample("
+        },
+        {
+          "code": "temperature = weather_2012['Temp (C)'].resample('M').apply(np.median)",
+          "operation": ".resample("
+        }
+      ]
+    },
+    "merging": {
+      "description": "Merging, joining, and concatenating DataFrames",
+      "total_examples_found": 5,
+      "examples": [
+        {
+          "code": "stats = pd.concat([temperature, snowiness], axis=1)",
+          "operation": "pd.concat("
+        },
+        {
+          "code": "df_4 = pd.concat([df_1, df_3])",
+          "operation": "pd.concat("
+        },
+        {
+          "code": "temp_df = movies_df.append(movies_df)",
+          "operation": ".append("
+        },
+        {
+          "code": "temp_df = movies_df.append(movies_df)  # make a new copy",
+          "operation": ".append("
+        },
+        {
+          "code": "weather_2012 = pd.concat(data_by_month)",
+          "operation": "pd.concat("
+        }
+      ]
+    },
+    "sorting": {
+      "description": "Sorting and ranking data by values or index",
+      "total_examples_found": 12,
+      "examples": [
+        {
+          "code": "ser_4.sort_index()",
+          "operation": ".sort_index("
+        },
+        {
+          "code": "ser_4.sort_values()",
+          "operation": ".sort_values("
+        },
+        {
+          "code": "df_12.sort_index()",
+          "operation": ".sort_index("
+        },
+        {
+          "code": "df_12.sort_index(axis=1, ascending=False)",
+          "operation": ".sort_index("
+        },
+        {
+          "code": "df_12.sort_values(by=['d', 'c'])",
+          "operation": ".sort_values("
+        },
+        {
+          "code": "ser_11 = ser_11.sort_values()",
+          "operation": ".sort_values("
+        },
+        {
+          "code": "ser_11.rank()",
+          "operation": ".rank("
+        },
+        {
+          "code": "ser_11.rank(method='first')",
+          "operation": ".rank("
+        },
+        {
+          "code": "ser_11.rank(ascending=False, method='max')",
+          "operation": ".rank("
+        },
+        {
+          "code": "df_13.rank()",
+          "operation": ".rank("
+        },
+        {
+          "code": "df_13.rank(axis=1)",
+          "operation": ".rank("
+        },
+        {
+          "code": "requests[is_far][['Incident Zip', 'Descriptor', 'City']].sort_values('Incident Zip')",
+          "operation": ".sort_values("
+        }
+      ]
+    },
+    "statistics": {
+      "description": "Computing statistical measures like mean, median, sum, correlation, etc.",
+      "total_examples_found": 24,
+      "examples": [
+        {
+          "code": "complaints['Complaint Type'].value_counts()",
+          "operation": ".value_counts("
+        },
+        {
+          "code": "complaint_counts = complaints['Complaint Type'].value_counts()",
+          "operation": ".value_counts("
+        },
+        {
+          "code": "%timeit np.arange(1E6, dtype=dtype).sum()",
+          "operation": ".sum("
+        },
+        {
+          "code": "vals1.sum()",
+          "operation": ".sum("
+        },
+        {
+          "code": "vals2.sum(), vals2.min(), vals2.max()",
+          "operation": ".sum("
+        },
+        {
+          "code": "func_1 = lambda x: x.max() - x.min()",
+          "operation": ".min("
+        },
+        {
+          "code": "func_2 = lambda x: Series([x.min(), x.max()], index=['min', 'max'])",
+          "operation": ".min("
+        },
+        {
+          "code": "df_6.sum()",
+          "operation": ".sum("
+        },
+        {
+          "code": "df_6.sum(axis=1)",
+          "operation": ".sum("
+        },
+        {
+          "code": "df_6.sum(axis=1, skipna=False)",
+          "operation": ".sum("
+        },
+        {
+          "code": "df_1.describe()",
+          "operation": ".describe("
+        },
+        {
+          "code": "noise_complaints['Borough'].value_counts()",
+          "operation": ".value_counts("
+        },
+        {
+          "code": "noise_complaint_counts = noise_complaints['Borough'].value_counts()",
+          "operation": ".value_counts("
+        },
+        {
+          "code": "movies_df.isnull().sum()",
+          "operation": ".sum("
+        },
+        {
+          "code": "revenue_mean = revenue.mean()",
+          "operation": ".mean("
+        },
+        {
+          "code": "movies_df.describe()",
+          "operation": ".describe("
+        },
+        {
+          "code": "movies_df['genre'].describe()",
+          "operation": ".describe("
+        },
+        {
+          "code": "movies_df['genre'].value_counts().head(10)",
+          "operation": ".value_counts("
+        },
+        {
+          "code": "movies_df.corr()",
+          "operation": ".corr("
+        },
+        {
+          "code": "& (movies_df['revenue_millions'] < movies_df['revenue_millions'].quantile(0.25))",
+          "operation": ".quantile("
+        }
+      ]
+    },
+    "string_operations": {
+      "description": "String manipulation operations using the .str accessor",
+      "total_examples_found": 6,
+      "examples": [
+        {
+          "code": "is_snowing = weather_description.str.contains('Snow')",
+          "operation": ".str.contains("
+        },
+        {
+          "code": "is_snowing = weather_2012['Weather'].str.contains('Snow')",
+          "operation": ".str.contains("
+        },
+        {
+          "code": "rows_with_dashes = requests['Incident Zip'].str.contains('-').fillna(False)",
+          "operation": ".str.contains("
+        },
+        {
+          "code": "long_zip_codes = requests['Incident Zip'].str.len() > 5",
+          "operation": ".str.len("
+        },
+        {
+          "code": "is_close = zips.str.startswith('0') | zips.str.startswith('1')",
+          "operation": ".str.startswith("
+        },
+        {
+          "code": "requests['City'].str.upper().value_counts()",
+          "operation": ".str.upper("
+        }
+      ]
+    }
+  }
+}
