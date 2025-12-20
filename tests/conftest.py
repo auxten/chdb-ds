@@ -25,3 +25,4 @@ def reset_global_executor():
 
     # Reset after test
     reset_executor()
+

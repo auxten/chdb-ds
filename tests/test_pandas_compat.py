@@ -459,5 +459,271 @@ class TestPandasCompatChaining(unittest.TestCase):
         self.assertIsInstance(result, DataStore)
 
 
+class TestBooleanIndexing(unittest.TestCase):
+    """Test pandas-style boolean indexing with ds[condition]."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Create DataFrame with some empty strings for testing
+        self.df = pd.DataFrame(
+            {'src': ['hello', '', 'src', '', 'foo'], 'tgt': ['world', 'tgt', '', '', 'bar'], 'value': [1, 2, 3, 4, 5]}
+        )
+        self.ds = DataStore.from_df(self.df)
+
+    def test_boolean_indexing_simple_condition(self):
+        """Test simple boolean indexing with single condition."""
+        # DataStore
+        ds_result = self.ds[self.ds['value'] > 2].to_df()
+        # Pandas
+        pd_result = self.df[self.df['value'] > 2].reset_index(drop=True)
+
+        self.assertEqual(len(ds_result), len(pd_result))
+        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+
+    def test_boolean_indexing_compound_condition(self):
+        """Test boolean indexing with compound AND condition."""
+        # DataStore
+        ds_result = self.ds[(self.ds['value'] > 1) & (self.ds['value'] < 5)].to_df()
+        # Pandas
+        pd_result = self.df[(self.df['value'] > 1) & (self.df['value'] < 5)].reset_index(drop=True)
+
+        self.assertEqual(len(ds_result), len(pd_result))
+        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+
+    def test_boolean_indexing_str_len(self):
+        """Test boolean indexing with str.len() > 0."""
+        # DataStore
+        ds_result = self.ds[(self.ds['src'].str.len() > 0) & (self.ds['tgt'].str.len() > 0)].to_df()
+        # Pandas
+        pd_result = self.df[(self.df['src'].str.len() > 0) & (self.df['tgt'].str.len() > 0)].reset_index(drop=True)
+
+        self.assertEqual(len(ds_result), len(pd_result))
+        self.assertEqual(list(ds_result['src']), list(pd_result['src']))
+        self.assertEqual(list(ds_result['tgt']), list(pd_result['tgt']))
+
+    def test_boolean_indexing_with_drop_duplicates(self):
+        """Test boolean indexing chained with drop_duplicates()."""
+        # Add duplicate rows
+        df_with_dups = pd.DataFrame(
+            {
+                'src': ['hello', '', 'hello', '', 'foo'],
+                'tgt': ['world', 'tgt', 'world', '', 'bar'],
+                'value': [1, 2, 1, 4, 5],
+            }
+        )
+        ds_with_dups = DataStore.from_df(df_with_dups)
+
+        # DataStore
+        ds_result = (
+            ds_with_dups[(ds_with_dups['src'].str.len() > 0) & (ds_with_dups['tgt'].str.len() > 0)]
+            .drop_duplicates()
+            .to_df()
+        )
+        # Pandas
+        pd_result = (
+            df_with_dups[(df_with_dups['src'].str.len() > 0) & (df_with_dups['tgt'].str.len() > 0)]
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
+
+        self.assertEqual(len(ds_result), len(pd_result))
+
+    def test_boolean_indexing_preserves_original(self):
+        """Test that boolean indexing doesn't modify the original DataStore."""
+        original_len = len(self.ds.to_df())
+
+        # Apply filter
+        filtered = self.ds[self.ds['value'] > 3]
+
+        # Check original is unchanged
+        self.assertEqual(len(self.ds.to_df()), original_len)
+        self.assertLess(len(filtered.to_df()), original_len)
+
+    def test_boolean_indexing_or_condition(self):
+        """Test boolean indexing with OR condition."""
+        # DataStore
+        ds_result = self.ds[(self.ds['value'] == 1) | (self.ds['value'] == 5)].to_df()
+        # Pandas
+        pd_result = self.df[(self.df['value'] == 1) | (self.df['value'] == 5)].reset_index(drop=True)
+
+        self.assertEqual(len(ds_result), len(pd_result))
+        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+
+    def test_boolean_indexing_returns_datastore(self):
+        """Test that boolean indexing returns a DataStore instance."""
+        result = self.ds[self.ds['value'] > 2]
+        self.assertIsInstance(result, DataStore)
+
+    def test_boolean_indexing_empty_result(self):
+        """Test boolean indexing that returns no rows."""
+        ds_result = self.ds[self.ds['value'] > 100].to_df()
+        pd_result = self.df[self.df['value'] > 100].reset_index(drop=True)
+
+        self.assertEqual(len(ds_result), 0)
+        self.assertEqual(len(pd_result), 0)
+
+
+class TestCommonBooleanIndexingPatterns(unittest.TestCase):
+    """Test common pandas boolean indexing patterns: df[df['col'] > x]."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.df = pd.DataFrame(
+            {
+                'name': ['Alice', 'Bob', 'Alice Jr', 'Charlie', 'AliceSmith'],
+                'age': [25, 35, 28, 40, 32],
+                'salary': [45000, 60000, 55000, 70000, 48000],
+            }
+        )
+        self.ds = DataStore.from_df(self.df)
+
+    def test_simple_condition(self):
+        """Test df[df['age'] > 30] pattern."""
+        pd_result = self.df[self.df['age'] > 30].reset_index(drop=True)
+        ds_result = self.ds[self.ds['age'] > 30].to_df().reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
+
+    def test_compound_condition(self):
+        """Test df[(df['age'] > 30) & (df['salary'] > 50000)] pattern."""
+        pd_result = self.df[(self.df['age'] > 30) & (self.df['salary'] > 50000)].reset_index(drop=True)
+        ds_result = self.ds[(self.ds['age'] > 30) & (self.ds['salary'] > 50000)].to_df().reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
+
+    def test_str_contains_condition(self):
+        """Test df[df['name'].str.contains('Alice')] pattern."""
+        pd_result = self.df[self.df['name'].str.contains('Alice')].reset_index(drop=True)
+        ds_result = self.ds[self.ds['name'].str.contains('Alice')].to_df().reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
+
+
+class TestColumnExprComparisonMethods(unittest.TestCase):
+    """Test ColumnExpr comparison methods: eq, ne, lt, le, gt, ge."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]})
+        self.ds = DataStore.from_df(self.df)
+
+    def test_eq(self):
+        """Test eq() method matches pandas."""
+        ds_result = self.ds['a'].eq(3)
+        pd_result = self.df['a'].eq(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_ne(self):
+        """Test ne() method matches pandas."""
+        ds_result = self.ds['a'].ne(3)
+        pd_result = self.df['a'].ne(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_lt(self):
+        """Test lt() method matches pandas."""
+        ds_result = self.ds['a'].lt(3)
+        pd_result = self.df['a'].lt(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_le(self):
+        """Test le() method matches pandas."""
+        ds_result = self.ds['a'].le(3)
+        pd_result = self.df['a'].le(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_gt(self):
+        """Test gt() method matches pandas."""
+        ds_result = self.ds['a'].gt(3)
+        pd_result = self.df['a'].gt(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_ge(self):
+        """Test ge() method matches pandas."""
+        ds_result = self.ds['a'].ge(3)
+        pd_result = self.df['a'].ge(3)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_comparison_with_column(self):
+        """Test comparison between two columns."""
+        ds_result = self.ds['a'].eq(self.ds['b'])
+        pd_result = self.df['a'].eq(self.df['b'])
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+
+class TestColumnExprFillMethods(unittest.TestCase):
+    """Test ColumnExpr ffill, bfill, interpolate methods."""
+
+    def setUp(self):
+        """Set up test data with NaN values."""
+        self.df = pd.DataFrame({'a': [1.0, np.nan, np.nan, 4.0, np.nan], 'b': [np.nan, 2.0, np.nan, np.nan, 5.0]})
+        self.ds = DataStore.from_df(self.df)
+
+    def test_ffill(self):
+        """Test ffill() method matches pandas."""
+        ds_result = self.ds['a'].ffill()
+        pd_result = self.df['a'].ffill()
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_bfill(self):
+        """Test bfill() method matches pandas."""
+        ds_result = self.ds['a'].bfill()
+        pd_result = self.df['a'].bfill()
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_interpolate_linear(self):
+        """Test interpolate() method matches pandas."""
+        ds_result = self.ds['a'].interpolate(method='linear')
+        pd_result = self.df['a'].interpolate(method='linear')
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_ffill_with_limit(self):
+        """Test ffill() with limit parameter."""
+        ds_result = self.ds['a'].ffill(limit=1)
+        pd_result = self.df['a'].ffill(limit=1)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_bfill_with_limit(self):
+        """Test bfill() with limit parameter."""
+        ds_result = self.ds['a'].bfill(limit=1)
+        pd_result = self.df['a'].bfill(limit=1)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+
+
+class TestFilterColumnSelection(unittest.TestCase):
+    """Test pandas-style filter() for column selection."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.df = pd.DataFrame({'col_a': [1, 2, 3], 'col_b': [4, 5, 6], 'name': ['x', 'y', 'z'], 'other': [7, 8, 9]})
+        self.ds = DataStore.from_df(self.df)
+
+    def test_filter_items(self):
+        """Test filter(items=) matches pandas."""
+        ds_result = self.ds.filter(items=['col_a', 'name'])
+        pd_result = self.df.filter(items=['col_a', 'name'])
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+    def test_filter_like(self):
+        """Test filter(like=) matches pandas."""
+        ds_result = self.ds.filter(like='col')
+        pd_result = self.df.filter(like='col')
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+    def test_filter_regex(self):
+        """Test filter(regex=) matches pandas."""
+        ds_result = self.ds.filter(regex='^col_')
+        pd_result = self.df.filter(regex='^col_')
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+    def test_filter_items_preserves_data(self):
+        """Test that filter(items=) preserves data correctly."""
+        ds_result = self.ds.filter(items=['col_a', 'name']).to_df()
+        pd_result = self.df.filter(items=['col_a', 'name']).reset_index(drop=True)
+        self.assertTrue(ds_result.equals(pd_result))
+
+    def test_filter_condition_still_works(self):
+        """Test that SQL-style filter(condition) still works."""
+        ds_result = self.ds.filter(self.ds['col_a'] > 1).to_df()
+        pd_result = self.df[self.df['col_a'] > 1].reset_index(drop=True)
+        self.assertEqual(len(ds_result), len(pd_result))
+
+
 if __name__ == '__main__':
     unittest.main()
