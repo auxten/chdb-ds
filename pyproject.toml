@@ -7,7 +7,7 @@ name = "chdb-ds"
 dynamic = ["version"]
 description = "A Pandas-like data manipulation framework with automatic SQL generation"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "auxten", email = "auxtenwpc@gmail.com"}
@@ -30,12 +30,12 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: SQL",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Database",
@@ -70,7 +70,7 @@ exclude = ["tests", "tests.*"]
 
 [tool.black]
 line-length = 120
-target-version = ['py37', 'py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312', 'py313']
 skip-string-normalization = true
 force-exclude = '''
 /(
