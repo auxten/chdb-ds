@@ -1113,5 +1113,425 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(slice_result.max(), 50)
 
 
+class TestColumnExprPlot(unittest.TestCase):
+    """Test ColumnExpr plot accessor."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'value': [10, 20, 30, 40, 50],
+                'name': ['a', 'b', 'c', 'd', 'e'],
+                'category': ['X', 'X', 'Y', 'Y', 'Z'],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_plot_property_exists(self):
+        """Test that plot property exists on ColumnExpr."""
+        ds = self.create_ds()
+        col_expr = ds['value']
+        self.assertTrue(hasattr(col_expr, 'plot'))
+
+    def test_plot_returns_plot_accessor(self):
+        """Test that plot returns pandas PlotAccessor."""
+        from pandas.plotting._core import PlotAccessor
+
+        ds = self.create_ds()
+        col_expr = ds['value']
+        plot_accessor = col_expr.plot
+
+        self.assertIsInstance(plot_accessor, PlotAccessor)
+
+    def test_plot_callable(self):
+        """Test that plot accessor is callable."""
+        ds = self.create_ds()
+        col_expr = ds['value']
+
+        # The plot accessor should be callable
+        self.assertTrue(callable(col_expr.plot))
+
+    def test_plot_has_common_methods(self):
+        """Test that plot accessor has common plotting methods."""
+        ds = self.create_ds()
+        col_expr = ds['value']
+        plot = col_expr.plot
+
+        # Check common plot methods exist
+        self.assertTrue(hasattr(plot, 'bar'))
+        self.assertTrue(hasattr(plot, 'barh'))
+        self.assertTrue(hasattr(plot, 'box'))
+        self.assertTrue(hasattr(plot, 'hist'))
+        self.assertTrue(hasattr(plot, 'kde'))
+        self.assertTrue(hasattr(plot, 'density'))
+        self.assertTrue(hasattr(plot, 'line'))
+        self.assertTrue(hasattr(plot, 'pie'))
+
+    def test_plot_with_string_column(self):
+        """Test that plot works with string columns too."""
+        ds = self.create_ds()
+        col_expr = ds['name']
+
+        # Should still have plot accessor
+        self.assertTrue(hasattr(col_expr, 'plot'))
+
+    def test_plot_after_arithmetic(self):
+        """Test that plot works after arithmetic operations."""
+        ds = self.create_ds()
+        col_expr = ds['value'] * 2
+
+        # Should have plot accessor after arithmetic
+        self.assertTrue(hasattr(col_expr, 'plot'))
+
+        from pandas.plotting._core import PlotAccessor
+
+        self.assertIsInstance(col_expr.plot, PlotAccessor)
+
+    def test_plot_data_matches_materialized(self):
+        """Test that plot uses correctly materialized data."""
+        ds = self.create_ds()
+        col_expr = ds['value']
+
+        # Get the underlying data from plot accessor
+        # PlotAccessor wraps the Series, we can verify via _parent
+        plot_accessor = col_expr.plot
+        materialized = col_expr._materialize()
+
+        # The plot accessor's parent should match our materialized Series
+        pd.testing.assert_series_equal(plot_accessor._parent, materialized)
+
+
+class TestColumnExprPandasProperties(unittest.TestCase):
+    """Test ColumnExpr pandas-compatible properties."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'value': [10, 20, 30, 40, 50],
+                'name': ['a', 'b', 'c', 'd', 'e'],
+                'category': ['X', 'X', 'Y', 'Y', 'Z'],
+                'with_nan': [1.0, np.nan, 3.0, 4.0, 5.0],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_dtype_property(self):
+        """Test dtype property returns correct type."""
+        ds = self.create_ds()
+        self.assertEqual(ds['value'].dtype, np.dtype('int64'))
+        self.assertEqual(ds['name'].dtype, np.dtype('object'))
+
+    def test_dtypes_property(self):
+        """Test dtypes property (alias for dtype)."""
+        ds = self.create_ds()
+        self.assertEqual(ds['value'].dtypes, ds['value'].dtype)
+
+    def test_shape_property(self):
+        """Test shape property returns correct tuple."""
+        ds = self.create_ds()
+        self.assertEqual(ds['value'].shape, (5,))
+
+    def test_ndim_property(self):
+        """Test ndim is always 1 for Series."""
+        ds = self.create_ds()
+        self.assertEqual(ds['value'].ndim, 1)
+        self.assertEqual(ds['name'].ndim, 1)
+
+    def test_index_property(self):
+        """Test index property returns correct index."""
+        ds = self.create_ds()
+        index = ds['value'].index
+        self.assertEqual(list(index), [0, 1, 2, 3, 4])
+
+    def test_empty_property(self):
+        """Test empty property."""
+        ds = self.create_ds()
+        self.assertFalse(ds['value'].empty)
+
+    def test_T_property(self):
+        """Test T (transpose) property."""
+        ds = self.create_ds()
+        np.testing.assert_array_equal(ds['value'].T, np.array([10, 20, 30, 40, 50]))
+
+    def test_axes_property(self):
+        """Test axes property returns list of axis."""
+        ds = self.create_ds()
+        axes = ds['value'].axes
+        self.assertEqual(len(axes), 1)
+
+    def test_nbytes_property(self):
+        """Test nbytes property returns memory size."""
+        ds = self.create_ds()
+        nbytes = ds['value'].nbytes
+        self.assertGreater(nbytes, 0)
+        self.assertEqual(nbytes, 40)  # 5 int64 values = 5 * 8 bytes
+
+    def test_hasnans_property(self):
+        """Test hasnans property."""
+        ds = self.create_ds()
+        self.assertFalse(ds['value'].hasnans)
+        self.assertTrue(ds['with_nan'].hasnans)
+
+    def test_is_unique_property(self):
+        """Test is_unique property."""
+        ds = self.create_ds()
+        self.assertTrue(ds['value'].is_unique)
+        self.assertFalse(ds['category'].is_unique)  # Has duplicates
+
+    def test_is_monotonic_increasing_property(self):
+        """Test is_monotonic_increasing property."""
+        ds = self.create_ds()
+        self.assertTrue(ds['value'].is_monotonic_increasing)
+
+    def test_is_monotonic_decreasing_property(self):
+        """Test is_monotonic_decreasing property."""
+        ds = self.create_ds()
+        self.assertFalse(ds['value'].is_monotonic_decreasing)
+
+    def test_array_property(self):
+        """Test array property returns underlying array."""
+        ds = self.create_ds()
+        arr = ds['value'].array
+        self.assertEqual(len(arr), 5)
+
+
+class TestColumnExprPandasMethods(unittest.TestCase):
+    """Test ColumnExpr pandas-compatible methods."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.df = pd.DataFrame(
+            {
+                'value': [10, 20, 30, 40, 50],
+                'name': ['a', 'b', 'c', 'd', 'e'],
+                'category': ['X', 'X', 'Y', 'Y', 'Z'],
+            }
+        )
+
+    def create_ds(self):
+        """Create a DataStore with the test DataFrame."""
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
+        return ds
+
+    def test_to_list_method(self):
+        """Test to_list method."""
+        ds = self.create_ds()
+        result = ds['value'].to_list()
+        self.assertEqual(result, [10, 20, 30, 40, 50])
+
+    def test_to_dict_method(self):
+        """Test to_dict method."""
+        ds = self.create_ds()
+        result = ds['value'].to_dict()
+        self.assertEqual(result, {0: 10, 1: 20, 2: 30, 3: 40, 4: 50})
+
+    def test_to_frame_method(self):
+        """Test to_frame method returns DataStore."""
+        ds = self.create_ds()
+        result = ds['value'].to_frame()
+        self.assertIsInstance(result, DataStore)
+        # The column might be named 'value' or None depending on materialization
+        self.assertEqual(len(result.columns), 1)
+
+    def test_copy_method(self):
+        """Test copy method returns pandas Series."""
+        ds = self.create_ds()
+        result = ds['value'].copy()
+        self.assertIsInstance(result, pd.Series)
+        np.testing.assert_array_equal(result.values, [10, 20, 30, 40, 50])
+
+    def test_describe_method(self):
+        """Test describe method."""
+        ds = self.create_ds()
+        result = ds['value'].describe()
+        self.assertIn('mean', result.index)
+        self.assertIn('std', result.index)
+        self.assertIn('min', result.index)
+        self.assertIn('max', result.index)
+
+    def test_sample_method(self):
+        """Test sample method with random_state."""
+        ds = self.create_ds()
+        result = ds['value'].sample(3, random_state=42)
+        self.assertEqual(len(result), 3)
+
+    def test_nlargest_method(self):
+        """Test nlargest method."""
+        ds = self.create_ds()
+        result = ds['value'].nlargest(3)
+        self.assertEqual(list(result.values), [50, 40, 30])
+
+    def test_nsmallest_method(self):
+        """Test nsmallest method."""
+        ds = self.create_ds()
+        result = ds['value'].nsmallest(3)
+        self.assertEqual(list(result.values), [10, 20, 30])
+
+    def test_drop_duplicates_method(self):
+        """Test drop_duplicates method."""
+        ds = self.create_ds()
+        result = ds['category'].drop_duplicates()
+        self.assertEqual(list(result.values), ['X', 'Y', 'Z'])
+
+    def test_duplicated_method(self):
+        """Test duplicated method."""
+        ds = self.create_ds()
+        result = ds['category'].duplicated()
+        expected = [False, True, False, True, False]
+        self.assertEqual(list(result.values), expected)
+
+    def test_agg_single_func(self):
+        """Test agg with single function."""
+        ds = self.create_ds()
+        result = ds['value'].agg('mean')
+        self.assertEqual(result, 30.0)
+
+    def test_agg_multiple_funcs(self):
+        """Test agg with multiple functions."""
+        ds = self.create_ds()
+        result = ds['value'].agg(['sum', 'mean'])
+        self.assertEqual(result['sum'], 150)
+        self.assertEqual(result['mean'], 30.0)
+
+    def test_aggregate_alias(self):
+        """Test aggregate is alias for agg."""
+        ds = self.create_ds()
+        result = ds['value'].aggregate('mean')
+        self.assertEqual(result, 30.0)
+
+    def test_where_method(self):
+        """Test where method."""
+        ds = self.create_ds()
+        # Replace values where value <= 25 with 0
+        cond = ds['value']._materialize() > 25
+        result = ds['value'].where(cond, 0)
+        expected = [0, 0, 30, 40, 50]
+        self.assertEqual(list(result.values), expected)
+
+    def test_argsort_method(self):
+        """Test argsort method."""
+        ds = self.create_ds()
+        result = ds['value'].argsort()
+        # Already sorted, so argsort returns [0, 1, 2, 3, 4]
+        self.assertEqual(list(result.values), [0, 1, 2, 3, 4])
+
+    def test_sort_index_method(self):
+        """Test sort_index method."""
+        ds = self.create_ds()
+        result = ds['value'].sort_index(ascending=False)
+        self.assertEqual(list(result.index), [4, 3, 2, 1, 0])
+
+    def test_info_method(self):
+        """Test info method runs without error."""
+        import io
+
+        ds = self.create_ds()
+        buf = io.StringIO()
+        ds['value'].info(buf=buf)
+        output = buf.getvalue()
+        self.assertIn('int64', output)
+
+
+class TestColumnExprCatSparseAccessors(unittest.TestCase):
+    """Test ColumnExpr cat and sparse accessors."""
+
+    def test_cat_accessor_exists(self):
+        """Test that cat accessor exists on ColumnExpr."""
+        # Create categorical data
+        df = pd.DataFrame({'category': pd.Categorical(['a', 'b', 'c', 'a', 'b'])})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        col_expr = ds['category']
+        self.assertTrue(hasattr(col_expr, 'cat'))
+
+    def test_cat_accessor_categories(self):
+        """Test cat.categories returns correct categories."""
+        df = pd.DataFrame({'category': pd.Categorical(['a', 'b', 'c', 'a', 'b'])})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        categories = ds['category'].cat.categories
+        self.assertEqual(list(categories), ['a', 'b', 'c'])
+
+    def test_cat_accessor_codes(self):
+        """Test cat.codes returns correct codes."""
+        df = pd.DataFrame({'category': pd.Categorical(['a', 'b', 'c', 'a', 'b'])})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        codes = ds['category'].cat.codes
+        self.assertEqual(list(codes), [0, 1, 2, 0, 1])
+
+    def test_cat_accessor_ordered(self):
+        """Test cat.ordered property."""
+        df = pd.DataFrame({'category': pd.Categorical(['a', 'b', 'c'], ordered=True)})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        self.assertTrue(ds['category'].cat.ordered)
+
+    def test_cat_accessor_raises_for_non_categorical(self):
+        """Test that cat accessor raises error for non-categorical data."""
+        df = pd.DataFrame({'value': [1, 2, 3, 4, 5]})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        with self.assertRaises(AttributeError):
+            _ = ds['value'].cat.categories
+
+    def test_sparse_accessor_exists(self):
+        """Test that sparse accessor exists on ColumnExpr."""
+        # Create sparse data
+        sparse_arr = pd.arrays.SparseArray([0, 0, 1, 0, 2])
+        df = pd.DataFrame({'sparse_col': sparse_arr})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        col_expr = ds['sparse_col']
+        self.assertTrue(hasattr(col_expr, 'sparse'))
+
+    def test_sparse_accessor_density(self):
+        """Test sparse.density returns correct value."""
+        sparse_arr = pd.arrays.SparseArray([0, 0, 1, 0, 2])
+        df = pd.DataFrame({'sparse_col': sparse_arr})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        density = ds['sparse_col'].sparse.density
+        self.assertAlmostEqual(density, 0.4)  # 2 non-zero out of 5
+
+    def test_sparse_accessor_fill_value(self):
+        """Test sparse.fill_value returns correct value."""
+        sparse_arr = pd.arrays.SparseArray([0, 0, 1, 0, 2], fill_value=0)
+        df = pd.DataFrame({'sparse_col': sparse_arr})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        fill_value = ds['sparse_col'].sparse.fill_value
+        self.assertEqual(fill_value, 0)
+
+    def test_sparse_accessor_raises_for_non_sparse(self):
+        """Test that sparse accessor raises error for non-sparse data."""
+        df = pd.DataFrame({'value': [1, 2, 3, 4, 5]})
+        ds = DataStore('chdb')
+        ds._lazy_ops = [LazyDataFrameSource(df.copy())]
+
+        with self.assertRaises(AttributeError):
+            _ = ds['value'].sparse.density
+
+
 if __name__ == '__main__':
     unittest.main()
