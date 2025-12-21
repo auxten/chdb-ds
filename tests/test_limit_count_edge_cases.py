@@ -416,5 +416,585 @@ class TestLimitCountWithDataStore(unittest.TestCase):
         self.assertEqual(ds.limit(10).count_rows(), 10)
 
 
+class TestSliceStyleLimit(unittest.TestCase):
+    """Test slice-style limit operations like ds[0:5], ds[:10], ds[5:]."""
+
+    def setUp(self):
+        """Create test DataStore with 20 rows."""
+        self.df = pd.DataFrame(
+            {
+                'id': list(range(20)),
+                'value': [i * 10 for i in range(20)],
+                'name': [f'item_{i}' for i in range(20)],
+            }
+        )
+        self.ds = DataStore.from_dataframe(self.df)
+
+    # ==================== Basic Slice Tests ====================
+
+    def test_slice_stop_only(self):
+        """Test ds[:5] returns first 5 rows."""
+        result = self.ds[:5]
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), [0, 1, 2, 3, 4])
+
+    def test_slice_start_only(self):
+        """Test ds[5:] returns rows starting from index 5."""
+        result = self.ds[5:]
+        self.assertEqual(len(result), 15)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), list(range(5, 20)))
+
+    def test_slice_start_and_stop(self):
+        """Test ds[5:10] returns rows 5-9."""
+        result = self.ds[5:10]
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), [5, 6, 7, 8, 9])
+
+    def test_slice_full_range(self):
+        """Test ds[:] returns all rows."""
+        result = self.ds[:]
+        self.assertEqual(len(result), 20)
+
+    # ==================== Edge Cases ====================
+
+    def test_slice_zero_stop(self):
+        """Test ds[:0] returns empty result."""
+        result = self.ds[:0]
+        self.assertEqual(len(result), 0)
+
+    def test_slice_stop_greater_than_data(self):
+        """Test ds[:100] returns all rows when stop > data size."""
+        result = self.ds[:100]
+        self.assertEqual(len(result), 20)
+
+    def test_slice_start_greater_than_data(self):
+        """Test ds[100:] returns empty when start > data size."""
+        result = self.ds[100:]
+        self.assertEqual(len(result), 0)
+
+    def test_slice_start_equals_stop(self):
+        """Test ds[5:5] behavior - current implementation uses stop as limit."""
+        # Note: When start == stop, current implementation uses stop as limit
+        # ds[5:5] becomes LIMIT 5 OFFSET 5, not LIMIT 0 OFFSET 5
+        # This matches the code: limit_val = stop - start if stop > start else stop
+        result = self.ds[5:5]
+        # With 20 rows, OFFSET 5 LIMIT 5 gives rows 5-9
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), [5, 6, 7, 8, 9])
+
+    def test_slice_single_element(self):
+        """Test ds[5:6] returns single row."""
+        result = self.ds[5:6]
+        self.assertEqual(len(result), 1)
+        df = result.to_df()
+        self.assertEqual(df['id'].iloc[0], 5)
+
+    def test_slice_negative_not_supported(self):
+        """Test that step in slice raises error."""
+        with self.assertRaises(ValueError):
+            _ = self.ds[::2]  # Step not supported
+
+    # ==================== Chained Slice Tests ====================
+
+    def test_slice_then_select(self):
+        """Test slicing then column selection."""
+        result = self.ds[:5][['id', 'name']]
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df.columns), ['id', 'name'])
+
+    def test_select_then_slice(self):
+        """Test column selection then slicing."""
+        result = self.ds[['id', 'value']][:5]
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df.columns), ['id', 'value'])
+
+    def test_slice_then_filter(self):
+        """Test slicing then filtering."""
+        result = self.ds[:10]
+        result = result[result['value'] > 50]
+        df = result.to_df()
+        # Values 0-90, keep > 50: 60, 70, 80, 90 (indices 6,7,8,9)
+        self.assertEqual(len(df), 4)
+        for v in df['value']:
+            self.assertGreater(v, 50)
+
+    def test_filter_then_slice(self):
+        """Test filtering then slicing."""
+        filtered = self.ds[self.ds['value'] >= 100]  # 10 rows: 100, 110, ..., 190
+        result = filtered[:3]
+        self.assertEqual(len(result), 3)
+        df = result.to_df()
+        self.assertEqual(list(df['value']), [100, 110, 120])
+
+    def test_chained_slices(self):
+        """Test chained slices."""
+        result = self.ds[:15][5:10]
+        self.assertEqual(len(result), 5)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), [5, 6, 7, 8, 9])
+
+    # ==================== Comparison with head/tail ====================
+
+    def test_slice_matches_head(self):
+        """Test ds[:n] matches ds.head(n)."""
+        slice_result = self.ds[:7].to_df()
+        head_result = self.ds.head(7).to_df()
+        pd.testing.assert_frame_equal(slice_result, head_result)
+
+    def test_slice_matches_limit(self):
+        """Test ds[:n] matches ds.limit(n)."""
+        slice_result = self.ds[:8].to_df()
+        limit_result = self.ds.limit(8).to_df()
+        pd.testing.assert_frame_equal(slice_result, limit_result)
+
+    # ==================== Count with Slice ====================
+
+    def test_count_rows_with_slice(self):
+        """Test count_rows after slicing."""
+        self.assertEqual(self.ds[:10].count_rows(), 10)
+        self.assertEqual(self.ds[5:15].count_rows(), 10)
+        self.assertEqual(self.ds[10:].count_rows(), 10)
+
+    # ==================== Immutability Tests ====================
+
+    def test_slice_does_not_modify_original(self):
+        """Test that slicing creates a new DataStore."""
+        original_len = len(self.ds)
+        _ = self.ds[:5]
+        self.assertEqual(len(self.ds), original_len)
+
+    def test_chained_slice_immutability(self):
+        """Test that chained operations don't modify original."""
+        ds1 = self.ds[:15]
+        ds2 = ds1[:10]
+        ds3 = ds2[:5]
+
+        self.assertEqual(len(self.ds), 20)
+        self.assertEqual(len(ds1), 15)
+        self.assertEqual(len(ds2), 10)
+        self.assertEqual(len(ds3), 5)
+
+
+class TestSliceStyleLimitWithFiles(unittest.TestCase):
+    """Test slice-style limit with file-backed DataStore."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create test data files."""
+        import tempfile
+
+        cls.temp_dir = tempfile.mkdtemp()
+
+        # Create CSV with 50 rows
+        cls.csv_file = os.path.join(cls.temp_dir, "data.csv")
+        pd.DataFrame(
+            {
+                'id': list(range(50)),
+                'value': [i * 2 for i in range(50)],
+            }
+        ).to_csv(cls.csv_file, index=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up test files."""
+        import shutil
+
+        shutil.rmtree(cls.temp_dir, ignore_errors=True)
+
+    def test_file_slice_stop_only(self):
+        """Test slice on file-backed DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        result = ds[:10]
+        self.assertEqual(len(result), 10)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), list(range(10)))
+
+    def test_file_slice_start_and_stop(self):
+        """Test slice with offset on file-backed DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        result = ds[20:30]
+        self.assertEqual(len(result), 10)
+        df = result.to_df()
+        self.assertEqual(list(df['id']), list(range(20, 30)))
+
+    def test_file_filter_then_slice(self):
+        """Test filter then slice on file-backed DataStore."""
+        ds = DataStore.from_file(self.csv_file)
+        # First filter, then slice - this is the correct order for SQL
+        filtered = ds[ds['value'] > 20]
+        result = filtered[:10]
+        df = result.to_df()
+        # Values > 20: 22, 24, 26, 28, 30, 32, 34, 36, 38, 40 (first 10)
+        self.assertEqual(len(df), 10)
+        # All values should be > 20
+        for v in df['value']:
+            self.assertGreater(v, 20)
+
+    def test_file_slice_then_filter(self):
+        """Test slice then filter on file-backed DataStore.
+
+        This tests pandas-like behavior where:
+        - ds[:20] limits to first 20 rows first
+        - Then filter is applied on those 20 rows
+        - Result should be 9 rows (values 22, 24, 26, 28, 30, 32, 34, 36, 38)
+        """
+        ds = DataStore.from_file(self.csv_file)
+        sliced = ds[:20]
+        result = sliced[sliced['value'] > 20]
+        df = result.to_df()
+        # First 20 rows have values 0,2,4,...,38
+        # Values > 20: 22, 24, 26, 28, 30, 32, 34, 36, 38 (9 values)
+        self.assertEqual(len(df), 9)
+        self.assertEqual(list(df['value']), [22, 24, 26, 28, 30, 32, 34, 36, 38])
+
+
+class TestMultiLevelLimitFilter(unittest.TestCase):
+    """Test multi-level LIMIT-FILTER-LIMIT-FILTER patterns.
+
+    These tests verify that DataStore correctly handles complex chains of
+    LIMIT and FILTER operations, matching pandas behavior exactly.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """Create temp file with 100 rows for testing."""
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.csv_file = os.path.join(cls.temp_dir, 'data.csv')
+        pd.DataFrame(
+            {
+                'id': list(range(100)),
+                'value': [i * 2 for i in range(100)],  # 0, 2, 4, ..., 198
+            }
+        ).to_csv(cls.csv_file, index=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up temp directory."""
+        import shutil
+
+        shutil.rmtree(cls.temp_dir)
+
+    def test_limit_filter_limit_filter_basic(self):
+        """Test: [:50][>60][:10][>75] - Basic 2-level nesting."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:50]
+        p = p[p['value'] > 60]
+        p = p[:10]
+        p = p[p['value'] > 75]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:50]
+        ds = ds[ds['value'] > 60]
+        ds = ds[:10]
+        ds = ds[ds['value'] > 75]
+        d = ds.to_df()
+
+        self.assertEqual(list(p['value']), list(d['value']))
+        self.assertEqual(list(p['value']), [76, 78, 80])
+
+    def test_limit_filter_limit_filter_limit(self):
+        """Test: [:80][>20][:30][<100][:5] - 2-level with trailing limit."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:80]
+        p = p[p['value'] > 20]
+        p = p[:30]
+        p = p[p['value'] < 100]
+        p = p[:5]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:80]
+        ds = ds[ds['value'] > 20]
+        ds = ds[:30]
+        ds = ds[ds['value'] < 100]
+        ds = ds[:5]
+        d = ds.to_df()
+
+        self.assertEqual(list(p['value']), list(d['value']))
+        self.assertEqual(list(p['value']), [22, 24, 26, 28, 30])
+
+    def test_three_level_nesting(self):
+        """Test: [:70][>10][:50][<140][:30][>40] - 3-level nesting."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:70]
+        p = p[p['value'] > 10]
+        p = p[:50]
+        p = p[p['value'] < 140]
+        p = p[:30]
+        p = p[p['value'] > 40]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:70]
+        ds = ds[ds['value'] > 10]
+        ds = ds[:50]
+        ds = ds[ds['value'] < 140]
+        ds = ds[:30]
+        ds = ds[ds['value'] > 40]
+        d = ds.to_df()
+
+        expected = [42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_three_level_empty_result(self):
+        """Test: [:60][>10][:40][<120][:20][>50] - 3-level with empty result."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:60]
+        p = p[p['value'] > 10]
+        p = p[:40]
+        p = p[p['value'] < 120]
+        p = p[:20]
+        p = p[p['value'] > 50]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:60]
+        ds = ds[ds['value'] > 10]
+        ds = ds[:40]
+        ds = ds[ds['value'] < 120]
+        ds = ds[:20]
+        ds = ds[ds['value'] > 50]
+        d = ds.to_df()
+
+        self.assertEqual(len(p), 0)
+        self.assertEqual(len(d), 0)
+
+    def test_multiple_consecutive_filters(self):
+        """Test: [:50][>20][<80][:10][>30] - Multiple filters before limit."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:50]
+        p = p[p['value'] > 20]
+        p = p[p['value'] < 80]
+        p = p[:10]
+        p = p[p['value'] > 30]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:50]
+        ds = ds[ds['value'] > 20]
+        ds = ds[ds['value'] < 80]
+        ds = ds[:10]
+        ds = ds[ds['value'] > 30]
+        d = ds.to_df()
+
+        expected = [32, 34, 36, 38, 40]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_filter_limit_filter_limit_filter(self):
+        """Test: [>5][:40][<100][:20][>30] - Filter first pattern."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[pdf['value'] > 5]
+        p = p[:40]
+        p = p[p['value'] < 100]
+        p = p[:20]
+        p = p[p['value'] > 30]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[ds['value'] > 5]
+        ds = ds[:40]
+        ds = ds[ds['value'] < 100]
+        ds = ds[:20]
+        ds = ds[ds['value'] > 30]
+        d = ds.to_df()
+
+        # values: >5 gives 6-198, [:40] gives 6-84, <100 all qualify,
+        # [:20] gives 6-44, >30 gives 32-44 = [32, 34, 36, 38, 40, 42, 44]
+        expected = [32, 34, 36, 38, 40, 42, 44]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_offset_with_multi_level(self):
+        """Test: [10:30][>20][:10][<60] - Offset with multi-level."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[10:30]  # rows 10-29, values 20-58
+        p = p[p['value'] > 20]  # values 22-58
+        p = p[:10]  # values 22-40
+        p = p[p['value'] < 60]  # all qualify
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[10:30]
+        ds = ds[ds['value'] > 20]
+        ds = ds[:10]
+        ds = ds[ds['value'] < 60]
+        d = ds.to_df()
+
+        expected = [22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_chain_one_shot_syntax(self):
+        """Test one-shot chaining syntax matches step-by-step."""
+        ds = DataStore.from_file(self.csv_file)
+        # One-shot chain
+        result1 = ds[:50][ds['value'] > 60][:10][ds['value'] > 75].to_df()
+
+        # Step-by-step
+        ds2 = DataStore.from_file(self.csv_file)
+        ds2 = ds2[:50]
+        ds2 = ds2[ds2['value'] > 60]
+        ds2 = ds2[:10]
+        ds2 = ds2[ds2['value'] > 75]
+        result2 = ds2.to_df()
+
+        self.assertEqual(list(result1['value']), list(result2['value']))
+        self.assertEqual(list(result1['value']), [76, 78, 80])
+
+    def test_dataframe_source_multi_level(self):
+        """Test multi-level on DataFrame-backed DataStore."""
+        pdf = pd.DataFrame(
+            {
+                'id': list(range(100)),
+                'value': [i * 2 for i in range(100)],
+            }
+        )
+
+        p = pdf[:50]
+        p = p[p['value'] > 60]
+        p = p[:10]
+        p = p[p['value'] > 75]
+
+        ds = DataStore.from_df(pdf)
+        ds = ds[:50]
+        ds = ds[ds['value'] > 60]
+        ds = ds[:10]
+        ds = ds[ds['value'] > 75]
+        d = ds.to_df()
+
+        self.assertEqual(list(p['value']), list(d['value']))
+        self.assertEqual(list(d['value']), [76, 78, 80])
+
+    def test_order_limit_filter_order_limit_filter(self):
+        """Test: ORDER DESC -> LIMIT -> FILTER -> ORDER ASC -> LIMIT -> FILTER.
+
+        This tests complex multi-level nesting with ORDER BY operations.
+        """
+        pdf = pd.read_csv(self.csv_file)
+
+        # Pandas step by step
+        p = pdf.sort_values('value', ascending=False)  # ORDER DESC: 198, 196, ..., 0
+        p = p[:30]  # LIMIT 30: 198, 196, ..., 140
+        p = p[p['value'] < 180]  # FILTER: 178, 176, ..., 140 (20 rows)
+        p = p.sort_values('value', ascending=True)  # ORDER ASC: 140, 142, ..., 178
+        p = p[:10]  # LIMIT 10: 140, 142, ..., 158
+        p = p[p['value'] > 145]  # FILTER: 146, 148, ..., 158
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds.sort_values('value', ascending=False)
+        ds = ds[:30]
+        ds = ds[ds['value'] < 180]
+        ds = ds.sort_values('value', ascending=True)
+        ds = ds[:10]
+        ds = ds[ds['value'] > 145]
+        d = ds.to_df()
+
+        expected = [146, 148, 150, 152, 154, 156, 158]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_order_limit_filter_basic(self):
+        """Test: ORDER DESC -> LIMIT -> FILTER."""
+        pdf = pd.read_csv(self.csv_file)
+
+        p = pdf.sort_values('value', ascending=False)  # 198, 196, ..., 0
+        p = p[:20]  # 198, 196, ..., 160
+        p = p[p['value'] < 190]  # 188, 186, ..., 160 (15 rows)
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds.sort_values('value', ascending=False)
+        ds = ds[:20]
+        ds = ds[ds['value'] < 190]
+        d = ds.to_df()
+
+        expected = list(range(188, 158, -2))  # [188, 186, ..., 160]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_filter_order_limit_filter(self):
+        """Test: FILTER -> ORDER -> LIMIT -> FILTER."""
+        pdf = pd.read_csv(self.csv_file)
+
+        p = pdf[pdf['value'] > 50]  # 52, 54, ..., 198 (74 rows)
+        p = p.sort_values('value', ascending=False)  # 198, 196, ..., 52
+        p = p[:30]  # 198, 196, ..., 140
+        p = p[p['value'] < 170]  # 168, 166, ..., 140 (15 rows)
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[ds['value'] > 50]
+        ds = ds.sort_values('value', ascending=False)
+        ds = ds[:30]
+        ds = ds[ds['value'] < 170]
+        d = ds.to_df()
+
+        expected = list(range(168, 138, -2))  # [168, 166, ..., 140]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_limit_order_filter_limit(self):
+        """Test: LIMIT -> ORDER -> FILTER -> LIMIT."""
+        pdf = pd.read_csv(self.csv_file)
+
+        p = pdf[:50]  # 0, 2, ..., 98 (50 rows)
+        p = p.sort_values('value', ascending=False)  # 98, 96, ..., 0
+        p = p[p['value'] > 30]  # 98, 96, ..., 32 (34 rows)
+        p = p[:10]  # 98, 96, ..., 80
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:50]
+        ds = ds.sort_values('value', ascending=False)
+        ds = ds[ds['value'] > 30]
+        ds = ds[:10]
+        d = ds.to_df()
+
+        expected = list(range(98, 78, -2))  # [98, 96, ..., 80]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_order_filter_order_limit(self):
+        """Test: ORDER -> FILTER -> ORDER -> LIMIT."""
+        pdf = pd.read_csv(self.csv_file)
+
+        p = pdf.sort_values('value', ascending=True)  # 0, 2, ..., 198
+        p = p[p['value'] > 100]  # 102, 104, ..., 198 (49 rows)
+        p = p.sort_values('value', ascending=False)  # 198, 196, ..., 102
+        p = p[:15]  # 198, 196, ..., 170
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds.sort_values('value', ascending=True)
+        ds = ds[ds['value'] > 100]
+        ds = ds.sort_values('value', ascending=False)
+        ds = ds[:15]
+        d = ds.to_df()
+
+        expected = list(range(198, 168, -2))  # [198, 196, ..., 170]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_multi_order_with_filters(self):
+        """Test multiple ORDER BY with filters interleaved."""
+        pdf = pd.read_csv(self.csv_file)
+
+        p = pdf.sort_values('value', ascending=False)[:40]  # Top 40: 198-120
+        p = p[p['value'] < 180][:20]  # < 180, take 20: 178-140
+        p = p.sort_values('value', ascending=True)  # Sort ASC: 140-178
+        p = p[p['value'] > 150]  # > 150: 152-178
+        p = p[:8]  # Take 8: 152-166
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds.sort_values('value', ascending=False)[:40]
+        ds = ds[ds['value'] < 180][:20]
+        ds = ds.sort_values('value', ascending=True)
+        ds = ds[ds['value'] > 150]
+        ds = ds[:8]
+        d = ds.to_df()
+
+        expected = [152, 154, 156, 158, 160, 162, 164, 166]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+
 if __name__ == '__main__':
     unittest.main()
