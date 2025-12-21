@@ -335,16 +335,14 @@ class TestAggregation:
 class TestStringOperations:
     """Test string operations."""
 
-    @pytest.mark.xfail(reason="chDB NULL handling issue #447 - NULL becomes empty string")
     def test_str_upper(self, pd_df, ds_df):
-        """String upper."""
+        """String upper - with NULL handling workaround."""
         pd_result = pd_df['name'].str.upper()
         ds_result = ds_df['name'].str.upper()
         assert ds_result == pd_result
 
-    @pytest.mark.xfail(reason="chDB NULL handling issue #447 - NULL becomes empty string")
     def test_str_lower(self, pd_df, ds_df):
-        """String lower."""
+        """String lower - with NULL handling workaround."""
         pd_result = pd_df['city'].str.lower()
         ds_result = ds_df['city'].str.lower()
         assert ds_result == pd_result
@@ -355,16 +353,14 @@ class TestStringOperations:
         ds_result = ds_df['name'].str.contains('a', na=False)
         assert ds_result == pd_result
 
-    @pytest.mark.xfail(reason="chDB NULL handling issue #447 - NULL becomes empty string")
     def test_str_len(self, pd_df, ds_df):
-        """String length."""
+        """String length - with NULL handling workaround."""
         pd_result = pd_df['name'].str.len()
         ds_result = ds_df['name'].str.len()
         assert ds_result == pd_result
 
-    @pytest.mark.xfail(reason="chDB NULL handling issue #447 - NULL becomes empty string")
     def test_str_replace(self, pd_df, ds_df):
-        """String replace."""
+        """String replace - with NULL handling workaround."""
         pd_result = pd_df['city'].str.replace('York', 'Amsterdam')
         ds_result = ds_df['city'].str.replace('York', 'Amsterdam')
         assert ds_result == pd_result
@@ -421,26 +417,24 @@ class TestDateTimeOperations:
             np.array(pd_result, dtype='datetime64[ns]')
         )
 
-    @pytest.mark.xfail(reason="chDB datetime issue #448 - string column needs datetime conversion")
     def test_dt_year(self, pd_df, ds_df):
-        """Extract year from date."""
-        pd_result = pd_df['hire_date'].dt.year
+        """Extract year from date - auto-converts string to datetime."""
+        # Pandas needs explicit conversion, datastore does it automatically
+        pd_result = pd.to_datetime(pd_df['hire_date']).dt.year
         ds_result = ds_df['hire_date'].dt.year
-        assert ds_result == pd_result
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
 
-    @pytest.mark.xfail(reason="chDB datetime issue #448 - string column needs datetime conversion")
     def test_dt_month(self, pd_df, ds_df):
-        """Extract month from date."""
-        pd_result = pd_df['hire_date'].dt.month
+        """Extract month from date - auto-converts string to datetime."""
+        pd_result = pd.to_datetime(pd_df['hire_date']).dt.month
         ds_result = ds_df['hire_date'].dt.month
-        assert ds_result == pd_result
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
 
-    @pytest.mark.xfail(reason="chDB datetime issue #448 - string column needs datetime conversion")
     def test_dt_strftime(self, pd_df, ds_df):
-        """Date formatting."""
-        pd_result = pd_df['hire_date'].dt.strftime('%Y-%m')
+        """Date formatting - auto-converts string to datetime."""
+        pd_result = pd.to_datetime(pd_df['hire_date']).dt.strftime('%Y-%m')
         ds_result = ds_df['hire_date'].dt.strftime('%Y-%m')
-        assert ds_result == pd_result
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
 
 
 # =============================================================================
