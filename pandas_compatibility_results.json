@@ -77,14 +77,14 @@
     "pandas_code": "result = df[df['age'] > 30]",
     "datastore_code": "result = df[df['age'] > 30]",
     "pandas_success": true,
-    "datastore_success": false,
+    "datastore_success": true,
     "pandas_result": "      name   age     city   salary department  hire_date  performance_score\n2  Charlie  35.0    Paris      NaN         IT 2018-03-10                9.1\n5    Frank  32.0   Sydney  80000.0         IT 2019-02-28                9.5\n6     None  45.0  Toronto  70000.0         HR 2017-08-15                7.5",
-    "datastore_result": null,
+    "datastore_result": "      name   age     city   salary department   hire_date  performance_score\n2  Charlie  35.0    Paris      NaN         IT  2018-03-10                9.1\n5    Frank  32.0   Sydney  80000.0         IT  2019-02-28                9.5\n6     None  45.0  Toronto  70000.0         HR  2017-08-15                7.5",
     "pandas_error": null,
-    "datastore_error": "TypeError: DataStore indices must be slices, strings, or lists, not BinaryCondition",
+    "datastore_error": null,
     "results_match": false,
     "notes": [
-      "Datastore error: DataStore indices must be slices, strings, or lists, not BinaryCondition"
+      "Results differ between pandas and datastore"
     ]
   },
   {
@@ -485,15 +485,13 @@
     "pandas_code": "result = df.groupby('department').size()",
     "datastore_code": "result = df.groupby('department').size()",
     "pandas_success": true,
-    "datastore_success": false,
+    "datastore_success": true,
     "pandas_result": "department\nFinance    2\nHR         3\nIT         3\ndtype: int64",
-    "datastore_result": null,
+    "datastore_result": "department\nFinance    2\nHR         3\nIT         3\ndtype: int64",
     "pandas_error": null,
-    "datastore_error": "TypeError: 'ColumnExpr' object is not callable",
-    "results_match": false,
-    "notes": [
-      "Datastore error: 'ColumnExpr' object is not callable"
-    ]
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
   },
   {
     "category": "string_operations",
@@ -533,15 +531,13 @@
     "pandas_code": "result = df['name'].str.contains('a', na=False)",
     "datastore_code": "result = df['name'].str.contains('a', na=False)",
     "pandas_success": true,
-    "datastore_success": false,
+    "datastore_success": true,
     "pandas_result": "0    False\n1    False\n2     True\n3     True\n4    False\n5     True\n6    False\n7     True\nName: name, dtype: bool",
-    "datastore_result": null,
+    "datastore_result": "0    False\n1    False\n2     True\n3     True\n4    False\n5     True\n6    False\n7     True\nName: name, dtype: bool",
     "pandas_error": null,
-    "datastore_error": "TypeError: _build_contains() got an unexpected keyword argument 'na'",
-    "results_match": false,
-    "notes": [
-      "Datastore error: _build_contains() got an unexpected keyword argument 'na'"
-    ]
+    "datastore_error": null,
+    "results_match": true,
+    "notes": []
   },
   {
     "category": "string_operations",

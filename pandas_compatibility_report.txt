@@ -5,9 +5,9 @@ PANDAS COMPATIBILITY REPORT
 
 Total Tests: 44
 Pandas Success Rate: 43/44 (97.7%)
-DataStore Success Rate: 40/44 (90.9%)
-Both Libraries Succeeded: 40/44 (90.9%)
-Results Match (when both succeed): 18/40 (45.0%)
+DataStore Success Rate: 43/44 (97.7%)
+Both Libraries Succeeded: 43/44 (97.7%)
+Results Match (when both succeed): 20/43 (46.5%)
 
 ================================================================================
 
@@ -33,8 +33,8 @@ AGGREGATION
 
 4. GroupBy with count
    Code: result = df.groupby('department').size()...
-   Status: ✓ Pandas | ✗ DataStore (TypeError: 'ColumnExpr' object is not callable)
-   Notes: Datastore error: 'ColumnExpr' object is not callable
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
 
 DATA CLEANING
 --------------------------------------------------------------------------------
@@ -90,8 +90,9 @@ DATA SELECTION
 
 4. Select with boolean indexing
    Code: result = df[df['age'] > 30]...
-   Status: ✓ Pandas | ✗ DataStore (TypeError: DataStore indices must be slices, strings, or lists, not BinaryCondition)
-   Notes: Datastore error: DataStore indices must be slices, strings, or lists, not BinaryCondition
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✗ Differ
+   Notes: Results differ between pandas and datastore
 
 5. Select with loc
    Code: result = df.loc[0:2, ['name', 'age']]...
@@ -272,8 +273,8 @@ STRING OPERATIONS
 
 3. String contains
    Code: result = df['name'].str.contains('a', na=False)...
-   Status: ✓ Pandas | ✗ DataStore (TypeError: _build_contains() got an unexpected keyword argument 'na')
-   Notes: Datastore error: _build_contains() got an unexpected keyword argument 'na'
+   Status: ✓ Pandas | ✓ DataStore
+   Results: ✓ Match
 
 4. String length
    Code: result = df['name'].str.len()...
@@ -291,11 +292,7 @@ STRING OPERATIONS
 COMPATIBILITY IMPROVEMENT RECOMMENDATIONS
 ================================================================================
 
-1. Enhance data selection operations (loc, iloc, boolean indexing) to match pandas behavior
-2. Implement apply, map, and other transformation methods with support for lambda functions
-3. Improve groupby operations to support all pandas aggregation functions and multiple aggregations
-4. Implement .str accessor with all common string methods (upper, lower, contains, replace, len)
-5. Review method signatures to ensure they accept the same parameter types as pandas
-6. Add comprehensive unit tests covering all pandas-compatible operations
-7. Create a compatibility matrix documenting which pandas operations are supported and their limitations
-8. Implement lazy evaluation where possible to maintain compatibility with pandas' eager evaluation model
+1. Implement apply, map, and other transformation methods with support for lambda functions
+2. Add comprehensive unit tests covering all pandas-compatible operations
+3. Create a compatibility matrix documenting which pandas operations are supported and their limitations
+4. Implement lazy evaluation where possible to maintain compatibility with pandas' eager evaluation model
