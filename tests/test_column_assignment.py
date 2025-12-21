@@ -201,26 +201,32 @@ class TestColumnAssignment:
         for col in expected_columns:
             assert col in result_df.columns, f"Column '{col}' missing from result"
 
-    def test_slice_modifies_original(self):
-        """Test that slice indexing modifies and returns the original DataStore.
+    def test_slice_returns_new_instance(self):
+        """Test that slice indexing returns a new DataStore (pandas-like behavior).
 
-        Unlike multi-column selection, slice notation (ds[:n]) is mutable by design
-        and modifies the original DataStore.
+        Like pandas, slice notation (ds[:n]) returns a new DataStore with the
+        limit applied, without modifying the original.
         """
         dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
 
         # Load data
         ds = DataStore.from_file(dataset_path)
+        original_limit = ds._limit_value
 
-        # Slice returns self (mutable behavior)
+        # Slice returns a new instance (immutable/pandas-like behavior)
         sliced = ds[:2]
 
-        # Should be the same instance
-        assert sliced is ds, "Slice should return the same DataStore instance"
+        # Should be different instances
+        assert sliced is not ds, "Slice should return a new DataStore instance"
 
-        # Both should have the limit set
-        assert ds._limit_value == 2
+        # Original should be unchanged
+        assert ds._limit_value == original_limit
+
+        # Sliced should have the limit set
         assert sliced._limit_value == 2
+
+        # Verify the data is correctly sliced
+        assert len(sliced.to_df()) == 2
 
 
 if __name__ == '__main__':

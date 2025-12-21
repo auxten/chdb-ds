@@ -208,51 +208,51 @@ class TestColumnExprStringOperations(unittest.TestCase):
     def test_str_upper(self):
         """Test str.upper()."""
         ds = self.create_ds()
-        ds_result = list(ds['name'].str.upper())
-        pd_result = list(self.df['name'].str.upper())
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['name'].str.upper()
+        pd_result = self.df['name'].str.upper()
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_lower(self):
         """Test str.lower()."""
         ds = self.create_ds()
-        ds_result = list(ds['name'].str.lower())
-        pd_result = list(self.df['name'].str.lower())
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['name'].str.lower()
+        pd_result = self.df['name'].str.lower()
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_length(self):
-        """Test str.length() / str.len()."""
+        """Test str.len() (pandas style)."""
         ds = self.create_ds()
-        ds_result = list(ds['name'].str.length())
-        pd_result = list(self.df['name'].str.len())
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['name'].str.len()
+        pd_result = self.df['name'].str.len()
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_trim(self):
         """Test str.trim() / str.strip()."""
         ds = self.create_ds()
-        ds_result = list(ds['text'].str.trim())
-        pd_result = list(self.df['text'].str.strip())
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['text'].str.trim()
+        pd_result = self.df['text'].str.strip()
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_left(self):
         """Test str.left(n)."""
         ds = self.create_ds()
-        ds_result = list(ds['text'].str.left(5))
-        pd_result = list(self.df['text'].str[:5])
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['text'].str.left(5)
+        pd_result = self.df['text'].str[:5]
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_right(self):
         """Test str.right(n)."""
         ds = self.create_ds()
-        ds_result = list(ds['text'].str.right(3))
-        pd_result = list(self.df['text'].str[-3:])
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['text'].str.right(3)
+        pd_result = self.df['text'].str[-3:]
+        self.assertTrue(ds_result == pd_result)
 
     def test_str_reverse(self):
         """Test str.reverse()."""
         ds = self.create_ds()
-        ds_result = list(ds['text'].str.reverse())
-        pd_result = list(self.df['text'].apply(lambda x: x[::-1]))
-        self.assertEqual(ds_result, pd_result)
+        ds_result = ds['text'].str.reverse()
+        pd_result = self.df['text'].apply(lambda x: x[::-1])
+        self.assertTrue(ds_result == pd_result)
 
 
 class TestColumnExprComparisonOperations(unittest.TestCase):
