@@ -996,5 +996,315 @@ class TestMultiLevelLimitFilter(unittest.TestCase):
         self.assertEqual(list(d['value']), expected)
 
 
+class TestWindowFunctions(unittest.TestCase):
+    """Test window functions: rolling, shift, diff, etc."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create temp file with test data."""
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.csv_file = os.path.join(cls.temp_dir, 'data.csv')
+        pd.DataFrame(
+            {
+                'id': list(range(20)),
+                'value': [i * 2 for i in range(20)],  # 0, 2, 4, ..., 38
+            }
+        ).to_csv(cls.csv_file, index=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up temp directory."""
+        import shutil
+
+        shutil.rmtree(cls.temp_dir)
+
+    def test_rolling_mean(self):
+        """Test rolling().mean()"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].rolling(3).mean())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].rolling(3).mean())
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            if pd.isna(e):
+                self.assertTrue(pd.isna(r))
+            else:
+                self.assertAlmostEqual(e, r)
+
+    def test_rolling_sum(self):
+        """Test rolling().sum()"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].rolling(3).sum())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].rolling(3).sum())
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            if pd.isna(e):
+                self.assertTrue(pd.isna(r))
+            else:
+                self.assertAlmostEqual(e, r)
+
+    def test_rolling_with_min_periods(self):
+        """Test rolling() with min_periods"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].rolling(3, min_periods=1).mean())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].rolling(3, min_periods=1).mean())
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            self.assertAlmostEqual(e, r)
+
+    def test_shift_positive(self):
+        """Test shift() with positive periods"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].shift(1))
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].shift(1))
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            if pd.isna(e):
+                self.assertTrue(pd.isna(r))
+            else:
+                self.assertEqual(e, r)
+
+    def test_shift_negative(self):
+        """Test shift() with negative periods"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].shift(-1))
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].shift(-1))
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            if pd.isna(e):
+                self.assertTrue(pd.isna(r))
+            else:
+                self.assertEqual(e, r)
+
+    def test_diff(self):
+        """Test diff()"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].diff())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].diff())
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            if pd.isna(e):
+                self.assertTrue(pd.isna(r))
+            else:
+                self.assertEqual(e, r)
+
+    def test_ewm_mean(self):
+        """Test ewm().mean()"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].ewm(span=3).mean())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].ewm(span=3).mean())
+
+        self.assertEqual(len(expected), len(result))
+        for e, r in zip(expected, result):
+            self.assertAlmostEqual(e, r, places=2)
+
+    def test_rank(self):
+        """Test rank()"""
+        pdf = pd.read_csv(self.csv_file)
+        expected = list(pdf['value'].rank())
+
+        ds = DataStore.from_file(self.csv_file)
+        result = list(ds['value'].rank())
+
+        self.assertEqual(expected, result)
+
+    def test_rolling_in_chain(self):
+        """Test rolling() in a chain with LIMIT and FILTER"""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:15].copy()
+        p['rolling_mean'] = p['value'].rolling(3).mean()
+        p = p.dropna()
+        p = p[p['rolling_mean'] > 10]
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:15]
+        ds['rolling_mean'] = ds['value'].rolling(3).mean()
+        ds = ds.dropna()
+        ds = ds[ds['rolling_mean'] > 10]
+        d = ds.to_df()
+
+        self.assertEqual(len(p), len(d))
+        self.assertEqual(list(p['value']), list(d['value']))
+
+
+class TestMixedSqlPandasOperations(unittest.TestCase):
+    """Test chains with pandas-only operations in the middle.
+
+    These tests verify that SQL operations before a pandas-only function
+    are executed first, then pandas-only operations are applied, and
+    subsequent operations continue on the resulting DataFrame.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """Create temp file with 100 rows for testing."""
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.csv_file = os.path.join(cls.temp_dir, 'data.csv')
+        pd.DataFrame(
+            {
+                'id': list(range(100)),
+                'value': [i * 2 for i in range(100)],  # 0, 2, 4, ..., 198
+            }
+        ).to_csv(cls.csv_file, index=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up temp directory."""
+        import shutil
+
+        shutil.rmtree(cls.temp_dir)
+
+    def test_limit_filter_apply_limit_filter(self):
+        """Test: LIMIT -> FILTER -> apply() -> LIMIT -> FILTER.
+
+        apply() is pandas-only, so SQL ops before it execute first,
+        then apply() runs on DataFrame, then subsequent ops continue.
+        """
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:50]  # LIMIT 50: values 0-98
+        p = p[p['value'] > 20]  # FILTER: values 22-98
+        p = p.copy()  # Avoid SettingWithCopyWarning
+        p['value'] = p['value'].apply(lambda x: x + 1000)  # apply: 1022-1098
+        p = p[:15]  # LIMIT 15: first 15 transformed values
+        p = p[p['value'] < 1060]  # FILTER: values < 1060
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:50]
+        ds = ds[ds['value'] > 20]
+        ds['value'] = ds['value'].apply(lambda x: x + 1000)
+        ds = ds[:15]
+        ds = ds[ds['value'] < 1060]
+        d = ds.to_df()
+
+        expected = [1022, 1024, 1026, 1028, 1030, 1032, 1034, 1036, 1038, 1040, 1042, 1044, 1046, 1048, 1050]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_order_limit_apply_filter(self):
+        """Test: ORDER -> LIMIT -> apply() -> FILTER."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf.sort_values('value', ascending=False)[:30]  # Top 30: 198-140
+        p = p.copy()
+        p['value'] = p['value'].apply(lambda x: x * 2)  # Double: 396-280
+        p = p[p['value'] > 350]  # > 350: 396, 392, ..., 352
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds.sort_values('value', ascending=False)[:30]
+        ds['value'] = ds['value'].apply(lambda x: x * 2)
+        ds = ds[ds['value'] > 350]
+        d = ds.to_df()
+
+        expected = list(range(396, 350, -4))  # [396, 392, 388, ..., 352]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_filter_apply_order_limit(self):
+        """Test: FILTER -> apply() -> ORDER -> LIMIT."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[pdf['value'] > 50]  # > 50: 52-198
+        p = p.copy()
+        p['value'] = p['value'].apply(lambda x: -x)  # Negate: -52 to -198
+        p = p.sort_values('value', ascending=False)[:10]  # Top 10 (least negative)
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[ds['value'] > 50]
+        ds['value'] = ds['value'].apply(lambda x: -x)
+        ds = ds.sort_values('value', ascending=False)[:10]
+        d = ds.to_df()
+
+        expected = [-52, -54, -56, -58, -60, -62, -64, -66, -68, -70]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_limit_apply_limit_apply_filter(self):
+        """Test: LIMIT -> apply() -> LIMIT -> apply() -> FILTER.
+
+        Multiple pandas-only operations in the chain.
+        """
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:40]  # values 0-78
+        p = p.copy()
+        p['value'] = p['value'].apply(lambda x: x + 100)  # 100-178
+        p = p[:20]  # first 20: 100-138
+        p = p.copy()
+        p['value'] = p['value'].apply(lambda x: x * 2)  # 200-276
+        p = p[p['value'] > 250]  # > 250: 252, 256, 260, 264, 268, 272, 276
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:40]
+        ds['value'] = ds['value'].apply(lambda x: x + 100)
+        ds = ds[:20]
+        ds['value'] = ds['value'].apply(lambda x: x * 2)
+        ds = ds[ds['value'] > 250]
+        d = ds.to_df()
+
+        expected = [252, 256, 260, 264, 268, 272, 276]
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+    def test_new_column_with_apply_then_filter(self):
+        """Test adding a new column with apply() then filtering on it."""
+        pdf = pd.read_csv(self.csv_file)
+        p = pdf[:30]
+        p = p.copy()
+        p['category'] = p['value'].apply(lambda x: 'high' if x > 30 else 'low')
+        p = p[p['category'] == 'high']
+
+        ds = DataStore.from_file(self.csv_file)
+        ds = ds[:30]
+        ds['category'] = ds['value'].apply(lambda x: 'high' if x > 30 else 'low')
+        ds = ds[ds['category'] == 'high']
+        d = ds.to_df()
+
+        self.assertEqual(len(p), len(d))
+        self.assertEqual(list(p['value']), list(d['value']))
+        # values 32, 34, 36, ..., 58 (14 values)
+        self.assertEqual(list(d['value']), list(range(32, 60, 2)))
+
+    def test_dataframe_source_with_apply(self):
+        """Test DataFrame-backed DataStore with apply() in chain."""
+        pdf = pd.DataFrame(
+            {
+                'id': list(range(50)),
+                'value': [i * 2 for i in range(50)],
+            }
+        )
+
+        p = pdf[:25]
+        p = p.copy()
+        p['value'] = p['value'].apply(lambda x: x + 500)
+        p = p[p['value'] > 520]
+
+        ds = DataStore.from_df(pdf)
+        ds = ds[:25]
+        ds['value'] = ds['value'].apply(lambda x: x + 500)
+        ds = ds[ds['value'] > 520]
+        d = ds.to_df()
+
+        # values: 522, 524, ..., 548 (14 values)
+        expected = list(range(522, 550, 2))
+        self.assertEqual(list(p['value']), expected)
+        self.assertEqual(list(d['value']), expected)
+
+
 if __name__ == '__main__':
     unittest.main()
