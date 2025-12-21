@@ -76,6 +76,40 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test size property matches pandas."""
         self.assertEqual(self.ds.size, self.df.size)
 
+    def test_iter(self):
+        """Test iteration over DataStore yields column names like pandas."""
+        ds_cols = list(self.ds)
+        pd_cols = list(self.df)
+        self.assertEqual(ds_cols, pd_cols)
+
+    def test_iter_select_dtypes(self):
+        """Test iteration over select_dtypes result yields column names."""
+        # Test iteration directly over select_dtypes result
+        ds_cols = [feat for feat in self.ds.select_dtypes('number')]
+        pd_cols = [feat for feat in self.df.select_dtypes('number')]
+        self.assertEqual(ds_cols, pd_cols)
+
+        # Test using columns.tolist()
+        ds_cols2 = [feat for feat in self.ds.select_dtypes(include='number').columns.tolist()]
+        pd_cols2 = [feat for feat in self.df.select_dtypes(include='number').columns.tolist()]
+        self.assertEqual(ds_cols2, pd_cols2)
+
+    def test_select_dtypes_with_nunique_filter(self):
+        """Test filtering columns by nunique value (common pattern for bool detection)."""
+        # Pattern: find numeric columns with only 2 unique values (likely boolean)
+        ds_bool_feats = [feat for feat in self.ds.select_dtypes('number') if self.ds[feat].nunique() == 2]
+        pd_bool_feats = [feat for feat in self.df.select_dtypes('number') if self.df[feat].nunique() == 2]
+        self.assertEqual(ds_bool_feats, pd_bool_feats)
+
+        # Pattern: get all numeric features, then exclude bool features
+        ds_num_feats = [feat for feat in self.ds.select_dtypes(include='number').columns.tolist()]
+        ds_num_feats = [feat for feat in ds_num_feats if feat not in ds_bool_feats]
+
+        pd_num_feats = [feat for feat in self.df.select_dtypes(include='number').columns.tolist()]
+        pd_num_feats = [feat for feat in pd_num_feats if feat not in pd_bool_feats]
+
+        self.assertEqual(ds_num_feats, pd_num_feats)
+
     # ========== Statistical Methods Tests ==========
 
     def test_mean(self):
