@@ -150,20 +150,24 @@ class DataStoreImmutabilityTests(unittest.TestCase):
         self.assertIn('ASC', cheap.to_sql())
 
     def test_slice_notation_returns_new_instance(self):
-        """Test that slice notation modifies and returns self (mutable behavior)."""
+        """Test that slice notation returns a new instance (pandas-like immutable behavior)."""
         ds = DataStore(table="test").select("*")
 
-        # Store original reference
-        original_ds = ds
+        # Store original SQL
+        original_sql = ds.to_sql()
 
-        # LIMIT 10 - modifies ds and returns self
+        # LIMIT 10 - returns new instance, original unchanged
         result = ds[:10]
 
-        # In new mutable architecture, returns self
-        self.assertIs(ds, result)  # Same instance (mutable)
+        # Should be different instances (pandas-like immutable behavior)
+        self.assertIsNot(ds, result)
 
-        # Query should have LIMIT
-        self.assertIn('LIMIT', ds.to_sql())
+        # Original should be unchanged
+        self.assertNotIn('LIMIT', ds.to_sql())
+        self.assertEqual(original_sql, ds.to_sql())
+
+        # New instance should have LIMIT
+        self.assertIn('LIMIT', result.to_sql())
 
     def test_multiple_filter_calls_accumulate(self):
         """Test that multiple filter calls are ANDed together"""

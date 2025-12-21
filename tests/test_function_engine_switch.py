@@ -139,8 +139,8 @@ class TestStringFunctionsExecution(unittest.TestCase):
         self.assertEqual(result, ['hello', 'world', 'test string', '  spaces  '])
 
     def test_length(self):
-        """Test length() function."""
-        result = list(self.ds['text'].str.length())
+        """Test str.len() function (pandas style)."""
+        result = list(self.ds['text'].str.len())
         # Row order is now preserved
         self.assertEqual(result, [5, 5, 11, 10])
 

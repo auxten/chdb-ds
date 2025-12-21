@@ -336,8 +336,8 @@ class TestMixedOperationsChain(unittest.TestCase):
         """Test chain: string op -> length (returns number) -> can do math."""
         config.use_chdb()
 
-        # Get length of trimmed text
-        result = list(self.ds['text'].str.trim().str.length())
+        # Get length of trimmed text (using pandas-style str.len())
+        result = list(self.ds['text'].str.trim().str.len())
 
         # Row order is now preserved
         self.assertEqual(result, [3, 3, 3])

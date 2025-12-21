@@ -103,16 +103,16 @@ class TestLazyStringFunctionsEngineSwitch(unittest.TestCase):
         self.assertEqual(result, ['hello', 'world', 'test'])
 
     def test_length_with_chdb(self):
-        """Test length() executes via ClickHouse."""
+        """Test str.len() executes via ClickHouse."""
         config.use_chdb()
-        result = list(self.ds['text'].str.length())
+        result = list(self.ds['text'].str.len())
         # Row order is now preserved
         self.assertEqual(result, [5, 5, 4])
 
     def test_length_with_pandas(self):
-        """Test length() executes via Pandas."""
+        """Test str.len() executes via Pandas."""
         config.use_pandas()
-        result = list(self.ds['text'].str.length())
+        result = list(self.ds['text'].str.len())
         # Row order is now preserved
         self.assertEqual(result, [5, 5, 4])
 
