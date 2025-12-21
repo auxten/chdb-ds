@@ -4,6 +4,7 @@ Test core DataStore functionality - converted from pypika test_query.py and test
 
 import os
 import unittest
+import pandas as pd
 from datastore import DataStore, Field, Sum, Count
 
 
@@ -341,6 +342,106 @@ class TestExecAlias(unittest.TestCase):
         execute_sig = inspect.signature(execute_method)
 
         self.assertEqual(exec_sig.return_annotation, execute_sig.return_annotation)
+
+
+class TestPandasIndexSupport(unittest.TestCase):
+    """Test support for pandas Index in __getitem__."""
+
+    def setUp(self):
+        """Set up test DataStore with real data."""
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
+        self.ds = DataStore.from_file(dataset_path)
+
+    def test_getitem_with_pandas_index(self):
+        """Test ds[pd.Index(['col1', 'col2'])] selects columns."""
+        # Create a pandas Index
+        cols = pd.Index(['user_id', 'name'])
+        result = self.ds[cols]
+        
+        # Should return a DataStore with selected columns
+        self.assertIsInstance(result, DataStore)
+        
+        # to_df() applies lazy ops including column selection
+        df = result.to_df()
+        self.assertListEqual(list(df.columns), ['user_id', 'name'])
+
+    def test_getitem_with_columns_from_another_datastore(self):
+        """Test ds[other_ds.columns] selects matching columns."""
+        # Get columns from the DataStore
+        cols = self.ds.columns
+        
+        # Select subset of columns
+        subset_cols = cols[:2]  # Get first 2 columns
+        result = self.ds[subset_cols]
+        
+        # to_df() applies lazy ops including column selection
+        df = result.to_df()
+        self.assertEqual(len(df.columns), 2)
+
+    def test_getitem_with_pandas_index_from_dataframe(self):
+        """Test using columns from a pandas DataFrame."""
+        # Create a small DataFrame
+        pdf = pd.DataFrame({'user_id': [1], 'name': ['test']})
+        
+        # Use its columns to select from DataStore
+        result = self.ds[pdf.columns]
+        
+        # to_df() applies lazy ops including column selection
+        df = result.to_df()
+        self.assertListEqual(list(df.columns), ['user_id', 'name'])
+
+    def test_getitem_index_immutability(self):
+        """Test that using Index doesn't modify original DataStore."""
+        cols = pd.Index(['user_id', 'name'])
+        original_sql = self.ds.to_sql()
+        
+        result = self.ds[cols]
+        
+        # Original should be unchanged
+        self.assertEqual(original_sql, self.ds.to_sql())
+        self.assertNotEqual(id(self.ds), id(result))
+
+
+class TestDataStoreIteration(unittest.TestCase):
+    """Test __iter__ method for iterating over column names."""
+
+    def setUp(self):
+        """Set up test DataStore with real data."""
+        dataset_path = os.path.join(os.path.dirname(__file__), 'dataset', 'users.csv')
+        self.ds = DataStore.from_file(dataset_path)
+
+    def test_iter_yields_column_names(self):
+        """Test that iterating over DataStore yields column names."""
+        columns_from_iter = list(self.ds)
+        columns_property = list(self.ds.columns)
+        
+        self.assertEqual(columns_from_iter, columns_property)
+
+    def test_iter_in_for_loop(self):
+        """Test using DataStore in a for loop."""
+        column_list = []
+        for col in self.ds:
+            column_list.append(col)
+        
+        self.assertEqual(column_list, list(self.ds.columns))
+
+    def test_iter_with_list_comprehension(self):
+        """Test using DataStore in list comprehension."""
+        upper_cols = [col.upper() for col in self.ds]
+        expected = [col.upper() for col in self.ds.columns]
+        
+        self.assertEqual(upper_cols, expected)
+
+    def test_iter_matches_pandas_behavior(self):
+        """Test that iteration matches pandas DataFrame behavior."""
+        # Execute to get DataFrame
+        df = self.ds.execute().to_df()
+        
+        # Iterating over DataFrame yields column names
+        df_cols = list(df.columns)
+        ds_cols = list(self.ds)
+        
+        self.assertEqual(ds_cols, df_cols)
 
 
 if __name__ == '__main__':
