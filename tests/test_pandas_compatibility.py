@@ -30,8 +30,14 @@ def test_data():
         'salary': [50000, 60000, None, 75000, 55000, 80000, 70000, 52000],
         'department': ['HR', 'IT', 'IT', 'HR', 'Finance', 'IT', 'HR', 'Finance'],
         'hire_date': [
-            '2020-01-15', '2019-06-20', '2018-03-10', '2021-09-05',
-            '2020-11-12', '2019-02-28', '2017-08-15', '2021-04-30',
+            '2020-01-15',
+            '2019-06-20',
+            '2018-03-10',
+            '2021-09-05',
+            '2020-11-12',
+            '2019-02-28',
+            '2017-08-15',
+            '2021-04-30',
         ],
         'performance_score': [8.5, 7.2, 9.1, 6.8, 8.0, 9.5, 7.5, 8.3],
     }
@@ -413,8 +419,7 @@ class TestDateTimeOperations:
         ds_result = ds.to_datetime(ds_df['hire_date'])
         # to_datetime may return DatetimeIndex or Series - compare values
         np.testing.assert_array_equal(
-            np.array(ds_result, dtype='datetime64[ns]'),
-            np.array(pd_result, dtype='datetime64[ns]')
+            np.array(ds_result, dtype='datetime64[ns]'), np.array(pd_result, dtype='datetime64[ns]')
         )
 
     def test_dt_year(self, pd_df, ds_df):
@@ -487,3 +492,88 @@ class TestEdgeCases:
         ds_result = ds_df[ds_df['age'] > 25][['name', 'age']].sort_values('age')
         assert ds_result == pd_result
 
+    def test_pop_removes_column(self, pd_df, ds_df):
+        """Test that pop() removes column and returns it.
+
+        This is a regression test for data leakage bug where pop() didn't
+        remove the column from DataStore, causing target leakage in ML workflows.
+        """
+        # Test with pandas
+        pd_copy = pd_df.copy()
+        pd_popped = pd_copy.pop('salary')
+
+        # Test with datastore
+        ds_copy = ds_df.copy()
+        ds_popped = ds_copy.pop('salary')
+
+        # Verify column is removed
+        assert 'salary' not in pd_copy.columns
+        assert 'salary' not in ds_copy.columns
+
+        # Verify popped values match
+        pd.testing.assert_series_equal(
+            pd.Series(ds_popped).reset_index(drop=True), pd_popped.reset_index(drop=True), check_names=False
+        )
+
+    def test_pop_ml_workflow_pattern(self):
+        """Test the typical ML workflow: X = df.copy(); y = X.pop(target)."""
+        data = {'feature1': [1, 2, 3, 4, 5], 'feature2': [10, 20, 30, 40, 50], 'target': [0, 1, 0, 1, 0]}
+        pd_df = pd.DataFrame(data)
+        ds_df = ds.DataFrame(data)
+
+        # Pandas workflow
+        X_pd = pd_df.copy()
+        y_pd = X_pd.pop('target')
+
+        # DataStore workflow
+        X_ds = ds_df.copy()
+        y_ds = X_ds.pop('target')
+
+        # Verify features don't contain target
+        assert 'target' not in X_pd.columns
+        assert 'target' not in X_ds.columns
+
+        # Verify feature count matches
+        assert len(X_pd.columns) == len(X_ds.columns) == 2
+
+        # Verify target values match
+        assert list(y_ds) == list(y_pd)
+
+    def test_delitem_removes_column(self, pd_df, ds_df):
+        """Test that del ds[column] removes the column in-place."""
+        # Test with pandas
+        pd_copy = pd_df.copy()
+        del pd_copy['salary']
+
+        # Test with datastore
+        ds_copy = ds_df.copy()
+        del ds_copy['salary']
+
+        # Verify column is removed
+        assert 'salary' not in pd_copy.columns
+        assert 'salary' not in ds_copy.columns
+
+        # Verify other columns remain
+        assert len(pd_copy.columns) == len(ds_copy.columns)
+
+    def test_update_modifies_inplace(self):
+        """Test that update() modifies the DataStore in-place."""
+        # Create DataFrames with some NA values
+        data1 = {'a': [1, 2, 3], 'b': [None, None, None]}
+        data2 = {'b': [10, 20, 30]}
+
+        pd_df = pd.DataFrame(data1)
+        ds_df = ds.DataFrame(data1)
+
+        update_df = pd.DataFrame(data2)
+
+        # Apply update
+        pd_df.update(update_df)
+        ds_df.update(update_df)
+
+        # Verify values are updated
+        pd.testing.assert_series_equal(
+            pd.Series(ds_df['b']).reset_index(drop=True),
+            pd_df['b'].reset_index(drop=True),
+            check_names=False,
+        )
