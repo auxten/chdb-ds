@@ -273,41 +273,65 @@ class TestColumnExprComparisonOperations(unittest.TestCase):
         ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
         return ds
 
-    def test_greater_than_returns_condition(self):
-        """Test that > returns BinaryCondition."""
+    def test_greater_than_returns_column_expr(self):
+        """Test that > returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] > 25
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
+        # ColumnExpr can materialize to boolean Series
+        self.assertEqual(list(result._materialize()), [True, True, True, True, False])
 
-    def test_greater_equal_returns_condition(self):
-        """Test that >= returns BinaryCondition."""
+    def test_greater_equal_returns_column_expr(self):
+        """Test that >= returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] >= 28
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
 
-    def test_less_than_returns_condition(self):
-        """Test that < returns BinaryCondition."""
+    def test_less_than_returns_column_expr(self):
+        """Test that < returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] < 30
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
 
-    def test_less_equal_returns_condition(self):
-        """Test that <= returns BinaryCondition."""
+    def test_less_equal_returns_column_expr(self):
+        """Test that <= returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] <= 29
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
 
-    def test_equal_returns_condition(self):
-        """Test that == returns BinaryCondition."""
+    def test_equal_returns_column_expr(self):
+        """Test that == returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] == 28
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
 
-    def test_not_equal_returns_condition(self):
-        """Test that != returns BinaryCondition."""
+    def test_not_equal_returns_column_expr(self):
+        """Test that != returns ColumnExpr wrapping Condition."""
         ds = self.create_ds()
         result = ds['age'] != 28
-        self.assertIsInstance(result, BinaryCondition)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertIsInstance(result._expr, Condition)
+
+    def test_column_expr_condition_value_counts(self):
+        """Test that ColumnExpr wrapping Condition supports value_counts()."""
+        ds = self.create_ds()
+        result = ds['age'] > 30
+        counts = result.value_counts()
+        # age values: [28, 31, 29, 45, 22] -> only 31, 45 are > 30
+        self.assertEqual(counts[True], 2)
+        self.assertEqual(counts[False], 3)
+
+    def test_column_expr_condition_sum(self):
+        """Test that ColumnExpr wrapping Condition supports sum() (counts True)."""
+        ds = self.create_ds()
+        result = ds['age'] > 30
+        # age values: [28, 31, 29, 45, 22] -> only 31, 45 are > 30
+        self.assertEqual(result.sum(), 2)
 
 
 class TestColumnExprNullMethods(unittest.TestCase):
