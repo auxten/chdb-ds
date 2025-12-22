@@ -514,6 +514,59 @@ def test_lazy_result_array_method():
     print(f"✓ LazyResult.__array__(copy=True) works")
 
 
+def test_categorical_dtype_array_method():
+    """Test __array__ method handles categorical dtype correctly.
+
+    This is a regression test for seaborn kdeplot ValueError with categorical hue.
+    """
+    print("\n" + "=" * 80)
+    print("11. Testing categorical dtype __array__ method")
+    print("=" * 80)
+
+    # Create DataFrame with categorical column (like the Kaggle notebook)
+    df = pd.DataFrame(
+        {
+            'age': [25, 30, 35, 40, 45],
+            'bmi': [22.5, 25.0, 28.0, 31.0, 24.0],
+            'target': pd.Categorical([0, 1, 0, 1, 0]),
+        }
+    )
+    ds = DataStore(df)
+
+    # Test 1: np.asarray on categorical ColumnExpr
+    print("\n11.1 Test np.asarray on categorical ColumnExpr:")
+    arr = np.asarray(ds['target'])
+    assert isinstance(arr, np.ndarray), f"Expected numpy.ndarray, got {type(arr)}"
+    assert arr.dtype in (np.int64, np.int32, np.object_), f"Unexpected dtype: {arr.dtype}"
+    print(f"✓ np.asarray(ds['target']) = {arr}, dtype={arr.dtype}")
+
+    # Test 2: Create DataFrame from categorical ColumnExpr (seaborn pattern)
+    print("\n11.2 Test pd.DataFrame creation with categorical ColumnExpr:")
+    plot_data = {'x': ds['age'], 'hue': ds['target']}
+    result_df = pd.DataFrame(plot_data)
+    assert isinstance(result_df, pd.DataFrame), f"Expected DataFrame, got {type(result_df)}"
+    assert result_df.shape == (5, 2), f"Expected shape (5, 2), got {result_df.shape}"
+    print(f"✓ pd.DataFrame with categorical ColumnExpr works, shape={result_df.shape}")
+
+    # Test 3: Simulate exact Kaggle notebook pattern
+    print("\n11.3 Test exact Kaggle notebook pattern (astype('int').astype('category')):")
+    ds2 = ds.copy()
+    ds2['diagnosed_diabetes'] = ds2['target'].astype('int').astype('category')
+
+    arr = np.asarray(ds2['diagnosed_diabetes'])
+    assert isinstance(arr, np.ndarray), f"Expected numpy.ndarray, got {type(arr)}"
+    print(f"✓ np.asarray after astype chain works: {arr}")
+
+    # Test 4: Full seaborn-like dict pattern with categorical
+    print("\n11.4 Test full seaborn dict pattern with categorical hue:")
+    plot_data = {'x': ds2['age'], 'hue': ds2['diagnosed_diabetes']}
+    result_df = pd.DataFrame(plot_data)
+    assert isinstance(result_df, pd.DataFrame), f"Expected DataFrame, got {type(result_df)}"
+    print(f"✓ Seaborn pattern with categorical hue works, shape={result_df.shape}")
+
+    print("\n✓ All categorical dtype tests passed!")
+
+
 if __name__ == '__main__':
     print("\n" + "=" * 80)
     print("NumPy Compatibility Test Suite for DataStore")
@@ -529,6 +582,7 @@ if __name__ == '__main__':
         test_array_method_with_seaborn_pattern()
         test_lazy_aggregate_array_method()
         test_lazy_result_array_method()
+        test_categorical_dtype_array_method()
 
         print("\n" + "=" * 80)
         print("Summary")
@@ -537,11 +591,12 @@ if __name__ == '__main__':
             """
 The test results show:
 1. DataStore columns can be converted to numpy arrays using .to_numpy() or .values
-2. Direct __array__ interface now works correctly with ColumnExpr, DataStore, 
+2. Direct __array__ interface now works correctly with ColumnExpr, DataStore,
    LazyAggregate, and LazyResult
 3. DataStore works with all standard numpy functions
 4. Seaborn/pandas DataFrame creation patterns work correctly
 5. numpy 2.0+ copy parameter is supported
+6. Categorical dtype columns work correctly with __array__
         """
         )
 
