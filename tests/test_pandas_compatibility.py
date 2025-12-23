@@ -333,7 +333,7 @@ class TestAggregation:
         assert ds_result == pd_result
 
     def test_groupby_count(self, pd_df, ds_df):
-        """GroupBy with size - returns LazyGroupBySize (pd.Series compatible)."""
+        """GroupBy with size - returns LazySeries (pd.Series compatible)."""
         pd_result = pd_df.groupby('department').size()
         ds_result = ds_df.groupby('department').size()
         # Natural trigger: np.testing with __array__ protocol
