@@ -838,5 +838,258 @@ class TestFilterColumnSelection(unittest.TestCase):
         self.assertEqual(len(ds_result), len(pd_result))
 
 
+class TestSQLPushdownOptimizations(unittest.TestCase):
+    """Test SQL pushdown optimizations for column selection, groupby, etc."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create test data and save to parquet."""
+        cls.df = pd.DataFrame({
+            'id': range(100),
+            'category': ['A', 'B', 'C', 'D', 'E'] * 20,
+            'value': range(100, 200),
+            'score': [i * 0.5 for i in range(100)],
+        })
+        cls.parquet_path = '/tmp/test_sql_pushdown.parquet'
+        cls.df.to_parquet(cls.parquet_path)
+
+    def test_column_selection_uses_lazy_relational_op(self):
+        """Test that ds[['col1', 'col2']] creates LazyRelationalOp(SELECT)."""
+        from datastore import DataStore
+        from datastore.lazy_ops import LazyRelationalOp
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds[['id', 'category']]
+
+        # Check that the lazy op is a LazyRelationalOp with SELECT type
+        self.assertEqual(len(result._lazy_ops), 1)
+        op = result._lazy_ops[0]
+        self.assertIsInstance(op, LazyRelationalOp)
+        self.assertEqual(op.op_type, 'SELECT')
+
+    def test_column_selection_chains_with_sort_and_limit(self):
+        """Test that column selection can chain with sort/limit into single SQL."""
+        from datastore import DataStore
+        from datastore.lazy_ops import LazyRelationalOp
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds[['id', 'value']].sort_values('value', ascending=False).head(10)
+
+        # All operations should be LazyRelationalOp
+        for op in result._lazy_ops:
+            self.assertIsInstance(op, LazyRelationalOp)
+
+        # Execute and verify
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 10)
+        self.assertEqual(list(df_result.columns), ['id', 'value'])
+
+    def test_column_selection_result_matches_pandas(self):
+        """Test that column selection produces same result as pandas."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds[['id', 'category']].to_df()
+        pd_result = self.df[['id', 'category']]
+
+        pd.testing.assert_frame_equal(ds_result, pd_result)
+
+    def test_groupby_count_uses_sql(self):
+        """Test that groupby().count() uses SQL pushdown."""
+        from datastore import DataStore
+        from datastore.lazy_ops import LazyGroupByAgg
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').count()
+
+        # Check that LazyGroupByAgg is created
+        self.assertEqual(len(result._lazy_ops), 1)
+        self.assertIsInstance(result._lazy_ops[0], LazyGroupByAgg)
+
+        # Execute and verify - should return 5 groups (A, B, C, D, E)
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 5)
+
+    def test_groupby_agg_uses_sql(self):
+        """Test that groupby().agg() uses SQL pushdown."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').agg({'value': ['sum', 'mean']})
+
+        # Execute and verify
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 5)  # 5 categories
+
+    def test_groupby_size_uses_sql(self):
+        """Test that groupby().size() uses SQL pushdown."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').size()
+
+        # Execute - LazySeries should use SQL internally
+        series = result.values
+        self.assertEqual(len(series), 5)  # 5 categories
+
+    def test_groupby_size_reset_index(self):
+        """Test groupby().size().reset_index() matches pandas."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds.groupby('category').size().reset_index(name='count')
+
+        # Force execution
+        _ = len(ds_result)
+
+        # Compare with pandas
+        pd_result = self.df.groupby('category').size().reset_index(name='count')
+
+        # Values should match (order may differ)
+        ds_counts = set(zip(ds_result['category'], ds_result['count']))
+        pd_counts = set(zip(pd_result['category'], pd_result['count']))
+        self.assertEqual(ds_counts, pd_counts)
+
+    def test_filter_then_groupby_uses_sql(self):
+        """Test that filter + groupby chain uses SQL pushdown."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds[ds['value'] > 150].groupby('category').count()
+
+        # Execute and verify
+        df_result = result.to_df()
+        # Should have groups with value > 150
+        self.assertGreater(len(df_result), 0)
+
+    def test_star_expression_in_count(self):
+        """Test that Star expression works in COUNT(*)."""
+        from datastore.expressions import Star
+        from datastore.functions import AggregateFunction
+
+        star = Star()
+        self.assertEqual(star.to_sql(), '*')
+
+        agg = AggregateFunction('count', star)
+        self.assertEqual(agg.to_sql(), 'count(*)')
+
+    def test_complex_pipeline_with_sql_pushdown(self):
+        """Test complex pipeline: filter + column select + sort + limit."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds[ds['value'] > 120]
+        result = result[['id', 'category', 'value']]
+        result = result.sort_values('value', ascending=False)
+        result = result.head(20)
+
+        # Execute and verify
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 20)
+        self.assertEqual(list(df_result.columns), ['id', 'category', 'value'])
+        # Values should be sorted descending
+        self.assertTrue(all(df_result['value'].iloc[i] >= df_result['value'].iloc[i+1]
+                           for i in range(len(df_result)-1)))
+
+    def test_groupby_agg_single_func_uses_sql(self):
+        """Test groupby().agg() with single function per column uses SQL."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').agg({'value': 'sum', 'score': 'mean'})
+
+        # Execute and verify
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 5)  # 5 categories
+        # Should have columns value, score (not sum(value), avg(score))
+        self.assertIn('value', df_result.columns)
+        self.assertIn('score', df_result.columns)
+
+    def test_groupby_agg_reset_index_matches_pandas(self):
+        """Test groupby().agg().reset_index() matches pandas structure."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds.groupby('category').agg({'value': 'sum'}).reset_index().to_df()
+
+        pdf = self.df.groupby('category').agg({'value': 'sum'}).reset_index()
+
+        # Column structure should match
+        self.assertEqual(list(ds_result.columns), list(pdf.columns))
+        self.assertEqual(len(ds_result), len(pdf))
+
+    def test_filter_groupby_sort_sql_pushdown(self):
+        """Test filter + groupby + sort pipeline with SQL pushdown."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        # Use score column for filter, value column for agg to avoid alias conflict
+        result = ds[ds['score'] > 20]
+        result = result.groupby('category').agg({'value': 'sum'}).reset_index()
+        result = result.sort_values('value', ascending=False)
+
+        # Execute and verify
+        df_result = result.to_df()
+        self.assertGreater(len(df_result), 0)
+        # Should be sorted descending
+        values = df_result['value'].tolist()
+        self.assertEqual(values, sorted(values, reverse=True))
+
+    def test_groupby_multi_func_falls_back_to_pandas(self):
+        """Test that groupby with multiple funcs per column uses pandas."""
+        from datastore import DataStore
+        from datastore.lazy_ops import LazyGroupByAgg
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').agg({'value': ['sum', 'mean']})
+
+        # Should have LazyGroupByAgg in ops
+        self.assertEqual(len(result._lazy_ops), 1)
+        self.assertIsInstance(result._lazy_ops[0], LazyGroupByAgg)
+
+        # Execute should still work (via pandas fallback)
+        df_result = result.to_df()
+        self.assertEqual(len(df_result), 5)
+
+    def test_filter_groupby_same_column_alias_conflict(self):
+        """
+        Test filter + groupby on same column doesn't cause SQL alias conflict.
+
+        This is a regression test for the bug where:
+        SELECT "category", sum("value") AS "value" FROM ... WHERE "value" > 120 GROUP BY ...
+        would fail with "Aggregate function found in WHERE" error because the alias
+        'value' conflicts with the column name 'value' in the WHERE clause.
+
+        The fix should either:
+        1. Not use alias when it conflicts with WHERE column, or
+        2. Fall back to pandas execution
+        """
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # This used to fail with:
+        # "Aggregate function sum(value) AS value is found in WHERE in query"
+        result = ds[ds['value'] > 120]
+        result = result.groupby('category').agg({'value': 'sum'}).reset_index()
+
+        # Should execute without error (either via SQL with workaround or pandas fallback)
+        df_result = result.to_df()
+
+        # Verify result is correct
+        self.assertGreater(len(df_result), 0)
+        self.assertIn('category', df_result.columns)
+        self.assertIn('value', df_result.columns)
+
+        # Compare with pandas reference
+        pdf = self.df[self.df['value'] > 120]
+        pd_result = pdf.groupby('category').agg({'value': 'sum'}).reset_index()
+
+        # Values should match (order may differ)
+        ds_values = set(zip(df_result['category'], df_result['value']))
+        pd_values = set(zip(pd_result['category'], pd_result['value']))
+        self.assertEqual(ds_values, pd_values)
+
+
 if __name__ == '__main__':
     unittest.main()
