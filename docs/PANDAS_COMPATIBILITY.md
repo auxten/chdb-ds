@@ -30,7 +30,7 @@ DataStore provides comprehensive pandas DataFrame API compatibility, allowing yo
 - **Seamless Integration**: Mix SQL-style queries with pandas transformations
 - **Automatic Wrapping**: DataFrame/Series results automatically wrapped as DataStore
 - **Immutable**: All operations return new instances (no `inplace=True`)
-- **Smart Execution**: SQL operations build queries, pandas operations materialize and cache results
+- **Smart Execution**: SQL operations build queries, pandas operations execute and cache results
 - **Correct Chaining**: Handles mixed SQL→pandas→pandas chains correctly
 
 ## Quick Start
@@ -285,7 +285,7 @@ The `.str` accessor provides **100% coverage** of pandas Series.str methods. Met
 
 ### Lazy Methods (SQL-based, 51 methods)
 
-These methods return `ColumnExpr` and remain lazy until materialization:
+These methods return `ColumnExpr` and remain lazy until execution:
 
 ```python
 # All these are lazy - no execution until to_df()
@@ -298,17 +298,17 @@ ds['name'].str.replace('a', 'b') # → ColumnExpr (lazy)
 # Assign to column (still lazy)
 ds['upper_name'] = ds['name'].str.upper()
 
-# Execute when materializing
+# Execute when needed
 df = ds.to_df()  # ← SQL executes here
 ```
 
 **Lazy methods include**: `upper`, `lower`, `len`, `strip`, `lstrip`, `rstrip`, `contains`, `startswith`, `endswith`, `replace`, `split`, `rsplit`, `slice`, `pad`, `center`, `ljust`, `rjust`, `zfill`, `repeat`, `find`, `rfind`, `index`, `rindex`, `match`, `fullmatch`, `extract`, `encode`, `decode`, `capitalize`, `title`, `swapcase`, `casefold`, `normalize`, `isalnum`, `isalpha`, `isdigit`, `isspace`, `islower`, `isupper`, `istitle`, `isnumeric`, `isdecimal`, `wrap`, `get`, `count`, `join`, `slice_replace`, `translate`, `removeprefix`, `removesuffix`
 
-### Materializing Methods (5 methods)
+### Executing Methods (5 methods)
 
-These methods **must materialize** because they change the return structure:
+These methods **must execute** because they change the return structure:
 
-| Method | Return Type | Why Materialization Required |
+| Method | Return Type | Why Execution Required |
 |--------|-------------|------------------------------|
 | `partition(sep)` | `DataStore` (3 columns) | Returns DataFrame with 3 columns (left, sep, right) - cannot be represented as single SQL expression |
 | `rpartition(sep)` | `DataStore` (3 columns) | Same as partition, splits from right |
@@ -317,14 +317,14 @@ These methods **must materialize** because they change the return structure:
 | `cat(sep)` | `str` | **Aggregates** all strings into single value - reduces N rows to 1 scalar |
 
 ```python
-# These materialize immediately and return results
+# These execute immediately and return results
 ds['name'].str.partition('|')      # → DataStore (3 columns)
 ds['name'].str.get_dummies('|')    # → DataStore (N dummy columns)
 ds['name'].str.extractall(r'\d+')  # → DataStore (all matches)
 ds['name'].str.cat(sep='-')        # → str ("John-Jane-Bob")
 ```
 
-### Why `cat()` Requires Materialization
+### Why `cat()` Requires Execution
 
 `cat()` is fundamentally different from other string methods:
 
@@ -341,7 +341,7 @@ ds['name'].str.cat(sep='-')  # ["john", "jane"] → "john-jane"
 2. Concatenates them with a separator
 3. Returns a single string
 
-This cannot be expressed as a per-row SQL expression. It requires materializing the data first, then calling pandas' `str.cat()` method.
+This cannot be expressed as a per-row SQL expression. It requires executing the data first, then calling pandas' `str.cat()` method.
 
 ### ✅ Comparison
 - [x] `df.equals()` - Test equality
@@ -435,7 +435,7 @@ DataStore implements a sophisticated **Mixed Execution Engine** that enables **a
 
 ### Key Innovation: SQL on DataFrames
 
-After materialization, SQL-style operations use **chDB's `Python()` table function** to execute SQL directly on cached DataFrames, enabling true mixed execution.
+After execution, SQL-style operations use **chDB's `Python()` table function** to execute SQL directly on cached DataFrames, enabling true mixed execution.
 
 ### Three-Stage Execution
 
@@ -444,13 +444,13 @@ After materialization, SQL-style operations use **chDB's `Python()` table functi
 ds = DataStore.from_file("data.csv")
 ds1 = ds.select('*')                    # Builds: SELECT *
 ds2 = ds1.filter(ds.age > 25)           # Adds: WHERE age > 25
-# ds2._materialized = False (no execution yet)
+# ds2._executed = False (no execution yet)
 ```
 
-**Stage 2: Materialization (First pandas Operation)**
+**Stage 2: Execution (First pandas Operation)**
 ```python
 ds3 = ds2.add_prefix('emp_')            # ← Executes SQL here!
-# ds3._materialized = True
+# ds3._executed = True
 # ds3._cached_df = DataFrame with filtered data and prefixed columns
 ```
 
@@ -458,7 +458,7 @@ ds3 = ds2.add_prefix('emp_')            # ← Executes SQL here!
 ```python
 ds4 = ds3.filter(ds.emp_age > 30)       # SQL on DataFrame!
 # Internally: SELECT * FROM Python(__datastore_cached_df__) WHERE emp_age > 30
-# ds4._materialized = True (result cached)
+# ds4._executed = True (result cached)
 ```
 
 ### Arbitrary Mixing Examples
@@ -467,7 +467,7 @@ ds4 = ds3.filter(ds.emp_age > 30)       # SQL on DataFrame!
 ```python
 result = (ds
     .filter(ds.age > 25)                      # SQL query building
-    .add_prefix('emp_')                       # Pandas (materializes)
+    .add_prefix('emp_')                       # Pandas (executes)
     .filter(ds.emp_salary > 55000)            # SQL on DataFrame!
     .fillna(0))                               # Pandas on DataFrame
 ```
@@ -475,7 +475,7 @@ result = (ds
 **Example 2: Pandas → SQL → Pandas → SQL**
 ```python
 result = (ds
-    .rename(columns={'id': 'ID'})             # Pandas (materializes)
+    .rename(columns={'id': 'ID'})             # Pandas (executes)
     .filter(ds.ID > 5)                        # SQL on DataFrame
     .sort_values('salary')                    # Pandas
     .select('ID', 'name', 'salary'))          # SQL on DataFrame again!
@@ -486,7 +486,7 @@ result = (ds
 result = (ds
     .select('*')                              # SQL 1
     .filter(ds.status == 'active')            # SQL 2
-    .assign(revenue=lambda x: x['price'] * x['qty'])  # Pandas (materializes)
+    .assign(revenue=lambda x: x['price'] * x['qty'])  # Pandas (executes)
     .filter(ds.revenue > 1000)                # SQL 3 on DataFrame
     .add_prefix('sales_')                     # Pandas
     .query('sales_revenue > 5000')            # Pandas
@@ -515,8 +515,8 @@ result = (ds
     .query('date >= "2024-01-01" and amount > 1000'))  # Filter in memory
 ```
 
-### 2. Understand Materialization
-Once materialized (pandas operation applied), all subsequent operations use cached data:
+### 2. Understand Execution
+Once executed (pandas operation applied), all subsequent operations use cached data:
 
 ```python
 ds = DataStore.from_file("big_data.csv")
@@ -524,7 +524,7 @@ ds = DataStore.from_file("big_data.csv")
 # SQL operations - build query (lazy)
 ds_filtered = ds.select('*').filter(ds.value > 0)  # No execution yet
 
-# First pandas operation - materializes
+# First pandas operation - executes
 ds_prefixed = ds_filtered.add_prefix('col_')  # ← Query executes here!
 
 # All subsequent operations use cached DataFrame
@@ -545,7 +545,7 @@ result = (ds
     .filter(ds.amount > 1000)           # SQL: More filtering
     # ↑ Query built but not executed yet
     
-    .add_prefix('col_')                 # ← Executes SQL here, materializes
+    .add_prefix('col_')                 # ← Executes SQL here, caches result
     .fillna(0)                          # Pandas: Works on cached result
     .assign(margin=lambda x: x['col_profit'] / x['col_revenue']))  # Pandas
 ```

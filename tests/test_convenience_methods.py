@@ -367,7 +367,7 @@ class TestConvenienceMethods(unittest.TestCase):
         # Get counts via optimized SQL method
         sql_counts = ds.select("*").count()
 
-        # Get counts via DataFrame materialization
+        # Get counts via DataFrame execution
         df_counts = ds.select("*").to_df().count()
 
         import pandas as pd

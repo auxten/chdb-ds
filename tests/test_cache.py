@@ -339,14 +339,14 @@ class TestIncrementalExecution(unittest.TestCase):
         config.set_cache_ttl(0)
 
     def test_incremental_execution_with_intermediate_repr(self):
-        """Test that operations after materialization build on cached result."""
+        """Test that operations after execution build on cached result."""
         df = pd.DataFrame({'value': [1, 2, 3]})
         ds = DataStore.from_dataframe(df)
 
         # Add first operation
         ds['doubled'] = ds['value'] * 2
 
-        # Materialize (checkpoint)
+        # Execute (checkpoint)
         str(ds)
 
         # Check lazy_ops is now just the cached DataFrame source
@@ -359,7 +359,7 @@ class TestIncrementalExecution(unittest.TestCase):
         # Should have 2 ops now: [cached_source, new_op]
         self.assertEqual(len(ds._lazy_ops), 2)
 
-        # Materialize again
+        # Execute again
         result = ds.to_df()
 
         # Results should be correct
@@ -371,7 +371,7 @@ class TestIncrementalExecution(unittest.TestCase):
         df = pd.DataFrame({'value': [1, 2, 3]})
         ds = DataStore.from_dataframe(df)
 
-        # Add multiple operations without any materialization
+        # Add multiple operations without any execution
         ds['op1'] = ds['value'] * 2
         ds['op2'] = ds['value'] * 3
         ds['op3'] = ds['value'] * 4
@@ -380,7 +380,7 @@ class TestIncrementalExecution(unittest.TestCase):
         # Initial source + 3 ops = 4 operations
         self.assertEqual(len(ds._lazy_ops), 4)
 
-        # Single materialization
+        # Single execution
         result = ds.to_df()
 
         # Results should be correct
@@ -413,13 +413,13 @@ class TestIncrementalExecution(unittest.TestCase):
         # Add DataFrame operation
         ds['b'] = ds['a'] * 2
 
-        # Before materialization
+        # Before execution
         self.assertEqual(len(ds._lazy_ops), 2)  # source + op
 
-        # Materialize
+        # Execute
         str(ds)
 
-        # After materialization with DataFrame ops: checkpointed
+        # After execution with DataFrame ops: checkpointed
         self.assertEqual(len(ds._lazy_ops), 1)  # just cached source
 
 

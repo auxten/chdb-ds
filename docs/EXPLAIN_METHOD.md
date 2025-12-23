@@ -9,9 +9,9 @@ When you chain SQL operations (like `select()`, `filter()`) with Pandas operatio
 ## Features
 
 - ✅ **Non-Destructive**: Never executes queries or modifies data
-- 📊 **Information Dense**: Shows operation type, sequence, and materialization points
+- 📊 **Information Dense**: Shows operation type, sequence, and execution points
 - 🔍 **Detailed**: Includes SQL queries, DataFrame shapes, and operation metadata
-- 🎯 **Clear Phases**: Separates lazy SQL, materialization, and DataFrame operations
+- 🎯 **Clear Phases**: Separates lazy SQL, execution, and DataFrame operations
 
 ## Usage
 
@@ -55,12 +55,12 @@ Phase 1: SQL Query Building (Lazy)
 - Best place for filtering and aggregation
 - Operations are combined into a single SQL query
 
-### Phase 2: Materialization Point
+### Phase 2: Execution Point
 
 Shows the operation that triggers SQL execution:
 
 ```
-Phase 2: Materialization Point
+Phase 2: Execution Point
 ────────────────────────────────────────────────────────────────────────────────
  [3] 🔄 add_prefix('p1_')
      └─> Executes SQL query and caches result as DataFrame
@@ -78,12 +78,12 @@ Phase 2: Materialization Point
 - Statistical operations: `describe()`, `corr()`
 - Any pandas-specific operation
 
-### Phase 3: Operations on Materialized DataFrame
+### Phase 3: Operations on Executed DataFrame
 
 Shows operations that work on the cached DataFrame:
 
 ```
-Phase 3: Operations on Materialized DataFrame
+Phase 3: Operations on Executed DataFrame
 ────────────────────────────────────────────────────────────────────────────────
  [4] 🔍 SQL on DataFrame: WHERE "p1_salary" > 55000
  [5] 🐼 PANDAS: rename(columns={'p1_id': 'final_id'})
@@ -108,14 +108,14 @@ Phase 1: SQL Query Building (Lazy)
  [2] 🔍 SQL: WHERE "age" > 25
      └─ lazy: True
 
-Phase 2: Materialization Point
+Phase 2: Execution Point
 ────────────────────────────────────────────────────────────────────────────────
  [3] 🔄 add_prefix('p1_')
      └─> Executes SQL query and caches result as DataFrame
          • shape: (100, 5)
          • triggers_execution: True
 
-Phase 3: Operations on Materialized DataFrame
+Phase 3: Operations on Executed DataFrame
 ────────────────────────────────────────────────────────────────────────────────
  [4] 🔍 SQL on DataFrame: WHERE "p1_salary" > 55000
      └─ on_dataframe: True
@@ -129,7 +129,7 @@ Phase 3: Operations on Materialized DataFrame
 ### Icons
 
 - 🔍 **SQL Operation**: SQL query building or execution
-- 🔄 **Materialization**: Operation that triggers query execution
+- 🔄 **Execution**: Operation that triggers query execution
 - 🐼 **Pandas Operation**: Pure pandas DataFrame operation
 - ✅ **Final State**: Shows whether result is cached or needs execution
 - 📊 **SQL Query**: Shows pending SQL query to be executed
@@ -140,12 +140,12 @@ The output ends with the final state:
 
 ```
 ────────────────────────────────────────────────────────────────────────────────
-Final State: ✅ Materialized DataFrame (cached)
+Final State: ✅ Executed DataFrame (cached)
              └─> No database query will be executed
              └─> Shape: (45, 5)
 ```
 
-Or for unmaterialized queries:
+Or for unexecuted queries:
 
 ```
 ────────────────────────────────────────────────────────────────────────────────
@@ -163,18 +163,18 @@ SELECT * FROM file('data.csv') WHERE "age" > 25 AND "salary" > 60000
 
 ### 1. Filter Early (Phase 1)
 
-✅ **Good**: Filter before materialization
+✅ **Good**: Filter before execution
 ```python
 result = (
     ds.filter(ds.age > 30)      # Phase 1: Filter 1000 rows → 100 rows
-    .add_prefix('emp_')         # Phase 2: Materialize 100 rows
+    .add_prefix('emp_')         # Phase 2: Execute 100 rows
 )
 ```
 
-❌ **Bad**: Filter after materialization
+❌ **Bad**: Filter after execution
 ```python
 result = (
-    ds.add_prefix('emp_')       # Phase 2: Materialize 1000 rows
+    ds.add_prefix('emp_')       # Phase 2: Execute 1000 rows
     .filter(ds.emp_age > 30)    # Phase 3: Filter DataFrame
 )
 ```
@@ -191,15 +191,15 @@ result.explain()
 df = result.to_df()
 ```
 
-### 3. Understand Materialization Triggers
+### 3. Understand Execution Triggers
 
-These operations trigger materialization:
+These operations trigger execution:
 - Column operations: `add_prefix()`, `add_suffix()`, `rename()`
 - Reshaping: `pivot()`, `melt()`, `stack()`, `unstack()`
 - Data cleaning: `fillna()`, `dropna()`, `replace()`
 - Statistical: `describe()`, `corr()`, `cov()`
 
-These do NOT trigger materialization (Phase 1):
+These do NOT trigger execution (Phase 1):
 - `select()`, `filter()`, `groupby()`, `orderby()`, `limit()`
 - Aggregate functions: `Count()`, `Sum()`, `Avg()`
 - Joins and subqueries
@@ -240,13 +240,13 @@ See `examples/example_explain.py` for comprehensive examples including:
 
 DataStore tracks operations internally to build the execution plan:
 - Each method call records its type, description, and metadata
-- The materialization point is detected when pandas operations are called
+- The execution point is detected when pandas operations are called
 - The execution plan is built from the operation history
 
 ### Non-Execution Guarantee
 
 The `explain()` method:
-- Never calls `execute()` or `to_df()` on unmaterialized queries
+- Never calls `execute()` or `to_df()` on unexecuted queries
 - Does not modify any data
 - Does not create side effects
 - Safe to call multiple times

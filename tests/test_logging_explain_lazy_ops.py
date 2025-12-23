@@ -36,7 +36,7 @@ def test_explain_reports_lazy_ops_in_order():
     assert select_idx < filter_idx < assign_idx < selection_idx
 
 
-def test_materialization_logs_follow_lazy_ops(caplog):
+def test_execution_logs_follow_lazy_ops(caplog):
     old_level = config.log_level
     old_format = config.log_format
 
@@ -55,7 +55,7 @@ def test_materialization_logs_follow_lazy_ops(caplog):
 
         log_text = caplog.text
 
-        assert "Starting materialization" in log_text
+        assert "Starting execution" in log_text
         assert "Lazy operations chain (3 operations)" in log_text
         assert "Executing initial SQL query" in log_text
         assert "[Pandas] Executing ColumnAssignment" in log_text
@@ -67,7 +67,7 @@ def test_materialization_logs_follow_lazy_ops(caplog):
         config.set_log_level(old_level)
 
 
-def test_materialization_logs_mixed_sql_and_pandas(caplog):
+def test_execution_logs_mixed_sql_and_pandas(caplog):
     old_level = config.log_level
     old_format = config.log_format
 
@@ -88,14 +88,14 @@ def test_materialization_logs_mixed_sql_and_pandas(caplog):
         assert "p_age_plus_1" in df.columns
 
         log_text = caplog.text
-        assert "Starting materialization" in log_text
+        assert "Starting execution" in log_text
         assert "Executing initial SQL query" in log_text
         assert "[Pandas] Executing ColumnAssignment" in log_text
         assert "[Pandas] Executing AddPrefix" in log_text
         # ORDER BY and LIMIT are now logged with [Pandas] prefix since they execute on DataFrame
         assert "ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text or "df.sort_values" in log_text
         assert "LIMIT: 3" in log_text or "LIMIT 3" in log_text or "df.head(3)" in log_text
-        assert "Materialization complete" in log_text
+        assert "Execution complete" in log_text
     finally:
         config.set_log_format(old_format)
         config.set_log_level(old_level)
@@ -124,7 +124,7 @@ def test_verbose_log_format_outputs_timestamp(caplog):
         config.set_log_level(old_level)
 
 
-def test_materialization_logs_sql_join_and_pandas(caplog):
+def test_execution_logs_sql_join_and_pandas(caplog):
     old_level = config.log_level
     old_format = config.log_format
 
@@ -153,7 +153,7 @@ def test_materialization_logs_sql_join_and_pandas(caplog):
         assert "[chDB]" in log_text  # Unified logging prefix
         assert "[Pandas] Executing ColumnAssignment" in log_text
         assert "[Pandas] Executing AddSuffix" in log_text
-        assert "Materialization complete" in log_text
+        assert "Execution complete" in log_text
     finally:
         config.set_log_format(old_format)
         config.set_log_level(old_level)

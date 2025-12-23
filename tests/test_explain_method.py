@@ -94,7 +94,7 @@ class TestExplainMethod(unittest.TestCase):
         self.assertIn("Execution Plan", output)
 
     def test_explain_shows_sql_query(self):
-        """Test that explain() shows the SQL query for unmaterialized queries."""
+        """Test that explain() shows the SQL query for unexecuted queries."""
         ds = DataStore.from_file(self.csv_file)
         result = ds.select('*').filter(ds.age > 25).filter(ds.salary > 60000)
 
@@ -162,7 +162,7 @@ class TestExplainMethod(unittest.TestCase):
         for i in range(10):
             result = result.filter(ds.age > 20)  # Same filter is OK for explain testing
 
-        # Trigger materialization
+        # Trigger execution
         result = result.add_prefix('p1_')
 
         # 40 mixed operations (SQL + Pandas)
@@ -174,7 +174,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f'WHERE "p1_age" > {20 + i}',
                     'details': {'on_dataframe': True},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
             result._operation_history.append(
@@ -183,7 +183,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f"rename(id_{i})",
                     'details': {'shape': (2, 4)},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
 
@@ -195,7 +195,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f"add_suffix('_s{i}')",
                     'details': {'shape': (2, 4)},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
             result._operation_history.append(
@@ -204,7 +204,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f"add_prefix('p{i}_')",
                     'details': {'shape': (2, 4)},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
 
@@ -231,10 +231,10 @@ class TestExplainMethod(unittest.TestCase):
         for i in range(25):
             result = result.filter(ds.age > 20 + i)
 
-        # Materialization
+        # Execution
         result = result.add_prefix('mid_')
 
-        # 25 more operations after materialization (added to history)
+        # 25 more operations after execution (added to history)
         for i in range(25):
             result._operation_history.append(
                 {
@@ -242,13 +242,13 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f'WHERE "mid_age" > {20 + i}',
                     'details': {'on_dataframe': True},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
 
         output = result.explain()
         self.assertIn("Execution Plan", output)
-        # Should have many operations (data source + select + 25 filters + materialization + 25 post-mat)
+        # Should have many operations (data source + select + 25 filters + execution + 25 post-mat)
         self.assertIn("[25]", output)  # Should have operation #25
 
     def test_explain_extreme_alternating_sql_pandas(self):
@@ -259,7 +259,7 @@ class TestExplainMethod(unittest.TestCase):
         result = ds.select('*').filter(ds.age > 25)
 
         # Simulate alternating operations without executing
-        # First pandas triggers materialization
+        # First pandas triggers execution
         result = result.add_prefix('p0_')
 
         # Add 24 more alternating operations to history (48 ops total)
@@ -270,7 +270,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f"add_prefix('p{i}_')",
                     'details': {'shape': (2, 4), 'on_cached_df': True},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
             result._operation_history.append(
@@ -279,15 +279,15 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f'WHERE "p{i}_age" > 20',
                     'details': {'on_dataframe': True},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
 
         output = result.explain()
 
-        # Should show correct materialization and subsequent operations
-        self.assertIn("Materialization Point", output)
-        self.assertIn("Post-Materialization Operations", output)
+        # Should show correct execution and subsequent operations
+        self.assertIn("Execution Point", output)
+        self.assertIn("Post-Execution Operations", output)
 
         # Verify has 50+ operations
         self.assertIn("[50]", output)
@@ -305,10 +305,10 @@ class TestExplainMethod(unittest.TestCase):
         for i in range(50):
             result = result.filter(ds.age > 20 + (i % 10))
 
-        # Trigger materialization
+        # Trigger execution
         result = result.add_prefix('p1_')
 
-        # 50 more operations after materialization (added to history)
+        # 50 more operations after execution (added to history)
         for i in range(50):
             result._operation_history.append(
                 {
@@ -316,7 +316,7 @@ class TestExplainMethod(unittest.TestCase):
                     'description': f'WHERE "p1_age" > {20 + (i % 10)}',
                     'details': {'on_dataframe': True},
                     'is_on_dataframe': True,
-                    'materialized_at_call': True,
+                    'executed_at_call': True,
                 }
             )
 

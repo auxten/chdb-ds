@@ -236,7 +236,7 @@ ds['age_group'] = ds['age'] // 10 * 10
 > **⚠️ Important: Lazy Column Assignment**
 > Unlike pandas, DataStore is a lazy evaluation engine.
 > Column assignments using `ds['col'] = ...` are **lazy** - they are recorded but not executed immediately.
-> The operations are applied when you materialize the data with `to_df()`, `execute()`, or access properties like `shape`,
+> The operations are applied when you execute the data with `to_df()`, `execute()`, or access properties like `shape`,
 > or trigger __repr__() or __str__() like `print(ds)` or just `ds` in IPython or Jupyter Notebook.
 >
 > ```python
@@ -606,7 +606,7 @@ All these methods return a new DataStore instance (immutable) without executing 
 
 ### 2. Lazy Operations (Recorded)
 
-Column assignments are **recorded** and applied during materialization:
+Column assignments are **recorded** and applied during execution:
 
 ```python
 ds['new_col'] = ds['old_col'] * 2    # Recorded, not executed
@@ -649,7 +649,7 @@ result = (ds
     .limit(100)
     .to_df())  # Single query execution
 
-# ❌ Bad: Materializes early, filters in pandas (slow)
+# ❌ Bad: Executes early, filters in pandas (slow)
 df = ds.to_df()  # Loads ALL data into memory
 df = df[df['age'] > 18]
 df = df[df['city'] == 'NYC']

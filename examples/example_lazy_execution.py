@@ -229,14 +229,14 @@ def example_7_column_selection():
 
 
 # =============================================================================
-# Example 8: Explicit Materialization
+# Example 8: Explicit Execution
 # =============================================================================
 
 
-def example_8_explicit_materialize():
-    """Demonstrate explicit materialization with to_df()."""
+def example_8_explicit_execute():
+    """Demonstrate explicit execution with to_df()."""
     print("\n" + "=" * 80)
-    print("Example 8: Explicit Materialization")
+    print("Example 8: Explicit Execution")
     print("=" * 80)
 
     nat = ds.uri("https://shell.duckdb.org/data/tpch/0_01/parquet/nation.parquet")
@@ -247,11 +247,11 @@ def example_8_explicit_materialize():
 
     print("✓ Operations recorded (not executed)")
 
-    # Explicit materialization
-    print("\nCalling to_df() to materialize...")
+    # Explicit execution
+    print("\nCalling to_df() to execute...")
     df = nat.to_df()
 
-    print(f"✓ Materialized to pandas DataFrame: {df.shape}")
+    print(f"✓ Executed to pandas DataFrame: {df.shape}")
     print(df.head())
 
     # Now df is a regular pandas DataFrame
@@ -339,7 +339,7 @@ if __name__ == "__main__":
         example_5_join_with_lazy,
         example_6_chained_operations,
         example_7_column_selection,
-        example_8_explicit_materialize,
+        example_8_explicit_execute,
         example_9_performance,
         example_10_debugging,
     ]

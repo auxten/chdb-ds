@@ -103,7 +103,7 @@ class TestColumnAssignment:
         # Create DataStore from DataFrame
         ds = DataStore('chdb')
         ds._cached_df = df.copy()
-        ds._materialized = True
+        ds._executed = True
         ds._cache_invalidated = False
 
         # Create a pandas Series
@@ -125,7 +125,7 @@ class TestColumnAssignment:
         # Create DataStore from DataFrame
         ds = DataStore('chdb')
         ds._cached_df = df.copy()
-        ds._materialized = True
+        ds._executed = True
         ds._cache_invalidated = False
 
         # Create a list of values

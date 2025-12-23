@@ -57,10 +57,10 @@ def main():
         
         result1 = (ds
             .filter(ds.age > 28)                          # SQL: WHERE age > 28
-            .add_prefix('emp_')                           # Pandas: materialize and rename
+            .add_prefix('emp_')                           # Pandas: execute and rename
             .filter(ds.emp_salary > 65000))               # SQL on DataFrame!
         
-        print(f"\nMaterialized: {result1._materialized}")
+        print(f"\nExecuted: {result1._executed}")
         print(f"Result:\n{result1.to_df()}")
         
         # ========== Example 2: Pandas → SQL → Pandas ==========
@@ -74,7 +74,7 @@ def main():
         print("    .sort_values('salary', ascending=False)")
         
         result2 = (ds
-            .rename(columns={'id': 'ID', 'name': 'NAME'})  # Pandas: materialize
+            .rename(columns={'id': 'ID', 'name': 'NAME'})  # Pandas: execute
             .filter(ds.ID > 5)                            # SQL on DataFrame
             .sort_values('salary', ascending=False))      # Pandas on DataFrame
         
@@ -96,7 +96,7 @@ def main():
         result3 = (ds
             .select('*')                                  # SQL 1
             .filter(ds.active == 1)                       # SQL 2
-            .assign(bonus=lambda x: x['salary'] * 0.1)   # Pandas (materializes)
+            .assign(bonus=lambda x: x['salary'] * 0.1)   # Pandas (executes)
             .filter(ds.bonus > 6000)                      # SQL 3 on DataFrame!
             .add_prefix('final_')                         # Pandas
             .select('final_id', 'final_name', 'final_salary', 'final_bonus'))  # SQL 4 on DataFrame!
@@ -159,22 +159,22 @@ def main():
         print("Example 6: Execution Model Verification")
         print("=" * 80)
         
-        # Track materialization state
+        # Track execution state
         ds1 = ds.select('*')
-        print(f"\n1. After select(): materialized={ds1._materialized}")
+        print(f"\n1. After select(): executed={ds1._executed}")
         
         ds2 = ds1.filter(ds.age > 30)
-        print(f"2. After SQL filter(): materialized={ds2._materialized}")
+        print(f"2. After SQL filter(): executed={ds2._executed}")
         
         ds3 = ds2.add_prefix('x_')
-        print(f"3. After add_prefix(): materialized={ds3._materialized} ← Materializes!")
+        print(f"3. After add_prefix(): executed={ds3._executed} ← Executes!")
         
         ds4 = ds3.filter(ds.x_age > 32)
-        print(f"4. After another filter(): materialized={ds4._materialized}")
+        print(f"4. After another filter(): executed={ds4._executed}")
         print(f"   (SQL executed on DataFrame using chDB!)")
         
         ds5 = ds4.fillna(0)
-        print(f"5. After fillna(): materialized={ds5._materialized}")
+        print(f"5. After fillna(): executed={ds5._executed}")
         
         # ========== Summary ==========
         print("\n" + "=" * 80)
@@ -189,10 +189,10 @@ def main():
         print("  6. Optimal performance through lazy SQL + cached DataFrames")
         
         print("\n📊 How it works:")
-        print("  • SQL operations before materialization: Build query (lazy)")
+        print("  • SQL operations before execution: Build query (lazy)")
         print("  • First pandas operation: Execute SQL, cache result (eager)")
-        print("  • SQL operations after materialization: Use chDB on DataFrame")
-        print("  • Pandas operations after materialization: Work on cache")
+        print("  • SQL operations after execution: Use chDB on DataFrame")
+        print("  • Pandas operations after execution: Work on cache")
         
         print("\n🚀 Result: The most flexible data manipulation framework!")
         print("=" * 80)

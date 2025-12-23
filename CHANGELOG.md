@@ -48,11 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - This maintains pandas API expectations (e.g., `df['column']` returns Series)
 - **Mixed Execution Engine**: Revolutionary execution model supporting **arbitrary mixing** of SQL and pandas operations
   - SQL operations build queries lazily (no execution)
-  - First pandas operation triggers SQL execution and materializes result
-  - **SQL operations after materialization use chDB's `Python()` table function** to execute SQL on cached DataFrame
+  - First pandas operation triggers SQL execution and executes result
+  - **SQL operations after execution use chDB's `Python()` table function** to execute SQL on cached DataFrame
   - Subsequent pandas operations work on cached DataFrame
   - Enables patterns like: SQL → Pandas → SQL → Pandas → SQL (any order!)
-  - `to_df()` respects materialization state (returns cached df when appropriate)
+  - `to_df()` respects execution state (returns cached df when appropriate)
   - Fixes critical issue where `ds.add_prefix("x_").to_df()` now works correctly
   - See [Mixed Execution Engine Guide](docs/MIXED_EXECUTION_ENGINE.md) for details
 

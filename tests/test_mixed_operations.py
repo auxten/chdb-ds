@@ -140,8 +140,8 @@ class TestMixedOperations(unittest.TestCase):
         df = ds2.to_df()
         self.assertIn('col_id', df.columns)
 
-    def test_materialized_datastore_properties(self):
-        """Test that materialized DataStore properties work correctly."""
+    def test_executed_datastore_properties(self):
+        """Test that executed DataStore properties work correctly."""
         ds = DataStore.from_file(self.csv_file)
 
         # Apply pandas operation
@@ -158,7 +158,7 @@ class TestMixedOperations(unittest.TestCase):
         self.assertNotIn('id', cols)
 
     def test_multiple_to_df_calls(self):
-        """Test that multiple to_df() calls on materialized DataStore return same data."""
+        """Test that multiple to_df() calls on executed DataStore return same data."""
         ds = DataStore.from_file(self.csv_file)
 
         # Apply pandas transformation

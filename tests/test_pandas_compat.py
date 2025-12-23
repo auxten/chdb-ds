@@ -266,8 +266,8 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertIsInstance(result, ColumnExpr)  # Returns ColumnExpr
         self.assertIsInstance(result._expr, Field)  # Wrapping a Field
 
-        # ColumnExpr materializes and displays actual values like Series
-        self.assertIsInstance(result._materialize(), pd.Series)
+        # ColumnExpr executes and displays actual values like Series
+        self.assertIsInstance(result._execute(), pd.Series)
 
         # To get actual Series, use to_df() first (still works)
         series = self.ds.to_df()['name']

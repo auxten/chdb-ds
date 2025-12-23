@@ -611,7 +611,7 @@ class TestExtremeMixedPipeline:
         # Step 25: [Pandas] Assign: final_marker
         ds["final_marker"] = ds["step_22"] * 0 + 1
 
-        # Materialize and verify
+        # Execute and verify
         df = ds.to_df()
 
         # Assertions
@@ -651,10 +651,10 @@ class TestExtremeMixedPipeline:
         ds = ds.sort("age", ascending=False)  # Step 5
         ds = ds.limit(10)  # Step 6
 
-        # Step 7: Materialize to get joined columns
+        # Step 7: Execute to get joined columns
         df = ds.to_df()
 
-        # Steps 8-25: Pure pandas operations on materialized data
+        # Steps 8-25: Pure pandas operations on executed data
         if len(df) > 0 and "amount" in df.columns:
             df["order_value"] = df["amount"] * df["quantity"]  # Step 8
             df["total_cost"] = df["order_value"] + df["price"]  # Step 9
@@ -716,7 +716,7 @@ class TestExtremeMixedPipeline:
         2. ds = ds.join(orders, on="user_id") -> adds to self._joins
         3. ds["computed"] = ds["amount"] * 2  -> records LazyColumnAssignment
 
-        During materialization:
+        During execution:
         - Phase 1 SQL only processes ops BEFORE first LazyColumnAssignment
         - So the SELECT clause is built without knowing about the join
         - The JOIN IS included (from self._joins), but SELECT may limit columns
@@ -793,7 +793,7 @@ class TestExtremeMixedPipeline:
         ds["step_29"] = ds["step_28"] * 2  # Step 29
         ds["final_step_30"] = ds["step_28"] * 0 + 30  # Step 30
 
-        # Materialize
+        # Execute
         df = ds.to_df()
 
         # Assertions
