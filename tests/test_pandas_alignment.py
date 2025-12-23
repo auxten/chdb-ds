@@ -233,7 +233,7 @@ class TestAggregation:
         np.testing.assert_array_almost_equal(result, expected)
 
     def test_groupby_size(self, test_data):
-        """GroupBy with size - returns LazyGroupBySize (pd.Series compatible)."""
+        """GroupBy with size - returns LazySeries (pd.Series compatible)."""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 

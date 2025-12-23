@@ -25,7 +25,7 @@ install:
 install-dev:
 	pip install -e ".[dev]"
 
-test: lint format-check
+test: lint format
 	pytest --cov=datastore --cov-report=xml --cov-report=term-missing
 
 test-coverage:

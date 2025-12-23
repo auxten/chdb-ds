@@ -8,7 +8,7 @@ import unittest
 import pandas as pd
 from datastore import DataStore, Field, Count, Sum
 from datastore.exceptions import QueryError
-from datastore.lazy_result import LazyGroupBySize
+from datastore.lazy_result import LazySeries
 
 
 class SelectTests(unittest.TestCase):
@@ -427,11 +427,11 @@ class GroupByTests(unittest.TestCase):
         self.assertEqual(2, len(result))
 
     def test_groupby__size(self):
-        """Test GROUP BY size() method - returns LazyGroupBySize (pd.Series compatible)"""
+        """Test GROUP BY size() method - returns LazySeries (pd.Series compatible)"""
         result = self.ds.groupby("foo").size()
 
-        # size() returns LazyGroupBySize, not DataStore
-        self.assertIsInstance(result, LazyGroupBySize)
+        # size() returns LazySeries, not DataStore
+        self.assertIsInstance(result, LazySeries)
 
         # Natural trigger via index access - returns pd.Series
         self.assertEqual(result["A"], 2)  # Two rows with foo="A"
@@ -443,7 +443,7 @@ class GroupByTests(unittest.TestCase):
         df = pd.DataFrame({"category": ["X", "X", "Y", "Y", "Y"], "value": [1, None, 3, None, None]})  # Some NaN values
         ds_df = DataStore.from_dataframe(df)
 
-        size_result = ds_df.groupby("category").size()  # Returns LazyGroupBySize (pd.Series compatible)
+        size_result = ds_df.groupby("category").size()  # Returns LazySeries (pd.Series compatible)
         count_result = ds_df.groupby("category").count()  # Returns lazy DataStore
         expected_count = df.groupby("category").count()
 
@@ -462,8 +462,8 @@ class GroupByTests(unittest.TestCase):
         # Use pandas-style list argument: groupby(["a", "b"])
         result = ds.groupby(["a", "b"]).size()
 
-        # Returns LazyGroupBySize (pd.Series compatible with MultiIndex)
-        self.assertIsInstance(result, LazyGroupBySize)
+        # Returns LazySeries (pd.Series compatible with MultiIndex)
+        self.assertIsInstance(result, LazySeries)
         # Natural trigger via index access
         self.assertEqual(result[("x", "1")], 2)
         self.assertEqual(result[("x", "2")], 1)
@@ -477,8 +477,8 @@ class GroupByTests(unittest.TestCase):
         ds_result = ds.groupby("dept").size()
         pd_result = df.groupby("dept").size()
 
-        # Natural trigger via == comparison (__eq__ uses .equals())
-        assert ds_result == pd_result
+        # Natural trigger via .equals() for Series equality comparison
+        assert ds_result.equals(pd_result)
 
     def test_groupby__size_single_group(self):
         """Test size() with all rows in single group"""
@@ -499,8 +499,8 @@ class GroupByTests(unittest.TestCase):
         # Use varargs style (also supported)
         result = ds.groupby("a", "b").size()
 
-        # Returns LazyGroupBySize (pd.Series compatible with MultiIndex)
-        self.assertIsInstance(result, LazyGroupBySize)
+        # Returns LazySeries (pd.Series compatible with MultiIndex)
+        self.assertIsInstance(result, LazySeries)
         # Natural trigger via index access
         self.assertEqual(result[("x", "1")], 1)
         self.assertEqual(result[("x", "2")], 1)
