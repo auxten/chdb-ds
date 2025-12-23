@@ -1,0 +1,39 @@
+name,category,complexity,compatible,pandas_error,datastore_error,notes
+shape,Properties,basic,True,,,
+size,Properties,basic,True,,,
+columns,Properties,basic,True,,,
+dtypes,Properties,basic,False,,,Comparison error: unsupported operand type(s) for -: 'numpy.dtypes.Int64DType' and 'numpy.dtypes.Int64DType'
+empty,Properties,basic,True,,,
+mean(),Statistics,basic,True,,,
+median(),Statistics,basic,True,,,
+sum(),Statistics,basic,True,,,
+std(),Statistics,basic,True,,,
+min(),Statistics,basic,True,,,
+max(),Statistics,basic,True,,,
+count(),Statistics,basic,True,,,
+describe(),Statistics,basic,True,,,
+head(),Selection,basic,True,,,
+tail(),Selection,basic,True,,,
+df['col'],Selection,basic,False,,,Comparison error: unsupported operand type(s) for -: 'str' and 'str'
+"df[['col1', 'col2']]",Selection,basic,True,,,
+nlargest(),Selection,basic,True,,,
+nsmallest(),Selection,basic,True,,,
+drop(),Manipulation,basic,True,,,
+rename(),Manipulation,basic,True,,,
+sort_values(),Manipulation,basic,True,,,
+drop_duplicates(),Manipulation,basic,True,,,
+assign(),Manipulation,intermediate,True,,,
+astype(),Manipulation,basic,True,,,
+isnull(),Missing Data,basic,True,,,
+dropna(),Missing Data,basic,True,,,
+fillna(),Missing Data,basic,True,,,
+agg(),Aggregation,intermediate,True,,,
+groupby().sum(),Aggregation,intermediate,False,,,
+groupby().agg(),Aggregation,intermediate,True,,,
+to_dict(),I/O,basic,True,,,
+to_numpy(),I/O,basic,True,,,
+str.upper(),String Ops,intermediate,False,,,"Comparison error: operands could not be broadcast together with shapes (5,) (100,) "
+str.lower(),String Ops,intermediate,False,,,"Comparison error: operands could not be broadcast together with shapes (5,) (100,) "
+str.contains(),String Ops,intermediate,True,,,
+dt.year,DateTime,intermediate,False,,,"Comparison error: operands could not be broadcast together with shapes (5,) (100,) "
+dt.month,DateTime,intermediate,False,,,"Comparison error: operands could not be broadcast together with shapes (5,) (100,) "
