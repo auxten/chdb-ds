@@ -375,16 +375,18 @@ class TestColumnExprNullMethods(unittest.TestCase):
         ds = self.create_ds()
         result = ds['value'].notnull().astype(int)
         expected = self.df['value'].notnull().astype(int)
-        # Compare with pandas result (this works when there's no NaN in data)
-        pd.testing.assert_series_equal(result, expected, check_names=False)
+        # Compare via .values and .index to trigger lazy execution
+        np.testing.assert_array_equal(result.values, expected.values)
+        self.assertTrue(result.index.equals(expected.index))
 
     def test_isnull_astype_int_matches_pandas(self):
         """Test isnull().astype(int) matches pandas behavior (no NaN in data)."""
         ds = self.create_ds()
         result = ds['value'].isnull().astype(int)
         expected = self.df['value'].isnull().astype(int)
-        # Compare with pandas result (this works when there's no NaN in data)
-        pd.testing.assert_series_equal(result, expected, check_names=False)
+        # Compare via .values and .index to trigger lazy execution
+        np.testing.assert_array_equal(result.values, expected.values)
+        self.assertTrue(result.index.equals(expected.index))
 
     def test_notnull_condition_for_filtering(self):
         """Test notnull_condition() returns Condition for filtering."""
@@ -445,18 +447,20 @@ class TestColumnExprConditionMethods(unittest.TestCase):
     def test_isnull_matches_pandas(self):
         """Test that isnull() result matches pandas when materialized."""
         ds = self.create_ds()
-        # Materialize and compare with pandas
+        # Materialize and compare with pandas via .values/.index
         ds_result = ds['nullable'].isnull().astype(int)
         pd_result = self.df['nullable'].isnull().astype(int)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        self.assertTrue(ds_result.index.equals(pd_result.index))
 
     def test_notnull_matches_pandas(self):
         """Test that notnull() result matches pandas when materialized."""
         ds = self.create_ds()
-        # Materialize and compare with pandas
+        # Materialize and compare with pandas via .values/.index
         ds_result = ds['nullable'].notnull().astype(int)
         pd_result = self.df['nullable'].notnull().astype(int)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        self.assertTrue(ds_result.index.equals(pd_result.index))
 
     def test_isnull_generates_sql(self):
         """Test that isnull() generates proper SQL with isNull function."""
@@ -676,11 +680,10 @@ class TestColumnExprMathFunctions(unittest.TestCase):
     def test_fillna_with_aggregate_expression(self):
         """Test fillna() with aggregate expression like mean()."""
         ds = self.create_ds()
-        # fillna with mean should work
+        # fillna with mean should work - returns LazySeries
         result = ds['value'].fillna(ds['value'].mean())
-        # Now returns pandas Series (always uses pandas fillna)
-        self.assertIsInstance(result, pd.Series)
-        self.assertEqual(len(result), 5)
+        # Trigger execution via .values and check length
+        self.assertEqual(len(result.values), 5)
 
 
 class TestColumnExprFillna(unittest.TestCase):
@@ -699,8 +702,8 @@ class TestColumnExprFillna(unittest.TestCase):
         result = ds['Cabin'].fillna('Unknown')
         expected = df['Cabin'].fillna('Unknown')
 
-        self.assertIsInstance(result, pd.Series)
-        self.assertEqual(list(result), list(expected))
+        # LazySeries - use .values to trigger execution
+        self.assertEqual(list(result.values), list(expected.values))
 
     def test_fillna_numeric_column(self):
         """Test fillna() on numeric column with NaN values."""
@@ -810,10 +813,11 @@ class TestColumnExprDisplayBehavior(unittest.TestCase):
         self.assertEqual(len(values), 2)
 
     def test_mode_returns_series(self):
-        """Test mode() returns a pandas Series."""
+        """Test mode() returns LazySeries that provides values."""
         ds = self.create_ds()
         result = ds['name'].mode()
-        self.assertIsInstance(result, pd.Series)
+        # LazySeries provides .values property that triggers execution
+        self.assertIsNotNone(result.values)
 
     def test_mode_subscript(self):
         """Test mode()[0] pattern - regression test for TypeError."""
@@ -972,7 +976,7 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
 
 
 class TestLazySlice(unittest.TestCase):
-    """Test LazySlice class for lazy head()/tail() operations."""
+    """Test LazySeries class for lazy head()/tail() operations."""
 
     def setUp(self):
         """Set up test fixtures."""
@@ -989,28 +993,28 @@ class TestLazySlice(unittest.TestCase):
         ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
         return ds
 
-    def test_column_head_returns_lazy_slice(self):
-        """Test that ColumnExpr.head() returns LazySlice."""
-        from datastore.lazy_result import LazySlice
+    def test_column_head_returns_lazy_series_method(self):
+        """Test that ColumnExpr.head() returns LazySeries."""
+        from datastore.lazy_result import LazySeries
 
         ds = self.create_ds()
         result = ds['value'].head(5)
 
-        # Should return LazySlice, not pd.Series
-        self.assertIsInstance(result, LazySlice)
+        # Should return LazySeries, not pd.Series
+        self.assertIsInstance(result, LazySeries)
 
-    def test_column_tail_returns_lazy_slice(self):
-        """Test that ColumnExpr.tail() returns LazySlice."""
-        from datastore.lazy_result import LazySlice
+    def test_column_tail_returns_lazy_series_method(self):
+        """Test that ColumnExpr.tail() returns LazySeries."""
+        from datastore.lazy_result import LazySeries
 
         ds = self.create_ds()
         result = ds['value'].tail(5)
 
-        # Should return LazySlice, not pd.Series
-        self.assertIsInstance(result, LazySlice)
+        # Should return LazySeries, not pd.Series
+        self.assertIsInstance(result, LazySeries)
 
-    def test_lazy_slice_materializes_on_repr(self):
-        """Test that LazySlice materializes when displayed."""
+    def test_lazy_series_method_materializes_on_repr(self):
+        """Test that LazySeries materializes when displayed."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
@@ -1020,7 +1024,7 @@ class TestLazySlice(unittest.TestCase):
         # Should show actual values
         self.assertIn('10', repr_str)
 
-    def test_lazy_slice_to_pandas(self):
+    def test_lazy_series_method_to_pandas(self):
         """Test explicit materialization with to_pandas()."""
         ds = self.create_ds()
         result = ds['value'].head(3).to_pandas()
@@ -1029,21 +1033,21 @@ class TestLazySlice(unittest.TestCase):
         self.assertIsInstance(result, pd.Series)
         self.assertEqual(len(result), 3)
 
-    def test_lazy_slice_chainable(self):
-        """Test that LazySlice.head() and tail() return new LazySlice."""
-        from datastore.lazy_result import LazySlice
+    def test_lazy_series_method_chainable(self):
+        """Test that LazySeries.head() and tail() return new LazySeries."""
+        from datastore.lazy_result import LazySeries
 
         ds = self.create_ds()
         result = ds['value'].head(5).tail(2)
 
-        # Should still be LazySlice
-        self.assertIsInstance(result, LazySlice)
+        # Should still be LazySeries
+        self.assertIsInstance(result, LazySeries)
 
         # Should work correctly
         final = result.to_pandas()
         self.assertEqual(len(final), 2)
 
-    def test_lazy_slice_iteration(self):
+    def test_lazy_series_method_iteration(self):
         """Test iteration triggers materialization."""
         ds = self.create_ds()
         result = ds['value'].head(3)
@@ -1052,7 +1056,7 @@ class TestLazySlice(unittest.TestCase):
         values = list(result)
         self.assertEqual(len(values), 3)
 
-    def test_lazy_slice_indexing(self):
+    def test_lazy_series_method_indexing(self):
         """Test indexing triggers materialization."""
         ds = self.create_ds()
         result = ds['value'].head(5)
@@ -1061,14 +1065,14 @@ class TestLazySlice(unittest.TestCase):
         first_value = result[0]
         self.assertEqual(first_value, 10)
 
-    def test_lazy_slice_len(self):
+    def test_lazy_series_method_len(self):
         """Test len() triggers materialization."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
         self.assertEqual(len(result), 3)
 
-    def test_lazy_slice_properties(self):
+    def test_lazy_series_method_properties(self):
         """Test properties like values, index, dtype."""
         ds = self.create_ds()
         result = ds['value'].head(3)
@@ -1078,8 +1082,8 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(len(result.index), 3)
         self.assertIsNotNone(result.dtype)
 
-    def test_lazy_slice_arithmetic(self):
-        """Test arithmetic on LazySlice."""
+    def test_lazy_series_method_arithmetic(self):
+        """Test arithmetic on LazySeries."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
@@ -1087,9 +1091,9 @@ class TestLazySlice(unittest.TestCase):
         doubled = result * 2
         self.assertEqual(list(doubled), [20, 40, 60])
 
-    def test_lazy_aggregate_head_returns_lazy_slice(self):
-        """Test that LazyAggregate.head() returns LazySlice."""
-        from datastore.lazy_result import LazySlice
+    def test_lazy_aggregate_head_returns_lazy_series_method(self):
+        """Test that LazyAggregate.head() returns LazySeries."""
+        from datastore.lazy_result import LazySeries
         from datastore.column_expr import LazyAggregate
 
         ds = self.create_ds()
@@ -1098,25 +1102,25 @@ class TestLazySlice(unittest.TestCase):
         # Should be LazyAggregate
         self.assertIsInstance(agg_result, LazyAggregate)
 
-        # head() should return LazySlice
+        # head() should return LazySeries
         head_result = agg_result.head(3)
-        self.assertIsInstance(head_result, LazySlice)
+        self.assertIsInstance(head_result, LazySeries)
 
         # Materialized result should have correct length
         self.assertEqual(len(head_result), 3)
 
-    def test_lazy_aggregate_tail_returns_lazy_slice(self):
-        """Test that LazyAggregate.tail() returns LazySlice."""
-        from datastore.lazy_result import LazySlice
+    def test_lazy_aggregate_tail_returns_lazy_series_method(self):
+        """Test that LazyAggregate.tail() returns LazySeries."""
+        from datastore.lazy_result import LazySeries
 
         ds = self.create_ds()
         result = ds.groupby('category')['value'].sum().tail(2)
 
-        self.assertIsInstance(result, LazySlice)
+        self.assertIsInstance(result, LazySeries)
         self.assertEqual(len(result), 2)
 
-    def test_lazy_slice_on_scalar_aggregate(self):
-        """Test LazySlice on scalar aggregate (no groupby)."""
+    def test_lazy_series_method_on_scalar_aggregate(self):
+        """Test LazySeries on scalar aggregate (no groupby)."""
         ds = self.create_ds()
         result = ds['value'].mean().head(5)
 
@@ -1125,8 +1129,8 @@ class TestLazySlice(unittest.TestCase):
         expected = self.df['value'].mean()
         self.assertAlmostEqual(float(result), expected)
 
-    def test_lazy_slice_aggregations(self):
-        """Test calling aggregation methods on LazySlice."""
+    def test_lazy_series_method_aggregations(self):
+        """Test calling aggregation methods on LazySeries."""
         ds = self.create_ds()
         slice_result = ds['value'].head(5)
 

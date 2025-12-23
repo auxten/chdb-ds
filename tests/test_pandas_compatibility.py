@@ -230,16 +230,16 @@ class TestDataTransformation:
         """Apply function to column."""
         pd_result = pd_df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)
         ds_result = ds_df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)
-        # apply returns pandas Series
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_map_values(self, pd_df, ds_df):
         """Map values."""
         mapping = {'HR': 1, 'IT': 2, 'Finance': 3}
         pd_result = pd_df['department'].map(mapping)
         ds_result = ds_df['department'].map(mapping)
-        # map returns pandas Series
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_rename_columns(self, pd_df, ds_df):
         """Rename columns."""
@@ -251,8 +251,8 @@ class TestDataTransformation:
         """Convert type (astype)."""
         pd_result = pd_df['age'].astype(str)
         ds_result = ds_df['age'].astype(str)
-        # astype returns pandas Series
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_add_new_column(self, pd_df, ds_df):
         """Add new column."""

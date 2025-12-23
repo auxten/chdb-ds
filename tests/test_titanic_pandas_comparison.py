@@ -235,11 +235,11 @@ class TitanicPandasComparisonTest(unittest.TestCase):
         pd_df = self.pd_df.copy()
         pd_df["FamilySize"] = pd_df["SibSp"] + pd_df["Parch"] + 1
 
-        # Get head(5) directly - LazyAggregate.head() returns LazySlice
+        # Get head(5) directly - LazyAggregate.head() returns LazySeries
         ds_head = ds.groupby("FamilySize")["Survived"].mean().head(5)
         pd_head = pd_df.groupby("FamilySize")["Survived"].mean().head(5)
 
-        # Use equals() method - works with LazySlice!
+        # Use equals() method - works with LazySeries!
         self.assertTrue(ds_head.equals(pd_head), "groupby().mean().head(5) results should be equal")
 
 
@@ -307,7 +307,7 @@ class TestOrderSensitiveOperations(unittest.TestCase):
         ds_full = ds.groupby("FamilySize")["Survived"].mean()
         pd_full = pd_df.groupby("FamilySize")["Survived"].mean()
 
-        # head(3) - LazySlice also has equals() method
+        # head(3) - LazySeries also has equals() method
         ds_head = ds_full.head(3)
         pd_head = pd_full.head(3)
 
