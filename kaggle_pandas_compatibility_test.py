@@ -295,17 +295,37 @@ def run_tests():
     )
 
     # Test 12: loc indexing
+    def test_loc():
+        if not hasattr(df_ds, 'loc'):
+            return None
+        result = df_ds.loc[0:2, ['A', 'B']]
+        # If result is already a pandas DataFrame, return it directly
+        if isinstance(result, pd.DataFrame):
+            return result
+        # Otherwise, try to convert it
+        return result.to_pandas() if hasattr(result, 'to_pandas') else result
+
     tester.test(
         "3.3 loc - select rows by label",
         lambda: df_pandas.loc[0:2, ['A', 'B']],
-        lambda: df_ds.loc[0:2, ['A', 'B']].to_pandas() if hasattr(df_ds, 'loc') else None
+        test_loc
     )
 
     # Test 13: iloc indexing
+    def test_iloc():
+        if not hasattr(df_ds, 'iloc'):
+            return None
+        result = df_ds.iloc[0:2, 0:2]
+        # If result is already a pandas DataFrame, return it directly
+        if isinstance(result, pd.DataFrame):
+            return result
+        # Otherwise, try to convert it
+        return result.to_pandas() if hasattr(result, 'to_pandas') else result
+
     tester.test(
         "3.4 iloc - select rows by position",
         lambda: df_pandas.iloc[0:2, 0:2],
-        lambda: df_ds.iloc[0:2, 0:2].to_pandas() if hasattr(df_ds, 'iloc') else None
+        test_iloc
     )
 
     # ========================================================================
