@@ -71,15 +71,19 @@ def na_text_df_data():
 @pytest.fixture
 def train_test_csv_files():
     """Create temporary train and test CSV files for loading tests."""
-    train_data = pd.DataFrame({
-        'id': [1, 2, 3, 4, 5],
-        'text': ['Hello world', 'Machine learning', 'Deep learning', 'NLP tasks', 'Transformers'],
-        'label': [0, 1, 1, 0, 1],
-    })
-    test_data = pd.DataFrame({
-        'id': [6, 7, 8],
-        'text': ['Test sentence', 'Another test', 'Final test'],
-    })
+    train_data = pd.DataFrame(
+        {
+            'id': [1, 2, 3, 4, 5],
+            'text': ['Hello world', 'Machine learning', 'Deep learning', 'NLP tasks', 'Transformers'],
+            'label': [0, 1, 1, 0, 1],
+        }
+    )
+    test_data = pd.DataFrame(
+        {
+            'id': [6, 7, 8],
+            'text': ['Test sentence', 'Another test', 'Final test'],
+        }
+    )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         train_path = os.path.join(tmpdir, 'train_llm.csv')
@@ -359,4 +363,3 @@ class TestSamplingAndSplitting:
             ds_result = ds_result.to_pandas()
 
         pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
-
