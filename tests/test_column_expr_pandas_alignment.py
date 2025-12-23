@@ -429,16 +429,22 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         return ds
 
     def test_isin_returns_condition(self):
-        """Test that isin() returns Condition with IN."""
+        """Test that isin() returns LazyCondition with IN SQL support."""
         ds = self.create_ds()
         result = ds['category'].isin(['A', 'B'])
-        self.assertIn('IN', str(result))
+        # LazyCondition has to_sql() method for SQL generation
+        self.assertIn('IN', result.to_sql())
+        # Also verify it can be executed as boolean Series
+        self.assertEqual(len(result.to_pandas()), len(self.df))
 
     def test_between_returns_condition(self):
-        """Test that between() returns Condition with BETWEEN."""
+        """Test that between() returns LazyCondition with BETWEEN SQL support."""
         ds = self.create_ds()
         result = ds['value'].between(100, 200)
-        self.assertIn('BETWEEN', str(result))
+        # LazyCondition has to_sql() method for SQL generation
+        self.assertIn('BETWEEN', result.to_sql())
+        # Also verify it can be executed as boolean Series
+        self.assertEqual(len(result.to_pandas()), len(self.df))
 
     def test_like_returns_condition(self):
         """Test that like() returns Condition with LIKE."""
