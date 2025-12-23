@@ -84,8 +84,8 @@ class TestDataSelection:
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds['name']
-        # ColumnExpr uses _materialize() to get the Series
-        result_series = result._materialize() if hasattr(result, '_materialize') else result
+        # ColumnExpr uses _execute() to get the Series
+        result_series = result._execute() if hasattr(result, '_execute') else result
         pd.testing.assert_series_equal(result_series, df_pd['name'], check_names=False)
 
     def test_select_multiple_columns(self, test_data):
@@ -180,7 +180,7 @@ class TestStatistics:
         """Value counts - PASS
 
         Note: value_counts() returns LazySeries for lazy execution.
-        Accessing .values and .index triggers materialization naturally.
+        Accessing .values and .index triggers execution naturally.
         """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
@@ -200,7 +200,7 @@ class TestAggregation:
         """GroupBy with single aggregation - PASS
 
         Note: LazyAggregate is returned for lazy execution.
-        Accessing .values and .index triggers materialization naturally.
+        Accessing .values and .index triggers execution naturally.
         """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
@@ -238,7 +238,7 @@ class TestAggregation:
         """GroupBy with sum - PASS
 
         Note: LazyAggregate is returned for lazy execution.
-        Accessing .values and .index triggers materialization naturally.
+        Accessing .values and .index triggers execution naturally.
         """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
@@ -271,8 +271,8 @@ class TestStringOperations:
         result = df_ds['name'].str.contains('a', na=False)
         expected = df_pd['name'].str.contains('a', na=False)
 
-        # ColumnExpr uses _materialize() to get the Series
-        result_series = result._materialize() if hasattr(result, '_materialize') else result
+        # ColumnExpr uses _execute() to get the Series
+        result_series = result._execute() if hasattr(result, '_execute') else result
         pd.testing.assert_series_equal(result_series, expected, check_names=False)
 
     @pytest.mark.xfail(reason="chDB Issue #447: NULL becomes empty string instead of None", strict=False)
@@ -308,8 +308,8 @@ class TestStringOperations:
         df_ds = ds.DataFrame(test_data)
 
         result = df_ds['name'].str.upper()
-        # ColumnExpr uses _materialize() to get the Series
-        result_series = result._materialize() if hasattr(result, '_materialize') else result
+        # ColumnExpr uses _execute() to get the Series
+        result_series = result._execute() if hasattr(result, '_execute') else result
 
         # Series name should be 'name', not '__result__'
         assert result_series.name == 'name', f"Expected Series name 'name', got '{result_series.name}'"

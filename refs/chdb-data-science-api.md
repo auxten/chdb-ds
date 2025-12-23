@@ -433,7 +433,7 @@ processed = source_table \
 processed.save("new_table")
 # view? or all in clickhouse server
 processed.save_view("new_view")
-processed.save_mview("new_materialized_view")
+processed.save_mview("new_executed_view")
 
 # Save to file
 processed.save("output.csv")

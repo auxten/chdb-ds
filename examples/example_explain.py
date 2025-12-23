@@ -3,7 +3,7 @@
 Example demonstrating the explain() method in DataStore.
 
 The explain() method shows the execution plan for mixed SQL and Pandas operations,
-making it clear which operations are lazy SQL queries, which trigger materialization,
+making it clear which operations are lazy SQL queries, which trigger execution,
 and which operate on cached DataFrames.
 """
 
@@ -60,7 +60,7 @@ def main():
         print("  result = (")
         print("      ds.select('*')                              # SQL 1")
         print("      .filter(ds.age > 25)                        # SQL 2")
-        print("      .add_prefix('p1_')                          # Pandas 1: materializes")
+        print("      .add_prefix('p1_')                          # Pandas 1: executes")
         print("      .filter(ds.p1_salary > 55000)               # SQL 3: on cached df")
         print("      .rename(columns={'p1_id': 'final_id'})      # Pandas 2: on cached df")
         print("      .filter(ds.final_id > 2)                    # SQL 4: on cached df")
@@ -71,7 +71,7 @@ def main():
         result = (
             ds.select('*')                              # SQL 1
             .filter(ds.age > 25)                        # SQL 2
-            .add_prefix('p1_')                          # Pandas 1: materializes
+            .add_prefix('p1_')                          # Pandas 1: executes
             .filter(ds.p1_salary > 55000)               # SQL 3: on cached df
             .rename(columns={'p1_id': 'final_id'})      # Pandas 2: on cached df
             .filter(ds.final_id > 2)                    # SQL 4: on cached df
@@ -112,15 +112,15 @@ def main():
         approach_a = (
             ds.select('*')
             .filter(ds.age > 30)              # Filter early (on source data)
-            .add_prefix('emp_')               # Then materialize
+            .add_prefix('emp_')               # Then execute
         )
         approach_a.explain()
         
-        print("\nApproach B: Materialize first (less efficient)")
+        print("\nApproach B: Execute first (less efficient)")
         print("─" * 40)
         approach_b = (
             ds.select('*')
-            .add_prefix('emp_')               # Materialize all data
+            .add_prefix('emp_')               # Execute all data
             .filter(ds.emp_age > 30)          # Then filter (on DataFrame)
         )
         approach_b.explain()
@@ -135,12 +135,12 @@ def main():
    • Very efficient - no data movement
    • Best place to do filtering, aggregation
 
-🔄 Phase 2: Materialization Point
+🔄 Phase 2: Execution Point
    • First pandas operation triggers execution
    • SQL query is executed and result is cached
    • After this, all operations work on in-memory DataFrame
 
-🐼 Phase 3: Operations on Materialized DataFrame
+🐼 Phase 3: Operations on Executed DataFrame
    • SQL operations use chDB to query the cached DataFrame
    • Pandas operations work directly on the DataFrame
    • All operations are now in-memory
@@ -148,7 +148,7 @@ def main():
 💡 Best Practices:
    1. Do heavy filtering in Phase 1 (SQL) when possible
    2. Use pandas operations when you need functionality SQL doesn't have
-   3. After materialization, both SQL and pandas operations work on cache
+   3. After execution, both SQL and pandas operations work on cache
    4. Use explain() to verify your query will execute efficiently
         """)
         

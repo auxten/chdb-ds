@@ -57,10 +57,10 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         self.assertIsInstance(result._expr, Field)
         self.assertEqual(result._expr.name, 'age')
 
-    def test_column_access_materializes_correctly(self):
-        """Test that column access materializes to correct values."""
+    def test_column_access_executes_correctly(self):
+        """Test that column access executes to correct values."""
         ds = self.create_ds()
-        result = ds['age']._materialize()
+        result = ds['age']._execute()
         expected = self.df['age']
         np.testing.assert_array_equal(result, expected)
 
@@ -70,10 +70,10 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
         result = ds.age
         self.assertIsInstance(result, ColumnExpr)
 
-    def test_attribute_access_materializes_correctly(self):
-        """Test that attribute access materializes to correct values."""
+    def test_attribute_access_executes_correctly(self):
+        """Test that attribute access executes to correct values."""
         ds = self.create_ds()
-        result = ds.age._materialize()
+        result = ds.age._execute()
         expected = self.df['age']
         np.testing.assert_array_equal(result, expected)
 
@@ -279,8 +279,8 @@ class TestColumnExprComparisonOperations(unittest.TestCase):
         result = ds['age'] > 25
         self.assertIsInstance(result, ColumnExpr)
         self.assertIsInstance(result._expr, Condition)
-        # ColumnExpr can materialize to boolean Series
-        self.assertEqual(list(result._materialize()), [True, True, True, True, False])
+        # ColumnExpr can execute to boolean Series
+        self.assertEqual(list(result._execute()), [True, True, True, True, False])
 
     def test_greater_equal_returns_column_expr(self):
         """Test that >= returns ColumnExpr wrapping Condition."""
@@ -445,18 +445,18 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         self.assertIn('LIKE', str(result))
 
     def test_isnull_matches_pandas(self):
-        """Test that isnull() result matches pandas when materialized."""
+        """Test that isnull() result matches pandas when executed."""
         ds = self.create_ds()
-        # Materialize and compare with pandas via .values/.index
+        # Execute and compare with pandas via .values/.index
         ds_result = ds['nullable'].isnull().astype(int)
         pd_result = self.df['nullable'].isnull().astype(int)
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
         self.assertTrue(ds_result.index.equals(pd_result.index))
 
     def test_notnull_matches_pandas(self):
-        """Test that notnull() result matches pandas when materialized."""
+        """Test that notnull() result matches pandas when executed."""
         ds = self.create_ds()
-        # Materialize and compare with pandas via .values/.index
+        # Execute and compare with pandas via .values/.index
         ds_result = ds['nullable'].notnull().astype(int)
         pd_result = self.df['nullable'].notnull().astype(int)
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
@@ -649,7 +649,7 @@ class TestColumnExprMathFunctions(unittest.TestCase):
         ds_result = round(ds['value'], 1)
         # Should return ColumnExpr
         self.assertIsInstance(ds_result, ColumnExpr)
-        # Materialize and compare
+        # Execute and compare
         pd_result = self.df['value'].round(1)
         np.testing.assert_allclose(list(ds_result), list(pd_result))
 
@@ -970,7 +970,7 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
         """Test accessing column from filtered DataStore."""
         ds = self.create_ds()
         filtered = ds.filter(ds.salary > 50000)
-        col_result = filtered['salary']._materialize()
+        col_result = filtered['salary']._execute()
         expected = self.df[self.df['salary'] > 50000]['salary']
         np.testing.assert_allclose(col_result, expected)
 
@@ -1013,19 +1013,19 @@ class TestLazySlice(unittest.TestCase):
         # Should return LazySeries, not pd.Series
         self.assertIsInstance(result, LazySeries)
 
-    def test_lazy_series_method_materializes_on_repr(self):
-        """Test that LazySeries materializes when displayed."""
+    def test_lazy_series_method_executes_on_repr(self):
+        """Test that LazySeries executes when displayed."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
-        # repr() should trigger materialization
+        # repr() should trigger execution
         repr_str = repr(result)
 
         # Should show actual values
         self.assertIn('10', repr_str)
 
     def test_lazy_series_method_to_pandas(self):
-        """Test explicit materialization with to_pandas()."""
+        """Test explicit execution with to_pandas()."""
         ds = self.create_ds()
         result = ds['value'].head(3).to_pandas()
 
@@ -1048,7 +1048,7 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(len(final), 2)
 
     def test_lazy_series_method_iteration(self):
-        """Test iteration triggers materialization."""
+        """Test iteration triggers execution."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
@@ -1057,7 +1057,7 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(len(values), 3)
 
     def test_lazy_series_method_indexing(self):
-        """Test indexing triggers materialization."""
+        """Test indexing triggers execution."""
         ds = self.create_ds()
         result = ds['value'].head(5)
 
@@ -1066,7 +1066,7 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(first_value, 10)
 
     def test_lazy_series_method_len(self):
-        """Test len() triggers materialization."""
+        """Test len() triggers execution."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
@@ -1106,7 +1106,7 @@ class TestLazySlice(unittest.TestCase):
         head_result = agg_result.head(3)
         self.assertIsInstance(head_result, LazySeries)
 
-        # Materialized result should have correct length
+        # Executed result should have correct length
         self.assertEqual(len(head_result), 3)
 
     def test_lazy_aggregate_tail_returns_lazy_series_method(self):
@@ -1220,18 +1220,18 @@ class TestColumnExprPlot(unittest.TestCase):
 
         self.assertIsInstance(col_expr.plot, PlotAccessor)
 
-    def test_plot_data_matches_materialized(self):
-        """Test that plot uses correctly materialized data."""
+    def test_plot_data_matches_executed(self):
+        """Test that plot uses correctly executed data."""
         ds = self.create_ds()
         col_expr = ds['value']
 
         # Get the underlying data from plot accessor
         # PlotAccessor wraps the Series, we can verify via _parent
         plot_accessor = col_expr.plot
-        materialized = col_expr._materialize()
+        executed = col_expr._execute()
 
-        # The plot accessor's parent should match our materialized Series
-        pd.testing.assert_series_equal(plot_accessor._parent, materialized)
+        # The plot accessor's parent should match our executed Series
+        pd.testing.assert_series_equal(plot_accessor._parent, executed)
 
 
 class TestColumnExprPandasProperties(unittest.TestCase):
@@ -1370,7 +1370,7 @@ class TestColumnExprPandasMethods(unittest.TestCase):
         ds = self.create_ds()
         result = ds['value'].to_frame()
         self.assertIsInstance(result, DataStore)
-        # The column might be named 'value' or None depending on materialization
+        # The column might be named 'value' or None depending on execution
         self.assertEqual(len(result.columns), 1)
 
     def test_copy_method(self):
@@ -1443,7 +1443,7 @@ class TestColumnExprPandasMethods(unittest.TestCase):
         """Test where method."""
         ds = self.create_ds()
         # Replace values where value <= 25 with 0
-        cond = ds['value']._materialize() > 25
+        cond = ds['value']._execute() > 25
         result = ds['value'].where(cond, 0)
         expected = [0, 0, 30, 40, 50]
         self.assertEqual(list(result.values), expected)

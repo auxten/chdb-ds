@@ -98,7 +98,7 @@ class TestRenameAndFilter:
             pytest.xfail(f"Add prefix then filter on prefixed name fails: {e}")
 
 
-class TestMultipleMaterialization:
+class TestMultipleExecution:
     """Test calling to_df() multiple times."""
 
     def test_multiple_to_df_calls(self):

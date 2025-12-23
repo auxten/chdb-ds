@@ -589,14 +589,14 @@ class TitanicExecutionLogicTest(unittest.TestCase):
         initial_ops_count = len(ds._lazy_ops)
         self.assertEqual(initial_ops_count, 2, f"Expected 2 lazy ops, got {initial_ops_count}")
 
-        # Trigger materialization via groupby
+        # Trigger execution via groupby
         result = ds.groupby("FamilySize")["Survived"].mean()
         _ = repr(result)  # Force execution
 
-        # After checkpoint, should have 1 lazy op (LazyDataFrameSource with materialized result)
+        # After checkpoint, should have 1 lazy op (LazyDataFrameSource with executed result)
         self.assertEqual(len(ds._lazy_ops), 1, f"Expected 1 lazy op after checkpoint, got {len(ds._lazy_ops)}")
 
-        # The lazy op should be LazyDataFrameSource (materialized DataFrame)
+        # The lazy op should be LazyDataFrameSource (executed DataFrame)
         from datastore.lazy_ops import LazyDataFrameSource
 
         self.assertIsInstance(
@@ -624,8 +624,8 @@ class TitanicExecutionLogicTest(unittest.TestCase):
         logs = self._get_logs()
         self.assertIn("Using cached result", logs)
 
-    def test_materialization_log_sequence(self):
-        """Verify correct log sequence during materialization."""
+    def test_execution_log_sequence(self):
+        """Verify correct log sequence during execution."""
         ds = DataStore.from_file(self.titanic_path)
         ds["FamilySize"] = ds["SibSp"] + ds["Parch"] + 1
 
@@ -635,8 +635,8 @@ class TitanicExecutionLogicTest(unittest.TestCase):
 
         logs = self._get_logs()
 
-        # Should see materialization start
-        self.assertIn("Starting materialization", logs)
+        # Should see execution start
+        self.assertIn("Starting execution", logs)
 
         # Should see lazy ops chain
         self.assertIn("Lazy operations chain", logs)
@@ -644,8 +644,8 @@ class TitanicExecutionLogicTest(unittest.TestCase):
         # Should see FamilySize assignment
         self.assertIn("FamilySize", logs)
 
-        # Should see materialization complete
-        self.assertIn("Materialization complete", logs)
+        # Should see execution complete
+        self.assertIn("Execution complete", logs)
 
         # Should see checkpoint
         self.assertIn("checkpointed", logs)
@@ -687,7 +687,7 @@ class TitanicExecutionLogicTest(unittest.TestCase):
             logs = self._get_logs()
 
             # Should NOT see chDB SQL for groupby aggregation when using pandas engine
-            # (materialization may still use chDB, but the groupby should be pandas)
+            # (execution may still use chDB, but the groupby should be pandas)
             self.assertNotIn("GROUP BY", logs, "Should not use SQL GROUP BY when engine is pandas")
 
             # Verify result is correct
@@ -846,7 +846,7 @@ class TitanicExecutionCountTest(unittest.TestCase):
         ds["Col2"] = ds["Parch"] + 2
         ds["Col3"] = ds["Age"] * 0.5
 
-        # Trigger materialization
+        # Trigger execution
         _ = ds.to_df()
 
         # Each should be executed exactly once

@@ -74,7 +74,7 @@ class TestSQLvsPandasFilter(unittest.TestCase):
         # SQL operation first
         result = ds.select('name', 'age', 'salary')
 
-        # Pandas operation - this forces materialization
+        # Pandas operation - this forces execution
         result['age_doubled'] = result['age'] * 2
 
         # Now filter AFTER pandas operation
@@ -112,7 +112,7 @@ class TestSQLvsPandasFilter(unittest.TestCase):
         # Pandas operation
         result['age_doubled'] = result['age'] * 2
 
-        # Second filter - must use pandas since data is already materialized
+        # Second filter - must use pandas since data is already executed
         result = result.filter(result.age_doubled > 70)
 
         print(f"\n=== Test 3: Filter Before and After Pandas ===")
@@ -173,7 +173,7 @@ class TestSQLvsPandasFilter(unittest.TestCase):
 
         # Path 2: Force pandas execution by adding a no-op pandas operation
         result2 = ds2.select('name', 'age')
-        result2['temp'] = result2['age']  # Force materialization
+        result2['temp'] = result2['age']  # Force execution
         result2 = result2.filter(result2.age > 30)  # This filter uses pandas
         result2 = result2[['name', 'age']]  # Remove temp column
         df2 = result2.to_df()
@@ -394,7 +394,7 @@ class TestComplexLazyPipelineExecution(unittest.TestCase):
         # Path 2: Force Pandas path by inserting computed column
         ds2 = DataStore.from_file(self.csv_file)
         ds2 = ds2.select('name', 'age', 'salary')
-        ds2['temp'] = ds2['age'] * 1  # Force materialization (identity operation)
+        ds2['temp'] = ds2['age'] * 1  # Force execution (identity operation)
         ds2 = ds2.filter(ds2['age'] > 30)
         ds2 = ds2.filter(ds2['salary'] > 60000)
         ds2 = ds2.sort('age', ascending=True)
@@ -1667,7 +1667,7 @@ class TestTrueSQLPandasSQLInterleaving(unittest.TestCase):
         ds = ds.filter(ds['value'] > 20)  # SQL filter
         ds = ds.select('id', 'value', 'category')
 
-        # Materialize to DataFrame
+        # Execute to DataFrame
         df1 = ds.to_df()
         print(f"\n=== Phase 1 (SQL on file) ===")
         print(f"After SQL filter (value > 20): {len(df1)} rows")

@@ -504,7 +504,7 @@ class TestMLFeatureEngineering:
 
         This test ensures the lazy execution model works correctly:
         - Operations are recorded but not executed
-        - Execution only happens on .to_df() or similar materializing calls
+        - Execution only happens on .to_df() or similar triggering calls
         """
         ds = self.ds
 
