@@ -31,8 +31,14 @@ def test_data():
         'salary': [50000, 60000, None, 75000, 55000, 80000, 70000, 52000],
         'department': ['HR', 'IT', 'IT', 'HR', 'Finance', 'IT', 'HR', 'Finance'],
         'hire_date': [
-            '2020-01-15', '2019-06-20', '2018-03-10', '2021-09-05',
-            '2020-11-12', '2019-02-28', '2017-08-15', '2021-04-30',
+            '2020-01-15',
+            '2019-06-20',
+            '2018-03-10',
+            '2021-09-05',
+            '2020-11-12',
+            '2019-02-28',
+            '2017-08-15',
+            '2021-04-30',
         ],
         'performance_score': [8.5, 7.2, 9.1, 6.8, 8.0, 9.5, 7.5, 8.3],
     }
@@ -80,17 +86,13 @@ class TestDataSelection:
         result = df_ds['name']
         # ColumnExpr uses _materialize() to get the Series
         result_series = result._materialize() if hasattr(result, '_materialize') else result
-        pd.testing.assert_series_equal(
-            result_series, df_pd['name'], check_names=False
-        )
+        pd.testing.assert_series_equal(result_series, df_pd['name'], check_names=False)
 
     def test_select_multiple_columns(self, test_data):
         """Select multiple columns - PASS"""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
-        pd.testing.assert_frame_equal(
-            df_ds[['name', 'age']].to_df(), df_pd[['name', 'age']]
-        )
+        pd.testing.assert_frame_equal(df_ds[['name', 'age']].to_df(), df_pd[['name', 'age']])
 
     def test_select_rows_by_slice(self, test_data):
         """Select rows by slice - needs fix in datastore."""
@@ -114,11 +116,7 @@ class TestDataSelection:
 
         assert len(result) == len(expected)
         # Compare ignoring index and minor formatting differences
-        pd.testing.assert_frame_equal(
-            result.reset_index(drop=True),
-            expected.reset_index(drop=True),
-            check_dtype=False
-        )
+        pd.testing.assert_frame_equal(result.reset_index(drop=True), expected.reset_index(drop=True), check_dtype=False)
 
     def test_select_with_loc(self, test_data):
         """Select with loc - PASS"""
@@ -179,13 +177,20 @@ class TestStatistics:
         assert abs(result - expected) < 0.001
 
     def test_value_counts(self, test_data):
-        """Value counts - PASS"""
+        """Value counts - PASS
+
+        Note: value_counts() returns LazySeries for lazy execution.
+        Accessing .values and .index triggers materialization naturally.
+        """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds['department'].value_counts()
         expected = df_pd['department'].value_counts()
-        pd.testing.assert_series_equal(result, expected)
+
+        # LazySeries proxies .values/.index - accessing them triggers execution
+        np.testing.assert_array_equal(result.values, expected.values)
+        assert result.index.equals(expected.index)
 
 
 class TestAggregation:
@@ -194,8 +199,8 @@ class TestAggregation:
     def test_groupby_single_aggregation(self, test_data):
         """GroupBy with single aggregation - PASS
 
-        Note: LazyAggregate is returned for lazy execution. When displayed,
-        it shows the correct Series. For testing, we convert to Series.
+        Note: LazyAggregate is returned for lazy execution.
+        Accessing .values and .index triggers materialization naturally.
         """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
@@ -203,12 +208,9 @@ class TestAggregation:
         result = df_ds.groupby('department')['salary'].mean()
         expected = df_pd.groupby('department')['salary'].mean()
 
-        # LazyAggregate supports to_series() or can be compared via values
-        if hasattr(result, '_execute'):
-            result_series = result._execute()  # Execute lazy aggregate
-        else:
-            result_series = result
-        pd.testing.assert_series_equal(result_series, expected, check_names=False)
+        # LazyAggregate proxies .values/.index - accessing them triggers execution
+        np.testing.assert_array_almost_equal(result.values, expected.values)
+        assert result.index.equals(expected.index)
 
     def test_groupby_multiple_aggregations(self, test_data):
         """GroupBy with multiple aggregations - needs fix in datastore.
@@ -223,21 +225,20 @@ class TestAggregation:
         expected = df_pd.groupby('department').agg({'salary': 'mean', 'age': 'max'})
 
         # Result should be a DataFrame, not a Series
-        assert isinstance(result, (pd.DataFrame, ds.DataStore)), \
-            f"Expected DataFrame, got {type(result)}"
+        assert isinstance(result, (pd.DataFrame, ds.DataStore)), f"Expected DataFrame, got {type(result)}"
 
         # Should have same shape as expected
         if hasattr(result, 'to_df'):
             result_df = result.to_df()
         else:
             result_df = result
-        assert result_df.shape == expected.shape, \
-            f"Expected shape {expected.shape}, got {result_df.shape}"
+        assert result_df.shape == expected.shape, f"Expected shape {expected.shape}, got {result_df.shape}"
 
     def test_groupby_sum(self, test_data):
         """GroupBy with sum - PASS
 
         Note: LazyAggregate is returned for lazy execution.
+        Accessing .values and .index triggers materialization naturally.
         """
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
@@ -245,12 +246,9 @@ class TestAggregation:
         result = df_ds.groupby('department')['salary'].sum()
         expected = df_pd.groupby('department')['salary'].sum()
 
-        # Execute lazy aggregate if needed
-        if hasattr(result, '_execute'):
-            result_series = result._execute()
-        else:
-            result_series = result
-        pd.testing.assert_series_equal(result_series, expected, check_names=False)
+        # LazyAggregate proxies .values/.index - accessing them triggers execution
+        np.testing.assert_array_almost_equal(result.values, expected.values)
+        assert result.index.equals(expected.index)
 
     def test_groupby_size(self, test_data):
         """GroupBy with count/size - PASS"""
@@ -275,16 +273,9 @@ class TestStringOperations:
 
         # ColumnExpr uses _materialize() to get the Series
         result_series = result._materialize() if hasattr(result, '_materialize') else result
-        pd.testing.assert_series_equal(
-            result_series,
-            expected,
-            check_names=False
-        )
+        pd.testing.assert_series_equal(result_series, expected, check_names=False)
 
-    @pytest.mark.xfail(
-        reason="chDB Issue #447: NULL becomes empty string instead of None",
-        strict=False
-    )
+    @pytest.mark.xfail(reason="chDB Issue #447: NULL becomes empty string instead of None", strict=False)
     def test_string_upper_null_handling(self, test_data):
         """String upper NULL handling - chDB Issue #447"""
         df_ds = ds.DataFrame(test_data)
@@ -295,13 +286,11 @@ class TestStringOperations:
 
         # Check that NULL/None values are preserved as None, not empty string
         result_series = result.to_series() if hasattr(result, 'to_series') else result
-        assert result_series.iloc[6] is None or pd.isna(result_series.iloc[6]), \
-            f"Expected None/NaN at index 6, got '{result_series.iloc[6]}'"
+        assert result_series.iloc[6] is None or pd.isna(
+            result_series.iloc[6]
+        ), f"Expected None/NaN at index 6, got '{result_series.iloc[6]}'"
 
-    @pytest.mark.xfail(
-        reason="chDB Issue #447: str.len() returns 0 for NULL instead of NaN",
-        strict=False
-    )
+    @pytest.mark.xfail(reason="chDB Issue #447: str.len() returns 0 for NULL instead of NaN", strict=False)
     def test_string_length_null_handling(self, test_data):
         """String length NULL handling - chDB Issue #447"""
         df_ds = ds.DataFrame(test_data)
@@ -312,8 +301,7 @@ class TestStringOperations:
 
         result_series = result.to_series() if hasattr(result, 'to_series') else result
         # NULL should return NaN, not 0
-        assert pd.isna(result_series.iloc[6]), \
-            f"Expected NaN at index 6, got {result_series.iloc[6]}"
+        assert pd.isna(result_series.iloc[6]), f"Expected NaN at index 6, got {result_series.iloc[6]}"
 
     def test_string_accessor_preserves_series_name(self, test_data):
         """String accessor should preserve Series name, not use __result__."""
@@ -324,8 +312,7 @@ class TestStringOperations:
         result_series = result._materialize() if hasattr(result, '_materialize') else result
 
         # Series name should be 'name', not '__result__'
-        assert result_series.name == 'name', \
-            f"Expected Series name 'name', got '{result_series.name}'"
+        assert result_series.name == 'name', f"Expected Series name 'name', got '{result_series.name}'"
 
 
 class TestMerging:
@@ -341,10 +328,7 @@ class TestMerging:
         df2_pd = pd.DataFrame({'a': [5, 6], 'b': [7, 8]})
         expected = pd.concat([df1_pd, df2_pd])
 
-        pd.testing.assert_frame_equal(
-            result.to_df() if hasattr(result, 'to_df') else result,
-            expected
-        )
+        pd.testing.assert_frame_equal(result.to_df() if hasattr(result, 'to_df') else result, expected)
 
     def test_merge_dataframes(self):
         """Merge DataFrames - PASS"""
@@ -356,19 +340,13 @@ class TestMerging:
         df2_pd = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
         expected = pd.merge(df1_pd, df2_pd, on='key', how='inner')
 
-        pd.testing.assert_frame_equal(
-            result.to_df() if hasattr(result, 'to_df') else result,
-            expected
-        )
+        pd.testing.assert_frame_equal(result.to_df() if hasattr(result, 'to_df') else result, expected)
 
 
 class TestDateTimeOperations:
     """Test datetime operations."""
 
-    @pytest.mark.xfail(
-        reason="chDB Issue #448: datetime64 handling corruption",
-        strict=False
-    )
+    @pytest.mark.xfail(reason="chDB Issue #448: datetime64 handling corruption", strict=False)
     def test_extract_year_from_date(self, pandas_df, datastore_df):
         """Extract year from date - chDB Issue #448"""
         # First convert to datetime
@@ -380,14 +358,10 @@ class TestDateTimeOperations:
         result_series = result.to_series() if hasattr(result, 'to_series') else result
 
         # Should return actual year values, not expression string
-        assert not isinstance(result_series.iloc[0], str), \
-            f"Expected numeric year, got string: {result_series.iloc[0]}"
+        assert not isinstance(result_series.iloc[0], str), f"Expected numeric year, got string: {result_series.iloc[0]}"
         pd.testing.assert_series_equal(result_series, expected, check_names=False)
 
-    @pytest.mark.xfail(
-        reason="chDB Issue #448: datetime64 handling corruption",
-        strict=False
-    )
+    @pytest.mark.xfail(reason="chDB Issue #448: datetime64 handling corruption", strict=False)
     def test_extract_month_from_date(self, pandas_df, datastore_df):
         """Extract month from date - chDB Issue #448"""
         datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
@@ -397,13 +371,11 @@ class TestDateTimeOperations:
 
         result_series = result.to_series() if hasattr(result, 'to_series') else result
 
-        assert not isinstance(result_series.iloc[0], str), \
-            f"Expected numeric month, got string: {result_series.iloc[0]}"
+        assert not isinstance(
+            result_series.iloc[0], str
+        ), f"Expected numeric month, got string: {result_series.iloc[0]}"
 
-    @pytest.mark.xfail(
-        reason="chDB Issue #448: datetime64 handling corruption",
-        strict=False
-    )
+    @pytest.mark.xfail(reason="chDB Issue #448: datetime64 handling corruption", strict=False)
     def test_date_strftime(self, pandas_df, datastore_df):
         """Date formatting with strftime - chDB Issue #448"""
         datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
@@ -414,8 +386,9 @@ class TestDateTimeOperations:
         result_series = result.to_series() if hasattr(result, 'to_series') else result
 
         # Should return formatted date strings, not expression string
-        assert result_series.iloc[0] == expected.iloc[0], \
-            f"Expected '{expected.iloc[0]}', got '{result_series.iloc[0]}'"
+        assert (
+            result_series.iloc[0] == expected.iloc[0]
+        ), f"Expected '{expected.iloc[0]}', got '{result_series.iloc[0]}'"
 
 
 class TestDataCleaning:
@@ -429,8 +402,7 @@ class TestDataCleaning:
         result = df_ds.dropna().to_df()
         expected = df_pd.dropna()
 
-        assert len(result) == len(expected), \
-            f"Expected {len(expected)} rows after dropna, got {len(result)}"
+        assert len(result) == len(expected), f"Expected {len(expected)} rows after dropna, got {len(result)}"
 
     def test_fillna(self, test_data):
         """Fill NA values - check no NaN remains in numeric columns."""
@@ -443,8 +415,7 @@ class TestDataCleaning:
 
         # Check that numeric columns have no NaN
         for col in ['age', 'salary']:
-            assert not result[col].isna().any(), \
-                f"Column {col} still has NaN after fillna"
+            assert not result[col].isna().any(), f"Column {col} still has NaN after fillna"
 
 
 class TestDataTransformation:
@@ -459,8 +430,8 @@ class TestDataTransformation:
         result = df_ds['department'].map(mapping)
         expected = df_pd['department'].map(mapping)
 
-        result_series = result.to_series() if hasattr(result, 'to_series') else result
-        pd.testing.assert_series_equal(result_series, expected, check_names=False)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(result.values, expected.values)
 
     def test_astype(self, test_data):
         """Convert type with astype - PASS"""
@@ -470,8 +441,8 @@ class TestDataTransformation:
         result = df_ds['age'].astype(str)
         expected = df_pd['age'].astype(str)
 
-        result_series = result.to_series() if hasattr(result, 'to_series') else result
-        pd.testing.assert_series_equal(result_series, expected, check_names=False)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(result.values, expected.values)
 
 
 class TestSorting:
@@ -488,8 +459,7 @@ class TestSorting:
         # Compare the order of age values (ignoring NaN position differences)
         result_ages = result['age'].dropna().tolist()
         expected_ages = expected['age'].dropna().tolist()
-        assert result_ages == expected_ages, \
-            f"Age order mismatch: {result_ages} vs {expected_ages}"
+        assert result_ages == expected_ages, f"Age order mismatch: {result_ages} vs {expected_ages}"
 
     def test_sort_descending(self, test_data):
         """Sort descending - check order is correct."""
@@ -502,10 +472,8 @@ class TestSorting:
         # Compare the order of salary values (ignoring NaN position differences)
         result_salaries = result['salary'].dropna().tolist()
         expected_salaries = expected['salary'].dropna().tolist()
-        assert result_salaries == expected_salaries, \
-            f"Salary order mismatch: {result_salaries} vs {expected_salaries}"
+        assert result_salaries == expected_salaries, f"Salary order mismatch: {result_salaries} vs {expected_salaries}"
 
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
-

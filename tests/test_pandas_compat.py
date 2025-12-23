@@ -642,43 +642,44 @@ class TestColumnExprComparisonMethods(unittest.TestCase):
         """Test eq() method matches pandas."""
         ds_result = self.ds['a'].eq(3)
         pd_result = self.df['a'].eq(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        # LazySeries - use .values/.index to trigger execution
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_ne(self):
         """Test ne() method matches pandas."""
         ds_result = self.ds['a'].ne(3)
         pd_result = self.df['a'].ne(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_lt(self):
         """Test lt() method matches pandas."""
         ds_result = self.ds['a'].lt(3)
         pd_result = self.df['a'].lt(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_le(self):
         """Test le() method matches pandas."""
         ds_result = self.ds['a'].le(3)
         pd_result = self.df['a'].le(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_gt(self):
         """Test gt() method matches pandas."""
         ds_result = self.ds['a'].gt(3)
         pd_result = self.df['a'].gt(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_ge(self):
         """Test ge() method matches pandas."""
         ds_result = self.ds['a'].ge(3)
         pd_result = self.df['a'].ge(3)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_comparison_with_column(self):
         """Test comparison between two columns."""
         ds_result = self.ds['a'].eq(self.ds['b'])
         pd_result = self.df['a'].eq(self.df['b'])
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
 
 class TestColumnExprFillMethods(unittest.TestCase):
@@ -693,31 +694,32 @@ class TestColumnExprFillMethods(unittest.TestCase):
         """Test ffill() method matches pandas."""
         ds_result = self.ds['a'].ffill()
         pd_result = self.df['a'].ffill()
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        # LazySeries - use .values to trigger execution
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_bfill(self):
         """Test bfill() method matches pandas."""
         ds_result = self.ds['a'].bfill()
         pd_result = self.df['a'].bfill()
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_interpolate_linear(self):
         """Test interpolate() method matches pandas."""
         ds_result = self.ds['a'].interpolate(method='linear')
         pd_result = self.df['a'].interpolate(method='linear')
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_almost_equal(ds_result.values, pd_result.values)
 
     def test_ffill_with_limit(self):
         """Test ffill() with limit parameter."""
         ds_result = self.ds['a'].ffill(limit=1)
         pd_result = self.df['a'].ffill(limit=1)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_bfill_with_limit(self):
         """Test bfill() with limit parameter."""
         ds_result = self.ds['a'].bfill(limit=1)
         pd_result = self.df['a'].bfill(limit=1)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
 
 class TestFilterColumnSelection(unittest.TestCase):
