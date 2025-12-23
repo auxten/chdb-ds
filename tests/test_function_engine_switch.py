@@ -229,11 +229,15 @@ class TestDateTimeFunctionsExecution(unittest.TestCase):
         # Row order is now preserved
         self.assertEqual(result, [45, 30, 0])
 
-    def test_day_of_week(self):
-        """Test day_of_week extraction."""
-        result = list(self.ds['date'].dt.day_of_week)
-        # Monday=1 in ClickHouse
-        self.assertTrue(all(1 <= d <= 7 for d in result))
+    def test_dayofweek(self):
+        """Test dayofweek extraction - aligned with pandas (Monday=0, Sunday=6)."""
+        result = self.ds['date'].dt.dayofweek
+        # Verify range is 0-6 (pandas convention)
+        np.testing.assert_array_equal(np.asarray(result) >= 0, True)
+        np.testing.assert_array_equal(np.asarray(result) <= 6, True)
+        # Verify matches pandas
+        expected = self.df['date'].dt.dayofweek
+        np.testing.assert_array_equal(result, expected)
 
     def test_quarter(self):
         """Test quarter extraction."""

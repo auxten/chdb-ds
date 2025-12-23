@@ -54,7 +54,7 @@ class TestPandasCompatibility(unittest.TestCase):
         ds_dtypes = self.ds.dtypes
         pd_dtypes = self.df.dtypes
         # Column names should match
-        self.assertEqual(list(ds_dtypes.index), list(pd_dtypes.index))
+        np.testing.assert_array_equal(ds_dtypes.index, pd_dtypes.index)
 
     def test_shape(self):
         """Test shape property matches pandas."""
@@ -66,7 +66,7 @@ class TestPandasCompatibility(unittest.TestCase):
 
     def test_values(self):
         """Test values property matches pandas."""
-        np.testing.assert_array_equal(self.ds.values, self.df.values)
+        np.testing.assert_array_equal(self.ds, self.df)
 
     def test_empty(self):
         """Test empty property matches pandas."""
@@ -266,12 +266,11 @@ class TestPandasCompatibility(unittest.TestCase):
         self.assertIsInstance(result, ColumnExpr)  # Returns ColumnExpr
         self.assertIsInstance(result._expr, Field)  # Wrapping a Field
 
-        # ColumnExpr executes and displays actual values like Series
-        self.assertIsInstance(result._execute(), pd.Series)
-
-        # To get actual Series, use to_df() first (still works)
-        series = self.ds.to_df()['name']
-        self.assertIsInstance(series, pd.Series)
+        # Natural trigger: ColumnExpr supports __array__ protocol
+        # which returns numpy array when passed to np.array()
+        arr = np.array(result)
+        self.assertIsInstance(arr, np.ndarray)
+        self.assertEqual(len(arr), len(self.df))
 
     def test_getitem_columns(self):
         """Test multiple column selection with [] matches pandas."""
@@ -285,8 +284,8 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test abs method matches pandas."""
         ds_result = self.ds.abs()
         pd_result = self.df.select_dtypes(include=[np.number]).abs()
-        # Compare only numeric columns using values
-        np.testing.assert_array_equal(ds_result.select_dtypes(include=[np.number]).values, pd_result.values)
+        # Compare only numeric columns
+        np.testing.assert_array_equal(ds_result.select_dtypes(include=[np.number]), pd_result)
 
     def test_round(self):
         """Test round method matches pandas."""
@@ -507,33 +506,33 @@ class TestBooleanIndexing(unittest.TestCase):
     def test_boolean_indexing_simple_condition(self):
         """Test simple boolean indexing with single condition."""
         # DataStore
-        ds_result = self.ds[self.ds['value'] > 2].to_df()
+        ds_result = self.ds[self.ds['value'] > 2]
         # Pandas
         pd_result = self.df[self.df['value'] > 2].reset_index(drop=True)
 
         self.assertEqual(len(ds_result), len(pd_result))
-        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
 
     def test_boolean_indexing_compound_condition(self):
         """Test boolean indexing with compound AND condition."""
         # DataStore
-        ds_result = self.ds[(self.ds['value'] > 1) & (self.ds['value'] < 5)].to_df()
+        ds_result = self.ds[(self.ds['value'] > 1) & (self.ds['value'] < 5)]
         # Pandas
         pd_result = self.df[(self.df['value'] > 1) & (self.df['value'] < 5)].reset_index(drop=True)
 
         self.assertEqual(len(ds_result), len(pd_result))
-        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
 
     def test_boolean_indexing_str_len(self):
         """Test boolean indexing with str.len() > 0."""
         # DataStore
-        ds_result = self.ds[(self.ds['src'].str.len() > 0) & (self.ds['tgt'].str.len() > 0)].to_df()
+        ds_result = self.ds[(self.ds['src'].str.len() > 0) & (self.ds['tgt'].str.len() > 0)]
         # Pandas
         pd_result = self.df[(self.df['src'].str.len() > 0) & (self.df['tgt'].str.len() > 0)].reset_index(drop=True)
 
         self.assertEqual(len(ds_result), len(pd_result))
-        self.assertEqual(list(ds_result['src']), list(pd_result['src']))
-        self.assertEqual(list(ds_result['tgt']), list(pd_result['tgt']))
+        np.testing.assert_array_equal(ds_result['src'], pd_result['src'])
+        np.testing.assert_array_equal(ds_result['tgt'], pd_result['tgt'])
 
     def test_boolean_indexing_with_drop_duplicates(self):
         """Test boolean indexing chained with drop_duplicates()."""
@@ -576,12 +575,12 @@ class TestBooleanIndexing(unittest.TestCase):
     def test_boolean_indexing_or_condition(self):
         """Test boolean indexing with OR condition."""
         # DataStore
-        ds_result = self.ds[(self.ds['value'] == 1) | (self.ds['value'] == 5)].to_df()
+        ds_result = self.ds[(self.ds['value'] == 1) | (self.ds['value'] == 5)]
         # Pandas
         pd_result = self.df[(self.df['value'] == 1) | (self.df['value'] == 5)].reset_index(drop=True)
 
         self.assertEqual(len(ds_result), len(pd_result))
-        self.assertEqual(list(ds_result['value']), list(pd_result['value']))
+        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
 
     def test_boolean_indexing_returns_datastore(self):
         """Test that boolean indexing returns a DataStore instance."""
@@ -642,44 +641,44 @@ class TestColumnExprComparisonMethods(unittest.TestCase):
         """Test eq() method matches pandas."""
         ds_result = self.ds['a'].eq(3)
         pd_result = self.df['a'].eq(3)
-        # LazySeries - use .values/.index to trigger execution
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_ne(self):
         """Test ne() method matches pandas."""
         ds_result = self.ds['a'].ne(3)
         pd_result = self.df['a'].ne(3)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_lt(self):
         """Test lt() method matches pandas."""
         ds_result = self.ds['a'].lt(3)
         pd_result = self.df['a'].lt(3)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_le(self):
         """Test le() method matches pandas."""
         ds_result = self.ds['a'].le(3)
         pd_result = self.df['a'].le(3)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_gt(self):
         """Test gt() method matches pandas."""
         ds_result = self.ds['a'].gt(3)
         pd_result = self.df['a'].gt(3)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_ge(self):
         """Test ge() method matches pandas."""
         ds_result = self.ds['a'].ge(3)
         pd_result = self.df['a'].ge(3)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_comparison_with_column(self):
         """Test comparison between two columns."""
         ds_result = self.ds['a'].eq(self.ds['b'])
         pd_result = self.df['a'].eq(self.df['b'])
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
 
 class TestColumnExprFillMethods(unittest.TestCase):
@@ -695,31 +694,31 @@ class TestColumnExprFillMethods(unittest.TestCase):
         ds_result = self.ds['a'].ffill()
         pd_result = self.df['a'].ffill()
         # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_bfill(self):
         """Test bfill() method matches pandas."""
         ds_result = self.ds['a'].bfill()
         pd_result = self.df['a'].bfill()
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_interpolate_linear(self):
         """Test interpolate() method matches pandas."""
         ds_result = self.ds['a'].interpolate(method='linear')
         pd_result = self.df['a'].interpolate(method='linear')
-        np.testing.assert_array_almost_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_almost_equal(ds_result, pd_result)
 
     def test_ffill_with_limit(self):
         """Test ffill() with limit parameter."""
         ds_result = self.ds['a'].ffill(limit=1)
         pd_result = self.df['a'].ffill(limit=1)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_bfill_with_limit(self):
         """Test bfill() with limit parameter."""
         ds_result = self.ds['a'].bfill(limit=1)
         pd_result = self.df['a'].bfill(limit=1)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
 
 class TestFilterColumnSelection(unittest.TestCase):
@@ -734,19 +733,19 @@ class TestFilterColumnSelection(unittest.TestCase):
         """Test filter(items=) matches pandas."""
         ds_result = self.ds.filter(items=['col_a', 'name'])
         pd_result = self.df.filter(items=['col_a', 'name'])
-        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+        np.testing.assert_array_equal(ds_result.columns, pd_result.columns)
 
     def test_filter_like(self):
         """Test filter(like=) matches pandas."""
         ds_result = self.ds.filter(like='col')
         pd_result = self.df.filter(like='col')
-        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+        np.testing.assert_array_equal(ds_result.columns, pd_result.columns)
 
     def test_filter_regex(self):
         """Test filter(regex=) matches pandas."""
         ds_result = self.ds.filter(regex='^col_')
         pd_result = self.df.filter(regex='^col_')
-        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+        np.testing.assert_array_equal(ds_result.columns, pd_result.columns)
 
     def test_filter_items_preserves_data(self):
         """Test that filter(items=) preserves data correctly."""

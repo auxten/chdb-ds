@@ -8,6 +8,7 @@ import unittest
 import pandas as pd
 from datastore import DataStore, Field, Count, Sum
 from datastore.exceptions import QueryError
+from datastore.lazy_result import LazyGroupBySize
 
 
 class SelectTests(unittest.TestCase):
@@ -426,13 +427,13 @@ class GroupByTests(unittest.TestCase):
         self.assertEqual(2, len(result))
 
     def test_groupby__size(self):
-        """Test GROUP BY size() method - returns Series with row counts per group"""
+        """Test GROUP BY size() method - returns LazyGroupBySize (pd.Series compatible)"""
         result = self.ds.groupby("foo").size()
 
-        # size() returns a pandas Series
-        self.assertIsInstance(result, pd.Series)
+        # size() returns LazyGroupBySize, not DataStore
+        self.assertIsInstance(result, LazyGroupBySize)
 
-        # Check group sizes
+        # Natural trigger via index access - returns pd.Series
         self.assertEqual(result["A"], 2)  # Two rows with foo="A"
         self.assertEqual(result["B"], 1)  # One row with foo="B"
 
@@ -440,18 +441,18 @@ class GroupByTests(unittest.TestCase):
         """Test that size() includes NaN values (unlike count())"""
         # Create a DataStore with NaN values
         df = pd.DataFrame({"category": ["X", "X", "Y", "Y", "Y"], "value": [1, None, 3, None, None]})  # Some NaN values
-        ds = DataStore.from_dataframe(df)
+        ds_df = DataStore.from_dataframe(df)
 
-        size_result = ds.groupby("category").size()
-        count_result = ds.groupby("category").count()
+        size_result = ds_df.groupby("category").size()  # Returns LazyGroupBySize (pd.Series compatible)
+        count_result = ds_df.groupby("category").count()  # Returns lazy DataStore
+        expected_count = df.groupby("category").count()
 
-        # size() counts all rows (including NaN)
+        # size() counts all rows (including NaN) - natural trigger via index access
         self.assertEqual(size_result["X"], 2)
         self.assertEqual(size_result["Y"], 3)
 
-        # count() excludes NaN values
-        self.assertEqual(count_result.loc["X", "value"], 1)  # Only 1 non-NaN
-        self.assertEqual(count_result.loc["Y", "value"], 1)  # Only 1 non-NaN
+        # count() excludes NaN values - natural trigger via == comparison
+        assert count_result == expected_count
 
     def test_groupby__size_multiple_columns(self):
         """Test size() with multiple groupby columns using pandas-style list argument"""
@@ -461,8 +462,9 @@ class GroupByTests(unittest.TestCase):
         # Use pandas-style list argument: groupby(["a", "b"])
         result = ds.groupby(["a", "b"]).size()
 
-        # Should return MultiIndex Series
-        self.assertIsInstance(result, pd.Series)
+        # Returns LazyGroupBySize (pd.Series compatible with MultiIndex)
+        self.assertIsInstance(result, LazyGroupBySize)
+        # Natural trigger via index access
         self.assertEqual(result[("x", "1")], 2)
         self.assertEqual(result[("x", "2")], 1)
         self.assertEqual(result[("y", "1")], 1)
@@ -475,7 +477,8 @@ class GroupByTests(unittest.TestCase):
         ds_result = ds.groupby("dept").size()
         pd_result = df.groupby("dept").size()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        # Natural trigger via == comparison (__eq__ uses .equals())
+        assert ds_result == pd_result
 
     def test_groupby__size_single_group(self):
         """Test size() with all rows in single group"""
@@ -484,6 +487,7 @@ class GroupByTests(unittest.TestCase):
 
         result = ds.groupby("category").size()
 
+        # Natural trigger via len() and index access
         self.assertEqual(len(result), 1)
         self.assertEqual(result["same"], 3)
 
@@ -495,7 +499,9 @@ class GroupByTests(unittest.TestCase):
         # Use varargs style (also supported)
         result = ds.groupby("a", "b").size()
 
-        self.assertIsInstance(result, pd.Series)
+        # Returns LazyGroupBySize (pd.Series compatible with MultiIndex)
+        self.assertIsInstance(result, LazyGroupBySize)
+        # Natural trigger via index access
         self.assertEqual(result[("x", "1")], 1)
         self.assertEqual(result[("x", "2")], 1)
         self.assertEqual(result[("y", "1")], 1)
@@ -507,6 +513,7 @@ class GroupByTests(unittest.TestCase):
 
         result = ds.groupby("category").size()
 
+        # Natural trigger via .dtype property
         self.assertEqual(result.dtype, "int64")
 
 

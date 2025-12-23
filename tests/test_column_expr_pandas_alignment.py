@@ -60,8 +60,9 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
     def test_column_access_executes_correctly(self):
         """Test that column access executes to correct values."""
         ds = self.create_ds()
-        result = ds['age']._execute()
+        result = ds['age']
         expected = self.df['age']
+        # Natural trigger via np.testing
         np.testing.assert_array_equal(result, expected)
 
     def test_attribute_access_returns_column_expr(self):
@@ -73,8 +74,9 @@ class TestColumnExprPandasAlignment(unittest.TestCase):
     def test_attribute_access_executes_correctly(self):
         """Test that attribute access executes to correct values."""
         ds = self.create_ds()
-        result = ds.age._execute()
+        result = ds.age
         expected = self.df['age']
+        # Natural trigger via np.testing
         np.testing.assert_array_equal(result, expected)
 
     # ========== Arithmetic Operations ==========
@@ -279,8 +281,8 @@ class TestColumnExprComparisonOperations(unittest.TestCase):
         result = ds['age'] > 25
         self.assertIsInstance(result, ColumnExpr)
         self.assertIsInstance(result._expr, Condition)
-        # ColumnExpr can execute to boolean Series
-        self.assertEqual(list(result._execute()), [True, True, True, True, False])
+        # Natural trigger via np.testing
+        np.testing.assert_array_equal(result, [True, True, True, True, False])
 
     def test_greater_equal_returns_column_expr(self):
         """Test that >= returns ColumnExpr wrapping Condition."""
@@ -375,8 +377,8 @@ class TestColumnExprNullMethods(unittest.TestCase):
         ds = self.create_ds()
         result = ds['value'].notnull().astype(int)
         expected = self.df['value'].notnull().astype(int)
-        # Compare via .values and .index to trigger lazy execution
-        np.testing.assert_array_equal(result.values, expected.values)
+        # Compare values - LazySeries implements __array__
+        np.testing.assert_array_equal(result, expected)
         self.assertTrue(result.index.equals(expected.index))
 
     def test_isnull_astype_int_matches_pandas(self):
@@ -384,8 +386,8 @@ class TestColumnExprNullMethods(unittest.TestCase):
         ds = self.create_ds()
         result = ds['value'].isnull().astype(int)
         expected = self.df['value'].isnull().astype(int)
-        # Compare via .values and .index to trigger lazy execution
-        np.testing.assert_array_equal(result.values, expected.values)
+        # Compare values - LazySeries implements __array__
+        np.testing.assert_array_equal(result, expected)
         self.assertTrue(result.index.equals(expected.index))
 
     def test_notnull_condition_for_filtering(self):
@@ -450,7 +452,7 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         # Execute and compare with pandas via .values/.index
         ds_result = ds['nullable'].isnull().astype(int)
         pd_result = self.df['nullable'].isnull().astype(int)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
         self.assertTrue(ds_result.index.equals(pd_result.index))
 
     def test_notnull_matches_pandas(self):
@@ -459,7 +461,7 @@ class TestColumnExprConditionMethods(unittest.TestCase):
         # Execute and compare with pandas via .values/.index
         ds_result = ds['nullable'].notnull().astype(int)
         pd_result = self.df['nullable'].notnull().astype(int)
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        np.testing.assert_array_equal(ds_result, pd_result)
         self.assertTrue(ds_result.index.equals(pd_result.index))
 
     def test_isnull_generates_sql(self):
@@ -682,8 +684,8 @@ class TestColumnExprMathFunctions(unittest.TestCase):
         ds = self.create_ds()
         # fillna with mean should work - returns LazySeries
         result = ds['value'].fillna(ds['value'].mean())
-        # Trigger execution via .values and check length
-        self.assertEqual(len(result.values), 5)
+        # Natural trigger via len()
+        self.assertEqual(len(result), 5)
 
 
 class TestColumnExprFillna(unittest.TestCase):
@@ -702,8 +704,7 @@ class TestColumnExprFillna(unittest.TestCase):
         result = ds['Cabin'].fillna('Unknown')
         expected = df['Cabin'].fillna('Unknown')
 
-        # LazySeries - use .values to trigger execution
-        self.assertEqual(list(result.values), list(expected.values))
+        np.testing.assert_array_equal(result, expected)
 
     def test_fillna_numeric_column(self):
         """Test fillna() on numeric column with NaN values."""
@@ -718,7 +719,7 @@ class TestColumnExprFillna(unittest.TestCase):
         result = ds['Age'].fillna(0)
         expected = df['Age'].fillna(0)
 
-        self.assertEqual(list(result), list(expected))
+        np.testing.assert_array_equal(result, expected)
 
     def test_fillna_with_mean(self):
         """Test fillna() with mean value."""
@@ -733,7 +734,7 @@ class TestColumnExprFillna(unittest.TestCase):
         result = ds['Age'].fillna(ds['Age'].mean())
         expected = df['Age'].fillna(df['Age'].mean())
 
-        np.testing.assert_array_almost_equal(list(result), list(expected))
+        np.testing.assert_array_almost_equal(result, expected)
 
     def test_fillna_with_mode(self):
         """Test fillna() with mode value for string column."""
@@ -748,7 +749,7 @@ class TestColumnExprFillna(unittest.TestCase):
         result = ds['Embarked'].fillna(ds['Embarked'].mode()[0])
         expected = df['Embarked'].fillna(df['Embarked'].mode()[0])
 
-        self.assertEqual(list(result), list(expected))
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestColumnExprDisplayBehavior(unittest.TestCase):
@@ -813,11 +814,11 @@ class TestColumnExprDisplayBehavior(unittest.TestCase):
         self.assertEqual(len(values), 2)
 
     def test_mode_returns_series(self):
-        """Test mode() returns LazySeries that provides values."""
+        """Test mode() returns LazySeries that can be executed."""
         ds = self.create_ds()
         result = ds['name'].mode()
-        # LazySeries provides .values property that triggers execution
-        self.assertIsNotNone(result.values)
+        # Natural trigger via len()
+        self.assertGreater(len(result), 0)
 
     def test_mode_subscript(self):
         """Test mode()[0] pattern - regression test for TypeError."""
@@ -850,23 +851,23 @@ class TestColumnExprFilterIntegration(unittest.TestCase):
     def test_filter_with_column_expr_comparison(self):
         """Test filter with ds['col'] > value."""
         ds = self.create_ds()
-        filtered = ds.filter(ds['age'] > 28).to_df()
+        filtered = ds.filter(ds['age'] > 28)
         expected = self.df[self.df['age'] > 28]
-        self.assertEqual(list(filtered['age']), list(expected['age']))
+        np.testing.assert_array_equal(filtered['age'], expected['age'])
 
     def test_filter_with_attribute_comparison(self):
         """Test filter with ds.col > value."""
         ds = self.create_ds()
-        filtered = ds.filter(ds.age >= 29).to_df()
+        filtered = ds.filter(ds.age >= 29)
         expected = self.df[self.df['age'] >= 29]
-        self.assertEqual(list(filtered['age']), list(expected['age']))
+        np.testing.assert_array_equal(filtered['age'], expected['age'])
 
     def test_filter_with_multiple_conditions(self):
         """Test filter with combined conditions."""
         ds = self.create_ds()
-        filtered = ds.filter((ds.age > 25) & (ds.salary > 50000)).to_df()
+        filtered = ds.filter((ds.age > 25) & (ds.salary > 50000))
         expected = self.df[(self.df['age'] > 25) & (self.df['salary'] > 50000)]
-        self.assertEqual(list(filtered['name']), list(expected['name']))
+        np.testing.assert_array_equal(filtered['name'], expected['name'])
 
 
 class TestColumnExprAssignment(unittest.TestCase):
@@ -892,9 +893,8 @@ class TestColumnExprAssignment(unittest.TestCase):
         """Test ds['new'] = ds['col'] * 2."""
         ds = self.create_ds()
         ds['age_doubled'] = ds['age'] * 2
-        result = ds.to_df()
-        expected = list(self.df['age'] * 2)
-        self.assertEqual(list(result['age_doubled']), expected)
+        expected = self.df['age'] * 2
+        np.testing.assert_array_equal(ds['age_doubled'], expected)
 
     def test_assign_complex_expression(self):
         """Test ds['new'] = (col1 / 1000) + (col2 * 2)."""
@@ -908,9 +908,8 @@ class TestColumnExprAssignment(unittest.TestCase):
         """Test ds['new'] = ds['col'].str.upper()."""
         ds = self.create_ds()
         ds['name_upper'] = ds['name'].str.upper()
-        result = ds.to_df()
-        expected = list(self.df['name'].str.upper())
-        self.assertEqual(list(result['name_upper']), expected)
+        expected = self.df['name'].str.upper()
+        np.testing.assert_array_equal(ds['name_upper'], expected)
 
     def test_assign_type_cast(self):
         """Test ds['new'] = ds['col'].cast('Float64')."""
@@ -957,21 +956,21 @@ class TestColumnExprCombinedPipeline(unittest.TestCase):
         ds = self.create_ds()
         ds['age_doubled'] = ds['age'] * 2
         filtered = ds.filter(ds['age_doubled'] > 50)
-        result = filtered.to_df()
 
         # Verify
         temp_df = self.df.copy()
         temp_df['age_doubled'] = temp_df['age'] * 2
         expected = temp_df[temp_df['age_doubled'] > 50]
 
-        self.assertEqual(list(result['name']), list(expected['name']))
+        np.testing.assert_array_equal(filtered['name'], expected['name'])
 
     def test_access_column_from_filtered_result(self):
         """Test accessing column from filtered DataStore."""
         ds = self.create_ds()
         filtered = ds.filter(ds.salary > 50000)
-        col_result = filtered['salary']._execute()
+        col_result = filtered['salary']
         expected = self.df[self.df['salary'] > 50000]['salary']
+        # Natural trigger via np.testing
         np.testing.assert_allclose(col_result, expected)
 
 
@@ -1073,12 +1072,12 @@ class TestLazySlice(unittest.TestCase):
         self.assertEqual(len(result), 3)
 
     def test_lazy_series_method_properties(self):
-        """Test properties like values, index, dtype."""
+        """Test properties like len, index, dtype."""
         ds = self.create_ds()
         result = ds['value'].head(3)
 
-        # Properties should work
-        self.assertEqual(len(result.values), 3)
+        # Natural triggers
+        self.assertEqual(len(result), 3)
         self.assertEqual(len(result.index), 3)
         self.assertIsNotNone(result.dtype)
 
@@ -1089,7 +1088,7 @@ class TestLazySlice(unittest.TestCase):
 
         # Arithmetic should work
         doubled = result * 2
-        self.assertEqual(list(doubled), [20, 40, 60])
+        np.testing.assert_array_equal(doubled, [20, 40, 60])
 
     def test_lazy_aggregate_head_returns_lazy_series_method(self):
         """Test that LazyAggregate.head() returns LazySeries."""
@@ -1225,13 +1224,12 @@ class TestColumnExprPlot(unittest.TestCase):
         ds = self.create_ds()
         col_expr = ds['value']
 
-        # Get the underlying data from plot accessor
         # PlotAccessor wraps the Series, we can verify via _parent
         plot_accessor = col_expr.plot
-        executed = col_expr._execute()
 
-        # The plot accessor's parent should match our executed Series
-        pd.testing.assert_series_equal(plot_accessor._parent, executed)
+        # Natural trigger: compare plot's data with expected pandas Series
+        expected = self.df['value']
+        pd.testing.assert_series_equal(plot_accessor._parent, expected)
 
 
 class TestColumnExprPandasProperties(unittest.TestCase):
@@ -1280,7 +1278,7 @@ class TestColumnExprPandasProperties(unittest.TestCase):
         """Test index property returns correct index."""
         ds = self.create_ds()
         index = ds['value'].index
-        self.assertEqual(list(index), [0, 1, 2, 3, 4])
+        np.testing.assert_array_equal(index, [0, 1, 2, 3, 4])
 
     def test_empty_property(self):
         """Test empty property."""
@@ -1374,11 +1372,12 @@ class TestColumnExprPandasMethods(unittest.TestCase):
         self.assertEqual(len(result.columns), 1)
 
     def test_copy_method(self):
-        """Test copy method returns pandas Series."""
+        """Test copy method returns LazySeries that executes to Series values."""
         ds = self.create_ds()
         result = ds['value'].copy()
-        self.assertIsInstance(result, pd.Series)
-        np.testing.assert_array_equal(result.values, [10, 20, 30, 40, 50])
+        # copy() now returns LazySeries for lazy execution
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(result, [10, 20, 30, 40, 50])
 
     def test_describe_method(self):
         """Test describe method."""
@@ -1399,26 +1398,26 @@ class TestColumnExprPandasMethods(unittest.TestCase):
         """Test nlargest method."""
         ds = self.create_ds()
         result = ds['value'].nlargest(3)
-        self.assertEqual(list(result.values), [50, 40, 30])
+        np.testing.assert_array_equal(result, [50, 40, 30])
 
     def test_nsmallest_method(self):
         """Test nsmallest method."""
         ds = self.create_ds()
         result = ds['value'].nsmallest(3)
-        self.assertEqual(list(result.values), [10, 20, 30])
+        np.testing.assert_array_equal(result, [10, 20, 30])
 
     def test_drop_duplicates_method(self):
         """Test drop_duplicates method."""
         ds = self.create_ds()
         result = ds['category'].drop_duplicates()
-        self.assertEqual(list(result.values), ['X', 'Y', 'Z'])
+        np.testing.assert_array_equal(result, ['X', 'Y', 'Z'])
 
     def test_duplicated_method(self):
         """Test duplicated method."""
         ds = self.create_ds()
         result = ds['category'].duplicated()
         expected = [False, True, False, True, False]
-        self.assertEqual(list(result.values), expected)
+        np.testing.assert_array_equal(result, expected)
 
     def test_agg_single_func(self):
         """Test agg with single function."""
@@ -1442,24 +1441,24 @@ class TestColumnExprPandasMethods(unittest.TestCase):
     def test_where_method(self):
         """Test where method."""
         ds = self.create_ds()
-        # Replace values where value <= 25 with 0
-        cond = ds['value']._execute() > 25
+        # Use comparison which returns ColumnExpr (condition)
+        cond = ds['value'] > 25
         result = ds['value'].where(cond, 0)
         expected = [0, 0, 30, 40, 50]
-        self.assertEqual(list(result.values), expected)
+        np.testing.assert_array_equal(result, expected)
 
     def test_argsort_method(self):
         """Test argsort method."""
         ds = self.create_ds()
         result = ds['value'].argsort()
         # Already sorted, so argsort returns [0, 1, 2, 3, 4]
-        self.assertEqual(list(result.values), [0, 1, 2, 3, 4])
+        np.testing.assert_array_equal(result, [0, 1, 2, 3, 4])
 
     def test_sort_index_method(self):
         """Test sort_index method."""
         ds = self.create_ds()
         result = ds['value'].sort_index(ascending=False)
-        self.assertEqual(list(result.index), [4, 3, 2, 1, 0])
+        np.testing.assert_array_equal(result.index, [4, 3, 2, 1, 0])
 
     def test_info_method(self):
         """Test info method runs without error."""
@@ -1492,7 +1491,7 @@ class TestColumnExprCatSparseAccessors(unittest.TestCase):
         ds._lazy_ops = [LazyDataFrameSource(df.copy())]
 
         categories = ds['category'].cat.categories
-        self.assertEqual(list(categories), ['a', 'b', 'c'])
+        np.testing.assert_array_equal(categories, ['a', 'b', 'c'])
 
     def test_cat_accessor_codes(self):
         """Test cat.codes returns correct codes."""
@@ -1501,7 +1500,7 @@ class TestColumnExprCatSparseAccessors(unittest.TestCase):
         ds._lazy_ops = [LazyDataFrameSource(df.copy())]
 
         codes = ds['category'].cat.codes
-        self.assertEqual(list(codes), [0, 1, 2, 0, 1])
+        np.testing.assert_array_equal(codes, [0, 1, 2, 0, 1])
 
     def test_cat_accessor_ordered(self):
         """Test cat.ordered property."""
