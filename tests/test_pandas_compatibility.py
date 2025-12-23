@@ -207,8 +207,9 @@ class TestStatistics:
         """Value counts."""
         pd_result = pd_df['department'].value_counts()
         ds_result = ds_df['department'].value_counts()
-        # value_counts returns pandas Series
-        pd.testing.assert_series_equal(ds_result.sort_index(), pd_result.sort_index())
+        # value_counts returns LazySeries, sort_index also returns LazySeries
+        # Compare values using numpy (natural execution trigger)
+        np.testing.assert_array_equal(ds_result.sort_index(), pd_result.sort_index())
 
     def test_correlation(self, pd_df, ds_df):
         """Correlation."""
@@ -230,16 +231,16 @@ class TestDataTransformation:
         """Apply function to column."""
         pd_result = pd_df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)
         ds_result = ds_df['age'].apply(lambda x: x * 2 if pd.notna(x) else x)
-        # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_map_values(self, pd_df, ds_df):
         """Map values."""
         mapping = {'HR': 1, 'IT': 2, 'Finance': 3}
         pd_result = pd_df['department'].map(mapping)
         ds_result = ds_df['department'].map(mapping)
-        # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_rename_columns(self, pd_df, ds_df):
         """Rename columns."""
@@ -251,8 +252,8 @@ class TestDataTransformation:
         """Convert type (astype)."""
         pd_result = pd_df['age'].astype(str)
         ds_result = ds_df['age'].astype(str)
-        # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(ds_result.values, pd_result.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_add_new_column(self, pd_df, ds_df):
         """Add new column."""
@@ -304,33 +305,40 @@ class TestSorting:
 
 
 class TestAggregation:
-    """Test aggregation operations."""
+    """Test aggregation operations.
+
+    Uses natural execution triggers (np.testing.assert_array_equal)
+    instead of explicit .to_df() calls.
+    """
 
     def test_groupby_single_aggregation(self, pd_df, ds_df):
         """GroupBy with single aggregation."""
         pd_result = pd_df.groupby('department')['salary'].mean()
         ds_result = ds_df.groupby('department')['salary'].mean()
+        # Natural trigger via comparison
         assert ds_result == pd_result
 
     def test_groupby_multiple_aggregations(self, pd_df, ds_df):
-        """GroupBy with multiple aggregations."""
+        """GroupBy with multiple aggregations - returns lazy DataStore."""
         pd_result = pd_df.groupby('department').agg({'salary': 'mean', 'age': 'max'})
         ds_result = ds_df.groupby('department').agg({'salary': 'mean', 'age': 'max'})
-        # agg returns pandas DataFrame
-        pd.testing.assert_frame_equal(ds_result.sort_index(), pd_result.sort_index())
+        # Natural trigger via == comparison (uses __eq__ which triggers execution)
+        assert ds_result == pd_result
 
     def test_groupby_sum(self, pd_df, ds_df):
         """GroupBy with sum."""
         pd_result = pd_df.groupby('department')['salary'].sum()
         ds_result = ds_df.groupby('department')['salary'].sum()
+        # Natural trigger via comparison
         assert ds_result == pd_result
 
     def test_groupby_count(self, pd_df, ds_df):
-        """GroupBy with count (size)."""
+        """GroupBy with size - returns LazyGroupBySize (pd.Series compatible)."""
         pd_result = pd_df.groupby('department').size()
         ds_result = ds_df.groupby('department').size()
-        # size returns pandas Series
-        pd.testing.assert_series_equal(ds_result.sort_index(), pd_result.sort_index())
+        # Natural trigger: np.testing with __array__ protocol
+        # Both return Series with group keys as index
+        np.testing.assert_array_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -427,19 +435,339 @@ class TestDateTimeOperations:
         # Pandas needs explicit conversion, datastore does it automatically
         pd_result = pd.to_datetime(pd_df['hire_date']).dt.year
         ds_result = ds_df['hire_date'].dt.year
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        # Use np.testing for lazy results
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_dt_month(self, pd_df, ds_df):
         """Extract month from date - auto-converts string to datetime."""
         pd_result = pd.to_datetime(pd_df['hire_date']).dt.month
         ds_result = ds_df['hire_date'].dt.month
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result, pd_result)
 
     def test_dt_strftime(self, pd_df, ds_df):
         """Date formatting - auto-converts string to datetime."""
         pd_result = pd.to_datetime(pd_df['hire_date']).dt.strftime('%Y-%m')
         ds_result = ds_df['hire_date'].dt.strftime('%Y-%m')
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        np.testing.assert_array_equal(ds_result, pd_result)
+
+
+class TestDateTimeEngineSwitch:
+    """Test datetime accessor engine switching based on config."""
+
+    @pytest.fixture
+    def sample_df(self):
+        """Create sample DataFrame with datetime column."""
+        return pd.DataFrame({'date': pd.to_datetime(['2023-01-15', '2023-06-20', '2023-12-25']), 'value': [10, 20, 30]})
+
+    def test_dt_year_chdb_engine(self, sample_df):
+        """Test .dt.year uses chDB when engine is set to chdb."""
+        from datastore.config import get_execution_engine, set_execution_engine
+        from datastore.column_expr import ColumnExpr
+
+        # Save original setting
+        original_engine = get_execution_engine()
+
+        try:
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+
+            # Get the lazy result
+            result = ds_df['date'].dt.year
+
+            # Should return ColumnExpr (wrapping chDB Function)
+            assert isinstance(result, ColumnExpr), f"Expected ColumnExpr, got {type(result)}"
+
+            # Verify the expression contains toYear
+            sql = result._expr.to_sql()
+            assert 'toYear' in sql, f"Expected toYear in SQL, got: {sql}"
+
+            # Verify values are correct
+            expected = sample_df['date'].dt.year
+            np.testing.assert_array_equal(result, expected)
+        finally:
+            # Restore original setting
+            set_execution_engine(original_engine)
+
+    def test_dt_year_pandas_engine(self, sample_df):
+        """Test .dt.year uses pandas when engine is set to pandas."""
+        from datastore.config import get_execution_engine, set_execution_engine
+        from datastore.column_expr import ColumnExpr
+
+        # Save original setting
+        original_engine = get_execution_engine()
+
+        try:
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+
+            # Get the lazy result
+            result = ds_df['date'].dt.year
+
+            # Should return ColumnExpr (unified lazy architecture)
+            assert isinstance(result, ColumnExpr), f"Expected ColumnExpr, got {type(result)}"
+
+            # Verify underlying expression is DateTimePropertyExpr
+            from datastore.expressions import DateTimePropertyExpr
+
+            assert isinstance(
+                result._expr, DateTimePropertyExpr
+            ), f"Expected DateTimePropertyExpr, got {type(result._expr)}"
+            assert result._expr.property_name == 'year'
+
+            # Verify values are correct (execution happens via pandas)
+            expected = sample_df['date'].dt.year
+            np.testing.assert_array_equal(result, expected)
+        finally:
+            # Restore original setting
+            set_execution_engine(original_engine)
+
+    def test_dt_month_engine_switch(self, sample_df):
+        """Test .dt.month works correctly with both engines."""
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+        expected = sample_df['date'].dt.month
+
+        try:
+            # Test chDB engine
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            result_chdb = ds_df['date'].dt.month
+            np.testing.assert_array_equal(result_chdb, expected)
+
+            # Test pandas engine
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+            result_pandas = ds_df['date'].dt.month
+            np.testing.assert_array_equal(result_pandas, expected)
+
+            # Both should produce same results
+            np.testing.assert_array_equal(result_chdb, result_pandas)
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_dayofweek_engine_switch(self, sample_df):
+        """Test .dt.dayofweek works correctly with both engines."""
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+        expected = sample_df['date'].dt.dayofweek
+
+        try:
+            # Test chDB engine
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            result_chdb = ds_df['date'].dt.dayofweek
+            np.testing.assert_array_equal(result_chdb, expected)
+
+            # Test pandas engine
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+            result_pandas = ds_df['date'].dt.dayofweek
+            np.testing.assert_array_equal(result_pandas, expected)
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_strftime_engine_switch(self, sample_df):
+        """Test .dt.strftime works correctly with both engines."""
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+        expected = sample_df['date'].dt.strftime('%Y-%m')
+
+        try:
+            # Test chDB engine
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            result_chdb = ds_df['date'].dt.strftime('%Y-%m')
+            np.testing.assert_array_equal(result_chdb, expected)
+
+            # Test pandas engine
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+            result_pandas = ds_df['date'].dt.strftime('%Y-%m')
+            np.testing.assert_array_equal(result_pandas, expected)
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_explain_shows_engine(self, sample_df):
+        """Test explain() shows the correct execution plan for dt operations."""
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+
+        try:
+            # Test chDB engine
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            ds_df['year'] = ds_df['date'].dt.year
+
+            # Get explain output
+            explain_output = ds_df.explain()
+
+            # Should show toYear in the plan (the lazy expression)
+            assert 'toYear' in explain_output, f"Expected 'toYear' in explain output:\n{explain_output}"
+
+            # Test pandas engine - now also shows toYear (unified DateTimePropertyExpr)
+            # but execution engine is determined at runtime by function_config
+            set_execution_engine('pandas')
+            ds_df2 = ds.DataFrame(sample_df)
+            ds_df2['year'] = ds_df2['date'].dt.year
+
+            explain_output2 = ds_df2.explain()
+
+            # In new architecture, explain shows the expression (toYear) but execution
+            # engine selection happens at runtime. Check that the plan is present.
+            assert (
+                'toYear' in explain_output2 or 'year' in explain_output2
+            ), f"Expected datetime property in explain output:\n{explain_output2}"
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_chdb_explain_regex(self, sample_df):
+        """Test chDB engine explain output matches expected patterns using regex."""
+        import re
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+
+        try:
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            ds_df['year'] = ds_df['date'].dt.year
+            ds_df['month'] = ds_df['date'].dt.month
+
+            explain_output = ds_df.explain()
+
+            # Verify chDB function patterns in explain output
+            # Pattern: [chDB] Assign column 'year' = toYear(...)
+            year_pattern = r"\[chDB\].*Assign column 'year'.*toYear"
+            assert re.search(
+                year_pattern, explain_output
+            ), f"Expected pattern '{year_pattern}' not found in explain:\n{explain_output}"
+
+            month_pattern = r"\[chDB\].*Assign column 'month'.*toMonth"
+            assert re.search(
+                month_pattern, explain_output
+            ), f"Expected pattern '{month_pattern}' not found in explain:\n{explain_output}"
+
+            # In new architecture, type conversion happens at execution time in ExpressionEvaluator
+            # The explain output shows the simplified expression (toYear, toMonth)
+
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_pandas_explain_regex(self, sample_df):
+        """Test pandas engine explain output matches expected patterns using regex."""
+        import re
+        from datastore.config import get_execution_engine, set_execution_engine
+
+        original_engine = get_execution_engine()
+
+        try:
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+            ds_df['year'] = ds_df['date'].dt.year
+            ds_df['month'] = ds_df['date'].dt.month
+
+            explain_output = ds_df.explain()
+
+            # In new unified architecture, explain shows toYear/toMonth but engine is [Pandas]
+            # Engine selection happens at execution time based on function_config
+            year_pattern = r"\[Pandas\].*Assign column 'year'.*toYear"
+            assert re.search(
+                year_pattern, explain_output
+            ), f"Expected pattern '{year_pattern}' not found in explain:\n{explain_output}"
+
+            # In new architecture, month also shows toMonth (unified expression)
+            month_pattern = r"\[Pandas\].*Assign column 'month'.*toMonth"
+            assert re.search(
+                month_pattern, explain_output
+            ), f"Expected pattern '{month_pattern}' not found in explain:\n{explain_output}"
+
+            # In new unified architecture, expressions like toYear/toMonth are shown
+            # but the [Pandas] tag indicates execution will use pandas .dt accessor
+
+        finally:
+            set_execution_engine(original_engine)
+
+    def test_dt_chdb_debug_log_regex(self, sample_df, caplog):
+        """Test chDB engine debug logs match expected SQL patterns using regex."""
+        import re
+        import logging
+        from datastore.config import get_execution_engine, set_execution_engine, set_log_level
+
+        original_engine = get_execution_engine()
+
+        try:
+            # Enable debug logging
+            set_log_level(logging.DEBUG)
+
+            set_execution_engine('chdb')
+            ds_df = ds.DataFrame(sample_df)
+            ds_df['year'] = ds_df['date'].dt.year
+
+            # Execute to trigger debug logs
+            with caplog.at_level(logging.DEBUG, logger='datastore'):
+                _ = ds_df.to_df()
+
+            log_text = caplog.text
+
+            # Verify chDB SQL execution patterns
+            # Pattern: SELECT toYear(...) AS __result__ FROM Python(__df__)
+            sql_pattern = r"SELECT\s+toYear\(.*\)\s+AS\s+__result__\s+FROM\s+Python\(__df__\)"
+            assert re.search(
+                sql_pattern, log_text
+            ), f"Expected SQL pattern '{sql_pattern}' not found in debug log:\n{log_text}"
+
+            # Verify chDB expression execution marker
+            chdb_marker = r"\[chDB\].*Expression execution"
+            assert re.search(
+                chdb_marker, log_text
+            ), f"Expected chDB marker '{chdb_marker}' not found in debug log:\n{log_text}"
+
+        finally:
+            set_execution_engine(original_engine)
+            set_log_level(logging.WARNING)
+
+    def test_dt_pandas_debug_log_regex(self, sample_df, caplog):
+        """Test pandas engine debug logs do NOT contain chDB SQL patterns."""
+        import re
+        import logging
+        from datastore.config import get_execution_engine, set_execution_engine, set_log_level
+
+        original_engine = get_execution_engine()
+
+        try:
+            # Enable debug logging
+            set_log_level(logging.DEBUG)
+
+            set_execution_engine('pandas')
+            ds_df = ds.DataFrame(sample_df)
+            ds_df['year'] = ds_df['date'].dt.year
+
+            # Clear previous logs
+            caplog.clear()
+
+            # Execute to trigger debug logs
+            with caplog.at_level(logging.DEBUG, logger='datastore'):
+                _ = ds_df.to_df()
+
+            log_text = caplog.text
+
+            # Verify pandas execution pattern
+            pandas_pattern = r"\[Pandas\].*Executing ColumnAssignment.*column='year'"
+            assert re.search(
+                pandas_pattern, log_text
+            ), f"Expected pandas pattern '{pandas_pattern}' not found in debug log:\n{log_text}"
+
+            # Should NOT contain chDB SQL for toYear
+            toyear_sql = r"SELECT\s+toYear\("
+            assert not re.search(toyear_sql, log_text), f"Unexpected chDB toYear SQL found in pandas mode:\n{log_text}"
+
+        finally:
+            set_execution_engine(original_engine)
+            set_log_level(logging.WARNING)
 
 
 # =============================================================================

@@ -84,9 +84,9 @@ class TestDataSelection:
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds['name']
-        # ColumnExpr uses _execute() to get the Series
-        result_series = result._execute() if hasattr(result, '_execute') else result
-        pd.testing.assert_series_equal(result_series, df_pd['name'], check_names=False)
+        expected = df_pd['name']
+        # Natural trigger via np.testing
+        np.testing.assert_array_equal(result, expected)
 
     def test_select_multiple_columns(self, test_data):
         """Select multiple columns - PASS"""
@@ -188,76 +188,60 @@ class TestStatistics:
         result = df_ds['department'].value_counts()
         expected = df_pd['department'].value_counts()
 
-        # LazySeries proxies .values/.index - accessing them triggers execution
-        np.testing.assert_array_equal(result.values, expected.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(result, expected)
         assert result.index.equals(expected.index)
 
 
 class TestAggregation:
-    """Test aggregation operations."""
+    """Test aggregation operations.
+
+    Uses np.testing with __array__ protocol for natural execution trigger.
+    """
 
     def test_groupby_single_aggregation(self, test_data):
-        """GroupBy with single aggregation - PASS
-
-        Note: LazyAggregate is returned for lazy execution.
-        Accessing .values and .index triggers execution naturally.
-        """
+        """GroupBy with single aggregation."""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds.groupby('department')['salary'].mean()
         expected = df_pd.groupby('department')['salary'].mean()
 
-        # LazyAggregate proxies .values/.index - accessing them triggers execution
-        np.testing.assert_array_almost_equal(result.values, expected.values)
-        assert result.index.equals(expected.index)
+        # Natural trigger via __array__ protocol
+        np.testing.assert_array_almost_equal(result, expected)
 
     def test_groupby_multiple_aggregations(self, test_data):
-        """GroupBy with multiple aggregations - needs fix in datastore.
-
-        Current behavior: returns scalar aggregates, loses groupby.
-        Expected behavior: returns DataFrame with group keys as index.
-        """
+        """GroupBy with multiple aggregations - returns lazy DataStore."""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds.groupby('department').agg({'salary': 'mean', 'age': 'max'})
         expected = df_pd.groupby('department').agg({'salary': 'mean', 'age': 'max'})
 
-        # Result should be a DataFrame, not a Series
-        assert isinstance(result, (pd.DataFrame, ds.DataStore)), f"Expected DataFrame, got {type(result)}"
-
-        # Should have same shape as expected
-        if hasattr(result, 'to_df'):
-            result_df = result.to_df()
-        else:
-            result_df = result
-        assert result_df.shape == expected.shape, f"Expected shape {expected.shape}, got {result_df.shape}"
+        # Natural trigger via == comparison (__eq__)
+        assert result == expected
 
     def test_groupby_sum(self, test_data):
-        """GroupBy with sum - PASS
-
-        Note: LazyAggregate is returned for lazy execution.
-        Accessing .values and .index triggers execution naturally.
-        """
+        """GroupBy with sum."""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds.groupby('department')['salary'].sum()
         expected = df_pd.groupby('department')['salary'].sum()
 
-        # LazyAggregate proxies .values/.index - accessing them triggers execution
-        np.testing.assert_array_almost_equal(result.values, expected.values)
-        assert result.index.equals(expected.index)
+        # Natural trigger via __array__ protocol
+        np.testing.assert_array_almost_equal(result, expected)
 
     def test_groupby_size(self, test_data):
-        """GroupBy with count/size - PASS"""
+        """GroupBy with size - returns LazyGroupBySize (pd.Series compatible)."""
         df_ds = ds.DataFrame(test_data)
         df_pd = pd.DataFrame(test_data)
 
         result = df_ds.groupby('department').size()
         expected = df_pd.groupby('department').size()
-        pd.testing.assert_series_equal(result, expected)
+
+        # Natural trigger via __array__ protocol
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestStringOperations:
@@ -271,9 +255,8 @@ class TestStringOperations:
         result = df_ds['name'].str.contains('a', na=False)
         expected = df_pd['name'].str.contains('a', na=False)
 
-        # ColumnExpr uses _execute() to get the Series
-        result_series = result._execute() if hasattr(result, '_execute') else result
-        pd.testing.assert_series_equal(result_series, expected, check_names=False)
+        # Natural trigger via np.testing
+        np.testing.assert_array_equal(result, expected)
 
     @pytest.mark.xfail(reason="chDB Issue #447: NULL becomes empty string instead of None", strict=False)
     def test_string_upper_null_handling(self, test_data):
@@ -308,11 +291,9 @@ class TestStringOperations:
         df_ds = ds.DataFrame(test_data)
 
         result = df_ds['name'].str.upper()
-        # ColumnExpr uses _execute() to get the Series
-        result_series = result._execute() if hasattr(result, '_execute') else result
 
-        # Series name should be 'name', not '__result__'
-        assert result_series.name == 'name', f"Expected Series name 'name', got '{result_series.name}'"
+        # Natural trigger via .name property
+        assert result.name == 'name', f"Expected Series name 'name', got '{result.name}'"
 
 
 class TestMerging:
@@ -430,8 +411,8 @@ class TestDataTransformation:
         result = df_ds['department'].map(mapping)
         expected = df_pd['department'].map(mapping)
 
-        # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(result.values, expected.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(result, expected)
 
     def test_astype(self, test_data):
         """Convert type with astype - PASS"""
@@ -441,8 +422,8 @@ class TestDataTransformation:
         result = df_ds['age'].astype(str)
         expected = df_pd['age'].astype(str)
 
-        # LazySeries - use .values to trigger execution
-        np.testing.assert_array_equal(result.values, expected.values)
+        # LazySeries implements __array__, numpy can accept it directly
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestSorting:

@@ -25,12 +25,12 @@ class TestColumnReferenceTypes:
         np.random.seed(42)
         self.df = pd.DataFrame(
             {
-            'altitude': [10000.5, 20000.3, 30000.1, 15000.8, 25000.2],
-            'speed': [450.0, 520.0, 580.0, 490.0, 550.0],
-            'fuel_level': [85.5, 72.3, 65.1, 78.9, 69.4],
-            'aircraft_id': ['A001', 'A002', 'A003', 'A001', 'A002'],
-            'flight_phase': ['climb', 'cruise', 'cruise', 'descent', 'cruise'],
-            'timestamp': pd.date_range('2024-01-01 08:00', periods=5, freq='h'),
+                'altitude': [10000.5, 20000.3, 30000.1, 15000.8, 25000.2],
+                'speed': [450.0, 520.0, 580.0, 490.0, 550.0],
+                'fuel_level': [85.5, 72.3, 65.1, 78.9, 69.4],
+                'aircraft_id': ['A001', 'A002', 'A003', 'A001', 'A002'],
+                'flight_phase': ['climb', 'cruise', 'cruise', 'descent', 'cruise'],
+                'timestamp': pd.date_range('2024-01-01 08:00', periods=5, freq='h'),
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -38,12 +38,12 @@ class TestColumnReferenceTypes:
     def test_type_consistency_basic(self):
         """
         Critical Test: Verify types returned by three reference methods
-        
+
         Expected behavior:
         - ds["col"] → ColumnExpr
         - ds.col → ColumnExpr
         - col("col") → Field
-        
+
         This is a design decision, but may cause issues when mixing methods
         """
         ref_getitem = self.ds["altitude"]
@@ -95,9 +95,9 @@ class TestArithmeticOperationsMixed:
         """Setup test data"""
         self.df = pd.DataFrame(
             {
-            'altitude': [10000.0, 20000.0, 30000.0],
-            'speed': [450.0, 520.0, 580.0],
-            'fuel_rate': [100.0, 120.0, 140.0],
+                'altitude': [10000.0, 20000.0, 30000.0],
+                'speed': [450.0, 520.0, 580.0],
+                'fuel_rate': [100.0, 120.0, 140.0],
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -136,7 +136,7 @@ class TestArithmeticOperationsMixed:
     def test_addition_mixed_reference_styles(self):
         """
         CRITICAL TEST: Mixed usage of different reference methods for addition
-        
+
         Aviation scenario: Computing flight parameters
         altitude_adjusted = ds["altitude"] + col("speed")
         """
@@ -167,25 +167,25 @@ class TestArithmeticOperationsMixed:
         """
         # Create new column using mixed references
         ds = self.ds
-        
+
         # Method 1: ds["col"] style
         ds['total1'] = ds["altitude"] + ds["speed"]
-        
-        # Method 2: ds.col style  
+
+        # Method 2: ds.col style
         ds['total2'] = ds.altitude + ds.speed
-        
+
         # Method 3: Mixed - this is where bugs might hide
         ds['total3'] = ds["altitude"] + self.ds.speed
-        
+
         result = ds.to_df()
-        
+
         # All three should produce identical results
         np.testing.assert_array_almost_equal(
-            result['total1'].values, result['total2'].values, err_msg="ds['col'] vs ds.col produced different results"
+            result['total1'], result['total2'], err_msg="ds['col'] vs ds.col produced different results"
         )
         np.testing.assert_array_almost_equal(
-            result['total1'].values, 
-            result['total3'].values,
+            result['total1'],
+            result['total3'],
             err_msg="Mixed reference styles produced different results",
         )
 
@@ -198,10 +198,10 @@ class TestComparisonOperationsMixed:
         """Setup test data with aviation safety thresholds"""
         self.df = pd.DataFrame(
             {
-            'altitude': [5000, 10000, 15000, 20000, 25000],
-            'min_safe_altitude': [6000, 8000, 10000, 12000, 14000],
-            'fuel_level': [90, 75, 60, 45, 30],
-            'min_fuel_required': [20, 25, 30, 35, 40],
+                'altitude': [5000, 10000, 15000, 20000, 25000],
+                'min_safe_altitude': [6000, 8000, 10000, 12000, 14000],
+                'fuel_level': [90, 75, 60, 45, 30],
+                'min_fuel_required': [20, 25, 30, 35, 40],
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -209,7 +209,7 @@ class TestComparisonOperationsMixed:
     def test_comparison_types(self):
         """
         Verify types returned by comparison operations
-        
+
         Expected:
         - ds["col"] > x returns ColumnExpr wrapping Condition (can execute AND be used as condition)
         - col("col") > x returns Condition (SQL-only, no DataStore context)
@@ -238,7 +238,7 @@ class TestComparisonOperationsMixed:
     def test_column_to_column_comparison(self):
         """
         CRITICAL: Column-to-column comparison (aviation safety check scenario)
-        
+
         Verify altitude > min_safe_altitude behavior with different reference methods
         """
         # Check if altitude is above minimum safe altitude
@@ -269,7 +269,7 @@ class TestComparisonOperationsMixed:
     def test_mixed_comparison_execution(self):
         """
         Verify mixed comparisons execute correctly and return identical results
-        
+
         Aviation scenario: Filter unsafe flight conditions
         """
         # Use different reference methods to filter the same condition
@@ -291,10 +291,10 @@ class TestAggregationMixed:
         np.random.seed(42)
         self.df = pd.DataFrame(
             {
-            'flight_id': ['F001'] * 10 + ['F002'] * 10,
-            'altitude': np.random.uniform(20000, 40000, 20),
-            'fuel_consumed': np.random.uniform(50, 200, 20),
-            'speed': np.random.uniform(400, 600, 20),
+                'flight_id': ['F001'] * 10 + ['F002'] * 10,
+                'altitude': np.random.uniform(20000, 40000, 20),
+                'fuel_consumed': np.random.uniform(50, 200, 20),
+                'speed': np.random.uniform(400, 600, 20),
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -319,7 +319,7 @@ class TestAggregationMixed:
     def test_aggregation_with_ds_getitem(self):
         """
         Try aggregation using ds["col"]
-        
+
         CRITICAL: This may fail because ColumnExpr and Field may have different aggregation methods
         """
         try:
@@ -329,11 +329,11 @@ class TestAggregationMixed:
             )
             result = stats.to_df()
             print(f"ds['col'].agg() succeeded: {result.columns.tolist()}")
-            
+
             # Verify correctness
             assert len(result) == 2
             assert 'avg_altitude' in result.columns
-            
+
         except Exception as e:
             pytest.fail(f"ds['col'] aggregation failed: {e}")
 
@@ -348,17 +348,17 @@ class TestAggregationMixed:
             )
             result = stats.to_df()
             print(f"ds.col.agg() succeeded: {result.columns.tolist()}")
-            
+
             assert len(result) == 2
             assert 'avg_altitude' in result.columns
-            
+
         except Exception as e:
             pytest.fail(f"ds.col aggregation failed: {e}")
 
     def test_aggregation_mixed_styles(self):
         """
         CRITICAL: Mixing different reference methods in the same aggregation
-        
+
         This is the most error-prone scenario!
         """
         try:
@@ -370,12 +370,12 @@ class TestAggregationMixed:
             result = stats.to_df()
             print(f"Mixed aggregation succeeded: {result.columns.tolist()}")
             print(result)
-            
+
             assert len(result) == 2
             assert 'avg_altitude' in result.columns
             assert 'total_fuel' in result.columns
             assert 'max_speed' in result.columns
-            
+
         except Exception as e:
             pytest.fail(f"Mixed style aggregation failed: {e}")
 
@@ -387,7 +387,7 @@ class TestAggregationMixed:
         stats1 = (
             self.ds.groupby('flight_id')
             .agg(
-            avg_alt=col('altitude').mean(),
+                avg_alt=col('altitude').mean(),
             )
             .to_df()
             .sort_values('flight_id')
@@ -398,7 +398,7 @@ class TestAggregationMixed:
         stats2 = (
             self.ds.groupby('flight_id')
             .agg(
-            avg_alt=self.ds['altitude'].mean(),
+                avg_alt=self.ds['altitude'].mean(),
             )
             .to_df()
             .sort_values('flight_id')
@@ -409,7 +409,7 @@ class TestAggregationMixed:
         stats3 = (
             self.ds.groupby('flight_id')
             .agg(
-            avg_alt=self.ds.altitude.mean(),
+                avg_alt=self.ds.altitude.mean(),
             )
             .to_df()
             .sort_values('flight_id')
@@ -433,9 +433,9 @@ class TestAssignmentMixed:
         """Setup test data"""
         self.df = pd.DataFrame(
             {
-            'altitude_ft': [10000, 20000, 30000],
-            'speed_knots': [250, 300, 350],
-            'temperature_c': [-10, -20, -30],
+                'altitude_ft': [10000, 20000, 30000],
+                'speed_knots': [250, 300, 350],
+                'temperature_c': [-10, -20, -30],
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -443,22 +443,22 @@ class TestAssignmentMixed:
     def test_assignment_with_col(self):
         """
         Column assignment using col()
-        
+
         CRITICAL: col() has no DataStore reference, assignment may have issues
         """
         ds = DataStore.from_df(self.df.copy())
-        
+
         try:
             # Convert feet to meters using col()
             ds['altitude_m'] = col('altitude_ft') * 0.3048
             result = ds.to_df()
-            
+
             expected = self.df['altitude_ft'] * 0.3048
             np.testing.assert_array_almost_equal(
                 result['altitude_m'].values, expected.values, err_msg="col() assignment produced wrong values"
             )
             print("col() assignment succeeded")
-            
+
         except Exception as e:
             pytest.fail(f"col() assignment failed: {e}")
 
@@ -467,10 +467,10 @@ class TestAssignmentMixed:
         Column assignment using ds["col"]
         """
         ds = DataStore.from_df(self.df.copy())
-        
+
         ds['altitude_m'] = ds['altitude_ft'] * 0.3048
         result = ds.to_df()
-        
+
         expected = self.df['altitude_ft'] * 0.3048
         np.testing.assert_array_almost_equal(result['altitude_m'].values, expected.values)
 
@@ -479,26 +479,26 @@ class TestAssignmentMixed:
         Column assignment using ds.col
         """
         ds = DataStore.from_df(self.df.copy())
-        
+
         ds['altitude_m'] = ds.altitude_ft * 0.3048
         result = ds.to_df()
-        
+
         expected = self.df['altitude_ft'] * 0.3048
         np.testing.assert_array_almost_equal(result['altitude_m'].values, expected.values)
 
     def test_assignment_mixed_expression(self):
         """
         CRITICAL: Complex expression assignment with mixed reference methods
-        
+
         Aviation scenario: Calculate True Air Speed (TAS) = IAS * sqrt(rho0/rho)
         Simplified: adjusted_speed = speed * (1 + altitude/100000)
         """
         ds = DataStore.from_df(self.df.copy())
-        
+
         # Mix all three styles in one expression
         ds['adjusted_speed'] = ds.speed_knots * (1 + ds['altitude_ft'] / 100000)
         result = ds.to_df()
-        
+
         expected = self.df['speed_knots'] * (1 + self.df['altitude_ft'] / 100000)
         np.testing.assert_array_almost_equal(
             result['adjusted_speed'].values, expected.values, err_msg="Mixed reference assignment produced wrong values"
@@ -507,7 +507,7 @@ class TestAssignmentMixed:
     def test_chained_assignment_consistency(self):
         """
         Verify consistency of chained assignments
-        
+
         Calculate the same values using different reference methods, results should be consistent
         """
         # Fresh copy for each method
@@ -551,10 +551,10 @@ class TestFunctionChainMixed:
         """Setup test data"""
         self.df = pd.DataFrame(
             {
-            'lat': [40.7128, 34.0522, 41.8781],
-            'lon': [-74.0060, -118.2437, -87.6298],
-            'aircraft_name': ['Boeing 737', 'AIRBUS A320', 'embraer e190'],
-            'message': ['MAYDAY MAYDAY', 'All normal', 'Request vector'],
+                'lat': [40.7128, 34.0522, 41.8781],
+                'lon': [-74.0060, -118.2437, -87.6298],
+                'aircraft_name': ['Boeing 737', 'AIRBUS A320', 'embraer e190'],
+                'message': ['MAYDAY MAYDAY', 'All normal', 'Request vector'],
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -603,17 +603,17 @@ class TestFunctionChainMixed:
     def test_datetime_functions_mixed(self):
         """
         Test mixed usage of datetime functions
-        
-        KNOWN ISSUE: chDB's Python() table function converts timezone-naive 
+
+        KNOWN ISSUE: chDB's Python() table function converts timezone-naive
         datetime64[ns] to UTC, then displays in ClickHouse's default timezone.
         This causes time shifts when local timezone != UTC.
-        
+
         This test verifies CONSISTENCY between reference methods, not absolute values.
         """
         df_with_dates = pd.DataFrame(
             {
-            'departure_time': pd.date_range('2024-01-01 06:00', periods=5, freq='2h'),
-            'flight_duration_min': [120, 180, 90, 240, 150],
+                'departure_time': pd.date_range('2024-01-01 06:00', periods=5, freq='2h'),
+                'flight_duration_min': [120, 180, 90, 240, 150],
             }
         )
         ds = DataStore.from_df(df_with_dates)
@@ -629,7 +629,7 @@ class TestFunctionChainMixed:
         assert (
             result['hour_getitem'].tolist() == result['hour_getattr'].tolist()
         ), "Different reference methods produced different hour values!"
-        
+
         # Verify the hour increments are correct (2 hour intervals)
         hours = result['hour_getitem'].tolist()
         for i in range(1, len(hours)):
@@ -645,10 +645,10 @@ class TestEdgeCasesAndCornerCases:
         """Setup test data"""
         self.df = pd.DataFrame(
             {
-            'value': [1.0, 2.0, 3.0, np.nan, 5.0],
-            'category': ['A', 'B', 'A', 'B', 'A'],
-            'zero': [0, 0, 0, 0, 0],
-            'negative': [-1, -2, -3, -4, -5],
+                'value': [1.0, 2.0, 3.0, np.nan, 5.0],
+                'category': ['A', 'B', 'A', 'B', 'A'],
+                'zero': [0, 0, 0, 0, 0],
+                'negative': [-1, -2, -3, -4, -5],
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -673,17 +673,17 @@ class TestEdgeCasesAndCornerCases:
     def test_division_by_zero_consistency(self):
         """
         Verify division by zero handling consistency
-        
+
         Aviation: This kind of error could cause invalid flight parameter calculations
         """
         ds = DataStore.from_df(self.df.copy())
-        
+
         # Division by zero column
         ds['ratio1'] = ds['negative'] / ds['zero']
         ds['ratio2'] = ds.negative / ds.zero
-        
+
         result = ds.to_df()
-        
+
         # Both should handle division by zero the same way (likely inf or error)
         # The key is consistency, not the specific handling
         for i in range(len(result)):
@@ -703,10 +703,10 @@ class TestEdgeCasesAndCornerCases:
         """
         df_reserved = pd.DataFrame(
             {
-            'from': [1, 2, 3],
-            'select': [4, 5, 6],
-            'where': [7, 8, 9],
-            'class': [10, 11, 12],
+                'from': [1, 2, 3],
+                'select': [4, 5, 6],
+                'where': [7, 8, 9],
+                'class': [10, 11, 12],
             }
         )
         ds = DataStore.from_df(df_reserved)
@@ -729,15 +729,15 @@ class TestEdgeCasesAndCornerCases:
     def test_complex_nested_expression(self):
         """
         Test complex nested expressions
-        
+
         Aviation scenario: Multi-parameter calculation
         """
         df = pd.DataFrame(
             {
-            'altitude': [10000, 20000, 30000],
-            'temperature': [-10, -30, -50],
-            'pressure': [697, 466, 301],
-            'speed': [250, 300, 350],
+                'altitude': [10000, 20000, 30000],
+                'temperature': [-10, -30, -50],
+                'pressure': [697, 466, 301],
+                'speed': [250, 300, 350],
             }
         )
         ds = DataStore.from_df(df)
@@ -747,10 +747,10 @@ class TestEdgeCasesAndCornerCases:
         ds['density_altitude'] = ds['altitude'] + (ds.temperature - 15) * 120 + (1013 - ds['pressure']) * 30
 
         result = ds.to_df()
-        
+
         # Manual calculation for verification
         expected = df['altitude'] + (df['temperature'] - 15) * 120 + (1013 - df['pressure']) * 30
-        
+
         np.testing.assert_array_almost_equal(
             result['density_altitude'].values,
             expected.values,
@@ -766,8 +766,8 @@ class TestLazyExecutionConsistency:
         """Setup test data"""
         self.df = pd.DataFrame(
             {
-            'x': list(range(100)),
-            'y': list(range(100, 200)),
+                'x': list(range(100)),
+                'y': list(range(100, 200)),
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -795,8 +795,8 @@ class TestLazyExecutionConsistency:
         result2 = ds2.to_df()
         result3 = ds3.to_df()
 
-        np.testing.assert_array_equal(result1['z'].values, result2['z'].values)
-        np.testing.assert_array_equal(result1['z'].values, result3['z'].values)
+        np.testing.assert_array_equal(result1['z'], result2['z'])
+        np.testing.assert_array_equal(result1['z'], result3['z'])
 
     def test_multiple_operations_before_execution(self):
         """
@@ -828,10 +828,10 @@ class TestLazyExecutionConsistency:
         expected_c = self.df['x'] + self.df['y']
         expected_d = expected_a + expected_b
 
-        np.testing.assert_array_equal(result['a'].values, expected_a.values)
-        np.testing.assert_array_equal(result['b'].values, expected_b.values)
-        np.testing.assert_array_equal(result['c'].values, expected_c.values)
-        np.testing.assert_array_equal(result['d'].values, expected_d.values)
+        np.testing.assert_array_equal(result['a'], expected_a)
+        np.testing.assert_array_equal(result['b'], expected_b)
+        np.testing.assert_array_equal(result['c'], expected_c)
+        np.testing.assert_array_equal(result['d'], expected_d)
 
 
 class TestRealWorldAviationScenarios:
@@ -845,19 +845,19 @@ class TestRealWorldAviationScenarios:
 
         self.df = pd.DataFrame(
             {
-            'flight_id': [f'F{i:04d}' for i in range(n_records)],
-            'aircraft_type': np.random.choice(['B737', 'A320', 'E190', 'CRJ9'], n_records),
-            'departure_airport': np.random.choice(['JFK', 'LAX', 'ORD', 'DFW', 'ATL'], n_records),
-            'arrival_airport': np.random.choice(['JFK', 'LAX', 'ORD', 'DFW', 'ATL'], n_records),
-            'altitude_ft': np.random.uniform(25000, 41000, n_records),
-            'ground_speed_knots': np.random.uniform(350, 550, n_records),
-            'heading_degrees': np.random.uniform(0, 360, n_records),
-            'fuel_remaining_lbs': np.random.uniform(5000, 45000, n_records),
-            'fuel_flow_lbs_hr': np.random.uniform(2000, 8000, n_records),
-            'outside_air_temp_c': np.random.uniform(-60, -40, n_records),
-            'wind_speed_knots': np.random.uniform(0, 100, n_records),
-            'wind_direction': np.random.uniform(0, 360, n_records),
-            'timestamp': pd.date_range('2024-01-01', periods=n_records, freq='min'),
+                'flight_id': [f'F{i:04d}' for i in range(n_records)],
+                'aircraft_type': np.random.choice(['B737', 'A320', 'E190', 'CRJ9'], n_records),
+                'departure_airport': np.random.choice(['JFK', 'LAX', 'ORD', 'DFW', 'ATL'], n_records),
+                'arrival_airport': np.random.choice(['JFK', 'LAX', 'ORD', 'DFW', 'ATL'], n_records),
+                'altitude_ft': np.random.uniform(25000, 41000, n_records),
+                'ground_speed_knots': np.random.uniform(350, 550, n_records),
+                'heading_degrees': np.random.uniform(0, 360, n_records),
+                'fuel_remaining_lbs': np.random.uniform(5000, 45000, n_records),
+                'fuel_flow_lbs_hr': np.random.uniform(2000, 8000, n_records),
+                'outside_air_temp_c': np.random.uniform(-60, -40, n_records),
+                'wind_speed_knots': np.random.uniform(0, 100, n_records),
+                'wind_direction': np.random.uniform(0, 360, n_records),
+                'timestamp': pd.date_range('2024-01-01', periods=n_records, freq='min'),
             }
         )
         self.ds = DataStore.from_df(self.df)
@@ -865,9 +865,9 @@ class TestRealWorldAviationScenarios:
     def test_fuel_endurance_calculation(self):
         """
         Calculate fuel endurance time
-        
+
         endurance_hours = fuel_remaining / fuel_flow
-        
+
         Aviation safety critical calculation!
         """
         ds = DataStore.from_df(self.df.copy())
@@ -896,7 +896,7 @@ class TestRealWorldAviationScenarios:
     def test_true_airspeed_approximation(self):
         """
         True airspeed approximation
-        
+
         TAS ≈ IAS * sqrt(T_std / T_actual) * sqrt(P_std / P_actual)
         Simplified: TAS ≈ GS * (1 + altitude / 150000)
         """
@@ -906,7 +906,7 @@ class TestRealWorldAviationScenarios:
         ds['tas_approx'] = ds.ground_speed_knots * (1 + ds['altitude_ft'] / 150000)
 
         result = ds.to_df()
-        
+
         # Verify calculation
         expected = self.df['ground_speed_knots'] * (1 + self.df['altitude_ft'] / 150000)
         np.testing.assert_array_almost_equal(result['tas_approx'].values, expected.values)
@@ -914,7 +914,7 @@ class TestRealWorldAviationScenarios:
     def test_fleet_statistics_by_aircraft_type(self):
         """
         Fleet statistics by aircraft type
-        
+
         Using mixed reference methods for group aggregation
         """
         stats = self.ds.groupby('aircraft_type').agg(
@@ -938,7 +938,7 @@ class TestRealWorldAviationScenarios:
     def test_low_fuel_warning_filter(self):
         """
         Low fuel warning filter
-        
+
         Aviation safety critical: Filter flights with fuel endurance < 2 hours
         """
         # Calculate endurance first
@@ -960,7 +960,7 @@ class TestRealWorldAviationScenarios:
     def test_complex_aviation_pipeline(self):
         """
         Complex aviation data processing pipeline
-        
+
         1. Calculate derived fields (mixed reference methods)
         2. Filter conditions
         3. Group aggregation
@@ -989,7 +989,7 @@ class TestRealWorldAviationScenarios:
 class TestKnownIssues:
     """
     Tests documenting known issues
-    
+
     These tests are marked as xfail or contain KNOWN ISSUE comments
     Aerospace applications must be aware of these limitations
     """
@@ -997,39 +997,39 @@ class TestKnownIssues:
     def test_timezone_handling_issue(self):
         """
         KNOWN ISSUE: Inconsistent timezone handling
-        
+
         Pandas datetime64[ns] is timezone-naive, but chDB treats it as UTC
         and converts to ClickHouse default timezone.
-        
+
         Aviation impact:
         - Flight time calculations may be off by 8+ hours
         - Departure/arrival times displayed incorrectly
         - Cross-timezone flight calculations incorrect
         """
         import chdb
-        
+
         df = pd.DataFrame(
             {
-            'event_time': pd.date_range('2024-01-01 00:00', periods=3, freq='h'),
+                'event_time': pd.date_range('2024-01-01 00:00', periods=3, freq='h'),
             }
         )
-        
+
         # Get ClickHouse timezone
         tz_result = chdb.query("SELECT timezone()", 'CSV')
         ch_timezone = str(tz_result).strip().strip('"').strip()
-        
+
         ds = DataStore.from_df(df)
         ds['hour'] = ds['event_time'].dt.hour
         result = ds.to_df()
-        
+
         pandas_hours = df['event_time'].dt.hour.tolist()
         chdb_hours = result['hour'].tolist()
-        
+
         # Log difference but don't fail (this is known behavior)
         print(f"\nClickHouse timezone: {ch_timezone}")
         print(f"Pandas hours: {pandas_hours}")
         print(f"chDB hours: {chdb_hours}")
-        
+
         if pandas_hours != chdb_hours:
             print("WARNING: Timezone mismatch detected!")
             print("This is a KNOWN ISSUE when ClickHouse timezone != UTC")
@@ -1040,26 +1040,26 @@ class TestKnownIssues:
     def test_column_name_quote_escaping(self):
         """
         KNOWN ISSUE: Double quotes in column names not properly escaped
-        
+
         SQL generated: "col"name" (should be "col""name")
-        
+
         Although it may currently work, this is a potential security and stability risk.
         """
         col_with_quote = 'test"col'
-        
+
         df = pd.DataFrame(
             {
-            col_with_quote: [1, 2, 3],
+                col_with_quote: [1, 2, 3],
             }
         )
-        
+
         ds = DataStore.from_df(df)
         expr = col(col_with_quote)
         generated_sql = expr.to_sql()
-        
+
         print(f"\nColumn name: {col_with_quote}")
         print(f"Generated SQL: {generated_sql}")
-        
+
         # Ideally should be "test""col"
         # But actually is "test"col"
         if '""' not in generated_sql and '"' in col_with_quote:
@@ -1069,42 +1069,42 @@ class TestKnownIssues:
     def test_type_inconsistency_documentation(self):
         """
         DESIGN NOTE: col() vs ds["col"] return different types
-        
+
         col() -> Field (no DataStore binding)
         ds["col"] -> ColumnExpr (with DataStore binding)
         ds.col -> ColumnExpr (with DataStore binding)
-        
+
         In the current implementation, this difference doesn't cause errors because
         methods like agg() can correctly handle both types. But users should be aware of this.
         """
         df = pd.DataFrame({'x': [1, 2, 3]})
         ds = DataStore.from_df(df)
-        
+
         ref_col = col('x')
         ref_getitem = ds['x']
         ref_getattr = ds.x
-        
+
         print(f"\ncol('x') type: {type(ref_col).__name__}")
         print(f"ds['x'] type: {type(ref_getitem).__name__}")
         print(f"ds.x type: {type(ref_getattr).__name__}")
-        
+
         # Verify types
         assert isinstance(ref_col, Field)
         assert isinstance(ref_getitem, ColumnExpr)
         assert isinstance(ref_getattr, ColumnExpr)
-        
+
         # Verify their SQL output is consistent
         sql_col = ref_col.to_sql()
         sql_getitem = ref_getitem._expr.to_sql()
         sql_getattr = ref_getattr._expr.to_sql()
-        
+
         assert sql_col == sql_getitem == sql_getattr, "SQL output should be identical regardless of reference method"
 
 
 class TestCriticalAviationScenarios:
     """
     Critical aviation scenario tests
-    
+
     These tests simulate real aviation calculation scenarios to verify library reliability in critical applications.
     """
 
@@ -1113,22 +1113,22 @@ class TestCriticalAviationScenarios:
         """Setup realistic aviation data"""
         np.random.seed(42)
         self.n_records = 100
-        
+
         self.flight_data = pd.DataFrame(
             {
-            'flight_id': [f'UAL{i:04d}' for i in range(self.n_records)],
-            'callsign': [f'UNITED{i}' for i in range(self.n_records)],
-            'altitude_ft': np.random.uniform(25000, 41000, self.n_records),
-            'indicated_airspeed_kts': np.random.uniform(250, 350, self.n_records),
-            'mach_number': np.random.uniform(0.75, 0.85, self.n_records),
-            'heading_true': np.random.uniform(0, 360, self.n_records),
-            'latitude': np.random.uniform(30, 50, self.n_records),
-            'longitude': np.random.uniform(-130, -70, self.n_records),
-            'fuel_qty_lbs': np.random.uniform(10000, 50000, self.n_records),
-            'fuel_flow_lbs_hr': np.random.uniform(3000, 7000, self.n_records),
-            'oat_celsius': np.random.uniform(-60, -40, self.n_records),
-            'wind_speed_kts': np.random.uniform(0, 100, self.n_records),
-            'wind_direction': np.random.uniform(0, 360, self.n_records),
+                'flight_id': [f'UAL{i:04d}' for i in range(self.n_records)],
+                'callsign': [f'UNITED{i}' for i in range(self.n_records)],
+                'altitude_ft': np.random.uniform(25000, 41000, self.n_records),
+                'indicated_airspeed_kts': np.random.uniform(250, 350, self.n_records),
+                'mach_number': np.random.uniform(0.75, 0.85, self.n_records),
+                'heading_true': np.random.uniform(0, 360, self.n_records),
+                'latitude': np.random.uniform(30, 50, self.n_records),
+                'longitude': np.random.uniform(-130, -70, self.n_records),
+                'fuel_qty_lbs': np.random.uniform(10000, 50000, self.n_records),
+                'fuel_flow_lbs_hr': np.random.uniform(3000, 7000, self.n_records),
+                'oat_celsius': np.random.uniform(-60, -40, self.n_records),
+                'wind_speed_kts': np.random.uniform(0, 100, self.n_records),
+                'wind_direction': np.random.uniform(0, 360, self.n_records),
             }
         )
         self.ds = DataStore.from_df(self.flight_data)
@@ -1136,20 +1136,20 @@ class TestCriticalAviationScenarios:
     def test_fuel_exhaustion_time_calculation(self):
         """
         Fuel exhaustion time calculation - Critical safety calculation
-        
+
         time_to_exhaustion = fuel_qty / fuel_flow
-        
+
         Errors could lead to: fuel exhaustion, emergency landing, accidents
         """
         ds = DataStore.from_df(self.flight_data.copy())
-        
+
         # Calculate using three different methods
         ds['tte_method1'] = ds['fuel_qty_lbs'] / ds['fuel_flow_lbs_hr']
         ds['tte_method2'] = ds.fuel_qty_lbs / ds.fuel_flow_lbs_hr
         ds['tte_method3'] = col('fuel_qty_lbs') / col('fuel_flow_lbs_hr')
-        
+
         result = ds.to_df()
-        
+
         # Verify all three methods produce identical results
         np.testing.assert_array_almost_equal(
             result['tte_method1'].values,
@@ -1163,7 +1163,7 @@ class TestCriticalAviationScenarios:
             decimal=10,
             err_msg="CRITICAL: Fuel exhaustion time calculation inconsistency!",
         )
-        
+
         # Verify results are reasonable
         assert all(result['tte_method1'] > 0), "Fuel exhaustion time must be positive!"
         assert all(result['tte_method1'] < 24), "Fuel exhaustion time seems unreasonably high!"
@@ -1171,28 +1171,28 @@ class TestCriticalAviationScenarios:
     def test_true_airspeed_from_mach(self):
         """
         True airspeed calculation (from Mach number)
-        
+
         TAS = Mach * sqrt(gamma * R * T)
         Simplified: TAS ≈ Mach * 661.47 * sqrt((OAT + 273.15) / 288.15)
-        
+
         Errors could lead to: flight plan errors, fuel calculation errors, airspace conflicts
         """
         ds = DataStore.from_df(self.flight_data.copy())
-        
+
         # Calculate using mixed reference methods
         # TAS = Mach * 661.47 * sqrt((OAT_K) / 288.15)
         # where OAT_K = OAT_C + 273.15
-        
+
         # First calculate Kelvin temperature
         ds['oat_kelvin'] = ds['oat_celsius'] + 273.15
-        
+
         # Then calculate TAS (needs sqrt function)
         # Since sqrt is a ClickHouse function, we use SQL or approximation
         ds['temp_ratio'] = ds.oat_kelvin / 288.15
         ds['tas_approx'] = ds['mach_number'] * 661.47 * (ds.temp_ratio**0.5)
-        
+
         result = ds.to_df()
-        
+
         # Verify TAS is in reasonable range (400-600 kts for typical cruise)
         assert all(result['tas_approx'] > 300), "TAS too low!"
         assert all(result['tas_approx'] < 700), "TAS too high!"
@@ -1200,32 +1200,32 @@ class TestCriticalAviationScenarios:
     def test_great_circle_distance_approximation(self):
         """
         Great circle distance approximation
-        
+
         Using simplified Haversine formula
         d ≈ 60 * sqrt((lat2-lat1)^2 + (cos(lat1)*(lon2-lon1))^2)
-        
+
         Errors could lead to: route planning errors, fuel calculation errors
         """
         # Create two location points
         df = pd.DataFrame(
             {
-            'lat1': [40.7128, 34.0522],  # NYC, LAX
-            'lon1': [-74.0060, -118.2437],
-            'lat2': [51.5074, 48.8566],  # London, Paris
-            'lon2': [-0.1278, 2.3522],
+                'lat1': [40.7128, 34.0522],  # NYC, LAX
+                'lon1': [-74.0060, -118.2437],
+                'lat2': [51.5074, 48.8566],  # London, Paris
+                'lon2': [-0.1278, 2.3522],
             }
         )
         ds = DataStore.from_df(df)
-        
+
         # Calculate using mixed references
         ds['lat_diff'] = ds['lat2'] - ds.lat1
         ds['lon_diff'] = ds['lon2'] - ds['lon1']
-        
+
         # Simplified calculation (not completely accurate, but tests consistency)
         ds['approx_dist'] = (ds.lat_diff**2 + ds['lon_diff'] ** 2) ** 0.5 * 60
-        
+
         result = ds.to_df()
-        
+
         # NYC to London ≈ 3459 nm (actual)
         # LAX to Paris ≈ 5663 nm (actual)
         # Our simplified formula will have deviation, but should be positive and non-zero
@@ -1234,34 +1234,34 @@ class TestCriticalAviationScenarios:
     def test_landing_weight_calculation(self):
         """
         Landing weight calculation
-        
+
         landing_weight = zero_fuel_weight + landing_fuel
         landing_fuel = current_fuel - trip_fuel
-        
+
         Overweight landing could lead to: structural damage, tire blowout, brake failure
         """
         df = pd.DataFrame(
             {
-            'zero_fuel_weight': [120000, 130000, 115000],  # lbs
-            'current_fuel': [45000, 50000, 40000],
-            'trip_fuel': [35000, 40000, 30000],
-            'max_landing_weight': [160000, 165000, 155000],
+                'zero_fuel_weight': [120000, 130000, 115000],  # lbs
+                'current_fuel': [45000, 50000, 40000],
+                'trip_fuel': [35000, 40000, 30000],
+                'max_landing_weight': [160000, 165000, 155000],
             }
         )
         ds = DataStore.from_df(df)
-        
+
         # Calculate using mixed references
         ds['landing_fuel'] = ds['current_fuel'] - ds.trip_fuel
         ds['landing_weight'] = ds.zero_fuel_weight + ds['landing_fuel']
         ds['weight_margin'] = ds['max_landing_weight'] - ds.landing_weight
-        
+
         result = ds.to_df()
-        
+
         # Verify calculation correctness
         expected_landing_fuel = df['current_fuel'] - df['trip_fuel']
         expected_landing_weight = df['zero_fuel_weight'] + expected_landing_fuel
         expected_margin = df['max_landing_weight'] - expected_landing_weight
-        
+
         np.testing.assert_array_almost_equal(
             result['landing_fuel'].values,
             expected_landing_fuel.values,
