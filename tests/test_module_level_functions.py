@@ -532,7 +532,7 @@ class TestDataFrameSeriesCreation:
         data = {'A': [1, 2, 3], 'B': ['x', 'y', 'z']}
         ds_df = ds.DataFrame(data)
         pd_df = pd.DataFrame(data)
-        pd.testing.assert_frame_equal(ds_df.to_df(), pd_df)
+        np.testing.assert_array_equal(ds_df, pd_df)
 
 
 class TestDataStoreIntegration:

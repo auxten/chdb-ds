@@ -23,12 +23,19 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Callable, List
-from dataclasses import dataclass
-from collections import Counter
+from typing import Callable, List, Dict, Optional
+from dataclasses import dataclass, field
+from collections import Counter, defaultdict
 
 # Import DataStore
 from datastore import DataStore
+from datastore.config import (
+    enable_profiling,
+    disable_profiling,
+    get_profiler,
+    new_profiler,
+    reset_profiler,
+)
 
 
 @dataclass
@@ -37,6 +44,7 @@ class BenchmarkResult:
     data_size: int
     pandas_time: float
     datastore_time: float
+    profile_data: Optional[Dict[str, float]] = field(default_factory=dict)  # Profiling breakdown
 
     @property
     def fastest(self) -> str:
@@ -74,26 +82,61 @@ def generate_test_data(n_rows: int) -> pd.DataFrame:
     return df
 
 
-def time_operation(func: Callable, n_runs: int = 5) -> float:
-    """Time an operation, return average time in milliseconds."""
+def time_operation(func: Callable, n_runs: int = 5, collect_profile: bool = False) -> tuple:
+    """
+    Time an operation, return average time in milliseconds.
+
+    Args:
+        func: Function to benchmark
+        n_runs: Number of runs
+        collect_profile: If True, collect profiling data on the last run
+
+    Returns:
+        tuple: (avg_time_ms, profile_summary_dict or None)
+    """
+    from datastore.lazy_result import LazySeries
+
     times = []
-    for _ in range(n_runs):
+    profile_summary = None
+
+    for i in range(n_runs):
+        # Collect profile on last run only
+        is_last_run = (i == n_runs - 1) and collect_profile
+
+        if is_last_run:
+            reset_profiler()
+            enable_profiling()
+
         start = time.perf_counter()
         result = func()
         # Force evaluation for lazy results
         if isinstance(result, pd.DataFrame):
             _ = len(result)
+        elif isinstance(result, LazySeries):
+            # LazySeries - force materialization via .values
+            _ = len(result.values)
         elif hasattr(result, 'to_df'):
             # DataStore - force materialization
             _ = len(result.to_df())
+        elif hasattr(result, '__len__'):
+            # Other lazy objects with __len__
+            _ = len(result)
         end = time.perf_counter()
         times.append((end - start) * 1000)  # Convert to ms
+
+        if is_last_run:
+            profiler = get_profiler()
+            if profiler and profiler.steps:
+                profile_summary = profiler.summary()
+            disable_profiling()
 
     # Remove outliers and return average
     times.sort()
     if len(times) > 2:
         times = times[1:-1]  # Remove min and max
-    return sum(times) / len(times)
+    avg_time = sum(times) / len(times)
+
+    return avg_time, profile_summary
 
 
 class Benchmark:
@@ -108,17 +151,30 @@ class Benchmark:
     DataStore use case (lazy SQL execution on file sources).
     """
 
-    def __init__(self, df: pd.DataFrame, parquet_path: str):
+    def __init__(self, df: pd.DataFrame, parquet_path: str, reuse_connection: bool = True):
         self.df = df
         self.parquet_path = parquet_path
         self.n_rows = len(df)
+        self.reuse_connection = reuse_connection
+
         # Pre-connect DataStore to avoid connection overhead in tight loops
         self._ds_template = DataStore.from_file(self.parquet_path)
         self._ds_template.connect()
 
+        # Store the executor for reuse
+        self._shared_executor = self._ds_template._executor if reuse_connection else None
+
     def _fresh_ds(self) -> DataStore:
-        """Create a fresh DataStore from the same file source."""
-        return DataStore.from_file(self.parquet_path)
+        """
+        Create a fresh DataStore from the same file source.
+
+        If reuse_connection is True, shares the executor to avoid connection overhead.
+        """
+        ds = DataStore.from_file(self.parquet_path)
+        if self.reuse_connection and self._shared_executor:
+            # Reuse the shared executor to avoid connection overhead
+            ds._executor = self._shared_executor
+        return ds
 
     # ==================== Filter Operations ====================
 
@@ -380,7 +436,8 @@ class Benchmark:
         return result.to_df()
 
 
-def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5) -> List[BenchmarkResult]:
+def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5,
+                   collect_profiles: bool = False) -> List[BenchmarkResult]:
     """Run all benchmarks for different data sizes."""
     results = []
 
@@ -438,14 +495,17 @@ def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5) -> Lis
                 continue
 
             # Benchmark
-            pandas_time = time_operation(pandas_func, n_runs)
-            datastore_time = time_operation(datastore_func, n_runs)
+            pandas_time, _ = time_operation(pandas_func, n_runs, collect_profile=False)
+            datastore_time, profile_data = time_operation(
+                datastore_func, n_runs, collect_profile=collect_profiles
+            )
 
             result = BenchmarkResult(
                 operation=op_name,
                 data_size=size,
                 pandas_time=pandas_time,
                 datastore_time=datastore_time,
+                profile_data=profile_data or {},
             )
             results.append(result)
 
@@ -454,6 +514,110 @@ def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5) -> Lis
             )
 
     return results
+
+
+def analyze_profile_bottlenecks(results: List[BenchmarkResult]):
+    """Analyze profiling data to identify performance bottlenecks."""
+    print("\n" + "=" * 100)
+    print("PROFILING ANALYSIS: Performance Bottlenecks")
+    print("=" * 100)
+
+    # Aggregate profile data across all results
+    step_totals = defaultdict(float)
+    step_counts = defaultdict(int)
+
+    for r in results:
+        if r.profile_data:
+            for step, duration in r.profile_data.items():
+                # Normalize step names (remove nested prefixes for aggregation)
+                simple_name = step.split('.')[-1] if '.' in step else step
+                step_totals[simple_name] += duration
+                step_counts[simple_name] += 1
+
+    if not step_totals:
+        print("\nNo profiling data collected. Run with --profile flag.")
+        return
+
+    # Calculate averages and sort by total time
+    step_avgs = {}
+    for step in step_totals:
+        step_avgs[step] = step_totals[step] / step_counts[step]
+
+    sorted_steps = sorted(step_totals.items(), key=lambda x: x[1], reverse=True)
+    total_time = sum(step_totals.values())
+
+    print("\n1. AGGREGATE TIME BY STEP (across all operations)")
+    print("-" * 70)
+    print(f"{'Step':<40} {'Total (ms)':>12} {'Avg (ms)':>12} {'% of Total':>10}")
+    print("-" * 70)
+
+    for step, total in sorted_steps[:15]:  # Top 15 steps
+        avg = step_avgs[step]
+        pct = (total / total_time * 100) if total_time > 0 else 0
+        print(f"{step:<40} {total:>12.2f} {avg:>12.2f} {pct:>9.1f}%")
+
+    # Identify bottlenecks by operation
+    print("\n2. TOP BOTTLENECKS BY OPERATION")
+    print("-" * 70)
+
+    for r in results:
+        if r.profile_data and r.datastore_time > 50:  # Only show slow operations
+            print(f"\n{r.operation} ({r.data_size:,} rows) - Total: {r.datastore_time:.2f}ms")
+            sorted_profile = sorted(r.profile_data.items(), key=lambda x: x[1], reverse=True)
+            for step, duration in sorted_profile[:5]:  # Top 5 steps per operation
+                pct = (duration / r.datastore_time * 100) if r.datastore_time > 0 else 0
+                print(f"  {step:<50} {duration:>8.2f}ms ({pct:>5.1f}%)")
+
+    # Identify key bottleneck categories
+    print("\n3. BOTTLENECK SUMMARY")
+    print("-" * 70)
+
+    categories = {
+        'Connection': ['Connection'],
+        'SQL Build': ['SQL Build', 'Query Planning'],
+        'SQL Execution': ['SQL Execution', 'chDB Query', 'chDB DataFrame Query'],
+        'DataFrame Ops': ['DataFrame Operations', 'LazyRelationalOp', 'LazyColumnAssignment', 'LazySQLQuery'],
+        'Cache': ['Cache Check', 'Cache Write'],
+        'Result Conversion': ['Result to DataFrame'],
+    }
+
+    category_totals = {}
+    for cat, keywords in categories.items():
+        cat_total = sum(step_totals[s] for s in step_totals if any(kw in s for kw in keywords))
+        category_totals[cat] = cat_total
+
+    sorted_cats = sorted(category_totals.items(), key=lambda x: x[1], reverse=True)
+    total_categorized = sum(category_totals.values())
+
+    print(f"\n{'Category':<25} {'Total Time (ms)':>15} {'% of Total':>12}")
+    print("-" * 55)
+    for cat, total in sorted_cats:
+        pct = (total / total_categorized * 100) if total_categorized > 0 else 0
+        print(f"{cat:<25} {total:>15.2f} {pct:>11.1f}%")
+
+    # Recommendations
+    print("\n4. OPTIMIZATION RECOMMENDATIONS")
+    print("-" * 70)
+
+    if category_totals.get('Connection', 0) > total_categorized * 0.3:
+        print("⚠️  CONNECTION overhead is high (>30%). Consider:")
+        print("   - Reusing connections across operations")
+        print("   - Using connection pooling")
+
+    if category_totals.get('SQL Execution', 0) > total_categorized * 0.5:
+        print("⚠️  SQL EXECUTION is the primary bottleneck (>50%). Consider:")
+        print("   - Query optimization (indexes, better predicates)")
+        print("   - Data format optimization (columnar vs row-based)")
+
+    if category_totals.get('DataFrame Ops', 0) > total_categorized * 0.3:
+        print("⚠️  DATAFRAME OPERATIONS overhead is high (>30%). Consider:")
+        print("   - Pushing more operations to SQL layer")
+        print("   - Reducing Python-side data manipulation")
+
+    if category_totals.get('Result Conversion', 0) > total_categorized * 0.2:
+        print("⚠️  RESULT CONVERSION overhead is high (>20%). Consider:")
+        print("   - Reducing result set size")
+        print("   - Using more efficient data formats")
 
 
 def print_summary(results: List[BenchmarkResult]):
@@ -704,6 +868,15 @@ def plot_benchmark_results(results: List[BenchmarkResult], output_prefix: str = 
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Benchmark DataStore vs Pandas')
+    parser.add_argument('--profile', action='store_true', help='Collect profiling data')
+    parser.add_argument('--sizes', type=str, default='100000,1000000',
+                       help='Comma-separated data sizes (default: 100000,1000000)')
+    parser.add_argument('--runs', type=int, default=5, help='Number of runs per operation')
+    parser.add_argument('--no-plot', action='store_true', help='Skip plot generation')
+    args = parser.parse_args()
+
     print("=" * 60)
     print("Pandas vs DataStore (chDB Lazy Mode) Benchmark")
     print("=" * 60)
@@ -713,14 +886,21 @@ def main():
     print(f"Using temp directory: {temp_dir}")
 
     try:
-        # Test different data sizes
-        data_sizes = [100_000, 1_000_000, 10_000_000]
+        # Parse data sizes
+        data_sizes = [int(s.strip()) for s in args.sizes.split(',')]
+        print(f"Data sizes: {data_sizes}")
+        print(f"Profiling: {'enabled' if args.profile else 'disabled'}")
 
         # Run benchmarks
-        results = run_benchmarks(data_sizes, temp_dir, n_runs=5)
+        results = run_benchmarks(data_sizes, temp_dir, n_runs=args.runs,
+                                collect_profiles=args.profile)
 
         # Print summary
         print_summary(results)
+
+        # Print profiling analysis if collected
+        if args.profile:
+            analyze_profile_bottlenecks(results)
 
         # Recommendations
         print("\n" + "=" * 100)
@@ -770,8 +950,9 @@ def main():
                 else:
                     print(f"  {op:<25}: Pandas is {1/avg_speedup:.2f}x faster on average")
 
-        # Generate plot
-        plot_benchmark_results(results, output_prefix='benchmark_pandas_datastore')
+        # Generate plot (unless --no-plot)
+        if not args.no_plot:
+            plot_benchmark_results(results, output_prefix='benchmark_pandas_datastore')
 
     finally:
         # Cleanup temporary files

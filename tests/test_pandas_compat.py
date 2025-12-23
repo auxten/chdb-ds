@@ -64,6 +64,84 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test columns property matches pandas."""
         pd.testing.assert_index_equal(self.ds.columns, self.df.columns)
 
+    def test_columns_setter_basic(self):
+        """Test columns setter renames all columns."""
+        ds = DataStore(pd.DataFrame({'a': [1, 2], 'b': [3, 4], 'c': [5, 6]}))
+
+        # Rename columns
+        ds.columns = ['x', 'y', 'z']
+
+        # Check columns are renamed
+        self.assertEqual(list(ds.columns), ['x', 'y', 'z'])
+
+        # Check data is preserved
+        np.testing.assert_array_equal(ds['x'], [1, 2])
+        np.testing.assert_array_equal(ds['y'], [3, 4])
+        np.testing.assert_array_equal(ds['z'], [5, 6])
+
+    def test_columns_setter_partial_rename(self):
+        """Test columns setter only renames changed columns."""
+        ds = DataStore(pd.DataFrame({'a': [1], 'b': [2], 'c': [3]}))
+
+        # Only rename some columns (keep 'b' the same)
+        ds.columns = ['x', 'b', 'z']
+
+        self.assertEqual(list(ds.columns), ['x', 'b', 'z'])
+
+    def test_columns_setter_with_pandas_comparison(self):
+        """Test columns setter produces same result as pandas."""
+        df = pd.DataFrame({'old1': [1, 2, 3], 'old2': [4, 5, 6]})
+        ds = DataStore(df.copy())
+
+        new_cols = ['new1', 'new2']
+
+        # Apply to both
+        df.columns = new_cols
+        ds.columns = new_cols
+
+        # Compare results
+        np.testing.assert_array_equal(ds, df)
+
+    def test_columns_setter_length_mismatch_error(self):
+        """Test columns setter raises error on length mismatch."""
+        ds = DataStore(pd.DataFrame({'a': [1], 'b': [2], 'c': [3]}))
+
+        with self.assertRaises(ValueError) as context:
+            ds.columns = ['only', 'two']  # 2 columns, but ds has 3
+
+        self.assertIn('Length mismatch', str(context.exception))
+        self.assertIn('Expected 3', str(context.exception))
+        self.assertIn('got 2', str(context.exception))
+
+    def test_columns_setter_with_groupby(self):
+        """Test columns setter works after groupby aggregation."""
+        df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
+        ds = DataStore(df)
+
+        result = ds.groupby('category').agg({'value': 'sum'}).reset_index()
+        result.columns = ['cat', 'total']
+
+        self.assertEqual(list(result.columns), ['cat', 'total'])
+
+        result_df = result.to_df()
+        self.assertIn('cat', result_df.columns)
+        self.assertIn('total', result_df.columns)
+
+    def test_columns_setter_lazy_execution(self):
+        """Test columns setter is lazy (doesn't execute immediately)."""
+        df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        ds = DataStore(df)
+
+        # This should be lazy
+        ds.columns = ['x', 'y']
+
+        # Verify the lazy op was added
+        self.assertTrue(len(ds._lazy_ops) > 0)
+
+        # Trigger execution and verify result
+        result = ds.to_df()
+        self.assertEqual(list(result.columns), ['x', 'y'])
+
     def test_values(self):
         """Test values property matches pandas."""
         np.testing.assert_array_equal(self.ds, self.df)
