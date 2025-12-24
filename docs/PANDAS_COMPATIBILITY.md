@@ -2,19 +2,70 @@
 
 DataStore provides comprehensive pandas DataFrame API compatibility, allowing you to use familiar pandas methods directly on DataStore objects while maintaining the benefits of SQL-based query optimization.
 
+## Our Approach
+
+**We don't guarantee 100% pandas compatibility—we optimize for practical migration.**
+
+Our compatibility strategy:
+
+1. **Real-World Testing**: We test against actual pandas code from Kaggle notebooks and common data analysis patterns using `import datastore as pd`.
+
+2. **Prioritize Common Operations**: We implement the pandas operations that appear most frequently in real workflows.
+
+3. **Minimal Code Changes**: The goal is that most existing pandas code works with just an import change.
+
+4. **Document Differences**: When behavior differs from pandas, we clearly document it.
+
+```python
+# Typical migration
+- import pandas as pd
++ import datastore as pd
+
+# Most pandas code works unchanged
+df = pd.read_csv("data.csv")
+result = df[df['age'] > 25].groupby('city')['salary'].mean()
+```
+
+**Alternative: Fluent SQL-style API**
+
+If you prefer more explicit, SQL-like syntax over pandas conventions:
+
+```python
+from datastore import DataStore
+
+ds = DataStore.from_file("data.csv")
+result = (ds
+    .filter(ds.age > 25)
+    .select('city', 'salary')
+    .groupby('city')
+    .agg({'salary': 'mean'})
+    .to_df())
+```
+
+Both styles produce identical results. Choose based on your preference.
+
 ## Implementation Statistics
 
 ### Pandas API Coverage
 
-| Category | Pandas Total | Implemented | Coverage |
-|----------|--------------|-------------|----------|
-| **DataFrame methods** | 209 | 209 | **100%** ✅ |
-| **Series methods** | 210 | (via delegation) | - |
-| **Series.str accessor** | 56 | 56 | **100%** ✅ |
-| **Series.dt accessor** | 42 | 60+ | **100%+** ✅ |
-| **Series.arr accessor** | - | 37 | (ClickHouse-specific) |
+| Category | Pandas Total | Implemented | Notes |
+|----------|--------------|-------------|-------|
+| **DataFrame methods** | 209 | 209 | All pandas DataFrame methods |
+| **Series methods** | 210 | (via delegation) | Delegated to pandas |
+| **Series.str accessor** | 56 | 56 | All pandas str methods |
+| **Series.dt accessor** | 42 | 42+ | All pandas + ClickHouse extras |
 
-> Note: DataStore implements **100% of pandas DataFrame API** and **100% of pandas Series.str accessor**. Series operations are delegated to pandas. The `.dt` accessor exceeds pandas coverage by including additional ClickHouse datetime functions.
+### ClickHouse-Specific Accessors
+
+| Accessor | Methods | Description |
+|----------|---------|-------------|
+| **Series.arr accessor** | 37 | Array functions (ClickHouse-specific) |
+| **Series.json accessor** | 13 | JSON functions |
+| **Series.url accessor** | 15 | URL parsing functions |
+| **Series.ip accessor** | 9 | IP address functions |
+| **Series.geo accessor** | 14 | Geo/distance functions |
+
+> Note: DataStore implements all pandas DataFrame API methods and all pandas Series.str/dt accessor methods. Additionally, it provides ClickHouse-specific accessors for array, JSON, URL, IP, and geo operations.
 
 ### ClickHouse Functions
 
@@ -279,9 +330,9 @@ result = (ds
 - [x] `df.sparse` - Sparse accessor
 - [x] `df.style` - Styling accessor
 
-## Series.str Accessor (100% Coverage)
+## Series.str Accessor
 
-The `.str` accessor provides **100% coverage** of pandas Series.str methods. Methods are implemented in two ways:
+The `.str` accessor provides all 56 pandas Series.str methods. Methods are implemented in two ways:
 
 ### Lazy Methods (SQL-based, 51 methods)
 
@@ -451,8 +502,8 @@ pandas `Series.equals()` checks `isinstance(other, pd.Series)` first. Since Data
 | Values only | `np.array_equal(pd_col.values, ds_col.values)` |
 | Float comparison | `np.allclose(pd_col.values, ds_col.values)` |
 
-### 5. Series Handling
-Operations that return Series in pandas also return lazy objects in DataStore:
+### 5. Series Handling and LazySeries
+Operations that return Series in pandas return lazy objects in DataStore:
 
 ```python
 # Returns ColumnExpr (lazy), displays like pandas Series
@@ -466,9 +517,34 @@ print(type(pd_series))  # <class 'pandas.core.series.Series'>
 # Multiple columns return DataStore
 datastore = ds[['col1', 'col2']]
 print(type(datastore))  # <class 'datastore.core.DataStore'>
+
+# Method calls on columns return LazySeries
+head_result = ds['column'].head(5)
+print(type(head_result))  # <class 'datastore.lazy_result.LazySeries'>
+
+# LazySeries executes on access (values, index, repr, etc.)
+values = head_result.values  # Triggers execution
 ```
 
 **Why Lazy?** This enables SQL query optimization and deferred execution.
+
+### 6. The `to_pandas()` Method
+
+Both DataStore and ColumnExpr provide `to_pandas()` for explicit conversion:
+
+```python
+# DataStore to DataFrame
+ds = DataStore.from_file("data.csv")
+df = ds.to_pandas()  # Returns pd.DataFrame (alias for to_df())
+
+# ColumnExpr to Series
+col = ds['age']
+series = col.to_pandas()  # Returns pd.Series
+
+# Useful for library interoperability
+import seaborn as sns
+sns.histplot(ds['age'].to_pandas())
+```
 
 ### 6. Method Naming
 The INSERT VALUES method has been renamed to avoid conflicts:
@@ -545,7 +621,7 @@ result = (ds
     .select('sales_id', 'sales_customer', 'sales_revenue'))  # SQL 4 on DataFrame
 ```
 
-**For detailed technical documentation, see [Mixed Execution Engine Guide](MIXED_EXECUTION_ENGINE.md)**
+**For detailed execution plan visualization, see [Explain Method](EXPLAIN_METHOD.md)**
 
 ## Performance Tips
 
@@ -721,12 +797,13 @@ result = (ds
 
 ## Summary
 
-DataStore provides **100% pandas DataFrame API** compatibility with seamless integration:
+DataStore provides **comprehensive pandas DataFrame API** compatibility with seamless integration:
 
-- ✅ **100%** of pandas DataFrame API implemented (209 methods)
-- ✅ **89%+** of pandas `.str` accessor methods
-- ✅ **100%+** of pandas `.dt` accessor methods (plus ClickHouse extras)
+- ✅ **209** pandas DataFrame methods implemented
+- ✅ **56** pandas `.str` accessor methods (all pandas str methods covered)
+- ✅ **42+** pandas `.dt` accessor methods (plus ClickHouse datetime extras)
 - ✅ **334 ClickHouse functions** mapped to Pandas-like API
+- ✅ **ClickHouse-specific accessors**: `.arr` (37 methods), `.json`, `.url`, `.ip`, `.geo`
 - ✅ Mix SQL queries with pandas transformations
 - ✅ Automatic DataFrame/Series wrapping
 - ✅ Performance optimization through caching
