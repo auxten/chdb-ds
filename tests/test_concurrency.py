@@ -62,16 +62,17 @@ class TestConcurrency(unittest.TestCase):
         ds = DataStore.from_file(self.files[0])
         original_var_name = ds._df_var_name
 
-        # SQL operations keep the variable name
+        # SQL operations keep the variable name (returns new object, like pandas)
         ds1 = ds.select('*').filter(ds.value > 5)
         self.assertEqual(ds1._df_var_name, original_var_name)
 
-        # Lazy pandas operations also keep the variable name (they return self)
+        # Pandas operations also keep the variable name (returns new object)
         ds2 = ds1.add_prefix('x_')
         self.assertEqual(ds2._df_var_name, original_var_name)
 
-        # All lazy operations return the same DataStore
-        self.assertIs(ds1, ds2)
+        # All operations return NEW objects (matches pandas behavior)
+        # In pandas: df.add_prefix('x_') returns a new DataFrame, not the same one
+        self.assertIsNot(ds1, ds2)
 
         # TODO: Re-enable this test when chDB concurrency issues are resolved
         # def test_concurrent_queries(self):
@@ -196,7 +197,10 @@ class TestVariableNameGeneration(unittest.TestCase):
                 os.rmdir(temp_dir)
 
     def test_lazy_operations_preserve_variable_name(self):
-        """Test that lazy pandas operations preserve variable name (return self)."""
+        """Test that pandas-style operations preserve variable name but return new object.
+
+        This matches pandas behavior where df.add_prefix('x_') returns a new DataFrame.
+        """
         temp_dir = tempfile.mkdtemp()
         csv_file = os.path.join(temp_dir, "test.csv")
 
@@ -207,13 +211,14 @@ class TestVariableNameGeneration(unittest.TestCase):
             ds = DataStore.from_file(csv_file)
             var1 = ds._df_var_name
 
-            # Lazy pandas operation returns self
+            # add_prefix returns a new DataStore (matches pandas behavior)
             ds2 = ds.add_prefix('x_')
             var2 = ds2._df_var_name
 
-            # Should have same variable name (lazy operation returns self)
+            # Variable name is preserved in the new object
             self.assertEqual(var1, var2)
-            self.assertIs(ds, ds2)
+            # But returns new object (matches pandas: df.add_prefix() returns new DataFrame)
+            self.assertIsNot(ds, ds2)
 
         finally:
             if os.path.exists(csv_file):

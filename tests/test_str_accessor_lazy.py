@@ -388,6 +388,7 @@ class TestStrContainsNaParameter:
 class TestStrAccessorEdgeCases:
     """Test edge cases and error handling."""
 
+    @pytest.mark.skip(reason="chDB crashes on empty DataFrame query - https://github.com/chdb-io/chdb/issues/452")
     def test_empty_dataframe(self):
         """Test str accessor on empty DataFrame."""
         df = pd.DataFrame({'name': pd.Series([], dtype=str)})
