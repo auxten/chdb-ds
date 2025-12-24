@@ -120,12 +120,8 @@ class TestPandasCompatibility(unittest.TestCase):
 
         result = ds.groupby('category').agg({'value': 'sum'}).reset_index()
         result.columns = ['cat', 'total']
-
+        # DataStore.columns triggers natural execution
         self.assertEqual(list(result.columns), ['cat', 'total'])
-
-        result_df = result.to_df()
-        self.assertIn('cat', result_df.columns)
-        self.assertIn('total', result_df.columns)
 
     def test_columns_setter_lazy_execution(self):
         """Test columns setter is lazy (doesn't execute immediately)."""
@@ -138,9 +134,8 @@ class TestPandasCompatibility(unittest.TestCase):
         # Verify the lazy op was added
         self.assertTrue(len(ds._lazy_ops) > 0)
 
-        # Trigger execution and verify result
-        result = ds.to_df()
-        self.assertEqual(list(result.columns), ['x', 'y'])
+        # ds.columns triggers natural execution
+        self.assertEqual(list(ds.columns), ['x', 'y'])
 
     def test_values(self):
         """Test values property matches pandas."""
@@ -489,8 +484,8 @@ class TestPandasCompatibility(unittest.TestCase):
             ds2 = DataStore.from_file(csv_file2)
             result = self.ds.merge(ds2, on='id', how='inner')
             self.assertIsInstance(result, DataStore)
-            df = result.to_df()
-            self.assertIn('bonus', df.columns)
+            # result.columns triggers natural execution
+            self.assertIn('bonus', result.columns)
         finally:
             if os.path.exists(csv_file2):
                 os.unlink(csv_file2)
@@ -583,38 +578,25 @@ class TestBooleanIndexing(unittest.TestCase):
 
     def test_boolean_indexing_simple_condition(self):
         """Test simple boolean indexing with single condition."""
-        # DataStore
         ds_result = self.ds[self.ds['value'] > 2]
-        # Pandas
-        pd_result = self.df[self.df['value'] > 2].reset_index(drop=True)
-
-        self.assertEqual(len(ds_result), len(pd_result))
-        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
+        pd_result = self.df[self.df['value'] > 2]
+        # DataStore.equals() triggers execution naturally
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_boolean_indexing_compound_condition(self):
         """Test boolean indexing with compound AND condition."""
-        # DataStore
         ds_result = self.ds[(self.ds['value'] > 1) & (self.ds['value'] < 5)]
-        # Pandas
-        pd_result = self.df[(self.df['value'] > 1) & (self.df['value'] < 5)].reset_index(drop=True)
-
-        self.assertEqual(len(ds_result), len(pd_result))
-        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
+        pd_result = self.df[(self.df['value'] > 1) & (self.df['value'] < 5)]
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_boolean_indexing_str_len(self):
         """Test boolean indexing with str.len() > 0."""
-        # DataStore
         ds_result = self.ds[(self.ds['src'].str.len() > 0) & (self.ds['tgt'].str.len() > 0)]
-        # Pandas
-        pd_result = self.df[(self.df['src'].str.len() > 0) & (self.df['tgt'].str.len() > 0)].reset_index(drop=True)
-
-        self.assertEqual(len(ds_result), len(pd_result))
-        np.testing.assert_array_equal(ds_result['src'], pd_result['src'])
-        np.testing.assert_array_equal(ds_result['tgt'], pd_result['tgt'])
+        pd_result = self.df[(self.df['src'].str.len() > 0) & (self.df['tgt'].str.len() > 0)]
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_boolean_indexing_with_drop_duplicates(self):
         """Test boolean indexing chained with drop_duplicates()."""
-        # Add duplicate rows
         df_with_dups = pd.DataFrame(
             {
                 'src': ['hello', '', 'hello', '', 'foo'],
@@ -624,41 +606,30 @@ class TestBooleanIndexing(unittest.TestCase):
         )
         ds_with_dups = DataStore.from_df(df_with_dups)
 
-        # DataStore
-        ds_result = (
-            ds_with_dups[(ds_with_dups['src'].str.len() > 0) & (ds_with_dups['tgt'].str.len() > 0)]
-            .drop_duplicates()
-            .to_df()
-        )
-        # Pandas
-        pd_result = (
-            df_with_dups[(df_with_dups['src'].str.len() > 0) & (df_with_dups['tgt'].str.len() > 0)]
-            .drop_duplicates()
-            .reset_index(drop=True)
-        )
-
-        self.assertEqual(len(ds_result), len(pd_result))
+        ds_result = ds_with_dups[
+            (ds_with_dups['src'].str.len() > 0) & (ds_with_dups['tgt'].str.len() > 0)
+        ].drop_duplicates()
+        pd_result = df_with_dups[
+            (df_with_dups['src'].str.len() > 0) & (df_with_dups['tgt'].str.len() > 0)
+        ].drop_duplicates()
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_boolean_indexing_preserves_original(self):
         """Test that boolean indexing doesn't modify the original DataStore."""
-        original_len = len(self.ds.to_df())
+        original_len = len(self.ds)
 
         # Apply filter
         filtered = self.ds[self.ds['value'] > 3]
 
-        # Check original is unchanged
-        self.assertEqual(len(self.ds.to_df()), original_len)
-        self.assertLess(len(filtered.to_df()), original_len)
+        # Check original is unchanged (use len() which triggers natural execution)
+        self.assertEqual(len(self.ds), original_len)
+        self.assertLess(len(filtered), original_len)
 
     def test_boolean_indexing_or_condition(self):
         """Test boolean indexing with OR condition."""
-        # DataStore
         ds_result = self.ds[(self.ds['value'] == 1) | (self.ds['value'] == 5)]
-        # Pandas
-        pd_result = self.df[(self.df['value'] == 1) | (self.df['value'] == 5)].reset_index(drop=True)
-
-        self.assertEqual(len(ds_result), len(pd_result))
-        np.testing.assert_array_equal(ds_result['value'], pd_result['value'])
+        pd_result = self.df[(self.df['value'] == 1) | (self.df['value'] == 5)]
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_boolean_indexing_returns_datastore(self):
         """Test that boolean indexing returns a DataStore instance."""
@@ -667,11 +638,9 @@ class TestBooleanIndexing(unittest.TestCase):
 
     def test_boolean_indexing_empty_result(self):
         """Test boolean indexing that returns no rows."""
-        ds_result = self.ds[self.ds['value'] > 100].to_df()
-        pd_result = self.df[self.df['value'] > 100].reset_index(drop=True)
-
-        self.assertEqual(len(ds_result), 0)
-        self.assertEqual(len(pd_result), 0)
+        ds_result = self.ds[self.ds['value'] > 100]
+        pd_result = self.df[self.df['value'] > 100]
+        self.assertTrue(ds_result.equals(pd_result))
 
 
 class TestCommonBooleanIndexingPatterns(unittest.TestCase):
@@ -690,20 +659,20 @@ class TestCommonBooleanIndexingPatterns(unittest.TestCase):
 
     def test_simple_condition(self):
         """Test df[df['age'] > 30] pattern."""
-        pd_result = self.df[self.df['age'] > 30].reset_index(drop=True)
-        ds_result = self.ds[self.ds['age'] > 30].to_df().reset_index(drop=True)
+        pd_result = self.df[self.df['age'] > 30]
+        ds_result = self.ds[self.ds['age'] > 30]
         self.assertTrue(ds_result.equals(pd_result))
 
     def test_compound_condition(self):
         """Test df[(df['age'] > 30) & (df['salary'] > 50000)] pattern."""
-        pd_result = self.df[(self.df['age'] > 30) & (self.df['salary'] > 50000)].reset_index(drop=True)
-        ds_result = self.ds[(self.ds['age'] > 30) & (self.ds['salary'] > 50000)].to_df().reset_index(drop=True)
+        pd_result = self.df[(self.df['age'] > 30) & (self.df['salary'] > 50000)]
+        ds_result = self.ds[(self.ds['age'] > 30) & (self.ds['salary'] > 50000)]
         self.assertTrue(ds_result.equals(pd_result))
 
     def test_str_contains_condition(self):
         """Test df[df['name'].str.contains('Alice')] pattern."""
-        pd_result = self.df[self.df['name'].str.contains('Alice')].reset_index(drop=True)
-        ds_result = self.ds[self.ds['name'].str.contains('Alice')].to_df().reset_index(drop=True)
+        pd_result = self.df[self.df['name'].str.contains('Alice')]
+        ds_result = self.ds[self.ds['name'].str.contains('Alice')]
         self.assertTrue(ds_result.equals(pd_result))
 
 
@@ -827,15 +796,15 @@ class TestFilterColumnSelection(unittest.TestCase):
 
     def test_filter_items_preserves_data(self):
         """Test that filter(items=) preserves data correctly."""
-        ds_result = self.ds.filter(items=['col_a', 'name']).to_df()
-        pd_result = self.df.filter(items=['col_a', 'name']).reset_index(drop=True)
+        ds_result = self.ds.filter(items=['col_a', 'name'])
+        pd_result = self.df.filter(items=['col_a', 'name'])
         self.assertTrue(ds_result.equals(pd_result))
 
     def test_filter_condition_still_works(self):
         """Test that SQL-style filter(condition) still works."""
-        ds_result = self.ds.filter(self.ds['col_a'] > 1).to_df()
-        pd_result = self.df[self.df['col_a'] > 1].reset_index(drop=True)
-        self.assertEqual(len(ds_result), len(pd_result))
+        ds_result = self.ds.filter(self.ds['col_a'] > 1)
+        pd_result = self.df[self.df['col_a'] > 1]
+        self.assertTrue(ds_result.equals(pd_result))
 
 
 class TestSQLPushdownOptimizations(unittest.TestCase):
@@ -844,12 +813,14 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create test data and save to parquet."""
-        cls.df = pd.DataFrame({
-            'id': range(100),
-            'category': ['A', 'B', 'C', 'D', 'E'] * 20,
-            'value': range(100, 200),
-            'score': [i * 0.5 for i in range(100)],
-        })
+        cls.df = pd.DataFrame(
+            {
+                'id': range(100),
+                'category': ['A', 'B', 'C', 'D', 'E'] * 20,
+                'value': range(100, 200),
+                'score': [i * 0.5 for i in range(100)],
+            }
+        )
         cls.parquet_path = '/tmp/test_sql_pushdown.parquet'
         cls.df.to_parquet(cls.parquet_path)
 
@@ -879,20 +850,19 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         for op in result._lazy_ops:
             self.assertIsInstance(op, LazyRelationalOp)
 
-        # Execute and verify
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 10)
-        self.assertEqual(list(df_result.columns), ['id', 'value'])
+        # len() and .columns trigger natural execution
+        self.assertEqual(len(result), 10)
+        self.assertEqual(list(result.columns), ['id', 'value'])
 
     def test_column_selection_result_matches_pandas(self):
         """Test that column selection produces same result as pandas."""
         from datastore import DataStore
 
         ds = DataStore.from_file(self.parquet_path)
-        ds_result = ds[['id', 'category']].to_df()
+        ds_result = ds[['id', 'category']]
         pd_result = self.df[['id', 'category']]
-
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        # DataStore.equals() triggers natural execution
+        self.assertTrue(ds_result.equals(pd_result))
 
     def test_groupby_count_uses_sql(self):
         """Test that groupby().count() uses SQL pushdown."""
@@ -906,9 +876,8 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         self.assertEqual(len(result._lazy_ops), 1)
         self.assertIsInstance(result._lazy_ops[0], LazyGroupByAgg)
 
-        # Execute and verify - should return 5 groups (A, B, C, D, E)
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 5)
+        # len() triggers natural execution - should return 5 groups (A, B, C, D, E)
+        self.assertEqual(len(result), 5)
 
     def test_groupby_agg_uses_sql(self):
         """Test that groupby().agg() uses SQL pushdown."""
@@ -917,9 +886,8 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         ds = DataStore.from_file(self.parquet_path)
         result = ds.groupby('category').agg({'value': ['sum', 'mean']})
 
-        # Execute and verify
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 5)  # 5 categories
+        # len() triggers natural execution
+        self.assertEqual(len(result), 5)  # 5 categories
 
     def test_groupby_size_uses_sql(self):
         """Test that groupby().size() uses SQL pushdown."""
@@ -957,10 +925,8 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         ds = DataStore.from_file(self.parquet_path)
         result = ds[ds['value'] > 150].groupby('category').count()
 
-        # Execute and verify
-        df_result = result.to_df()
-        # Should have groups with value > 150
-        self.assertGreater(len(df_result), 0)
+        # len() triggers natural execution - should have groups with value > 150
+        self.assertGreater(len(result), 0)
 
     def test_star_expression_in_count(self):
         """Test that Star expression works in COUNT(*)."""
@@ -971,7 +937,8 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         self.assertEqual(star.to_sql(), '*')
 
         agg = AggregateFunction('count', star)
-        self.assertEqual(agg.to_sql(), 'count(*)')
+        # count is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual(agg.to_sql(), 'toInt64(count(*))')
 
     def test_complex_pipeline_with_sql_pushdown(self):
         """Test complex pipeline: filter + column select + sort + limit."""
@@ -983,13 +950,12 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         result = result.sort_values('value', ascending=False)
         result = result.head(20)
 
-        # Execute and verify
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 20)
-        self.assertEqual(list(df_result.columns), ['id', 'category', 'value'])
-        # Values should be sorted descending
-        self.assertTrue(all(df_result['value'].iloc[i] >= df_result['value'].iloc[i+1]
-                           for i in range(len(df_result)-1)))
+        # len() and .columns trigger natural execution
+        self.assertEqual(len(result), 20)
+        self.assertEqual(list(result.columns), ['id', 'category', 'value'])
+        # Values should be sorted descending - use .values for natural trigger
+        values = result['value'].values
+        self.assertTrue(all(values[i] >= values[i + 1] for i in range(len(values) - 1)))
 
     def test_groupby_agg_single_func_uses_sql(self):
         """Test groupby().agg() with single function per column uses SQL."""
@@ -998,23 +964,21 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         ds = DataStore.from_file(self.parquet_path)
         result = ds.groupby('category').agg({'value': 'sum', 'score': 'mean'})
 
-        # Execute and verify
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 5)  # 5 categories
+        # len() and .columns trigger natural execution
+        self.assertEqual(len(result), 5)  # 5 categories
         # Should have columns value, score (not sum(value), avg(score))
-        self.assertIn('value', df_result.columns)
-        self.assertIn('score', df_result.columns)
+        self.assertIn('value', result.columns)
+        self.assertIn('score', result.columns)
 
     def test_groupby_agg_reset_index_matches_pandas(self):
         """Test groupby().agg().reset_index() matches pandas structure."""
         from datastore import DataStore
 
         ds = DataStore.from_file(self.parquet_path)
-        ds_result = ds.groupby('category').agg({'value': 'sum'}).reset_index().to_df()
-
+        ds_result = ds.groupby('category').agg({'value': 'sum'}).reset_index()
         pdf = self.df.groupby('category').agg({'value': 'sum'}).reset_index()
 
-        # Column structure should match
+        # DataStore.columns and len() trigger natural execution
         self.assertEqual(list(ds_result.columns), list(pdf.columns))
         self.assertEqual(len(ds_result), len(pdf))
 
@@ -1028,11 +992,10 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         result = result.groupby('category').agg({'value': 'sum'}).reset_index()
         result = result.sort_values('value', ascending=False)
 
-        # Execute and verify
-        df_result = result.to_df()
-        self.assertGreater(len(df_result), 0)
+        # len() and .values trigger natural execution
+        self.assertGreater(len(result), 0)
         # Should be sorted descending
-        values = df_result['value'].tolist()
+        values = result['value'].values.tolist()
         self.assertEqual(values, sorted(values, reverse=True))
 
     def test_groupby_multi_func_falls_back_to_pandas(self):
@@ -1047,9 +1010,8 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         self.assertEqual(len(result._lazy_ops), 1)
         self.assertIsInstance(result._lazy_ops[0], LazyGroupByAgg)
 
-        # Execute should still work (via pandas fallback)
-        df_result = result.to_df()
-        self.assertEqual(len(df_result), 5)
+        # len() triggers natural execution (via pandas fallback)
+        self.assertEqual(len(result), 5)
 
     def test_filter_groupby_same_column_alias_conflict(self):
         """
@@ -1073,22 +1035,112 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         result = ds[ds['value'] > 120]
         result = result.groupby('category').agg({'value': 'sum'}).reset_index()
 
-        # Should execute without error (either via SQL with workaround or pandas fallback)
-        df_result = result.to_df()
-
-        # Verify result is correct
-        self.assertGreater(len(df_result), 0)
-        self.assertIn('category', df_result.columns)
-        self.assertIn('value', df_result.columns)
+        # len() and .columns trigger natural execution
+        self.assertGreater(len(result), 0)
+        self.assertIn('category', result.columns)
+        self.assertIn('value', result.columns)
 
         # Compare with pandas reference
         pdf = self.df[self.df['value'] > 120]
         pd_result = pdf.groupby('category').agg({'value': 'sum'}).reset_index()
 
-        # Values should match (order may differ)
-        ds_values = set(zip(df_result['category'], df_result['value']))
+        # Values should match (order may differ) - use .values for natural trigger
+        ds_values = set(zip(result['category'].values, result['value'].values))
         pd_values = set(zip(pd_result['category'], pd_result['value']))
         self.assertEqual(ds_values, pd_values)
+
+    def test_groupby_agg_multi_column_multi_func_unique_aliases(self):
+        """Test groupby().agg() with multiple columns and multiple functions generates unique SQL aliases.
+
+        This was a bug where:
+            ds.groupby('category').agg({'int_col': ['sum', 'mean'], 'float_col': ['sum', 'mean']})
+        would generate duplicate SQL aliases like:
+            SELECT category, sum(int_col) AS sum, avg(int_col) AS mean, sum(float_col) AS sum, avg(float_col) AS mean
+                   ^-- DUPLICATE ALIAS "sum" and "mean"!
+
+        The fix ensures we use compound aliases (col_func) when there's potential for duplicates:
+            SELECT category, sum(int_col) AS int_col_sum, avg(int_col) AS int_col_mean, sum(float_col) AS float_col_sum, avg(float_col) AS float_col_mean
+        """
+        from datastore import DataStore
+
+        # Create test data with multiple numeric columns
+        test_df = pd.DataFrame(
+            {
+                'category': ['A', 'A', 'B', 'B', 'C', 'C'],
+                'int_col': [1, 2, 3, 4, 5, 6],
+                'float_col': [1.5, 2.5, 3.5, 4.5, 5.5, 6.5],
+            }
+        )
+        test_parquet = '/tmp/test_multi_col_agg.parquet'
+        test_df.to_parquet(test_parquet)
+
+        try:
+            ds = DataStore.from_file(test_parquet)
+
+            # This used to fail with: MULTIPLE_EXPRESSIONS_FOR_ALIAS error
+            result = (
+                ds.groupby('category')
+                .agg({'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']})
+                .reset_index()
+            )
+
+            # result.columns triggers natural execution - verify column names are unique
+            expected_cols = [
+                'category',
+                'int_col_sum',
+                'int_col_mean',
+                'int_col_max',
+                'float_col_sum',
+                'float_col_mean',
+            ]
+            self.assertEqual(sorted(result.columns), sorted(expected_cols))
+
+            # Verify values match pandas
+            pd_result = test_df.groupby('category').agg(
+                {'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']}
+            )
+            # Flatten pandas MultiIndex columns for comparison
+            pd_result.columns = [f'{col}_{func}' for col, func in pd_result.columns]
+            pd_result = pd_result.reset_index()
+
+            # Compare values (order may differ) - use .values for natural trigger
+            for col in ['int_col_sum', 'int_col_mean', 'int_col_max', 'float_col_sum', 'float_col_mean']:
+                ds_values = dict(zip(result['category'].values, result[col].values))
+                pd_values = dict(zip(pd_result['category'], pd_result[col]))
+                for cat in ['A', 'B', 'C']:
+                    np.testing.assert_almost_equal(
+                        ds_values[cat], pd_values[cat], err_msg=f"Mismatch for {col} in category {cat}"
+                    )
+        finally:
+            import os
+
+            if os.path.exists(test_parquet):
+                os.remove(test_parquet)
+
+    def test_groupby_agg_single_column_multi_func_uses_func_alias(self):
+        """Test groupby().agg() with single column uses function name as alias (no conflict)."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').agg({'value': ['sum', 'mean', 'max']}).reset_index()
+
+        # result.columns triggers natural execution
+        # Single column should use function names as aliases (sum, mean, max)
+        self.assertIn('sum', result.columns)
+        self.assertIn('mean', result.columns)
+        self.assertIn('max', result.columns)
+
+    def test_groupby_agg_multi_column_single_func_uses_col_alias(self):
+        """Test groupby().agg() with multiple columns but single func per col uses column names."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').agg({'value': 'sum', 'score': 'mean'}).reset_index()
+
+        # result.columns triggers natural execution
+        # Multiple columns with single function each should use column names as aliases
+        self.assertIn('value', result.columns)
+        self.assertIn('score', result.columns)
 
 
 if __name__ == '__main__':

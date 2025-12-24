@@ -97,7 +97,8 @@ class CustomFunctionUsageTests(unittest.TestCase):
         Length = CustomFunction("LENGTH", ["str"])
 
         sql = ds.select("name").filter(Length(ds.name) > 10).to_sql()
-        self.assertEqual('SELECT "name" FROM "users" WHERE LENGTH("name") > 10', sql)
+        # LENGTH is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('SELECT "name" FROM "users" WHERE toInt64(LENGTH("name")) > 10', sql)
 
     def test_custom_function_in_groupby(self):
         """Test custom function in GROUP BY"""
@@ -117,7 +118,8 @@ class CustomFunctionUsageTests(unittest.TestCase):
         Length = CustomFunction("LENGTH", ["str"])
 
         sql = ds.select("name").sort(Length(ds.name), ascending=False).to_sql()
-        self.assertEqual('SELECT "name" FROM "products" ORDER BY LENGTH("name") DESC', sql)
+        # LENGTH is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('SELECT "name" FROM "products" ORDER BY toInt64(LENGTH("name")) DESC', sql)
 
     def test_nested_custom_functions(self):
         """Test nested custom functions"""

@@ -537,14 +537,15 @@ class TestColumnExprAggregateFunctions(unittest.TestCase):
         return ds
 
     def test_mean_returns_scalar(self):
-        """Test mean() returns a LazyAggregate that behaves like a scalar."""
-        from datastore.column_expr import LazyAggregate
+        """Test mean() returns a ColumnExpr (aggregation mode) that behaves like a scalar."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         result = ds['value'].mean()
         expected = self.df['value'].mean()
-        # mean() returns LazyAggregate which displays as scalar and can be converted
-        self.assertIsInstance(result, LazyAggregate)
+        # mean() returns ColumnExpr (aggregation mode) which displays as scalar and can be converted
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertEqual(result._exec_mode, 'agg')
         # Should be able to compare with expected value (triggers execution)
         self.assertAlmostEqual(float(result), expected)
 
@@ -671,13 +672,12 @@ class TestColumnExprMathFunctions(unittest.TestCase):
 
     def test_builtin_round_on_aggregate(self):
         """Test round() on aggregate result like mean()."""
-        from datastore.column_expr import LazyAggregate
-
         ds = self.create_ds()
         # round(ds['value'].mean(), 2) should work
         mean_expr = ds['value'].mean()
-        # mean() returns LazyAggregate which supports both display and SQL building
-        self.assertIsInstance(mean_expr, (ColumnExpr, LazyAggregate))
+        # mean() returns ColumnExpr in 'agg' mode
+        self.assertIsInstance(mean_expr, ColumnExpr)
+        self.assertEqual(mean_expr._exec_mode, 'agg')
         rounded = round(mean_expr, 2)
         self.assertIsInstance(rounded, ColumnExpr)
         # The SQL should contain round(avg(...))
@@ -998,25 +998,27 @@ class TestLazySlice(unittest.TestCase):
         ds._lazy_ops = [LazyDataFrameSource(self.df.copy())]
         return ds
 
-    def test_column_head_returns_lazy_series_method(self):
-        """Test that ColumnExpr.head() returns LazySeries."""
-        from datastore.lazy_result import LazySeries
+    def test_column_head_returns_column_expr_method_mode(self):
+        """Test that ColumnExpr.head() returns ColumnExpr (method mode)."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         result = ds['value'].head(5)
 
-        # Should return LazySeries, not pd.Series
-        self.assertIsInstance(result, LazySeries)
+        # Should return ColumnExpr in method mode, not pd.Series
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertEqual(result._exec_mode, 'method')
 
-    def test_column_tail_returns_lazy_series_method(self):
-        """Test that ColumnExpr.tail() returns LazySeries."""
-        from datastore.lazy_result import LazySeries
+    def test_column_tail_returns_column_expr_method_mode(self):
+        """Test that ColumnExpr.tail() returns ColumnExpr (method mode)."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         result = ds['value'].tail(5)
 
-        # Should return LazySeries, not pd.Series
-        self.assertIsInstance(result, LazySeries)
+        # Should return ColumnExpr in method mode, not pd.Series
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertEqual(result._exec_mode, 'method')
 
     def test_lazy_series_method_executes_on_repr(self):
         """Test that LazySeries executes when displayed."""
@@ -1038,15 +1040,16 @@ class TestLazySlice(unittest.TestCase):
         self.assertIsInstance(result, pd.Series)
         self.assertEqual(len(result), 3)
 
-    def test_lazy_series_method_chainable(self):
-        """Test that LazySeries.head() and tail() return new LazySeries."""
-        from datastore.lazy_result import LazySeries
+    def test_column_expr_method_chainable(self):
+        """Test that ColumnExpr.head() and tail() return new ColumnExpr (method mode)."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         result = ds['value'].head(5).tail(2)
 
-        # Should still be LazySeries
-        self.assertIsInstance(result, LazySeries)
+        # Should still be ColumnExpr in method mode
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertEqual(result._exec_mode, 'method')
 
         # Should work correctly
         final = result.to_pandas()
@@ -1096,32 +1099,34 @@ class TestLazySlice(unittest.TestCase):
         doubled = result * 2
         np.testing.assert_array_equal(doubled, [20, 40, 60])
 
-    def test_lazy_aggregate_head_returns_lazy_series_method(self):
-        """Test that LazyAggregate.head() returns LazySeries."""
-        from datastore.lazy_result import LazySeries
-        from datastore.column_expr import LazyAggregate
+    def test_groupby_aggregate_head(self):
+        """Test that groupby().agg().head() returns ColumnExpr (method mode)."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         agg_result = ds.groupby('category')['value'].mean()
 
-        # Should be LazyAggregate
-        self.assertIsInstance(agg_result, LazyAggregate)
+        # Should be ColumnExpr in aggregation mode
+        self.assertIsInstance(agg_result, ColumnExpr)
+        self.assertEqual(agg_result._exec_mode, 'agg')
 
-        # head() should return LazySeries
+        # head() should return ColumnExpr in method mode
         head_result = agg_result.head(3)
-        self.assertIsInstance(head_result, LazySeries)
+        self.assertIsInstance(head_result, ColumnExpr)
+        self.assertEqual(head_result._exec_mode, 'method')
 
         # Executed result should have correct length
         self.assertEqual(len(head_result), 3)
 
-    def test_lazy_aggregate_tail_returns_lazy_series_method(self):
-        """Test that LazyAggregate.tail() returns LazySeries."""
-        from datastore.lazy_result import LazySeries
+    def test_groupby_aggregate_tail(self):
+        """Test that groupby().agg().tail() returns ColumnExpr (method mode)."""
+        from datastore.column_expr import ColumnExpr
 
         ds = self.create_ds()
         result = ds.groupby('category')['value'].sum().tail(2)
 
-        self.assertIsInstance(result, LazySeries)
+        self.assertIsInstance(result, ColumnExpr)
+        self.assertEqual(result._exec_mode, 'method')
         self.assertEqual(len(result), 2)
 
     def test_lazy_series_method_on_scalar_aggregate(self):
@@ -1134,16 +1139,16 @@ class TestLazySlice(unittest.TestCase):
         expected = self.df['value'].mean()
         self.assertAlmostEqual(float(result), expected)
 
-    def test_lazy_series_method_aggregations(self):
-        """Test calling aggregation methods on LazySeries."""
+    def test_column_expr_method_aggregations(self):
+        """Test calling aggregation methods on ColumnExpr (method mode)."""
         ds = self.create_ds()
         slice_result = ds['value'].head(5)
 
-        # Aggregation methods should work
-        self.assertEqual(slice_result.sum(), 10 + 20 + 30 + 40 + 50)
-        self.assertEqual(slice_result.mean(), 30.0)
-        self.assertEqual(slice_result.min(), 10)
-        self.assertEqual(slice_result.max(), 50)
+        # Aggregation methods should work - use float() to trigger execution
+        self.assertEqual(float(slice_result.sum()), 10 + 20 + 30 + 40 + 50)
+        self.assertEqual(float(slice_result.mean()), 30.0)
+        self.assertEqual(float(slice_result.min()), 10)
+        self.assertEqual(float(slice_result.max()), 50)
 
 
 class TestColumnExprPlot(unittest.TestCase):
@@ -1429,7 +1434,8 @@ class TestColumnExprPandasMethods(unittest.TestCase):
         """Test agg with single function."""
         ds = self.create_ds()
         result = ds['value'].agg('mean')
-        self.assertEqual(result, 30.0)
+        # Use float() to trigger execution for ColumnExpr result
+        self.assertEqual(float(result), 30.0)
 
     def test_agg_multiple_funcs(self):
         """Test agg with multiple functions."""

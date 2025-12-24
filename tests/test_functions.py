@@ -28,7 +28,8 @@ class TestBasicFunction(unittest.TestCase):
     def test_function_with_alias(self):
         """Test function with alias."""
         func = Function('COUNT', Field('id'), alias='total')
-        self.assertEqual('COUNT("id") AS "total"', func.to_sql(with_alias=True))
+        # COUNT is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('toInt64(COUNT("id")) AS "total"', func.to_sql(with_alias=True))
 
 
 class TestAggregateFunction(unittest.TestCase):
@@ -43,13 +44,15 @@ class TestAggregateFunction(unittest.TestCase):
     def test_count(self):
         """Test COUNT function."""
         func = Count(Field('id'))
-        self.assertEqual('COUNT("id")', func.to_sql())
+        # COUNT is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('toInt64(COUNT("id"))', func.to_sql())
         self.assertTrue(func.is_aggregate)
 
     def test_count_star(self):
         """Test COUNT(*) function."""
         func = Count('*')
-        self.assertEqual('COUNT(*)', func.to_sql())
+        # COUNT is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('toInt64(COUNT(*))', func.to_sql())
 
     def test_avg(self):
         """Test AVG function."""
@@ -125,7 +128,8 @@ class TestFunctionComposition(unittest.TestCase):
     def test_function_in_arithmetic(self):
         """Test function in arithmetic expression."""
         expr = Sum(Field('amount')) / Count(Field('id'))
-        self.assertEqual('(SUM("amount")/COUNT("id"))', expr.to_sql())
+        # COUNT is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('(SUM("amount")/toInt64(COUNT("id")))', expr.to_sql())
 
     def test_nested_functions(self):
         """Test nested function calls."""

@@ -409,8 +409,9 @@ class GroupByTests(unittest.TestCase):
         """Test GROUP BY with COUNT(field)"""
         result = self.ds.select(self.ds.foo, Count(self.ds.bar)).groupby(self.ds.foo).execute()
 
+        # COUNT is wrapped in toInt64() to match pandas int64 dtype
         self.assertEqual(
-            'SELECT "foo", COUNT("bar") FROM "abc" GROUP BY "foo"',
+            'SELECT "foo", toInt64(COUNT("bar")) FROM "abc" GROUP BY "foo"',
             self.ds.select(self.ds.foo, Count(self.ds.bar)).groupby(self.ds.foo).to_sql(),
         )
         self.assertEqual(2, len(result))
