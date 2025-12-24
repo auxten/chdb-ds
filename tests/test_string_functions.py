@@ -93,7 +93,8 @@ class CustomStringFunctionTests(unittest.TestCase):
         """Test LENGTH custom function"""
         Length = CustomFunction("LENGTH", ["str"])
         func = Length(Field("name"))
-        self.assertEqual('LENGTH("name")', func.to_sql())
+        # LENGTH is wrapped in toInt64() to match pandas int64 dtype
+        self.assertEqual('toInt64(LENGTH("name"))', func.to_sql())
 
 
 # ========== Execution Tests with chdb ==========

@@ -364,8 +364,8 @@ class TestGroupBy:
         ds_result = ds_df.groupby('category')['value'].count()
 
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
-        # Verify dtype is int64 (not uint64)
-        assert ds_result.dtype == pd_result.dtype
+        # Verify dtype matches pandas (int64)
+        assert ds_result.dtype == pd_result.dtype, f"dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
 
     def test_groupby_agg_multiple(self, groupby_df):
         """Test groupby().agg() with multiple functions."""

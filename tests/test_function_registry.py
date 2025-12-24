@@ -145,7 +145,8 @@ class TestFunctionBuilding:
         """Build a scalar function."""
         spec = FunctionRegistry.get('length')
         result = spec.build(Field('name'))
-        assert result.to_sql() == 'length("name")'
+        # length is wrapped in toInt64() to match pandas int64 dtype
+        assert result.to_sql() == 'toInt64(length("name"))'
 
     def test_build_aggregate_function(self):
         """Build an aggregate function."""
