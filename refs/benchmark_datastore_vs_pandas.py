@@ -33,7 +33,6 @@ from datastore.config import (
     enable_profiling,
     disable_profiling,
     get_profiler,
-    new_profiler,
     reset_profiler,
 )
 
