@@ -1,0 +1,60 @@
+---
+alwaysApply: true
+---
+
+## chdb-ds Design Principles
+
+### 1. Fully Lazy Execution Architecture
+- **All methods returning DataFrame or Series should return Lazy objects** (such as `DataStore`, `LazySeries`)
+- Defer execution until results are actually needed
+- Preserve the ability to select the optimal execution engine (pandas vs chDB/SQL) at execution stage
+- **API style does not determine execution engine**: pandas-style, Pythonic, SQL terminology should all compile to the same optimized backend execution
+- Final execute stage selects pandas or chDB ExecutionEngine based on config system
+
+### 2. Natural Execution Triggering (Explicit Calls Prohibited)
+- **Prohibit explicit calls to `_execute()` method**
+- **Avoid explicit conversions like `to_df()`, `to_list()`, `to_pandas()` as much as possible**
+- Execution triggered through natural means:
+  - `.values` - get underlying array
+  - `.columns` - get column names
+  - `len()` - get length
+  - `.index` - get index
+  - `repr()` / `print()` - display results
+  - `__iter__` - iteration
+  - `.equals()` - comparison
+- **Prioritize alignment in tests**:
+  # Recommended
+  self.assertTrue(ds_result.equals(pd_result))
+  np.testing.assert_array_equal(ds_result['col'], pd_result['col'])
+  self.assertEqual(len(ds_result), len(pd_result))
+  self.assertEqual(ds_result.columns, pd_result.columns)
+  
+  # Avoid
+  ds_result.to_df().equals(pd_result)  # unnecessary to_df()
+  pd_result.reset_index(drop=True)      # masks index misalignment issues
+  - **Alignment scope**: column names, column types, data values, index
+- **Don't obsess over**: container type differences between DataFrame and DataStore
+
+### 3. Prioritize Architectural Simplicity and Elegance
+- **Do not consider backward compatibility**, first priority is architectural simplicity and elegance
+- Avoid duplicate definitions
+- Keep code structure clear with single responsibility
+- Maintain semantic clarity and unambiguity in function names, class names, and file names
+
+### 4. Unified Architecture, Avoid Fragmentation
+- Don't create split class hierarchies for different execution engines
+- `ColumnExpr` uniformly wraps all expression types
+- Handle lazy execution through unified `LazySeries`, `LazyGroupBy`, etc.
+- `LazyOp` system uniformly manages all lazy operations
+
+### 5. Value Test Issues, Collect Errors
+- Collect errors during execution, analyze whether they are features that should be implemented but aren't
+- **Analyze problems from an architectural perspective**, don't easily modify tests just to pass them
+- Using `reset_index()` in tests to mask problems = **DataStore bug**, not correct test writing
+- Try to consolidate problems you reason through and users discover into test cases to prevent recurrence
+- Discovered problems are opportunities to improve the library; for example, if a test case you write reveals an issue, and you finally find you can pass the test by modifying the case, you need to go back and analyze whether the library's API design is insufficiently user-friendly or has triggered a bug. Record and attempt to fix it
+
+### 6. Architectural Rationality and Simplicity are Primary Considerations, No Need to Consider Library Backward Compatibility
+---
+
+**Core Philosophy: Users write familiar pandas-style code, backend automatically selects optimal execution engine.**
