@@ -81,6 +81,154 @@ def generate_test_data(n_rows: int) -> pd.DataFrame:
     return df
 
 
+def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize MultiIndex columns to flat column names."""
+    if isinstance(df.columns, pd.MultiIndex):
+        # Convert MultiIndex to flat names like 'col_agg'
+        df = df.copy()
+        df.columns = ['_'.join(filter(None, map(str, col))).strip('_') for col in df.columns]
+    return df
+
+
+def _to_dataframe(result) -> pd.DataFrame:
+    """Convert various result types to DataFrame."""
+    if isinstance(result, pd.DataFrame):
+        return result
+    if isinstance(result, pd.Series):
+        return result.to_frame()
+    # Handle LazySeries and other lazy types
+    if hasattr(result, 'to_df'):
+        return result.to_df()
+    if hasattr(result, 'values') and hasattr(result, 'name'):
+        # Series-like object
+        return pd.DataFrame({result.name or 'value': result.values})
+    raise TypeError(f"Cannot convert {type(result)} to DataFrame")
+
+
+def verify_results(pandas_result, datastore_result, op_name: str, ignore_row_order: bool = False) -> tuple:
+    """
+    Verify that Pandas and DataStore results are consistent.
+
+    Args:
+        pandas_result: Result from Pandas operation
+        datastore_result: Result from DataStore operation
+        op_name: Name of the operation (for error messages)
+        ignore_row_order: If True, sort both DataFrames before comparison (for Sort operations)
+
+    Returns:
+        tuple: (status: str, message: str)
+            status: 'match', 'mismatch', 'design_diff', 'bug'
+    """
+    try:
+        # Convert to DataFrame
+        try:
+            pandas_df = _to_dataframe(pandas_result)
+        except Exception as e:
+            return 'bug', f"Cannot convert Pandas result: {e}"
+
+        try:
+            datastore_df = _to_dataframe(datastore_result)
+        except Exception as e:
+            return 'bug', f"Cannot convert DataStore result (should return DataFrame): {e}"
+
+        # Normalize column names (handle MultiIndex)
+        pandas_df = _normalize_columns(pandas_df)
+        datastore_df = _normalize_columns(datastore_df)
+
+        # Check shape
+        if pandas_df.shape != datastore_df.shape:
+            return 'mismatch', f"Shape mismatch: Pandas={pandas_df.shape}, DataStore={datastore_df.shape}"
+
+        # Check columns
+        pandas_cols = sorted(pandas_df.columns.tolist())
+        datastore_cols = sorted(datastore_df.columns.tolist())
+        if pandas_cols != datastore_cols:
+            return 'design_diff', f"Columns differ: Pandas={pandas_cols}, DataStore={datastore_cols}"
+
+        # Reorder columns to match
+        datastore_df = datastore_df[pandas_df.columns]
+
+        # Reset index
+        pandas_df = pandas_df.reset_index(drop=True)
+        datastore_df = datastore_df.reset_index(drop=True)
+
+        # For operations with Sort, compare as sets (ignore row order due to sort stability)
+        # Check if this is a Sort operation
+        is_sort_op = 'Sort' in op_name or 'sort' in op_name.lower()
+
+        if is_sort_op or ignore_row_order:
+            # Sort both DataFrames by all columns for comparison
+            sort_cols = list(pandas_df.columns)
+            try:
+                pandas_sorted = pandas_df.sort_values(by=sort_cols, ignore_index=True)
+                datastore_sorted = datastore_df.sort_values(by=sort_cols, ignore_index=True)
+            except Exception:
+                # If sorting fails, fall back to row-by-row comparison
+                pandas_sorted = pandas_df
+                datastore_sorted = datastore_df
+        else:
+            pandas_sorted = pandas_df
+            datastore_sorted = datastore_df
+
+        # Compare values column by column
+        for col in pandas_sorted.columns:
+            pandas_col = pandas_sorted[col]
+            datastore_col = datastore_sorted[col]
+
+            # Handle numeric columns with tolerance
+            if pd.api.types.is_numeric_dtype(pandas_col) and pd.api.types.is_numeric_dtype(datastore_col):
+                # Convert to float for comparison
+                pd_vals = pd.to_numeric(pandas_col, errors='coerce').fillna(0).values
+                ds_vals = pd.to_numeric(datastore_col, errors='coerce').fillna(0).values
+
+                if not np.allclose(pd_vals, ds_vals, rtol=1e-5, atol=1e-8, equal_nan=True):
+                    diff_mask = ~np.isclose(pd_vals, ds_vals, rtol=1e-5, atol=1e-8)
+                    if diff_mask.any():
+                        idx = np.where(diff_mask)[0][0]
+                        return (
+                            'mismatch',
+                            f"Column '{col}' value mismatch at row {idx}: "
+                            f"Pandas={pandas_col.iloc[idx]}, DataStore={datastore_col.iloc[idx]}",
+                        )
+            elif pd.api.types.is_datetime64_any_dtype(pandas_col) or pd.api.types.is_datetime64_any_dtype(
+                datastore_col
+            ):
+                # Handle datetime columns - compare as strings or timestamps
+                pd_ts = pd.to_datetime(pandas_col, errors='coerce')
+                ds_ts = pd.to_datetime(datastore_col, errors='coerce')
+
+                # Check if values are equal (both NaT or same timestamp)
+                match = (pd_ts.isna() & ds_ts.isna()) | (pd_ts == ds_ts)
+                if not match.all():
+                    idx = (~match).idxmax()
+                    # This might be a design difference (e.g., where() with 0 vs NaT)
+                    return (
+                        'design_diff',
+                        f"Column '{col}' datetime handling differs at row {idx}: "
+                        f"Pandas={pandas_col.iloc[idx]}, DataStore={datastore_col.iloc[idx]}",
+                    )
+            else:
+                # Non-numeric: string comparison
+                pd_str = pandas_col.astype(str)
+                ds_str = datastore_col.astype(str)
+                if not pd_str.equals(ds_str):
+                    diff_mask = pd_str != ds_str
+                    if diff_mask.any():
+                        idx = diff_mask.idxmax()
+                        return (
+                            'mismatch',
+                            f"Column '{col}' value mismatch at row {idx}: "
+                            f"Pandas={pandas_col.iloc[idx]}, DataStore={datastore_col.iloc[idx]}",
+                        )
+
+        return 'match', "Results match"
+
+    except Exception as e:
+        import traceback
+
+        return 'bug', f"Verification error: {e}\n{traceback.format_exc()}"
+
+
 def time_operation(func: Callable, n_runs: int = 5, collect_profile: bool = False) -> tuple:
     """
     Time an operation, return average time in milliseconds.
@@ -477,7 +625,7 @@ class Benchmark:
 
 
 def run_benchmarks(
-    data_sizes: List[int], temp_dir: str, n_runs: int = 5, collect_profiles: bool = False
+    data_sizes: List[int], temp_dir: str, n_runs: int = 5, collect_profiles: bool = False, verify: bool = False
 ) -> List[BenchmarkResult]:
     """Run all benchmarks for different data sizes."""
     results = []
@@ -532,10 +680,23 @@ def run_benchmarks(
             pandas_func = getattr(benchmark, pandas_method)
             datastore_func = getattr(benchmark, datastore_method)
 
-            # Warm up
+            # Warm up and optionally verify results
             try:
-                pandas_func()
-                datastore_func()
+                pandas_result = pandas_func()
+                datastore_result = datastore_func()
+
+                # Verify results consistency
+                if verify:
+                    status, message = verify_results(pandas_result, datastore_result, op_name)
+                    if status == 'match':
+                        print(f"  ✓  {op_name}: Results match")
+                    elif status == 'design_diff':
+                        print(f"  ⚠️  {op_name}: Design difference - {message}")
+                    elif status == 'bug':
+                        print(f"  ❌ {op_name}: BUG DETECTED - {message}")
+                    else:  # mismatch
+                        print(f"  ✗  {op_name}: Mismatch - {message}")
+
             except Exception as e:
                 print(f"  Skipping {op_name}: {e}")
                 continue
@@ -921,6 +1082,7 @@ def main():
     )
     parser.add_argument('--runs', type=int, default=5, help='Number of runs per operation')
     parser.add_argument('--no-plot', action='store_true', help='Skip plot generation')
+    parser.add_argument('--verify', action='store_true', help='Verify result consistency between Pandas and DataStore')
     args = parser.parse_args()
 
     print("=" * 60)
@@ -936,9 +1098,12 @@ def main():
         data_sizes = [int(s.strip()) for s in args.sizes.split(',')]
         print(f"Data sizes: {data_sizes}")
         print(f"Profiling: {'enabled' if args.profile else 'disabled'}")
+        print(f"Verification: {'enabled' if args.verify else 'disabled'}")
 
         # Run benchmarks
-        results = run_benchmarks(data_sizes, temp_dir, n_runs=args.runs, collect_profiles=args.profile)
+        results = run_benchmarks(
+            data_sizes, temp_dir, n_runs=args.runs, collect_profiles=args.profile, verify=args.verify
+        )
 
         # Print summary
         print_summary(results)

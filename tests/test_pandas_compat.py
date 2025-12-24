@@ -1084,29 +1084,27 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
                 .reset_index()
             )
 
-            # result.columns triggers natural execution - verify column names are unique
-            expected_cols = [
-                'category',
-                'int_col_sum',
-                'int_col_mean',
-                'int_col_max',
-                'float_col_sum',
-                'float_col_mean',
-            ]
-            self.assertEqual(sorted(result.columns), sorted(expected_cols))
-
-            # Verify values match pandas
-            pd_result = test_df.groupby('category').agg(
-                {'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']}
+            # result.columns triggers natural execution - verify column names match pandas format
+            # DataStore now returns MultiIndex columns to match pandas behavior
+            pd_result = (
+                test_df.groupby('category')
+                .agg({'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']})
+                .reset_index()
             )
-            # Flatten pandas MultiIndex columns for comparison
-            pd_result.columns = [f'{col}_{func}' for col, func in pd_result.columns]
-            pd_result = pd_result.reset_index()
+
+            # Verify columns match pandas MultiIndex format
+            self.assertEqual(list(result.columns), list(pd_result.columns))
+
+            # Flatten columns for value comparison
+            result_flat = result.to_df().copy()
+            result_flat.columns = [f'{col}_{func}' if func else col for col, func in result_flat.columns]
+            pd_result_flat = pd_result.copy()
+            pd_result_flat.columns = [f'{col}_{func}' if func else col for col, func in pd_result_flat.columns]
 
             # Compare values (order may differ) - use .values for natural trigger
             for col in ['int_col_sum', 'int_col_mean', 'int_col_max', 'float_col_sum', 'float_col_mean']:
-                ds_values = dict(zip(result['category'].values, result[col].values))
-                pd_values = dict(zip(pd_result['category'], pd_result[col]))
+                ds_values = dict(zip(result_flat['category'].values, result_flat[col].values))
+                pd_values = dict(zip(pd_result_flat['category'], pd_result_flat[col]))
                 for cat in ['A', 'B', 'C']:
                     np.testing.assert_almost_equal(
                         ds_values[cat], pd_values[cat], err_msg=f"Mismatch for {col} in category {cat}"
@@ -1141,6 +1139,160 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
         # Multiple columns with single function each should use column names as aliases
         self.assertIn('value', result.columns)
         self.assertIn('score', result.columns)
+
+
+class TestLazySeriesDataFrameCompat(unittest.TestCase):
+    """Test LazySeries compatibility when result is DataFrame (e.g., reset_index)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B', 'C', 'C'], 'value': [10, 20, 30, 40, 50, 60]})
+        cls.parquet_path = '/tmp/test_lazy_series_df_compat.parquet'
+        cls.test_df.to_parquet(cls.parquet_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        import os
+
+        if os.path.exists(cls.parquet_path):
+            os.remove(cls.parquet_path)
+
+    def test_groupby_size_reset_index_has_columns(self):
+        """Test that groupby().size().reset_index() has columns attribute.
+
+        This was a bug where LazySeries didn't expose 'columns' attribute
+        even when the internal result was a DataFrame.
+        """
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').size().reset_index(name='count')
+
+        # result.columns should work and trigger natural execution
+        self.assertTrue(hasattr(result, 'columns'))
+        self.assertEqual(list(result.columns), ['category', 'count'])
+
+    def test_groupby_size_reset_index_has_to_df(self):
+        """Test that groupby().size().reset_index() has to_df() method."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        result = ds.groupby('category').size().reset_index(name='count')
+
+        # to_df() should work and return DataFrame
+        self.assertTrue(hasattr(result, 'to_df'))
+        df = result.to_df()
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEqual(list(df.columns), ['category', 'count'])
+
+    def test_groupby_size_reset_index_matches_pandas(self):
+        """Test that groupby().size().reset_index() matches pandas behavior."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds.groupby('category').size().reset_index(name='count')
+        pd_result = self.test_df.groupby('category').size().reset_index(name='count')
+
+        # Columns should match
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+        # Shape should match
+        self.assertEqual(ds_result.shape, pd_result.shape)
+
+        # Values should match (ignoring order)
+        ds_dict = dict(zip(ds_result.to_df()['category'], ds_result.to_df()['count']))
+        pd_dict = dict(zip(pd_result['category'], pd_result['count']))
+        self.assertEqual(ds_dict, pd_dict)
+
+
+class TestGroupByAggMultiIndexColumns(unittest.TestCase):
+    """Test GroupBy agg returns MultiIndex columns to match pandas behavior."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_df = pd.DataFrame(
+            {
+                'category': ['A', 'A', 'B', 'B', 'C', 'C'],
+                'int_col': [1, 2, 3, 4, 5, 6],
+                'float_col': [1.5, 2.5, 3.5, 4.5, 5.5, 6.5],
+            }
+        )
+        cls.parquet_path = '/tmp/test_groupby_multiindex.parquet'
+        cls.test_df.to_parquet(cls.parquet_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        import os
+
+        if os.path.exists(cls.parquet_path):
+            os.remove(cls.parquet_path)
+
+    def test_groupby_agg_returns_multiindex_columns(self):
+        """Test that groupby().agg() returns MultiIndex columns like pandas.
+
+        This was a bug where SQL pushdown returned flat column names like
+        'int_col_sum' instead of MultiIndex ('int_col', 'sum').
+        """
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds.groupby('category').agg({'int_col': ['sum', 'mean'], 'float_col': ['sum', 'mean']})
+
+        pd_result = self.test_df.groupby('category').agg({'int_col': ['sum', 'mean'], 'float_col': ['sum', 'mean']})
+
+        # Column types should match (both MultiIndex)
+        self.assertIsInstance(ds_result.columns, pd.MultiIndex)
+        self.assertIsInstance(pd_result.columns, pd.MultiIndex)
+
+        # Column values should match
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+    def test_groupby_agg_reset_index_multiindex_columns(self):
+        """Test that groupby().agg().reset_index() preserves MultiIndex columns."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = ds.groupby('category').agg({'int_col': ['sum', 'mean'], 'float_col': 'sum'}).reset_index()
+
+        pd_result = self.test_df.groupby('category').agg({'int_col': ['sum', 'mean'], 'float_col': 'sum'}).reset_index()
+
+        # After reset_index, columns should still match pandas
+        self.assertEqual(list(ds_result.columns), list(pd_result.columns))
+
+    def test_groupby_agg_multiindex_values_match_pandas(self):
+        """Test that groupby().agg() values match pandas with MultiIndex columns."""
+        from datastore import DataStore
+        import numpy as np
+
+        ds = DataStore.from_file(self.parquet_path)
+        ds_result = (
+            ds.groupby('category')
+            .agg({'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']})
+            .reset_index()
+            .to_df()
+        )
+
+        pd_result = (
+            self.test_df.groupby('category')
+            .agg({'int_col': ['sum', 'mean', 'max'], 'float_col': ['sum', 'mean']})
+            .reset_index()
+        )
+
+        # Sort both by category for comparison
+        ds_result = ds_result.sort_values(('category', '')).reset_index(drop=True)
+        pd_result = pd_result.sort_values(('category', '')).reset_index(drop=True)
+
+        # Values should be approximately equal
+        for col in [
+            ('int_col', 'sum'),
+            ('int_col', 'mean'),
+            ('int_col', 'max'),
+            ('float_col', 'sum'),
+            ('float_col', 'mean'),
+        ]:
+            np.testing.assert_array_almost_equal(
+                ds_result[col].values, pd_result[col].values, decimal=5, err_msg=f"Column {col} values don't match"
+            )
 
 
 if __name__ == '__main__':
