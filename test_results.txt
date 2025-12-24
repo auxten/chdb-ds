@@ -1,0 +1,1020 @@
+================================================================================
+Kaggle Pandas Compatibility Test for DataStore
+================================================================================
+
+This test suite evaluates DataStore's compatibility with pandas
+using operations commonly found in Kaggle notebooks across different domains.
+
+Domains covered:
+  - Computer Vision (CV): Image metadata processing
+  - Natural Language Processing (NLP): Text analysis
+  - Large Language Models (LLM): Token statistics
+  - Recommendation Systems: User-item interactions
+  - Exploratory Data Analysis (EDA): Statistical analysis
+Cannot use cgroups reader: Code: 107. DB::Exception: Cannot find cgroups v1 or v2 current memory file. (FILE_DOESNT_EXIST), Stack trace (when copying this message, always include the lines below):
+
+0. ? @ 0x000000002553f972
+1. ? @ 0x00000000161fff1e
+2. ? @ 0x000000000f6991d2
+3. ? @ 0x000000000f698dc0
+4. ? @ 0x000000000f6a452b
+5. ? @ 0x00000000164acb47
+6. ? @ 0x00000000164d9557
+7. ? @ 0x00000000164e7f6d
+8. ? @ 0x00000000164e797d
+9. ? @ 0x00000000164d0d72
+10. ? @ 0x0000000026d9aeb0
+11. ? @ 0x0000000026d9dd36
+12. __exp10l_finite@GLIBC_2.15 @ 0x000000000001e23b
+13. ULONG_minimum_X86_V3 @ 0x00000000005547db
+14. google::cloud::v2_37::internal::CompilerVersion[abi:cxx11]() (.cold) @ 0x000000000052ede3
+15. arrow::(anonymous namespace)::ArrayImporter::ImportBuffer(int, long, bool) @ 0x0000000000584107
+16. ge_madd @ 0x000000000056cca6
+17. google::cloud::v2_37::internal::DebugFormatter::Build[abi:cxx11]() (.cold) @ 0x000000000052f0eb
+18. nextdownl @ 0x000000000002541b
+19. google::cloud::v2_37::internal::CompilerVersion[abi:cxx11]() (.cold) @ 0x000000000052ede3
+20. bio_core_gets @ 0x000000000053cddd
+21. qtrmm_outucopy_PRESCOTT @ 0x000000000060f64d
+22. qtrmm_ounncopy_PRESCOTT @ 0x000000000060edf8
+23. void arrow::internal::VisitBitBlocksVoid<void arrow::compute::internal::VisitTwoArrayValuesInline<arrow::FloatType, arrow::Int32Type, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int), arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()>(arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int)&&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()&&)::'lambda'(long), void arrow::compute::internal::VisitTwoArrayValuesInline<arrow::FloatType, arrow::Int32Type, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int), arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()>(arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int)&&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()&&)::'lambda'()>(unsigned char const*, long, long, void arrow::compute::internal::VisitTwoArrayValuesInline<arrow::FloatType, arrow::Int32Type, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int), arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()>(arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int)&&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()&&)::'lambda'(long)&&, void arrow::compute::internal::VisitTwoArrayValuesInline<arrow::FloatType, arrow::Int32Type, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int), arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()>(arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'(float, int)&&, arrow::compute::internal::applicator::ScalarBinaryNotNullStateful<arrow::FloatType, arrow::FloatType, arrow::Int32Type, arrow::compute::internal::(anonymous namespace)::RoundBinary<arrow::FloatType, (arrow::compute::RoundMode)8, void>>::ArrayArray(arrow::compute::KernelContext*, arrow::ArraySpan const&, arrow::ArraySpan const&, arrow::compute::ExecResult*)::'lambda'()&&)::'lambda'()&&) @ 0x0000000000627668
+24. ? @ 0x000000000054ba79
+25. orc::BlockBuffer::writeTo(orc::OutputStream*, orc::WriterMetrics*) (.cold) @ 0x0000000000545c88
+26. _ZNK5arrow7compute8internal12_GLOBAL__N_15RoundINS_14Decimal256TypeELNS0_9RoundModeE8EvE4CallINS_10Decimal256ES8_EENSt9enable_ifIXoooooosrSt7is_sameINS_9Decimal32ET0_E5valuesrSA_INS_9Decimal64ESC_E5valuesrSA_INS_10Decimal128ESC_E5valuesrSA_IS8_SC_E5valueESC_E4typeEPNS0_13KernelContextESC_PNS_6StatusE.isra.0 @ 0x00000000005647af
+27. DES_ede3_cfb_encrypt @ 0x00000000005539f3
+28. cimatcopy_k_rt_PRESCOTT @ 0x0000000000583246
+29. SHORT_multiply_X86_V3 @ 0x0000000000582c34
+30. orc::TypeImpl::parseType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&, unsigned long, unsigned long) (.cold) @ 0x0000000000542cad
+31. qtrmm_outucopy_PRESCOTT @ 0x000000000060f64d
+ (version 25.8.2.1)
+
+✓ DataStore imported successfully
+  Version: 0.1.0
+
+================================================================================
+CATEGORY: Basic Operations
+================================================================================
+
+================================================================================
+Test: Column Selection - Single Column
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 100
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0      dog
+1     bird
+2      dog
+3      dog
+4      cat
+      ... 
+95     dog
+96     dog
+97    bird
+98    fish
+99    fish
+Name: class_label, Length: 100, dtype: object
+  DataStore result preview:
+  0      dog
+1     bird
+2      dog
+3      dog
+4      cat
+      ... 
+95     dog
+96     dog
+97    bird
+98    fish
+99    fish
+Name: class_label, Length: 100, dtype: object
+
+================================================================================
+Test: Column Selection - Multiple Columns
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (100, 3)
+✓ DataStore executed successfully
+  Result shape: (100, 3)
+✓ Results match!
+
+================================================================================
+Test: Head Operation
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+Test: Tail Operation
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+Test: Shape Property
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Columns Property
+Category: Basic Operations
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+CATEGORY: Filtering Operations
+================================================================================
+
+================================================================================
+Test: Simple Filter - Equality
+Category: Filtering
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (26, 9)
+✓ DataStore executed successfully
+  Result shape: (26, 9)
+✓ Results match!
+
+================================================================================
+Test: Numeric Filter - Greater Than
+Category: Filtering
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (40, 9)
+✓ DataStore executed successfully
+  Result shape: (40, 9)
+✓ Results match!
+
+================================================================================
+Test: Multiple Conditions - AND
+Category: Filtering
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (12, 9)
+✓ DataStore executed successfully
+  Result shape: (12, 9)
+✓ Results match!
+
+================================================================================
+Test: Filter - isin
+Category: Filtering
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (61, 9)
+✓ DataStore executed successfully
+  Result shape: (61, 9)
+✓ Results match!
+
+================================================================================
+CATEGORY: Aggregation Operations
+================================================================================
+
+================================================================================
+Test: Aggregation - Mean
+Category: Aggregation
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Aggregation - Sum
+Category: Aggregation
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Aggregation - Count
+Category: Aggregation
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Aggregation - Min
+Category: Aggregation
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Aggregation - Max
+Category: Aggregation
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+CATEGORY: GroupBy Operations
+================================================================================
+
+================================================================================
+Test: GroupBy - Mean by Category
+Category: GroupBy
+================================================================================
+✓ Pandas executed successfully
+  Result length: 4
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  category
+Books          5607.096275
+Clothing       4832.045684
+Electronics    5325.726041
+Food           5078.322896
+Name: sales, dtype: float64
+  DataStore result preview:
+  category
+Books          5607.096275
+Clothing       4832.045684
+Electronics    5325.726041
+Food           5078.322896
+Name: sales, dtype: float64
+
+================================================================================
+Test: GroupBy - Sum by Region
+Category: GroupBy
+================================================================================
+✓ Pandas executed successfully
+  Result length: 4
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  region
+East     5125
+North    4055
+South    4801
+West     3742
+Name: quantity, dtype: int64
+  DataStore result preview:
+  region
+East     5125
+North    4055
+South    4801
+West     3742
+Name: quantity, dtype: int64
+
+================================================================================
+Test: GroupBy - Multiple Aggregations
+Category: GroupBy
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (4, 2)
+✓ DataStore executed successfully
+  Result shape: (4, 2)
+✓ Results match!
+
+================================================================================
+Test: GroupBy - Count
+Category: GroupBy
+================================================================================
+✓ Pandas executed successfully
+  Result length: 4
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  category
+Books          82
+Clothing       89
+Electronics    99
+Food           95
+dtype: int64
+  DataStore result preview:
+  category
+Books          82
+Clothing       89
+Electronics    99
+Food           95
+dtype: int64
+
+================================================================================
+CATEGORY: Sorting Operations
+================================================================================
+
+================================================================================
+Test: Sort - Single Column Ascending
+Category: Sorting
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+Test: Sort - Single Column Descending
+Category: Sorting
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+Test: Sort - Multiple Columns
+Category: Sorting
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+CATEGORY: Missing Data Operations
+================================================================================
+
+================================================================================
+Test: Missing Data - isna
+Category: Missing Data
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 3)
+✓ DataStore executed successfully
+  Result shape: (10, 3)
+✓ Results match!
+
+================================================================================
+Test: Missing Data - dropna
+Category: Missing Data
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (4, 3)
+✓ DataStore executed successfully
+  Result shape: (4, 3)
+✓ Results match!
+
+================================================================================
+Test: Missing Data - fillna with value
+Category: Missing Data
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 3)
+✓ DataStore executed successfully
+  Result shape: (10, 3)
+✓ Results match!
+
+================================================================================
+Test: Missing Data - fillna forward fill
+Category: Missing Data
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 3)
+✓ DataStore executed successfully
+  Result shape: (10, 3)
+✓ Results match!
+
+================================================================================
+CATEGORY: String Operations
+================================================================================
+
+================================================================================
+Test: String - Lower
+Category: String Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    negative
+1    negative
+2    negative
+3    negative
+4    positive
+5    negative
+6    positive
+7     neutral
+8    positive
+9    positive
+Name: sentiment, dtype: object
+  DataStore result preview:
+  0    negative
+1    negative
+2    negative
+3    negative
+4    positive
+5    negative
+6    positive
+7     neutral
+8    positive
+9    positive
+Name: sentiment, dtype: object
+
+================================================================================
+Test: String - Upper
+Category: String Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    NEGATIVE
+1    NEGATIVE
+2    NEGATIVE
+3    NEGATIVE
+4    POSITIVE
+5    NEGATIVE
+6    POSITIVE
+7     NEUTRAL
+8    POSITIVE
+9    POSITIVE
+Name: sentiment, dtype: object
+  DataStore result preview:
+  0    NEGATIVE
+1    NEGATIVE
+2    NEGATIVE
+3    NEGATIVE
+4    POSITIVE
+5    NEGATIVE
+6    POSITIVE
+7     NEUTRAL
+8    POSITIVE
+9    POSITIVE
+Name: sentiment, dtype: object
+
+================================================================================
+Test: String - Contains
+Category: String Operations
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 8)
+✓ DataStore executed successfully
+  Result shape: (10, 8)
+✓ Results match!
+
+================================================================================
+Test: String - Length
+Category: String Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    45
+1    45
+2    45
+3    45
+4    45
+5    45
+6    45
+7    45
+8    45
+9    45
+Name: text, dtype: int64
+  DataStore result preview:
+  0    45
+1    45
+2    45
+3    45
+4    45
+5    45
+6    45
+7    45
+8    45
+9    45
+Name: text, dtype: int64
+
+================================================================================
+CATEGORY: DateTime Operations
+================================================================================
+
+================================================================================
+Test: DateTime - Year
+Category: DateTime Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    2024
+1    2024
+2    2024
+3    2024
+4    2024
+5    2024
+6    2024
+7    2024
+8    2024
+9    2024
+Name: timestamp, dtype: int32
+  DataStore result preview:
+  0    2024
+1    2024
+2    2024
+3    2024
+4    2024
+5    2024
+6    2024
+7    2024
+8    2024
+9    2024
+Name: timestamp, dtype: int32
+
+================================================================================
+Test: DateTime - Month
+Category: DateTime Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    1
+1    1
+2    1
+3    1
+4    1
+5    1
+6    1
+7    1
+8    1
+9    1
+Name: timestamp, dtype: int32
+  DataStore result preview:
+  0    1
+1    1
+2    1
+3    1
+4    1
+5    1
+6    1
+7    1
+8    1
+9    1
+Name: timestamp, dtype: int32
+
+================================================================================
+Test: DateTime - Day
+Category: DateTime Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    1
+1    1
+2    1
+3    1
+4    1
+5    1
+6    1
+7    1
+8    1
+9    1
+Name: timestamp, dtype: int32
+  DataStore result preview:
+  0    1
+1    1
+2    1
+3    1
+4    1
+5    1
+6    1
+7    1
+8    1
+9    1
+Name: timestamp, dtype: int32
+
+================================================================================
+Test: DateTime - Day of Week
+Category: DateTime Operations
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    0
+1    0
+2    0
+3    0
+4    0
+5    0
+6    0
+7    0
+8    0
+9    0
+Name: timestamp, dtype: int32
+  DataStore result preview:
+  0    0
+1    0
+2    0
+3    0
+4    0
+5    0
+6    0
+7    0
+8    0
+9    0
+Name: timestamp, dtype: int32
+
+================================================================================
+CATEGORY: Value Counts
+================================================================================
+
+================================================================================
+Test: Value Counts - Basic
+Category: Value Counts
+================================================================================
+✓ Pandas executed successfully
+  Result length: 4
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  class_label
+dog     35
+cat     26
+bird    24
+fish    15
+Name: count, dtype: int64
+  DataStore result preview:
+  class_label
+dog     35
+cat     26
+bird    24
+fish    15
+Name: count, dtype: int64
+
+================================================================================
+Test: Value Counts - Normalized
+Category: Value Counts
+================================================================================
+✓ Pandas executed successfully
+  Result length: 4
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  class_label
+dog     0.35
+cat     0.26
+bird    0.24
+fish    0.15
+Name: proportion, dtype: float64
+  DataStore result preview:
+  class_label
+dog     0.35
+cat     0.26
+bird    0.24
+fish    0.15
+Name: proportion, dtype: float64
+
+================================================================================
+CATEGORY: Merge Operations
+================================================================================
+
+================================================================================
+Test: Merge - Inner
+Category: Merge
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (2, 3)
+✓ DataStore executed successfully
+  Result shape: (2, 3)
+✓ Results match!
+
+================================================================================
+Test: Merge - Left
+Category: Merge
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (4, 3)
+✓ DataStore executed successfully
+  Result shape: (4, 3)
+✓ Results match!
+
+================================================================================
+CATEGORY: Apply Operations
+================================================================================
+
+================================================================================
+Test: Apply - Square
+Category: Apply
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    10483.499228
+1     6450.725673
+2    18798.356349
+3     2470.552793
+4     2612.570869
+5    51833.014294
+6    53615.844807
+7     1625.754966
+8      167.309540
+9    17958.755162
+Name: brightness, dtype: float64
+  DataStore result preview:
+  0    10483.499228
+1     6450.725673
+2    18798.356349
+3     2470.552793
+4     2612.570869
+5    51833.014294
+6    53615.844807
+7     1625.754966
+8      167.309540
+9    17958.755162
+Name: brightness, dtype: float64
+
+================================================================================
+Test: Apply - Categorize
+Category: Apply
+================================================================================
+✓ Pandas executed successfully
+  Result length: 10
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  0    medium
+1       low
+2    medium
+3       low
+4       low
+5      high
+6      high
+7       low
+8       low
+9    medium
+Name: brightness, dtype: object
+  DataStore result preview:
+  0    medium
+1       low
+2    medium
+3       low
+4       low
+5      high
+6      high
+7       low
+8       low
+9    medium
+Name: brightness, dtype: object
+
+================================================================================
+CATEGORY: Statistical Operations
+================================================================================
+
+================================================================================
+Test: Statistics - Describe
+Category: Statistics
+================================================================================
+✓ Pandas executed successfully
+  Result length: 8
+✓ DataStore executed successfully
+✗ Results differ!
+  Pandas result preview:
+  count     365.000000
+mean     5204.168530
+std      2894.859403
+min       107.651089
+25%      2794.089498
+50%      5571.078533
+75%      7478.988931
+max      9994.592520
+Name: sales, dtype: float64
+  DataStore result preview:
+  count     365.000000
+mean     5204.168530
+std      2894.859403
+min       107.651089
+25%      2794.089498
+50%      5571.078533
+75%      7478.988931
+max      9994.592520
+Name: sales, dtype: float64
+
+================================================================================
+Test: Statistics - Standard Deviation
+Category: Statistics
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Statistics - Variance
+Category: Statistics
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Statistics - Median
+Category: Statistics
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+CATEGORY: Unique Operations
+================================================================================
+
+================================================================================
+Test: Unique - Get Unique Values
+Category: Unique
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+Test: Unique - Count Unique
+Category: Unique
+================================================================================
+✓ Pandas executed successfully
+✓ DataStore executed successfully
+✓ Results match!
+
+================================================================================
+CATEGORY: Drop Operations
+================================================================================
+
+================================================================================
+Test: Drop - Single Column
+Category: Drop
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 8)
+✓ DataStore executed successfully
+  Result shape: (10, 8)
+✓ Results match!
+
+================================================================================
+Test: Drop - Multiple Columns
+Category: Drop
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 7)
+✓ DataStore executed successfully
+  Result shape: (10, 7)
+✓ Results match!
+
+================================================================================
+CATEGORY: Rename Operations
+================================================================================
+
+================================================================================
+Test: Rename - Single Column
+Category: Rename
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+Test: Rename - Multiple Columns
+Category: Rename
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+CATEGORY: Reset Index Operations
+================================================================================
+
+================================================================================
+Test: Reset Index - Basic
+Category: Index
+================================================================================
+✓ Pandas executed successfully
+  Result shape: (10, 9)
+✓ DataStore executed successfully
+  Result shape: (10, 9)
+✓ Results match!
+
+================================================================================
+COMPATIBILITY TEST REPORT
+================================================================================
+
+Total Tests: 51
+Pandas Success: 51/51 (100.0%)
+DataStore Success: 51/51 (100.0%)
+Results Match: 35/51 (68.6%)
+
+================================================================================
+RESULTS BY CATEGORY
+================================================================================
+
+Aggregation:
+  Success: 5/5
+  Match: 5/5
+
+Apply:
+  Success: 2/2
+  Match: 0/2
+
+Basic Operations:
+  Success: 6/6
+  Match: 5/6
+
+DateTime Operations:
+  Success: 4/4
+  Match: 0/4
+
+Drop:
+  Success: 2/2
+  Match: 2/2
+
+Filtering:
+  Success: 4/4
+  Match: 4/4
+
+GroupBy:
+  Success: 4/4
+  Match: 1/4
+
+Index:
+  Success: 1/1
+  Match: 1/1
+
+Merge:
+  Success: 2/2
+  Match: 2/2
+
+Missing Data:
+  Success: 4/4
+  Match: 4/4
+
+Rename:
+  Success: 2/2
+  Match: 2/2
+
+Sorting:
+  Success: 3/3
+  Match: 3/3
+
+Statistics:
+  Success: 4/4
+  Match: 3/4
+
+String Operations:
+  Success: 4/4
+  Match: 1/4
+
+Unique:
+  Success: 2/2
+  Match: 2/2
+
+Value Counts:
+  Success: 2/2
+  Match: 0/2
+
+================================================================================
+RESULT MISMATCHES
+================================================================================
+  - Column Selection - Single Column
+  - GroupBy - Mean by Category
+  - GroupBy - Sum by Region
+  - GroupBy - Count
+  - String - Lower
+  - String - Upper
+  - String - Length
+  - DateTime - Year
+  - DateTime - Month
+  - DateTime - Day
+  - DateTime - Day of Week
+  - Value Counts - Basic
+  - Value Counts - Normalized
+  - Apply - Square
+  - Apply - Categorize
+  - Statistics - Describe
+
+================================================================================
+IMPROVEMENT RECOMMENDATIONS
+================================================================================
+
+================================================================================
