@@ -387,38 +387,90 @@ df = df.drop(columns=['col'])
 ```
 
 ### 3. Return Types
-Methods behavior matches pandas:
+DataStore uses lazy evaluation for optimal performance:
 
 ```python
 # DataFrame methods return DataStore
 result = ds.drop(columns=['col'])  # Returns DataStore
 df = result.to_df()  # Get underlying DataFrame
 
-# Series methods return Series  
-series = ds['column']  # Returns pd.Series (not DataStore)
-value = series.mean()  # Normal pandas Series operations
+# Column access returns ColumnExpr (lazy)
+col = ds['column']  # Returns ColumnExpr (displays like Series)
+pd_series = col.to_pandas()  # Convert to pd.Series when needed
 
-# Aggregations return appropriate types
-series_result = ds.mean()  # Returns pd.Series
-scalar_result = ds['age'].mean()  # Returns scalar
+# Aggregations return LazyAggregate (lazy)
+mean_result = ds['age'].mean()  # Returns LazyAggregate
+print(mean_result)  # Triggers execution, displays value
+
+# Convert to pandas types
+df = ds.to_df()  # DataStore → pd.DataFrame
+series = ds['col'].to_pandas()  # ColumnExpr → pd.Series
 ```
 
-### 4. Series Handling
-Operations that return Series in pandas also return Series in DataStore (not wrapped):
+### 4. Comparing Results with pandas
+
+DataStore uses a **Lazy Execution** model, so column operations return `ColumnExpr` or `LazySeries` objects instead of `pd.Series`. When comparing DataStore results with pandas, you need to convert to pandas first:
 
 ```python
-# Returns pandas Series (as expected)
+import pandas as pd
+import datastore as ds
+
+df = pd.DataFrame({'a': [1, 2, 3], 'b': ['x', 'y', 'z']})
+ds_df = ds.DataFrame(df)
+
+pd_col = df['a']
+ds_col = ds_df['a']
+
+# ❌ Wrong: pandas.equals() doesn't recognize DataStore objects
+pd_col.equals(ds_col)  # Returns False (pandas limitation)
+
+# ✅ Correct: Use to_pandas() to convert first
+pd_col.equals(ds_col.to_pandas())  # Returns True
+
+# ✅ Correct: Use DataStore's equals() method (works both ways)
+ds_col.equals(pd_col)  # Returns True
+
+# ✅ For testing: Use pandas testing utilities
+pd.testing.assert_series_equal(pd_col, ds_col.to_pandas())
+
+# ✅ For values only: Use numpy
+import numpy as np
+np.array_equal(pd_col.values, ds_col.values)  # Returns True
+```
+
+**Why does `pd_col.equals(ds_col)` return False?**
+
+pandas `Series.equals()` checks `isinstance(other, pd.Series)` first. Since DataStore's `ColumnExpr` is not a `pd.Series` subclass, it immediately returns `False` - this is a pandas design limitation.
+
+**Recommended patterns:**
+
+| Use Case | Recommended Method |
+|----------|-------------------|
+| Compare values | `ds_col.equals(pd_col)` or `pd_col.equals(ds_col.to_pandas())` |
+| Test assertions | `pd.testing.assert_series_equal(pd_result, ds_result.to_pandas())` |
+| Values only | `np.array_equal(pd_col.values, ds_col.values)` |
+| Float comparison | `np.allclose(pd_col.values, ds_col.values)` |
+
+### 5. Series Handling
+Operations that return Series in pandas also return lazy objects in DataStore:
+
+```python
+# Returns ColumnExpr (lazy), displays like pandas Series
 series = ds['column']  
-print(type(series))  # <class 'pandas.core.series.Series'>
+print(type(series))  # <class 'datastore.column_expr.ColumnExpr'>
+
+# Convert to pandas when needed
+pd_series = series.to_pandas()
+print(type(pd_series))  # <class 'pandas.core.series.Series'>
 
 # Multiple columns return DataStore
 datastore = ds[['col1', 'col2']]
 print(type(datastore))  # <class 'datastore.core.DataStore'>
 ```
 
-**Why?** This maintains pandas semantics and user expectations.
+**Why Lazy?** This enables SQL query optimization and deferred execution.
 
-### 5. Method Naming
+### 6. Method Naming
 The INSERT VALUES method has been renamed to avoid conflicts:
 
 ```python
