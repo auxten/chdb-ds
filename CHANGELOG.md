@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Design Principles
+- **API Style Independence**: Both pandas-style and fluent SQL-style APIs should compile to the same optimized SQL. API style must not determine the execution engine.
+- **Fully Lazy Execution**: All operations return lazy objects; execution is triggered naturally through `.values`, `.index`, `repr()`, etc.
+- **Automatic Engine Selection**: The execution engine (chDB vs pandas) is determined at execution time based on operation type and configuration, not API style.
+
 ### Added
-- **Extended Pandas DataFrame API Compatibility**: DataStore now supports 180+ pandas DataFrame methods and properties (increased from ~80)
+- **Full Pandas DataFrame API Compatibility**: DataStore now supports **209 pandas DataFrame methods**, **56 str accessor methods**, and **42+ dt accessor methods**
   - All statistical methods: `mean()`, `median()`, `std()`, `var()`, `min()`, `max()`, `sum()`, `count()`, `corr()`, `cov()`, etc.
   - Data manipulation: `drop()`, `rename()`, `sort_values()`, `fillna()`, `dropna()`, `drop_duplicates()`, `assign()`, etc.
   - Indexing and selection: `loc`, `iloc`, `at`, `iat`, column selection with `[]`
@@ -36,6 +41,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DELETE statement support (ClickHouse style: ALTER TABLE ... DELETE)
 - Comprehensive test coverage for new features
 - Execution tests with chdb backend
+- **Profiling Capabilities**: Built-in performance profiling with `Profiler` and `ProfileStep` classes
+  - `enable_profiling()` / `disable_profiling()` to control profiling
+  - `get_profiler()` to retrieve profiling data and generate reports
+  - Track execution timing across SQL execution, cache operations, and DataFrame operations
+- **LazySeries**: New lazy evaluation wrapper for Series method calls
+  - Replaces `LazySlice` with unified `LazySeries` for all deferred Series operations
+  - Enables lazy evaluation for `head()`, `tail()`, comparison operators, and more
+- **LazyCondition**: Dual SQL and pandas support for conditions
+  - `isin()`, `between()` now work in both SQL filtering and pandas boolean Series contexts
+- **LazyGroupBy**: Improved groupby implementation
+  - Returns `LazySeries` for `size()` method
+  - SQL pushdown optimizations for groupby aggregations
+  - Proper `ORDER BY` / `sort_index()` for pandas-compatible ordering
+- **SQL Pushdown Optimizations**: Enhanced query optimization
+  - Groupby operations pushed to SQL when possible
+  - Introduced `Star` expression for `COUNT(*)` operations
+- **DataFrame Interchange Protocol**: `__dataframe__` method for library interoperability
+  - Direct use with seaborn, plotly, and other visualization libraries
+- **to_pandas() Method**: Added to `DataStore`, `ColumnExpr`, and `LazySeries`
+  - Explicit conversion to pandas DataFrame/Series for API consistency
+- **Pandas Module-Level Functions**: `pandas_api` module with pandas-compatible functions
+  - `read_csv`, `read_json`, `read_excel`, `read_parquet`, etc.
+  - `concat`, `merge`, `isna`, `notna`, `to_datetime`, `date_range`, etc.
+- **Cumulative and Window Functions**: Added to `ColumnExpr`
+  - `cummax()`, `cummin()`, `rolling()`, `expanding()`, `ewm()`
+  - `shift()`, `diff()`, `pct_change()`, `rank()`
+- **String Accessor Enhancements**
+  - Regex support in `str.replace()` and `str.split()`
+  - `str[index]` accessor for split results
+- **DateTime Enhancements**
+  - `DateTimePropertyExpr` and `DateTimeMethodExpr` for lazy datetime operations
+  - Automatic string to datetime conversion
+- **In-Place Column Operations**
+  - `__delitem__()` for column deletion: `del ds['column']`
+  - `pop()` method for removing and returning columns
+  - `update()` method for in-place modifications
+- **NumPy Compatibility Enhancements**
+  - Improved `__array__` method with `dtype` and `copy` parameters (NumPy 2.0+)
+  - Better handling of categorical and extension dtypes
+- **Kaggle Pandas Compatibility Test Suite**: Comprehensive tests based on common Kaggle notebook patterns
 
 ### Changed
 - **Breaking Change**: Renamed `values()` method to `insert_values()` to avoid conflict with pandas `values` property
@@ -54,14 +99,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables patterns like: SQL → Pandas → SQL → Pandas → SQL (any order!)
   - `to_df()` respects execution state (returns cached df when appropriate)
   - Fixes critical issue where `ds.add_prefix("x_").to_df()` now works correctly
-  - See [Mixed Execution Engine Guide](docs/MIXED_EXECUTION_ENGINE.md) for details
+  - See [Explain Method](docs/EXPLAIN_METHOD.md) for execution plan visualization
+- **Terminology Update**: Changed "materialization" to "execution" across the codebase for clarity
+- **Execution Engine Renamed**: `ExecutionEngine.CLICKHOUSE` → `ExecutionEngine.CHDB`, `use_clickhouse()` → `use_chdb()`
+- **ColumnExpr Unified**: Comparison operators now return `ColumnExpr` wrapping `Condition` instead of separate `BoolColumnExpr`
+- **Nested Subquery Support**: Enhanced SQL query building for complex LIMIT-FILTER patterns
 
 ### Documentation
-- Added comprehensive [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md) with 180+ method checklist
-- Added [Mixed Execution Engine Guide](docs/MIXED_EXECUTION_ENGINE.md) explaining the execution model
+- Added comprehensive [Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md) with 209 method checklist (100% coverage)
+- Added [Profiling Guide](docs/PROFILING.md) for performance analysis
+- Added [Explain Method](docs/EXPLAIN_METHOD.md) for execution plan visualization
 - Updated README with extended pandas compatibility examples
 - Added `example_pandas_compat.py` demonstrating common pandas methods
 - Added `example_pandas_extended.py` showcasing binary operators, time series, and advanced methods
+- Added `example_profiling.py` demonstrating profiling usage
+- Added Kaggle pandas compatibility test suite (`kaggle_pandas_compat_test.py`)
 - Added extensive test coverage:
   - 53 tests for pandas compatibility
   - 12 tests for basic mixed operations

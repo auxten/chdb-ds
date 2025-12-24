@@ -10,11 +10,105 @@
 
 A Pandas-like data manipulation framework powered by chDB (ClickHouse) with automatic SQL generation and execution capabilities. Query files, databases, and cloud storage with a unified interface.
 
+## Philosophy
+
+**Respect pandas expertise. Optimize with modern SQL.**
+
+DataStore is built on a simple belief: data scientists shouldn't have to choose between the familiar pandas API and the performance of modern SQL engines. Our approach:
+
+1. **Respect Pandas Experience**: We deeply respect pandas' API design and user habits. DataStore aims to let you use your existing pandas knowledge with minimal code changes.
+
+2. **Lazy Execution for Performance**: All operations are lazy by default. Cross-row operations (aggregations, groupby, filters) are compiled into chDB SQL for execution, leveraging ClickHouse's columnar engine optimizations.
+
+3. **Cache for Exploration**: Exploratory data analysis (EDA) often involves repeated queries on the same data. DataStore caches intermediate results to make your iterative analysis faster.
+
+4. **Pragmatic Compatibility**: We don't guarantee 100% pandas syntax compatibility—that's not our goal. Instead, we run extensive compatibility tests using `import datastore as pd` to ensure you can migrate existing code with **minimal changes** while gaining chDB's performance benefits.
+
+```python
+import datastore as pd  # Just change this import!
+
+df = pd.read_csv("employee_data.csv")
+
+# Multi-line operations - all lazy until result is needed
+filtered = df[(df['age'] > 25) & (df['salary'] > 50000)]
+grouped = filtered.groupby('city')['salary'].agg(['mean', 'sum', 'count'])
+sorted_df = grouped.sort_values('mean', ascending=False)
+result = sorted_df.head(10)
+
+print(result)  # Lazy execution triggered here!
+```
+
+**Full SQL compilation** - the entire pipeline compiles to a single optimized SQL query:
+```sql
+SELECT city, AVG(salary) AS mean, SUM(salary) AS sum, COUNT(salary) AS count
+FROM file('employee_data.csv', 'CSVWithNames')
+WHERE age > 25 AND salary > 50000
+GROUP BY city ORDER BY mean DESC LIMIT 10
+```
+
+All operations are executed by chDB:
+- `read_csv` → `file()` table function ✅
+- `filter` → `WHERE` clause ✅
+- `groupby().agg()` → `GROUP BY` + aggregation functions ✅
+- `sort_values` → `ORDER BY` ✅
+- `head` → `LIMIT` ✅
+
+> **Design principle**: API style must not determine execution engine. Both pandas and fluent APIs should compile to the same optimized SQL.
+
+**Why faster?** With full SQL compilation, DataStore benefits from:
+- **Columnar storage**: Read only needed columns (`city`, `salary`, `age`)
+- **Predicate pushdown**: Filter `age > 25 AND salary > 50000` during file scan
+- **Zero-copy data exchange**: No redundant copies between pandas and chDB
+- **Lazy execution**: Build entire operation chain, optimize before execution
+- **Single-pass processing**: One SQL query instead of multiple pandas operations
+- **Vectorized aggregation**: C++ based GROUP BY, AVG, SUM in chDB
+- **Early termination**: LIMIT pushdown to avoid processing all rows
+
+### Comparison with Similar Libraries
+
+| Feature | DataStore | Polars | DuckDB | Modin |
+|---------|-----------|--------|--------|-------|
+| **API Style** | pandas + fluent SQL | New API | SQL-first | pandas drop-in |
+| **Migration Effort** | Low (change import) | High (new API) | High (SQL rewrite) | Low |
+| **SQL Support** | ✅ Full ClickHouse SQL | ⚠️ Limited (SQLContext) | ✅ Full | ❌ |
+| **File Formats** | ✅ 100+ (ClickHouse) | ~10 | ~15 | via pandas |
+| **Data Sources** | ✅ 20+ (S3, DBs, Lakes) | ~5 | ~10 (extensions) | via pandas |
+| **Zero-Copy pandas** | ✅ Native | ❌ (copy required) | ✅ via Arrow | ❌ |
+| **ClickHouse Functions** | ✅ 334 (geo, IP, URL...) | ❌ | ❌ | ❌ |
+| **Lazy Execution** | ✅ Automatic | ⚠️ Manual (LazyFrame) | ✅ Automatic | ❌ Eager |
+
+**When to choose DataStore:**
+- You have existing pandas code and want minimal migration
+- You need ClickHouse's 100+ file formats or 20+ data sources
+- You want SQL power with pandas comfort
+- You need ClickHouse-specific functions (geo, URL, IP, JSON, array, etc.)
+
+**When to choose alternatives:**
+- **Polars**: Starting fresh, prefer Rust-based DataFrame library, willing to learn new API
+- **DuckDB**: Prefer SQL-first workflow, don't need pandas-style API
+- **Modin**: Need true drop-in replacement with Ray/Dask distributed backend
+
+**Prefer explicit fluent API?** Same performance, different style:
+
+```python
+from datastore import DataStore
+
+ds = DataStore.from_file("employee_data.csv")
+result = (ds
+    .filter((ds.age > 25) & (ds.salary > 50000))
+    .groupby('city')
+    .agg({'salary': ['mean', 'sum', 'count']})
+    .sort_values('salary_mean', ascending=False)
+    .head(10))
+```
+
 ## Features
 
 - **Fluent API**: Pandas-like interface for data manipulation
-- **Wide Pandas Compatibility**: 180+ pandas DataFrame methods and properties
+- **Full Pandas Compatibility**: 209 DataFrame methods + 56 str accessor + 42 dt accessor (all pandas methods covered)
+- **ClickHouse Extensions**: Additional `.arr`, `.json`, `.url`, `.ip`, `.geo` accessors with 100+ ClickHouse-specific functions
 - **Full NumPy Compatibility**: Direct use with all NumPy functions (mean, std, corrcoef, etc.)
+- **DataFrame Interchange Protocol**: Direct use with seaborn, plotly and other visualization libraries
 - **Mixed Execution Engine**: Arbitrary mixing of SQL(chDB) and pandas operations
 - **Immutable Operations**: Thread-safe method chaining
 - **Unified Interface**: Query files, databases, and cloud storage with the same API
@@ -321,7 +415,7 @@ ds = DataStore.from_dataframe(df, name='employees')
 
 ### Pandas DataFrame Compatibility
 
-DataStore now includes **wide pandas DataFrame API compatibility**, allowing you to use all pandas methods directly:
+DataStore now includes **comprehensive pandas DataFrame API compatibility** (209 DataFrame methods + 56 str accessor + 42 dt accessor), allowing you to use all pandas methods directly:
 
 ```python
 # All pandas properties work
@@ -692,6 +786,52 @@ result = (ds
 # 4. Return result, triggered by `to_df()`
 ```
 
+### Profiling Performance
+
+DataStore includes built-in profiling capabilities to analyze execution performance:
+
+```python
+from datastore import DataStore, enable_profiling, disable_profiling, get_profiler
+
+# Enable profiling
+enable_profiling()
+
+ds = DataStore.from_file("data.csv")
+result = (ds
+    .filter(ds.age > 25)
+    .groupby("department")
+    .agg({"salary": "mean"})
+    .to_df())
+
+# Get profiling report
+profiler = get_profiler()
+profiler.report()  # Print detailed timing breakdown
+
+# Disable when done
+disable_profiling()
+```
+
+**See [Profiling Guide](docs/PROFILING.md) for detailed usage.**
+
+### DataFrame Interchange Protocol
+
+DataStore implements the DataFrame Interchange Protocol (`__dataframe__`), enabling direct use with visualization libraries:
+
+```python
+import seaborn as sns
+from datastore import DataStore
+
+ds = DataStore.from_file("data.csv")
+
+# Use DataStore directly with seaborn - no conversion needed!
+sns.scatterplot(data=ds, x="age", y="salary", hue="department")
+sns.barplot(data=ds, x="category", y="value")
+
+# Also works with plotly and other libraries supporting the protocol
+import plotly.express as px
+px.scatter(ds, x="age", y="salary", color="department")
+```
+
 ## Design Philosophy
 
 DataStore is inspired by pypika's excellent query builder design but focuses on:
@@ -803,9 +943,17 @@ python -m unittest datastore.tests.test_datastore_core
 
 ## Documentation
 
-- **[Function Reference](docs/FUNCTIONS.md)** - Complete list of 100+ ClickHouse SQL functions with examples
-- **[Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)** - 180+ pandas DataFrame methods and properties
+### User Guides
+- **[🚀 Pandas Migration Guide](docs/PANDAS_MIGRATION_GUIDE.md)** - Step-by-step guide for pandas users to get started
+- **[Function Reference](docs/FUNCTIONS.md)** - Complete list of 334 ClickHouse SQL functions with examples
+- **[Pandas Compatibility Guide](docs/PANDAS_COMPATIBILITY.md)** - 209 pandas DataFrame methods + accessors
 - **[NumPy Compatibility](NUMPY_QUICK_REFERENCE.md)** - Full NumPy function compatibility guide
+- **[Profiling Guide](docs/PROFILING.md)** - Performance analysis and profiling
+- **[Explain Method](docs/EXPLAIN_METHOD.md)** - Understanding execution plans
+- **[Factory Methods](docs/FACTORY_METHODS.md)** - Creating DataStore from various sources
+
+### Developer Guides
+- **[Architecture & Design](docs/ARCHITECTURE.md)** - Core design principles and development philosophy
 
 ## Examples
 

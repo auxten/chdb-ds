@@ -260,7 +260,9 @@ Operation tracking is instance-specific:
 
 ## See Also
 
-- [Mixed Execution Model](../refs/chdb-data-science-api.md#mixed-execution-model)
-- [Pandas Compatibility](PANDAS_COMPATIBILITY.md)
-- [Factory Methods](FACTORY_METHODS.md)
+- [Pandas Compatibility](PANDAS_COMPATIBILITY.md) - Execution model and pandas API coverage
+- [Factory Methods](FACTORY_METHODS.md) - Creating DataStore from various sources
+- [Profiling Guide](PROFILING.md) - Performance analysis and profiling
+- [Function Reference](FUNCTIONS.md) - Complete list of available functions
+- [Architecture & Design](ARCHITECTURE.md) - Core design principles and lazy execution model
 

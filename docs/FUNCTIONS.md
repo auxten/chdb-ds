@@ -61,12 +61,16 @@ F.sum(Field('value'))
 
 ### Pandas Compatibility
 
-| Category | Pandas Total | Implemented |
-|----------|--------------|-------------|
-| DataFrame methods | 209 | **209 (100%)** ✅ |
-| Series.str accessor | 56 | 50+ (89%+) |
-| Series.dt accessor | 42 | 60+ (100%+) |
-| Series.arr accessor | - | 37 (CH-specific) |
+| Category | Pandas Total | Implemented | Notes |
+|----------|--------------|-------------|-------|
+| DataFrame methods | 209 | **209** | All pandas DataFrame methods |
+| Series.str accessor | 56 | **56** | All pandas str methods |
+| Series.dt accessor | 42 | **42+** | All pandas + ClickHouse extras |
+| Series.arr accessor | - | 37 | ClickHouse-specific |
+| Series.json accessor | - | 13 | ClickHouse-specific |
+| Series.url accessor | - | 15 | ClickHouse-specific |
+| Series.ip accessor | - | 9 | ClickHouse-specific |
+| Series.geo accessor | - | 14 | ClickHouse-specific |
 
 ---
 
@@ -122,6 +126,7 @@ Access via `ds['column'].str.<function>()`.
 | Method | ClickHouse | Description | Example |
 |--------|------------|-------------|---------|
 | `replace(old, new)` | `replace(s, old, new)` | Replace all occurrences | `ds['text'].str.replace('old', 'new')` |
+| `replace(pat, repl, regex=True)` | `replaceRegexpAll(s, pat, repl)` | Regex replacement | `ds['text'].str.replace(r'\d+', 'X', regex=True)` |
 | `reverse()` | `reverse(s)` | Reverse string | `ds['name'].str.reverse()` |
 | `repeat(n)` | `repeat(s, n)` | Repeat string N times | `ds['char'].str.repeat(3)` |
 
@@ -141,6 +146,8 @@ Access via `ds['column'].str.<function>()`.
 | Method | ClickHouse | Description | Example |
 |--------|------------|-------------|---------|
 | `split(sep)` | `splitByString(sep, s)` | Split into array | `ds['tags'].str.split(',')` |
+| `split()` | `splitByWhitespace(s)` | Split by whitespace (default) | `ds['text'].str.split()` |
+| `split(pat, regex=True)` | `splitByRegexp(pat, s)` | Split by regex pattern | `ds['text'].str.split(r'\s+', regex=True)` |
 | `join_str(sep)` | `arrayStringConcat(arr, sep)` | Join array to string | `ds['arr'].str.join_str(',')` |
 
 ### Character Tests
