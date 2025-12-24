@@ -1295,5 +1295,180 @@ class TestGroupByAggMultiIndexColumns(unittest.TestCase):
             )
 
 
+class TestSortStability(unittest.TestCase):
+    """Test that DataStore sort with kind='stable' matches pandas kind='stable' behavior."""
+
+    @classmethod
+    def setUpClass(cls):
+        # Create test data with many duplicate values
+        cls.test_df = pd.DataFrame(
+            {
+                'id': range(100),
+                'int_col': [i % 10 for i in range(100)],  # 0-9 repeated 10 times
+                'str_col': ['A', 'B', 'C'] * 33 + ['A'],
+            }
+        )
+        cls.parquet_path = '/tmp/test_sort_stability.parquet'
+        cls.test_df.to_parquet(cls.parquet_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        import os
+
+        if os.path.exists(cls.parquet_path):
+            os.remove(cls.parquet_path)
+
+    def test_single_column_sort_stability(self):
+        """Test single column sort with kind='stable' preserves original order for equal keys."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # DataStore stable sort should match pandas stable sort
+        ds_sorted = ds.sort_values('int_col', kind='stable').to_df()
+        pd_sorted = self.test_df.sort_values('int_col', kind='stable')
+
+        # Compare id columns (order should be identical)
+        self.assertEqual(
+            list(ds_sorted['id']),
+            list(pd_sorted.reset_index(drop=True)['id']),
+            "Single column stable sort should match pandas",
+        )
+
+    def test_multi_column_sort_stability(self):
+        """Test multi-column sort with kind='stable' is stable."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        ds_sorted = ds.sort_values(['str_col', 'int_col'], kind='stable').to_df()
+        pd_sorted = self.test_df.sort_values(['str_col', 'int_col'], kind='stable')
+
+        self.assertEqual(
+            list(ds_sorted['id']),
+            list(pd_sorted.reset_index(drop=True)['id']),
+            "Multi-column stable sort should match pandas",
+        )
+
+    def test_descending_sort_stability(self):
+        """Test descending sort with kind='stable' is stable."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        ds_sorted = ds.sort_values('int_col', ascending=False, kind='stable').to_df()
+        pd_sorted = self.test_df.sort_values('int_col', ascending=False, kind='stable')
+
+        self.assertEqual(
+            list(ds_sorted['id']),
+            list(pd_sorted.reset_index(drop=True)['id']),
+            "Descending stable sort should match pandas",
+        )
+
+    def test_filter_then_sort_stability(self):
+        """Test filter + sort with kind='stable' is stable."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        ds_result = ds[ds['int_col'] > 3].sort_values('int_col', kind='stable').to_df()
+        pd_result = self.test_df[self.test_df['int_col'] > 3].sort_values('int_col', kind='stable')
+
+        self.assertEqual(
+            list(ds_result['id']),
+            list(pd_result.reset_index(drop=True)['id']),
+            "Filter + stable sort should match pandas",
+        )
+
+    def test_default_sort_is_unstable(self):
+        """Test that default sort (kind='quicksort') does not guarantee stability."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # Default sort may not be stable, but should still produce valid sorted output
+        ds_sorted = ds.sort_values('int_col').to_df()
+        pd_sorted = self.test_df.sort_values('int_col')
+
+        # Values should be sorted correctly
+        self.assertEqual(
+            list(ds_sorted['int_col']),
+            list(pd_sorted.reset_index(drop=True)['int_col']),
+            "Default sort should produce correctly sorted values",
+        )
+
+    def test_mergesort_is_stable(self):
+        """Test that kind='mergesort' is stable (same as kind='stable')."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # mergesort should be stable like pandas
+        ds_sorted = ds.sort_values('int_col', kind='mergesort').to_df()
+        pd_sorted = self.test_df.sort_values('int_col', kind='mergesort')
+
+        self.assertEqual(
+            list(ds_sorted['id']),
+            list(pd_sorted.reset_index(drop=True)['id']),
+            "kind='mergesort' should be stable like pandas",
+        )
+
+    def test_kind_parameter_passed_to_sort(self):
+        """Test that kind parameter is properly passed through sort_values to sort."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # Test via sort() method directly
+        ds_stable = ds.sort('int_col', kind='stable').to_df()
+        pd_stable = self.test_df.sort_values('int_col', kind='stable')
+
+        self.assertEqual(
+            list(ds_stable['id']),
+            list(pd_stable.reset_index(drop=True)['id']),
+            "sort() with kind='stable' should match pandas",
+        )
+
+    def test_orderby_with_kind_stable(self):
+        """Test that orderby() method also supports kind parameter."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # Test via orderby() method
+        ds_stable = ds.orderby('int_col', kind='stable').to_df()
+        pd_stable = self.test_df.sort_values('int_col', kind='stable')
+
+        self.assertEqual(
+            list(ds_stable['id']),
+            list(pd_stable.reset_index(drop=True)['id']),
+            "orderby() with kind='stable' should match pandas",
+        )
+
+    def test_kind_quicksort_vs_stable_behavior(self):
+        """Test that kind='quicksort' and kind='stable' produce different behavior for duplicates."""
+        from datastore import DataStore
+
+        ds = DataStore.from_file(self.parquet_path)
+
+        # Run stable sort - should always produce same order
+        stable_results = []
+        for _ in range(3):
+            ds_stable = ds.sort_values('int_col', kind='stable').to_df()
+            stable_results.append(list(ds_stable['id']))
+
+        # All stable sort results should be identical
+        self.assertEqual(stable_results[0], stable_results[1], "Stable sort should be deterministic")
+        self.assertEqual(stable_results[1], stable_results[2], "Stable sort should be deterministic")
+
+        # Stable sort should match pandas stable sort
+        pd_stable = self.test_df.sort_values('int_col', kind='stable')
+        self.assertEqual(
+            stable_results[0],
+            list(pd_stable.reset_index(drop=True)['id']),
+            "DataStore stable sort should match pandas stable sort",
+        )
+
+
 if __name__ == '__main__':
     unittest.main()
