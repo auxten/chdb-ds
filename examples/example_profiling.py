@@ -125,7 +125,7 @@ def example_programmatic_access():
     print("Example 5: Programmatic Access to Profiling Data")
     print("=" * 70)
 
-    from datastore.config import new_profiler, is_profiling_enabled
+    from datastore.config import is_profiling_enabled
 
     enable_profiling()
     set_log_level(logging.WARNING)  # Suppress auto-report
