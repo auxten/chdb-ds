@@ -434,9 +434,51 @@ class Benchmark:
         result = result.sort_values('int_col', ascending=False)
         return result.to_df()
 
+    # ==================== Where (Conditional Replace) ====================
+    # Pandas-style where: keep values where condition is True, replace with other where False
+    # This is NOT SQL WHERE (row filter), but element-wise conditional replacement
+    # DataStore must execute DataFrame to perform this operation
 
-def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5,
-                   collect_profiles: bool = False) -> List[BenchmarkResult]:
+    def pandas_where_replace(self) -> pd.DataFrame:
+        """Pandas where: conditional value replacement (not row filter)."""
+        df = pd.read_parquet(self.parquet_path)
+        # Keep values where int_col > 500, replace others with 0
+        return df.where(df['int_col'] > 500, 0)
+
+    def datastore_where_replace(self) -> pd.DataFrame:
+        """DataStore where: triggers execution, then pandas where."""
+        ds = self._fresh_ds()
+        # This triggers execution because pandas where needs element-wise ops
+        return ds.where(ds['int_col'] > 500, 0).to_df()
+
+    def pandas_where_filter_then_replace(self) -> pd.DataFrame:
+        """Filter first, then conditional replace."""
+        df = pd.read_parquet(self.parquet_path)
+        result = df[df['str_col'].isin(['A', 'B', 'C'])]
+        return result.where(result['int_col'] > 500, 0)
+
+    def datastore_where_filter_then_replace(self) -> pd.DataFrame:
+        """DataStore: SQL filter pushdown, then pandas where."""
+        ds = self._fresh_ds()
+        result = ds[ds['str_col'].isin(['A', 'B', 'C'])]
+        # Filter is pushed to SQL, where triggers execution
+        return result.where(result['int_col'] > 500, 0).to_df()
+
+    def pandas_mask_replace(self) -> pd.DataFrame:
+        """Pandas mask: opposite of where (replace where condition is True)."""
+        df = pd.read_parquet(self.parquet_path)
+        # Replace values where int_col > 500 with -1
+        return df.mask(df['int_col'] > 500, -1)
+
+    def datastore_mask_replace(self) -> pd.DataFrame:
+        """DataStore mask: triggers execution, then pandas mask."""
+        ds = self._fresh_ds()
+        return ds.mask(ds['int_col'] > 500, -1).to_df()
+
+
+def run_benchmarks(
+    data_sizes: List[int], temp_dir: str, n_runs: int = 5, collect_profiles: bool = False
+) -> List[BenchmarkResult]:
     """Run all benchmarks for different data sizes."""
     results = []
 
@@ -465,6 +507,11 @@ def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5,
             'datastore_lazy_multi_filter_sort_limit',
         ),
         ('Pandas-style: Select+Filter+Sort', 'pandas_lazy_select_filter_sort', 'datastore_lazy_select_filter_sort'),
+        # Where/Mask operations (element-wise conditional replace, NOT row filter)
+        # These trigger immediate execution as they require pandas element-wise ops
+        ('Where (value replace)', 'pandas_where_replace', 'datastore_where_replace'),
+        ('Filter+Where', 'pandas_where_filter_then_replace', 'datastore_where_filter_then_replace'),
+        ('Mask (value replace)', 'pandas_mask_replace', 'datastore_mask_replace'),
     ]
 
     for size in data_sizes:
@@ -495,9 +542,7 @@ def run_benchmarks(data_sizes: List[int], temp_dir: str, n_runs: int = 5,
 
             # Benchmark
             pandas_time, _ = time_operation(pandas_func, n_runs, collect_profile=False)
-            datastore_time, profile_data = time_operation(
-                datastore_func, n_runs, collect_profile=collect_profiles
-            )
+            datastore_time, profile_data = time_operation(datastore_func, n_runs, collect_profile=collect_profiles)
 
             result = BenchmarkResult(
                 operation=op_name,
@@ -868,10 +913,12 @@ def plot_benchmark_results(results: List[BenchmarkResult], output_prefix: str = 
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description='Benchmark DataStore vs Pandas')
     parser.add_argument('--profile', action='store_true', help='Collect profiling data')
-    parser.add_argument('--sizes', type=str, default='100000,1000000',
-                       help='Comma-separated data sizes (default: 100000,1000000)')
+    parser.add_argument(
+        '--sizes', type=str, default='100000,1000000', help='Comma-separated data sizes (default: 100000,1000000)'
+    )
     parser.add_argument('--runs', type=int, default=5, help='Number of runs per operation')
     parser.add_argument('--no-plot', action='store_true', help='Skip plot generation')
     args = parser.parse_args()
@@ -891,8 +938,7 @@ def main():
         print(f"Profiling: {'enabled' if args.profile else 'disabled'}")
 
         # Run benchmarks
-        results = run_benchmarks(data_sizes, temp_dir, n_runs=args.runs,
-                                collect_profiles=args.profile)
+        results = run_benchmarks(data_sizes, temp_dir, n_runs=args.runs, collect_profiles=args.profile)
 
         # Print summary
         print_summary(results)
