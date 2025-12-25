@@ -45,22 +45,24 @@ class TestTransformUDF(unittest.TestCase):
                 'scores': ['1,2,3', '4,5,6', '7,8,9', '10,11,12', '13,14,15', '16,17,18', '1,1,1', '2,2,2'],
             }
         )
-        self.data_ds = ds.DataStore.from_df(pd.DataFrame())
-            {
-                'category': ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C'],
-                'value': [10, 20, 30, 40, 50, 60, 15, 25],
-                'text': [
-                    'hello world',
-                    'foo bar',
-                    'hello python',
-                    'foo baz',
-                    'hello data',
-                    'foo qux',
-                    'test one',
-                    'test two',
-                ],
-                'scores': ['1,2,3', '4,5,6', '7,8,9', '10,11,12', '13,14,15', '16,17,18', '1,1,1', '2,2,2'],
-            }
+        self.data_ds = ds.DataStore.from_df(
+            pd.DataFrame(
+                {
+                    'category': ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C'],
+                    'value': [10, 20, 30, 40, 50, 60, 15, 25],
+                    'text': [
+                        'hello world',
+                        'foo bar',
+                        'hello python',
+                        'foo baz',
+                        'hello data',
+                        'foo qux',
+                        'test one',
+                        'test two',
+                    ],
+                    'scores': ['1,2,3', '4,5,6', '7,8,9', '10,11,12', '13,14,15', '16,17,18', '1,1,1', '2,2,2'],
+                }
+            )
         )
 
     def test_math_log_transform(self):
@@ -199,22 +201,24 @@ class TestFilterUDF(unittest.TestCase):
                 'price': [100, 200, 150, 250, 180, 300, 90, 110],
             }
         )
-        self.data_ds = ds.DataStore.from_df(pd.DataFrame())
-            {
-                'category': ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C'],
-                'value': [10, 20, 30, 40, 50, 60, 15, 25],
-                'text': [
-                    'hello world',
-                    'foo bar',
-                    'hello python',
-                    'foo baz',
-                    'hello data',
-                    'foo qux',
-                    'test one',
-                    'test two',
-                ],
-                'price': [100, 200, 150, 250, 180, 300, 90, 110],
-            }
+        self.data_ds = ds.DataStore.from_df(
+            pd.DataFrame(
+                {
+                    'category': ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C'],
+                    'value': [10, 20, 30, 40, 50, 60, 15, 25],
+                    'text': [
+                        'hello world',
+                        'foo bar',
+                        'hello python',
+                        'foo baz',
+                        'hello data',
+                        'foo qux',
+                        'test one',
+                        'test two',
+                    ],
+                    'price': [100, 200, 150, 250, 180, 300, 90, 110],
+                }
+            )
         )
 
     def test_counter_word_frequency(self):
@@ -330,12 +334,14 @@ class TestTransformWithGroupByDataFrame(unittest.TestCase):
                 'price': [100, 200, 150, 250, 180, 300],
             }
         )
-        self.data_ds = ds.DataStore.from_df(pd.DataFrame())
-            {
-                'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-                'value': [10, 20, 30, 40, 50, 60],
-                'price': [100, 200, 150, 250, 180, 300],
-            }
+        self.data_ds = ds.DataStore.from_df(
+            pd.DataFrame(
+                {
+                    'category': ['A', 'B', 'A', 'B', 'A', 'B'],
+                    'value': [10, 20, 30, 40, 50, 60],
+                    'price': [100, 200, 150, 250, 180, 300],
+                }
+            )
         )
 
     def test_groupby_transform_all_numeric(self):

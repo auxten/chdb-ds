@@ -12,11 +12,15 @@ class TestFileURIParsing:
     """Test parsing of file URIs."""
 
     def test_local_file_path(self):
-        """Test parsing local file path."""
+        """Test parsing local file path.
+
+        Note: CSV files default to CSVWithNames (first row is header)
+        to match pandas' default behavior for better user experience.
+        """
         source_type, kwargs = parse_uri("/path/to/data.csv")
         assert source_type == "file"
         assert kwargs["path"] == "/path/to/data.csv"
-        assert kwargs["format"] == "CSV"
+        assert kwargs["format"] == "CSVWithNames"  # First row is header (pandas-compatible)
 
     def test_file_uri_scheme(self):
         """Test parsing file:// URI."""
@@ -38,10 +42,14 @@ class TestFileURIParsing:
         assert kwargs["format"] == "JSONEachRow"
 
     def test_file_tsv(self):
-        """Test parsing TSV file."""
+        """Test parsing TSV file.
+
+        Note: TSV files default to TSVWithNames (first row is header)
+        to match pandas' default behavior.
+        """
         source_type, kwargs = parse_uri("file:///data/file.tsv")
         assert source_type == "file"
-        assert kwargs["format"] == "TSV"
+        assert kwargs["format"] == "TSVWithNames"  # First row is header (pandas-compatible)
 
     def test_file_with_query_params(self):
         """Test file URI with explicit format in query."""
@@ -65,7 +73,7 @@ class TestS3URIParsing:
         source_type, kwargs = parse_uri("s3://mybucket/data.csv?nosign=true")
         assert source_type == "s3"
         assert kwargs["nosign"] is True
-        assert kwargs["format"] == "CSV"
+        assert kwargs["format"] == "CSVWithNames"  # First row is header (pandas-compatible)
 
     def test_s3_with_credentials(self):
         """Test S3 URI with credentials in query params."""
@@ -215,7 +223,7 @@ class TestHTTPURIParsing:
         source_type, kwargs = parse_uri(uri)
         assert source_type == "url"
         assert kwargs["url"] == uri
-        assert kwargs["format"] == "CSV"
+        assert kwargs["format"] == "CSVWithNames"  # First row is header (pandas-compatible)
 
     def test_https_uri(self):
         """Test HTTPS URI."""
@@ -278,9 +286,9 @@ class TestFormatInference:
     """Test file format inference from extensions."""
 
     def test_csv_format(self):
-        """Test CSV format inference."""
+        """Test CSV format inference - uses CSVWithNames for pandas compatibility."""
         _, kwargs = parse_uri("/data/file.csv")
-        assert kwargs["format"] == "CSV"
+        assert kwargs["format"] == "CSVWithNames"  # First row is header (pandas-compatible)
 
     def test_parquet_format(self):
         """Test Parquet format inference."""
@@ -308,9 +316,9 @@ class TestFormatInference:
         assert kwargs["format"] == "JSONEachRow"
 
     def test_tsv_format(self):
-        """Test TSV format inference."""
+        """Test TSV format inference - uses TSVWithNames for pandas compatibility."""
         _, kwargs = parse_uri("/data/file.tsv")
-        assert kwargs["format"] == "TSV"
+        assert kwargs["format"] == "TSVWithNames"  # First row is header (pandas-compatible)
 
     def test_orc_format(self):
         """Test ORC format inference."""

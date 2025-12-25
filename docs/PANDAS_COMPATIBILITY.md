@@ -44,6 +44,73 @@ result = (ds
 
 Both styles produce identical results. Choose based on your preference.
 
+## read_csv() Compatibility
+
+DataStore provides a pandas-compatible `read_csv()` function that automatically chooses the optimal execution engine:
+
+### Default Behavior (Matches pandas)
+
+```python
+import datastore as ds
+
+# These work exactly like pandas
+df = ds.read_csv("data.csv")                    # First row is header
+df = ds.read_csv("data.csv", header=0)          # Explicit: first row is header
+df = ds.read_csv("data.csv", header=None)       # No header, auto-generate column names
+df = ds.read_csv("data.csv", sep=";")           # Semicolon delimiter
+df = ds.read_csv("data.csv", sep="\t")          # Tab delimiter (uses TSV format)
+df = ds.read_csv("data.csv", nrows=100)         # Read first 100 rows
+df = ds.read_csv("data.csv", compression='gzip') # Compressed CSV
+```
+
+### Parameters Handled by chDB SQL Engine
+
+These parameters are translated to ClickHouse settings for optimal performance:
+
+| Parameter | ClickHouse Setting | Notes |
+|-----------|-------------------|-------|
+| `sep=','` | Default CSV format | Comma delimiter |
+| `sep='\t'` | `TSVWithNames` format | Tab delimiter uses native TSV |
+| `header=None` | `CSV` format | No header row |
+| `skiprows=N` | `input_format_csv_skip_first_lines` | Skip initial rows |
+| `nrows=N` | `LIMIT N` | Read first N rows |
+| `compression` | File function parameter | gzip, zstd, etc. |
+
+### Parameters That Fall Back to pandas
+
+For full compatibility, these parameters automatically use pandas' `read_csv()`:
+
+- **Column customization**: `names`, `usecols`, `index_col`
+- **Type conversion**: `dtype`, `converters`
+- **Date parsing**: `parse_dates`, `date_parser`, `date_format`
+- **Custom delimiters**: Any delimiter other than `,` or `\t`
+- **Complex features**: `skipfooter`, `comment`, `thousands`, `chunksize`
+
+```python
+# These automatically use pandas for full compatibility
+df = ds.read_csv("data.csv", usecols=['name', 'age'])    # Column selection
+df = ds.read_csv("data.csv", dtype={'age': int})        # Type conversion
+df = ds.read_csv("data.csv", parse_dates=['date_col'])  # Date parsing
+df = ds.read_csv("data.csv", header=None, names=['a', 'b', 'c'])  # Custom names
+```
+
+### Boolean Value Handling
+
+By default, ClickHouse recognizes `true`/`false` (case-insensitive). For custom boolean strings:
+
+```python
+# Custom boolean values (uses pandas fallback for full compatibility)
+df = ds.read_csv("data.csv", 
+                 true_values=['yes', 'Yes', 'TRUE'],
+                 false_values=['no', 'No', 'FALSE'])
+```
+
+### Best Practices
+
+1. **Use standard CSV format**: Files with comma delimiters and first-row headers work best with chDB engine
+2. **Prefer chDB-supported parameters**: `nrows`, `compression` for performance
+3. **Fall back to pandas when needed**: Complex parsing requirements are handled automatically
+
 ## Implementation Statistics
 
 ### Pandas API Coverage
