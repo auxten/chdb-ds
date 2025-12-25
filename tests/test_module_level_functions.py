@@ -493,7 +493,7 @@ class TestDataFrameSeriesCreation:
 
     def test_dataframe_from_dict(self):
         """DataFrame should create DataStore from dict."""
-        df = ds.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        df = ds.DataStore.from_df(pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]}))
         assert hasattr(df, 'to_df')
         result = df.to_df()
         assert list(result.columns) == ['A', 'B']
@@ -501,7 +501,7 @@ class TestDataFrameSeriesCreation:
 
     def test_dataframe_from_list(self):
         """DataFrame should create DataStore from list of lists."""
-        df = ds.DataFrame([[1, 2], [3, 4], [5, 6]], columns=['A', 'B'])
+        df = ds.DataStore.from_df(pd.DataFrame([[1, 2], [3, 4], [5, 6]], columns=['A', 'B']))
         assert hasattr(df, 'to_df')
         result = df.to_df()
         assert list(result.columns) == ['A', 'B']
@@ -509,7 +509,7 @@ class TestDataFrameSeriesCreation:
 
     def test_dataframe_with_index(self):
         """DataFrame should support custom index."""
-        df = ds.DataFrame({'A': [1, 2]}, index=['x', 'y'])
+        df = ds.DataStore.from_df(pd.DataFrame({'A': [1, 2]}, index=['x', 'y']))
         result = df.to_df()
         assert list(result.index) == ['x', 'y']
 
@@ -530,7 +530,7 @@ class TestDataFrameSeriesCreation:
     def test_dataframe_matches_pandas(self):
         """DataFrame output should match pandas DataFrame."""
         data = {'A': [1, 2, 3], 'B': ['x', 'y', 'z']}
-        ds_df = ds.DataFrame(data)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(data))
         pd_df = pd.DataFrame(data)
         np.testing.assert_array_equal(ds_df, pd_df)
 

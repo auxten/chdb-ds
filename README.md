@@ -535,6 +535,41 @@ ds.filter(
 ds.filter(~(ds.deleted == True))
 ```
 
+### Conditional Column Creation (CASE WHEN)
+
+Create columns with conditional logic using `when().otherwise()`, equivalent to SQL `CASE WHEN` or `np.where()`/`np.select()`:
+
+```python
+# Simple binary condition (equivalent to np.where)
+ds['status'] = ds.when(ds['value'] >= 100, 'high').otherwise('low')
+
+# Multiple conditions (equivalent to np.select)
+ds['grade'] = (
+    ds.when(ds['score'] >= 90, 'A')
+      .when(ds['score'] >= 80, 'B')
+      .when(ds['score'] >= 70, 'C')
+      .otherwise('F')
+)
+
+# Using expressions as values
+ds['adjusted'] = ds.when(ds['value'] < 0, 0).otherwise(ds['value'] * 2)
+
+# Column as value
+ds['max_val'] = ds.when(ds['a'] > ds['b'], ds['a']).otherwise(ds['b'])
+```
+
+This is semantically equivalent to numpy:
+```python
+# np.where
+df['status'] = np.where(df['value'] >= 100, 'high', 'low')
+
+# np.select
+conditions = [df['score'] >= 90, df['score'] >= 80, df['score'] >= 70]
+df['grade'] = np.select(conditions, ['A', 'B', 'C'], default='F')
+```
+
+**Execution Engine:** By default, uses chDB SQL engine. Switch to pandas via `function_config.use_pandas('when')`.
+
 ## Supported Data Sources
 
 DataStore supports 20+ data sources through a unified interface:

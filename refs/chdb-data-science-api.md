@@ -230,6 +230,76 @@ ds.fillna(0, subset=["a", "b"])  # Fill specified columns
 ds.fillnull(strategy="mean", subset=["a", "b"])  # Fill column a, b using mean
 ```
 
+### Conditional Column Creation (CASE WHEN)
+
+Create columns with conditional logic, equivalent to SQL `CASE WHEN` or `np.where()`/`np.select()`:
+
+```python
+# Simple binary condition (equivalent to np.where)
+ds['is_high'] = ds.when(ds['value'] >= 100, 'high').otherwise('low')
+
+# Multiple conditions (equivalent to nested np.where or np.select)
+ds['grade'] = (
+    ds.when(ds['score'] >= 90, 'A')
+      .when(ds['score'] >= 80, 'B')
+      .when(ds['score'] >= 70, 'C')
+      .when(ds['score'] >= 60, 'D')
+      .otherwise('F')
+)
+
+# Using column expressions as values
+ds['result'] = ds.when(ds['a'] > ds['b'], ds['a']).otherwise(ds['b'])
+
+# With arithmetic expressions
+ds['adjusted'] = ds.when(ds['value'] < 0, 0).otherwise(ds['value'] * 2)
+
+# Compound conditions
+ds['segment'] = (
+    ds.when((ds['age'] >= 60) | (ds['income'] >= 80000), 'Premium')
+      .when((ds['age'] >= 40) & (ds['income'] >= 50000), 'Standard')
+      .otherwise('Basic')
+)
+```
+
+This is semantically equivalent to:
+```python
+# np.where (binary)
+df['is_high'] = np.where(df['value'] >= 100, 'high', 'low')
+
+# np.select (multiple conditions)
+conditions = [df['score'] >= 90, df['score'] >= 80, df['score'] >= 70, df['score'] >= 60]
+choices = ['A', 'B', 'C', 'D']
+df['grade'] = np.select(conditions, choices, default='F')
+```
+
+**Execution Engine Configuration:**
+
+By default, `when().otherwise()` uses the chDB SQL engine for better performance. You can switch to pandas (`np.select`) via configuration:
+
+```python
+from datastore import function_config
+
+# Default: use chDB SQL engine
+function_config.use_chdb('when')  # This is the default
+
+# Switch to pandas (np.select) execution
+function_config.use_pandas('when')
+
+# Check which engine an expression will use
+expr = ds.when(ds['score'] >= 90, 'A').otherwise('B')
+print(expr.execution_engine())  # 'chDB' or 'Pandas'
+
+# Reset to defaults
+function_config.reset()
+```
+
+Use `ds.explain()` to see which engine will be used in the execution plan:
+```python
+ds['grade'] = ds.when(ds['score'] >= 90, 'A').otherwise('B')
+ds.explain()
+# Shows: [chDB] Assign column 'grade' = CASE WHEN ...
+```
+
 ### SQL Fragments
 
 ```python

@@ -89,7 +89,7 @@ class TestDataFrameCreation:
     def test_create_from_dict(self, simple_df):
         """Test creating DataFrame from dict."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         assert list(ds_df.columns) == list(pd_df.columns)
         assert ds_df.shape == pd_df.shape
@@ -101,7 +101,7 @@ class TestDataFrameCreation:
         index = ['a', 'b', 'c']
 
         pd_df = pd.DataFrame(data, index=index)
-        ds_df = ds.DataFrame(data, index=index)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(data, index=index))
 
         assert list(ds_df.index) == list(pd_df.index)
         np.testing.assert_array_equal(ds_df.to_pandas().values, pd_df.values)
@@ -144,7 +144,7 @@ class TestDataFrameInspection:
     def test_head(self, simple_df):
         """Test head() operation."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_head = pd_df.head(3)
         ds_head = ds_df.head(3)
@@ -154,7 +154,7 @@ class TestDataFrameInspection:
     def test_tail(self, simple_df):
         """Test tail() operation."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_tail = pd_df.tail(2)
         ds_tail = ds_df.tail(2)
@@ -164,21 +164,21 @@ class TestDataFrameInspection:
     def test_shape(self, simple_df):
         """Test shape property."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         assert ds_df.shape == pd_df.shape
 
     def test_columns(self, simple_df):
         """Test columns property."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         assert list(ds_df.columns) == list(pd_df.columns)
 
     def test_dtypes(self, simple_df):
         """Test dtypes property."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         # Compare dtype dict keys
         assert set(ds_df.dtypes.to_dict().keys()) == set(pd_df.dtypes.to_dict().keys())
@@ -195,7 +195,7 @@ class TestColumnSelection:
     def test_select_single_column(self, simple_df):
         """Test selecting single column with []."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_col = pd_df['A']
         ds_col = ds_df['A']
@@ -205,7 +205,7 @@ class TestColumnSelection:
     def test_select_multiple_columns(self, simple_df):
         """Test selecting multiple columns with []."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_cols = pd_df[['A', 'B']]
         ds_cols = ds_df[['A', 'B']]
@@ -215,7 +215,7 @@ class TestColumnSelection:
     def test_loc_select_rows(self, simple_df):
         """Test loc for selecting rows by label."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         # loc returns native pandas DataFrame - this is expected behavior
         pd_result = pd_df.loc[0:2, ['A', 'B']]
@@ -228,7 +228,7 @@ class TestColumnSelection:
     def test_iloc_select_rows(self, simple_df):
         """Test iloc for selecting rows by position."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         # iloc returns native pandas DataFrame - this is expected behavior
         pd_result = pd_df.iloc[0:2, 0:2]
@@ -250,7 +250,7 @@ class TestFiltering:
     def test_boolean_filter_single(self, simple_df):
         """Test boolean filter with single condition."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df[pd_df['A'] > 2]
         ds_result = ds_df[ds_df['A'] > 2]
@@ -260,7 +260,7 @@ class TestFiltering:
     def test_boolean_filter_and(self, simple_df):
         """Test boolean filter with AND condition."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df[(pd_df['A'] > 2) & (pd_df['B'] < 50)]
         ds_result = ds_df[(ds_df['A'] > 2) & (ds_df['B'] < 50)]
@@ -270,7 +270,7 @@ class TestFiltering:
     def test_boolean_filter_or(self, simple_df):
         """Test boolean filter with OR condition."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df[(pd_df['A'] < 2) | (pd_df['A'] > 4)]
         ds_result = ds_df[(ds_df['A'] < 2) | (ds_df['A'] > 4)]
@@ -280,7 +280,7 @@ class TestFiltering:
     def test_isin_filter(self, simple_df):
         """Test isin() filter."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df[pd_df['A'].isin([1, 3, 5])]
         ds_result = ds_df[ds_df['A'].isin([1, 3, 5])]
@@ -299,7 +299,7 @@ class TestMissingValues:
     def test_isna(self, na_df):
         """Test isna() detection."""
         pd_df = pd.DataFrame(na_df)
-        ds_df = ds.DataFrame(na_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(na_df))
 
         pd_result = pd_df.isna()
         ds_result = ds_df.isna()
@@ -309,7 +309,7 @@ class TestMissingValues:
     def test_fillna(self, na_df):
         """Test fillna() with scalar."""
         pd_df = pd.DataFrame(na_df)
-        ds_df = ds.DataFrame(na_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(na_df))
 
         pd_result = pd_df.fillna(0)
         ds_result = ds_df.fillna(0)
@@ -319,7 +319,7 @@ class TestMissingValues:
     def test_dropna(self, na_df):
         """Test dropna() to remove rows with missing values."""
         pd_df = pd.DataFrame(na_df)
-        ds_df = ds.DataFrame(na_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(na_df))
 
         pd_result = pd_df.dropna()
         ds_result = ds_df.dropna()
@@ -338,7 +338,7 @@ class TestGroupBy:
     def test_groupby_sum(self, groupby_df):
         """Test groupby().sum()."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df.groupby('category')['value'].sum()
         ds_result = ds_df.groupby('category')['value'].sum()
@@ -348,7 +348,7 @@ class TestGroupBy:
     def test_groupby_mean(self, groupby_df):
         """Test groupby().mean()."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df.groupby('category')['value'].mean()
         ds_result = ds_df.groupby('category')['value'].mean()
@@ -358,7 +358,7 @@ class TestGroupBy:
     def test_groupby_count(self, groupby_df):
         """Test groupby().count()."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df.groupby('category')['value'].count()
         ds_result = ds_df.groupby('category')['value'].count()
@@ -370,7 +370,7 @@ class TestGroupBy:
     def test_groupby_agg_multiple(self, groupby_df):
         """Test groupby().agg() with multiple functions."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
         ds_result = ds_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
@@ -391,7 +391,7 @@ class TestSorting:
     def test_sort_values_ascending(self, simple_df):
         """Test sort_values() ascending."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df.sort_values('A')
         ds_result = ds_df.sort_values('A')
@@ -401,7 +401,7 @@ class TestSorting:
     def test_sort_values_descending(self, simple_df):
         """Test sort_values() descending."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df.sort_values('B', ascending=False)
         ds_result = ds_df.sort_values('B', ascending=False)
@@ -411,7 +411,7 @@ class TestSorting:
     def test_sort_values_multiple_columns(self, groupby_df):
         """Test sort_values() with multiple columns."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df.sort_values(['category', 'value'])
         ds_result = ds_df.sort_values(['category', 'value'])
@@ -430,7 +430,7 @@ class TestStatistics:
     def test_sum(self, simple_df):
         """Test column sum()."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df['A'].sum()
         ds_result = ds_df['A'].sum()
@@ -440,7 +440,7 @@ class TestStatistics:
     def test_mean(self, simple_df):
         """Test column mean()."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df['B'].mean()
         ds_result = ds_df['B'].mean()
@@ -450,7 +450,7 @@ class TestStatistics:
     def test_min_max(self, simple_df):
         """Test min() and max()."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         assert ds_df['A'].min() == pd_df['A'].min()
         assert ds_df['A'].max() == pd_df['A'].max()
@@ -458,7 +458,7 @@ class TestStatistics:
     def test_describe(self, simple_df):
         """Test describe() summary statistics."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df[['A', 'B']].describe()
         ds_result = ds_df[['A', 'B']].describe()
@@ -469,7 +469,7 @@ class TestStatistics:
     def test_value_counts(self, groupby_df):
         """Test value_counts()."""
         pd_df = pd.DataFrame(groupby_df)
-        ds_df = ds.DataFrame(groupby_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
         pd_result = pd_df['category'].value_counts()
         ds_result = ds_df['category'].value_counts()
@@ -489,7 +489,7 @@ class TestTransformation:
     def test_rename_columns(self, simple_df):
         """Test rename() columns."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df.rename(columns={'A': 'col_A', 'B': 'col_B'})
         ds_result = ds_df.rename(columns={'A': 'col_A', 'B': 'col_B'})
@@ -499,7 +499,7 @@ class TestTransformation:
     def test_drop_columns(self, simple_df):
         """Test drop() columns."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df.drop(columns=['C'])
         ds_result = ds_df.drop(columns=['C'])
@@ -509,7 +509,7 @@ class TestTransformation:
     def test_reset_index(self, simple_df):
         """Test reset_index()."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df.reset_index(drop=True)
         ds_result = ds_df.reset_index(drop=True)
@@ -519,7 +519,7 @@ class TestTransformation:
     def test_apply_lambda(self, simple_df):
         """Test apply() with lambda."""
         pd_df = pd.DataFrame(simple_df)
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
 
         pd_result = pd_df['A'].apply(lambda x: x * 2)
         ds_result = ds_df['A'].apply(lambda x: x * 2)
@@ -538,7 +538,7 @@ class TestStringOperations:
     def test_str_lower(self, str_df):
         """Test str.lower()."""
         pd_df = pd.DataFrame(str_df)
-        ds_df = ds.DataFrame(str_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(str_df))
 
         pd_result = pd_df['text'].str.lower()
         ds_result = ds_df['text'].str.lower()
@@ -548,7 +548,7 @@ class TestStringOperations:
     def test_str_upper(self, str_df):
         """Test str.upper()."""
         pd_df = pd.DataFrame(str_df)
-        ds_df = ds.DataFrame(str_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(str_df))
 
         pd_result = pd_df['text'].str.upper()
         ds_result = ds_df['text'].str.upper()
@@ -558,7 +558,7 @@ class TestStringOperations:
     def test_str_contains(self, str_df):
         """Test str.contains()."""
         pd_df = pd.DataFrame(str_df)
-        ds_df = ds.DataFrame(str_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(str_df))
 
         pd_result = pd_df['text'].str.contains('a')
         ds_result = ds_df['text'].str.contains('a')
@@ -568,7 +568,7 @@ class TestStringOperations:
     def test_str_len(self, str_df):
         """Test str.len()."""
         pd_df = pd.DataFrame(str_df)
-        ds_df = ds.DataFrame(str_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(str_df))
 
         pd_result = pd_df['text'].str.len()
         ds_result = ds_df['text'].str.len()
@@ -594,7 +594,7 @@ class TestDateTimeOperations:
     def test_dt_year(self, dt_df):
         """Test dt.year."""
         pd_df = pd.DataFrame(dt_df)
-        ds_df = ds.DataFrame(dt_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dt_df))
 
         pd_result = pd_df['date'].dt.year
         ds_result = ds_df['date'].dt.year
@@ -604,7 +604,7 @@ class TestDateTimeOperations:
     def test_dt_month(self, dt_df):
         """Test dt.month."""
         pd_df = pd.DataFrame(dt_df)
-        ds_df = ds.DataFrame(dt_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dt_df))
 
         pd_result = pd_df['date'].dt.month
         ds_result = ds_df['date'].dt.month
@@ -614,7 +614,7 @@ class TestDateTimeOperations:
     def test_dt_day(self, dt_df):
         """Test dt.day."""
         pd_df = pd.DataFrame(dt_df)
-        ds_df = ds.DataFrame(dt_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dt_df))
 
         pd_result = pd_df['date'].dt.day
         ds_result = ds_df['date'].dt.day
@@ -624,7 +624,7 @@ class TestDateTimeOperations:
     def test_dt_dayofweek(self, dt_df):
         """Test dt.dayofweek."""
         pd_df = pd.DataFrame(dt_df)
-        ds_df = ds.DataFrame(dt_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dt_df))
 
         pd_result = pd_df['date'].dt.dayofweek
         ds_result = ds_df['date'].dt.dayofweek
@@ -644,8 +644,8 @@ class TestMergeJoin:
         """Test merge() inner join."""
         pd_df1 = pd.DataFrame(merge_df1)
         pd_df2 = pd.DataFrame(merge_df2)
-        ds_df1 = ds.DataFrame(merge_df1)
-        ds_df2 = ds.DataFrame(merge_df2)
+        ds_df1 = ds.DataStore.from_df(pd.DataFrame(merge_df1))
+        ds_df2 = ds.DataStore.from_df(pd.DataFrame(merge_df2))
 
         pd_result = pd.merge(pd_df1, pd_df2, on='key', how='inner')
         ds_result = ds.merge(ds_df1, ds_df2, on='key', how='inner')
@@ -656,8 +656,8 @@ class TestMergeJoin:
         """Test merge() left join."""
         pd_df1 = pd.DataFrame(merge_df1)
         pd_df2 = pd.DataFrame(merge_df2)
-        ds_df1 = ds.DataFrame(merge_df1)
-        ds_df2 = ds.DataFrame(merge_df2)
+        ds_df1 = ds.DataStore.from_df(pd.DataFrame(merge_df1))
+        ds_df2 = ds.DataStore.from_df(pd.DataFrame(merge_df2))
 
         pd_result = pd.merge(pd_df1, pd_df2, on='key', how='left')
         ds_result = ds.merge(ds_df1, ds_df2, on='key', how='left')
@@ -670,7 +670,7 @@ class TestMergeJoin:
     def test_concat_vertical(self, merge_df1):
         """Test concat() vertical concatenation."""
         pd_df = pd.DataFrame(merge_df1)
-        ds_df = ds.DataFrame(merge_df1)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(merge_df1))
 
         pd_result = pd.concat([pd_df, pd_df], ignore_index=True)
         ds_result = ds.concat([ds_df, ds_df], ignore_index=True)
@@ -689,7 +689,7 @@ class TestUniqueDuplicates:
     def test_unique(self, dup_df):
         """Test unique() values."""
         pd_df = pd.DataFrame(dup_df)
-        ds_df = ds.DataFrame(dup_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dup_df))
 
         pd_result = sorted(pd_df['A'].unique().tolist())
         ds_result = sorted(ds_df['A'].unique().tolist())
@@ -699,7 +699,7 @@ class TestUniqueDuplicates:
     def test_nunique(self, dup_df):
         """Test nunique() count."""
         pd_df = pd.DataFrame(dup_df)
-        ds_df = ds.DataFrame(dup_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dup_df))
 
         pd_result = pd_df['A'].nunique()
         ds_result = ds_df['A'].nunique()
@@ -709,7 +709,7 @@ class TestUniqueDuplicates:
     def test_drop_duplicates(self, dup_df):
         """Test drop_duplicates()."""
         pd_df = pd.DataFrame(dup_df)
-        ds_df = ds.DataFrame(dup_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(dup_df))
 
         pd_result = pd_df.drop_duplicates()
         ds_result = ds_df.drop_duplicates()
@@ -727,7 +727,7 @@ class TestToPandasAPI:
 
     def test_datastore_to_pandas(self, simple_df):
         """Test DataStore.to_pandas() method."""
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
         pd_df = pd.DataFrame(simple_df)
 
         result = ds_df.to_pandas()
@@ -736,7 +736,7 @@ class TestToPandasAPI:
 
     def test_column_expr_to_pandas(self, simple_df):
         """Test ColumnExpr.to_pandas() method."""
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
         pd_df = pd.DataFrame(simple_df)
 
         result = ds_df['A'].to_pandas()
@@ -745,7 +745,7 @@ class TestToPandasAPI:
 
     def test_lazy_series_to_pandas(self, simple_df):
         """Test LazySeries.to_pandas() method."""
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
         pd_df = pd.DataFrame(simple_df)
 
         # value_counts returns LazySeries
@@ -754,7 +754,7 @@ class TestToPandasAPI:
 
     def test_to_pandas_after_operations(self, simple_df):
         """Test to_pandas() after chained operations."""
-        ds_df = ds.DataFrame(simple_df)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(simple_df))
         pd_df = pd.DataFrame(simple_df)
 
         ds_result = ds_df[ds_df['A'] > 2].to_pandas()
