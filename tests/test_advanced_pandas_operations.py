@@ -27,14 +27,12 @@ class TestCumulativeOperations(unittest.TestCase):
     """Test cumulative operations (cumsum, cumprod, cummax, cummin)."""
 
     def setUp(self):
-        self.ts_data_pd = pd.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
-        self.ts_data_ds = ds.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
+        self.ts_data_pd = pd.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
+        self.ts_data_ds = ds.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
 
     def test_cumsum(self):
         """Test cumulative sum with cumsum()."""
@@ -65,30 +63,22 @@ class TestShiftDiffOperations(unittest.TestCase):
     """Test shift and diff operations for time series."""
 
     def setUp(self):
-        self.ts_data_pd = pd.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
-        self.ts_data_ds = ds.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
+        self.ts_data_pd = pd.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
+        self.ts_data_ds = ds.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
 
     def test_shift(self):
         """Test shift values by 1 period."""
         pd_result = self.ts_data_pd['value'].shift(1)
         ds_result = self.ts_data_ds['value'].shift(1)
         # Handle NaN comparison
-        np.testing.assert_array_equal(
-            pd.isna(ds_result.values),
-            pd.isna(pd_result.values)
-        )
+        np.testing.assert_array_equal(pd.isna(ds_result.values), pd.isna(pd_result.values))
         # Compare non-NaN values
         mask = ~pd.isna(pd_result.values)
-        np.testing.assert_array_equal(
-            ds_result.values[mask],
-            pd_result.values[mask]
-        )
+        np.testing.assert_array_equal(ds_result.values[mask], pd_result.values[mask])
 
     def test_diff(self):
         """Test calculate differences with diff()."""
@@ -96,10 +86,7 @@ class TestShiftDiffOperations(unittest.TestCase):
         ds_result = self.ts_data_ds['price'].diff()
         # Handle NaN comparison
         mask = ~pd.isna(pd_result.values)
-        np.testing.assert_array_almost_equal(
-            ds_result.values[mask],
-            pd_result.values[mask]
-        )
+        np.testing.assert_array_almost_equal(ds_result.values[mask], pd_result.values[mask])
 
     def test_pct_change(self):
         """Test percentage change with pct_change()."""
@@ -107,45 +94,38 @@ class TestShiftDiffOperations(unittest.TestCase):
         ds_result = self.ts_data_ds['price'].pct_change()
         # Handle NaN comparison
         mask = ~pd.isna(pd_result.values)
-        np.testing.assert_array_almost_equal(
-            ds_result.values[mask],
-            pd_result.values[mask]
-        )
+        np.testing.assert_array_almost_equal(ds_result.values[mask], pd_result.values[mask])
 
 
 class TestAdvancedGroupByOperations(unittest.TestCase):
     """Test advanced groupby operations (transform, filter)."""
 
     def setUp(self):
-        self.group_data_pd = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [10, 20, 30, 40, 50, 60],
-            'weight': [1, 2, 3, 4, 5, 6]
-        })
-        self.group_data_ds = ds.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [10, 20, 30, 40, 50, 60],
-            'weight': [1, 2, 3, 4, 5, 6]
-        })
+        self.group_data_pd = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'A', 'B'],
+                'value': [10, 20, 30, 40, 50, 60],
+                'weight': [1, 2, 3, 4, 5, 6],
+            }
+        )
+        self.group_data_ds = ds.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'A', 'B'],
+                'value': [10, 20, 30, 40, 50, 60],
+                'weight': [1, 2, 3, 4, 5, 6],
+            }
+        )
 
     def test_transform_normalize(self):
         """Test groupby().transform() - normalize within groups."""
-        pd_result = self.group_data_pd.groupby('category')['value'].transform(
-            lambda x: x / x.sum()
-        )
-        ds_result = self.group_data_ds.groupby('category')['value'].transform(
-            lambda x: x / x.sum()
-        )
+        pd_result = self.group_data_pd.groupby('category')['value'].transform(lambda x: x / x.sum())
+        ds_result = self.group_data_ds.groupby('category')['value'].transform(lambda x: x / x.sum())
         np.testing.assert_array_almost_equal(ds_result.values, pd_result.values)
 
     def test_transform_center(self):
         """Test groupby().transform() - center within groups."""
-        pd_result = self.group_data_pd.groupby('category')['value'].transform(
-            lambda x: x - x.mean()
-        )
-        ds_result = self.group_data_ds.groupby('category')['value'].transform(
-            lambda x: x - x.mean()
-        )
+        pd_result = self.group_data_pd.groupby('category')['value'].transform(lambda x: x - x.mean())
+        ds_result = self.group_data_ds.groupby('category')['value'].transform(lambda x: x - x.mean())
         np.testing.assert_array_almost_equal(ds_result.values, pd_result.values)
 
     def test_transform_zscore(self):
@@ -156,29 +136,18 @@ class TestAdvancedGroupByOperations(unittest.TestCase):
         ds_result = self.group_data_ds.groupby('category')['value'].transform(
             lambda x: (x - x.mean()) / x.std() if x.std() > 0 else 0
         )
-        np.testing.assert_array_almost_equal(
-            ds_result.to_pandas().fillna(0).values,
-            pd_result.fillna(0).values
-        )
+        np.testing.assert_array_almost_equal(ds_result.to_pandas().fillna(0).values, pd_result.fillna(0).values)
 
     def test_transform_rank(self):
         """Test groupby().transform() - rank within groups."""
-        pd_result = self.group_data_pd.groupby('category')['value'].transform(
-            lambda x: x.rank()
-        )
-        ds_result = self.group_data_ds.groupby('category')['value'].transform(
-            lambda x: x.rank()
-        )
+        pd_result = self.group_data_pd.groupby('category')['value'].transform(lambda x: x.rank())
+        ds_result = self.group_data_ds.groupby('category')['value'].transform(lambda x: x.rank())
         np.testing.assert_array_almost_equal(ds_result.values, pd_result.values)
 
     def test_transform_cumsum(self):
         """Test groupby().transform() - cumsum within groups."""
-        pd_result = self.group_data_pd.groupby('category')['value'].transform(
-            lambda x: x.cumsum()
-        )
-        ds_result = self.group_data_ds.groupby('category')['value'].transform(
-            lambda x: x.cumsum()
-        )
+        pd_result = self.group_data_pd.groupby('category')['value'].transform(lambda x: x.cumsum())
+        ds_result = self.group_data_ds.groupby('category')['value'].transform(lambda x: x.cumsum())
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_transform_string_func(self):
@@ -189,22 +158,14 @@ class TestAdvancedGroupByOperations(unittest.TestCase):
 
     def test_filter_by_mean(self):
         """Test groupby().filter() - filter groups by mean condition."""
-        pd_result = self.group_data_pd.groupby('category').filter(
-            lambda x: x['value'].mean() > 35
-        )
-        ds_result = self.group_data_ds.groupby('category').filter(
-            lambda x: x['value'].mean() > 35
-        )
+        pd_result = self.group_data_pd.groupby('category').filter(lambda x: x['value'].mean() > 35)
+        ds_result = self.group_data_ds.groupby('category').filter(lambda x: x['value'].mean() > 35)
         pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_filter_by_size(self):
         """Test groupby().filter() - filter groups by size."""
-        pd_result = self.group_data_pd.groupby('category').filter(
-            lambda x: len(x) >= 3
-        )
-        ds_result = self.group_data_ds.groupby('category').filter(
-            lambda x: len(x) >= 3
-        )
+        pd_result = self.group_data_pd.groupby('category').filter(lambda x: len(x) >= 3)
+        ds_result = self.group_data_ds.groupby('category').filter(lambda x: len(x) >= 3)
         pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_filter_compound_condition(self):
@@ -222,25 +183,25 @@ class TestPivotAndReshaping(unittest.TestCase):
     """Test pivot tables and reshaping operations."""
 
     def setUp(self):
-        self.pivot_data_pd = pd.DataFrame({
-            'date': ['2024-01', '2024-01', '2024-02', '2024-02'],
-            'product': ['A', 'B', 'A', 'B'],
-            'sales': [100, 150, 120, 180],
-        })
-        self.pivot_data_ds = ds.DataFrame({
-            'date': ['2024-01', '2024-01', '2024-02', '2024-02'],
-            'product': ['A', 'B', 'A', 'B'],
-            'sales': [100, 150, 120, 180],
-        })
+        self.pivot_data_pd = pd.DataFrame(
+            {
+                'date': ['2024-01', '2024-01', '2024-02', '2024-02'],
+                'product': ['A', 'B', 'A', 'B'],
+                'sales': [100, 150, 120, 180],
+            }
+        )
+        self.pivot_data_ds = ds.DataFrame(
+            {
+                'date': ['2024-01', '2024-01', '2024-02', '2024-02'],
+                'product': ['A', 'B', 'A', 'B'],
+                'sales': [100, 150, 120, 180],
+            }
+        )
 
     def test_pivot_table(self):
         """Test pivot_table() - create pivot table."""
-        pd_result = self.pivot_data_pd.pivot_table(
-            values='sales', index='date', columns='product', aggfunc='sum'
-        )
-        ds_result = self.pivot_data_ds.pivot_table(
-            values='sales', index='date', columns='product', aggfunc='sum'
-        )
+        pd_result = self.pivot_data_pd.pivot_table(values='sales', index='date', columns='product', aggfunc='sum')
+        ds_result = self.pivot_data_ds.pivot_table(values='sales', index='date', columns='product', aggfunc='sum')
         pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_melt(self):
@@ -259,22 +220,14 @@ class TestConditionalLogic(unittest.TestCase):
 
     def test_where(self):
         """Test where() - conditional replacement."""
-        pd_result = self.cond_data_pd['value'].where(
-            self.cond_data_pd['value'] > 0, 0
-        )
-        ds_result = self.cond_data_ds['value'].where(
-            self.cond_data_ds['value'] > 0, 0
-        )
+        pd_result = self.cond_data_pd['value'].where(self.cond_data_pd['value'] > 0, 0)
+        ds_result = self.cond_data_ds['value'].where(self.cond_data_ds['value'] > 0, 0)
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_mask(self):
         """Test mask() - inverse of where."""
-        pd_result = self.cond_data_pd['value'].mask(
-            self.cond_data_pd['value'] < 0, 0
-        )
-        ds_result = self.cond_data_ds['value'].mask(
-            self.cond_data_ds['value'] < 0, 0
-        )
+        pd_result = self.cond_data_pd['value'].mask(self.cond_data_pd['value'] < 0, 0)
+        ds_result = self.cond_data_ds['value'].mask(self.cond_data_ds['value'] < 0, 0)
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_clip(self):
@@ -294,22 +247,14 @@ class TestDataValidation(unittest.TestCase):
     """Test data validation operations."""
 
     def setUp(self):
-        self.valid_data_pd = pd.DataFrame({
-            'id': [1, 2, 3, 2, 4, 3],
-            'category': ['A', 'B', 'C', 'B', 'D', 'C']
-        })
-        self.valid_data_ds = ds.DataFrame({
-            'id': [1, 2, 3, 2, 4, 3],
-            'category': ['A', 'B', 'C', 'B', 'D', 'C']
-        })
-        self.ts_data_pd = pd.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
-        self.ts_data_ds = ds.DataFrame({
-            'value': [10, 20, 15, 30, 25, 35],
-            'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]
-        })
+        self.valid_data_pd = pd.DataFrame({'id': [1, 2, 3, 2, 4, 3], 'category': ['A', 'B', 'C', 'B', 'D', 'C']})
+        self.valid_data_ds = ds.DataFrame({'id': [1, 2, 3, 2, 4, 3], 'category': ['A', 'B', 'C', 'B', 'D', 'C']})
+        self.ts_data_pd = pd.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
+        self.ts_data_ds = ds.DataFrame(
+            {'value': [10, 20, 15, 30, 25, 35], 'price': [100.0, 102.5, 101.0, 105.0, 103.0, 107.5]}
+        )
 
     def test_isin(self):
         """Test isin() - check membership in list."""
@@ -334,14 +279,8 @@ class TestAdvancedIndexing(unittest.TestCase):
     """Test advanced indexing operations (at, iat)."""
 
     def setUp(self):
-        self.idx_data_pd = pd.DataFrame(
-            {'A': range(10), 'B': range(10, 20)},
-            index=list('abcdefghij')
-        )
-        self.idx_data_ds = ds.DataFrame(
-            {'A': range(10), 'B': range(10, 20)},
-            index=list('abcdefghij')
-        )
+        self.idx_data_pd = pd.DataFrame({'A': range(10), 'B': range(10, 20)}, index=list('abcdefghij'))
+        self.idx_data_ds = ds.DataFrame({'A': range(10), 'B': range(10, 20)}, index=list('abcdefghij'))
 
     def test_at_scalar_access(self):
         """Test at[] - fast scalar value access."""
@@ -358,4 +297,3 @@ class TestAdvancedIndexing(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

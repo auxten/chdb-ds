@@ -888,7 +888,7 @@ class TestFileTableFunctionExtended:
         """Test file with compression."""
         tf = FileTableFunction(path="data.csv.gz", format="CSV", compression="gzip")
         sql = tf.to_sql()
-        assert sql == "file('data.csv.gz', 'CSV', 'gzip')"
+        assert sql == "file('data.csv.gz', 'CSV', 'auto', 'gzip')"
 
     def test_file_with_structure_and_compression(self):
         """Test file with structure and compression."""

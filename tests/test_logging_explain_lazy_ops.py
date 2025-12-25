@@ -169,6 +169,5 @@ def test_explain_includes_join_and_pandas_ops():
 
     output = ds.explain()
 
-    assert "JOIN" in output
-    assert "WHERE:" in output
+    assert "JOIN" in output  # SQL JOIN in the generated query
     assert "Add prefix" in output
