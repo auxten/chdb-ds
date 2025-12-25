@@ -346,7 +346,7 @@ class Benchmark:
 
     def pandas_sort_single(self) -> pd.DataFrame:
         df = pd.read_parquet(self.parquet_path)
-        return df.sort_values('int_col')
+        return df.sort_values('int_col', kind='stable')
 
     def datastore_sort_single(self) -> pd.DataFrame:
         ds = self._fresh_ds()
@@ -354,7 +354,7 @@ class Benchmark:
 
     def pandas_sort_multiple(self) -> pd.DataFrame:
         df = pd.read_parquet(self.parquet_path)
-        return df.sort_values(['str_col', 'int_col'], ascending=[True, False])
+        return df.sort_values(['str_col', 'int_col'], ascending=[True, False], kind='stable')
 
     def datastore_sort_multiple(self) -> pd.DataFrame:
         ds = self._fresh_ds()
@@ -398,7 +398,7 @@ class Benchmark:
         df = pd.read_parquet(self.parquet_path)
         result = df[df['int_col'] > 200]
         result = result[['id', 'int_col', 'str_col', 'float_col']]
-        result = result.sort_values('int_col', ascending=False)
+        result = result.sort_values('int_col', ascending=False, kind='stable')
         return result.head(100)
 
     def datastore_combined(self) -> pd.DataFrame:
@@ -434,7 +434,7 @@ class Benchmark:
         df = pd.read_parquet(self.parquet_path)
         result = df[df['int_col'] > 300]
         result = result[['id', 'int_col', 'str_col', 'float_col']]
-        result = result.sort_values('int_col', ascending=False)
+        result = result.sort_values('int_col', ascending=False, kind='stable')
         return result
 
     def datastore_filter_select_sort(self) -> pd.DataFrame:
@@ -451,7 +451,7 @@ class Benchmark:
         result = df[df['int_col'] > 200]
         result = result.groupby('category').agg({'int_col': 'sum', 'float_col': 'mean'}).reset_index()
         result.columns = ['category', 'int_sum', 'float_avg']
-        result = result.sort_values('int_sum', ascending=False)
+        result = result.sort_values('int_sum', ascending=False, kind='stable')
         return result
 
     def datastore_filter_groupby_sort(self) -> pd.DataFrame:
@@ -470,7 +470,7 @@ class Benchmark:
         result['computed'] = result['int_col'] * 2 + result['float_col']
         result = result[result['computed'] > 500]
         result = result[['id', 'int_col', 'str_col', 'computed']]
-        result = result.sort_values('computed', ascending=False)
+        result = result.sort_values('computed', ascending=False, kind='stable')
         return result.head(500)
 
     def datastore_complex_pipeline(self) -> pd.DataFrame:
@@ -514,7 +514,7 @@ class Benchmark:
         result = result[result['str_col'].isin(['A', 'B', 'C', 'D'])]
         result = result[result['bool_col'] == True]  # noqa: E712
         result = result[['id', 'int_col', 'float_col', 'str_col', 'category']]
-        result = result.sort_values(['category', 'int_col'], ascending=[True, False])
+        result = result.sort_values(['category', 'int_col'], ascending=[True, False], kind='stable')
         return result.head(1000)
 
     def datastore_ultra_complex(self) -> pd.DataFrame:
@@ -536,7 +536,7 @@ class Benchmark:
         """Filter + Sort + Limit: Pandas baseline."""
         df = pd.read_parquet(self.parquet_path)
         result = df[df['int_col'] > 200]
-        result = result.sort_values('int_col', ascending=False)
+        result = result.sort_values('int_col', ascending=False, kind='stable')
         return result.head(100)
 
     def datastore_lazy_filter_sort_limit(self) -> pd.DataFrame:
@@ -553,7 +553,7 @@ class Benchmark:
         result = result[result['int_col'] < 900]
         result = result[result['float_col'] > 50]
         result = result[result['str_col'].isin(['A', 'B', 'C', 'D'])]
-        result = result.sort_values('int_col', ascending=False)
+        result = result.sort_values('int_col', ascending=False, kind='stable')
         return result.head(500)
 
     def datastore_lazy_multi_filter_sort_limit(self) -> pd.DataFrame:
@@ -571,7 +571,7 @@ class Benchmark:
         df = pd.read_parquet(self.parquet_path)
         result = df[df['int_col'] > 300]
         result = result[['id', 'int_col', 'str_col']]
-        result = result.sort_values('int_col', ascending=False)
+        result = result.sort_values('int_col', ascending=False, kind='stable')
         return result
 
     def datastore_lazy_select_filter_sort(self) -> pd.DataFrame:
