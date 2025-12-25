@@ -903,16 +903,14 @@ class TestBoolColumnBehavior:
             ds_bool = ds_result['bool_col'].astype(bool)
             np.testing.assert_array_equal(ds_bool.values, pd_bool.values)
 
-    @pytest.mark.xfail(reason="Mask on bool column: Pandas uses int -1, DataStore produces <NA>")
     def test_mask_bool_column_type_mismatch(self):
         """
-        Known issue: mask() on DataFrame with bool column doesn't match Pandas.
+        Test: mask() on DataFrame with bool column matches Pandas.
 
         When using mask(cond, -1) on a DataFrame with bool column:
         - Pandas: converts bool column to object type, replaces with int -1
-        - DataStore: produces <NA> (null) values
-
-        Root cause: Type handling for mask differs from Pandas.
+        - DataStore: now falls back to Pandas execution for bool columns with numeric other,
+          ensuring the same behavior and object dtype conversion.
         """
         np.random.seed(42)
         n = 1000
@@ -995,6 +993,260 @@ class TestBoolColumnBehavior:
             ds_result = ds_result.reset_index(drop=True)
 
             pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+
+class TestMultiColumnSortWithDifferentAscending:
+    """Tests for multi-column sort_values with different ascending per column."""
+
+    def test_sort_two_columns_different_ascending(self):
+        """Test sort_values with two columns and different ascending values."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(100),
+                'category': np.random.choice(['A', 'B', 'C'], 100),
+                'value': np.random.randint(0, 50, 100),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df.sort_values(['category', 'value'], ascending=[True, False], kind='stable')
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds.sort_values(['category', 'value'], ascending=[True, False]).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+    def test_sort_three_columns_mixed_ascending(self):
+        """Test sort_values with three columns and mixed ascending values."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(200),
+                'cat1': np.random.choice(['X', 'Y', 'Z'], 200),
+                'cat2': np.random.choice(['P', 'Q'], 200),
+                'value': np.random.randint(0, 100, 200),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas: cat1 ASC, cat2 DESC, value ASC
+            pd_result = df.sort_values(['cat1', 'cat2', 'value'], ascending=[True, False, True], kind='stable')
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds.sort_values(['cat1', 'cat2', 'value'], ascending=[True, False, True]).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+    def test_sort_with_filter_and_different_ascending(self):
+        """Test sort_values with filter and different ascending per column."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(500),
+                'int_col': np.random.randint(0, 1000, 500),
+                'category': np.random.choice(['cat1', 'cat2', 'cat3'], 500),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df[df['int_col'] > 300]
+            pd_result = pd_result.sort_values(['category', 'int_col'], ascending=[True, False], kind='stable')
+            pd_result = pd_result.head(50)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds[ds['int_col'] > 300]
+            ds_result = ds_result.sort_values(['category', 'int_col'], ascending=[True, False])
+            ds_result = ds_result.head(50).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+
+class TestStableSortWithFilter:
+    """Tests for stable sort behavior when combined with filter operations."""
+
+    def test_stable_sort_preserves_original_order_after_filter(self):
+        """Test that stable sort preserves original row order as tie-breaker after filtering."""
+        np.random.seed(42)
+        n = 1000
+        df = pd.DataFrame(
+            {
+                'id': range(n),
+                'int_col': np.random.randint(0, 1000, n),
+                'category': np.repeat(['A', 'B', 'C', 'D', 'E'], n // 5),  # Many duplicates
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df[df['int_col'] > 500]
+            pd_result = pd_result.sort_values('category', ascending=True, kind='stable')
+            pd_result = pd_result.head(100)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds[ds['int_col'] > 500]
+            ds_result = ds_result.sort_values('category', ascending=True)
+            ds_result = ds_result.head(100).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            # IDs should match exactly (stable sort preserves original order)
+            np.testing.assert_array_equal(ds_result['id'].values, pd_result['id'].values)
+
+    def test_stable_sort_single_column_with_multiple_filters(self):
+        """Test stable sort with multiple filter conditions."""
+        np.random.seed(42)
+        n = 2000
+        df = pd.DataFrame(
+            {
+                'id': range(n),
+                'int_col': np.random.randint(0, 1000, n),
+                'float_col': np.random.uniform(0, 1000, n),
+                'str_col': np.random.choice(['A', 'B', 'C', 'D', 'E'], n),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df[df['int_col'] > 100]
+            pd_result = pd_result[pd_result['int_col'] < 900]
+            pd_result = pd_result[pd_result['float_col'] > 50]
+            pd_result = pd_result[pd_result['str_col'].isin(['A', 'B', 'C', 'D'])]
+            pd_result = pd_result.sort_values('int_col', ascending=False, kind='stable')
+            pd_result = pd_result.head(200)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds[ds['int_col'] > 100]
+            ds_result = ds_result[ds_result['int_col'] < 900]
+            ds_result = ds_result[ds_result['float_col'] > 50]
+            ds_result = ds_result[ds_result['str_col'].isin(['A', 'B', 'C', 'D'])]
+            ds_result = ds_result.sort_values('int_col', ascending=False)
+            ds_result = ds_result.head(200).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+
+class TestBoolColumnWhereMaskFallback:
+    """Tests for bool column where/mask falling back to Pandas for type alignment."""
+
+    def test_where_bool_column_falls_back_to_pandas(self):
+        """Test that where() on bool column with numeric other falls back to Pandas."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(50),
+                'int_col': np.random.randint(0, 100, 50),
+                'bool_col': np.random.choice([True, False], 50),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df.where(df['int_col'] > 50, 0)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds.where(ds['int_col'] > 50, 0).to_df()
+
+            # bool_col should be object type (like Pandas) not bool
+            assert pd_result['bool_col'].dtype == object
+            assert ds_result['bool_col'].dtype == object
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=True)
+
+    def test_mask_bool_column_falls_back_to_pandas(self):
+        """Test that mask() on bool column with numeric other falls back to Pandas."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(50),
+                'int_col': np.random.randint(0, 100, 50),
+                'bool_col': np.random.choice([True, False], 50),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df.mask(df['int_col'] > 50, -1)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds.mask(ds['int_col'] > 50, -1).to_df()
+
+            # bool_col should be object type (like Pandas)
+            assert pd_result['bool_col'].dtype == object
+            assert ds_result['bool_col'].dtype == object
+
+            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=True)
+
+    def test_where_no_bool_column_uses_sql(self):
+        """Test that where() without bool column can still use SQL pushdown."""
+        np.random.seed(42)
+        df = pd.DataFrame(
+            {
+                'id': range(50),
+                'int_col': np.random.randint(0, 100, 50),
+                'str_col': np.random.choice(['A', 'B', 'C'], 50),
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, 'test.parquet')
+            df.to_parquet(path)
+
+            # Pandas
+            pd_result = df.where(df['int_col'] > 50, 0)
+
+            # DataStore
+            ds = DataStore.from_file(path)
+            ds_result = ds.where(ds['int_col'] > 50, 0).to_df()
+
+            pd_result = pd_result.reset_index(drop=True)
+            ds_result = ds_result.reset_index(drop=True)
+
+            # Values should match (int columns replaced with 0)
+            np.testing.assert_array_equal(ds_result['int_col'].values, pd_result['int_col'].values)
 
 
 if __name__ == '__main__':

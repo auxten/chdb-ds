@@ -281,11 +281,11 @@ class TestStrContainsNaParameter:
         # This should not raise TypeError anymore
         result = ds_with_nulls['name'].str.contains('a', na=False)
         assert isinstance(result, ColumnExpr)
-        
+
         # Execute and check result
         ds_with_nulls['has_a'] = result
         df = ds_with_nulls.to_df()
-        
+
         # 'Alice' contains 'a' (lowercase match), None becomes False, 'Bob' no 'a', 'Charlie' has 'a'
         # Note: pandas str.contains is case-sensitive by default
         expected = [False, False, False, True]  # 'a' only in 'Charlie'
@@ -295,10 +295,10 @@ class TestStrContainsNaParameter:
         """Test that .str.contains() works with na=True parameter."""
         result = ds_with_nulls['name'].str.contains('a', na=True)
         assert isinstance(result, ColumnExpr)
-        
+
         ds_with_nulls['has_a'] = result
         df = ds_with_nulls.to_df()
-        
+
         # None becomes True with na=True
         expected = [False, True, False, True]
         assert list(df['has_a']) == expected
@@ -307,58 +307,46 @@ class TestStrContainsNaParameter:
         """Test that .str.contains() works with case=False parameter."""
         result = ds_with_nulls['name'].str.contains('a', case=False, na=False)
         assert isinstance(result, ColumnExpr)
-        
+
         ds_with_nulls['has_a'] = result
         df = ds_with_nulls.to_df()
-        
+
         # Case insensitive: 'Alice' has 'A', 'Charlie' has 'a'
         expected = [True, False, False, True]
         assert list(df['has_a']) == expected
 
     def test_contains_comprehensive(self):
         """Comprehensive test for str.contains with various parameters."""
-        df = pd.DataFrame({
-            'name': ['Alice', None, 'Bob', 'Charlie']
-        })
-        
+        df = pd.DataFrame({'name': ['Alice', None, 'Bob', 'Charlie']})
+
         # Test 1: na=False - NaN values become False
         ds1 = DataStore.from_df(df)
         ds1['has_a'] = ds1['name'].str.contains('a', na=False)
         df_result1 = ds1.to_df()
         assert list(df_result1['has_a']) == [False, False, False, True]
-        
+
         # Test 2: na=True - NaN values become True
         ds2 = DataStore.from_df(df)
         ds2['has_a'] = ds2['name'].str.contains('a', na=True)
         df_result2 = ds2.to_df()
         assert list(df_result2['has_a']) == [False, True, False, True]
-        
+
         # Test 3: case=False - Case insensitive matching
         ds3 = DataStore.from_df(df)
         ds3['has_a'] = ds3['name'].str.contains('A', case=False, na=False)
         df_result3 = ds3.to_df()
         assert list(df_result3['has_a']) == [True, False, False, True]
 
-    @pytest.mark.xfail(
-        reason="chDB has issues with NaN handling. 'contains' is in PANDAS_ONLY_FUNCTIONS, "
-               "so this test cannot actually force chDB execution. TODO: Fix chDB NaN handling.",
-        strict=False  # Allow xpass since we can't force chDB for pandas-only functions
-    )
     def test_contains_with_na_chdb_native(self):
         """
-        Test str.contains with na parameter using chDB native execution.
-        
-        This test documents that chDB currently has issues with NaN handling for str.contains.
-        Since 'contains' is now in PANDAS_ONLY_FUNCTIONS, this test will use pandas
-        execution and pass. When chDB properly supports NULL handling for string
-        operations and 'contains' is moved back to overlapping functions, this test
-        should be updated to properly verify chDB behavior.
-        
-        The test is marked as xfail with strict=False to document this limitation
-        while allowing the test to pass when using pandas fallback.
+        Test str.contains with na parameter behavior.
+
+        Note: 'contains' is in PANDAS_ONLY_FUNCTIONS due to chDB's NaN handling issues,
+        so this test uses pandas execution. The test verifies that na parameter works
+        correctly with pandas fallback execution.
         """
         from datastore import function_config
-        
+
         df = pd.DataFrame(
             {
                 'id': [1, 2, 3],
@@ -366,16 +354,16 @@ class TestStrContainsNaParameter:
             }
         )
         ds = DataStore.from_df(df)
-        
+
         # Note: contains is in PANDAS_ONLY_FUNCTIONS, so use_chdb won't override it
         # This test documents the limitation rather than testing chDB behavior
         try:
             function_config.use_chdb('contains')
-            
+
             result = ds['name'].str.contains('a', na=False)
             ds['has_a'] = result
             df_result = ds.to_df()
-            
+
             # With pandas execution: 'a' not in 'Alice'/'Bob' (case-sensitive), None->False
             # Note: Would fail with chDB which returns position values, not boolean
             expected = [False, False, False]
