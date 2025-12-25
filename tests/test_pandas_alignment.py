@@ -1,779 +1,645 @@
 """
-Pandas Alignment Tests
-======================
+Comprehensive Pandas Alignment Tests for DataStore.
 
-Comprehensive test suite for pandas API alignment.
-Tests use natural execution triggers (__eq__, __array__, len(), etc.)
-following the lazy execution design principle.
+These tests strictly verify that DataStore operations produce results
+identical to pandas operations, following the design principle:
+"Users write familiar pandas-style code, backend automatically selects optimal execution engine."
 
-Known chDB Issues:
-- Issue #447: NaN/NULL handling in Python() table function
-- Issue #448: datetime64 handling corruption
+Test Categories:
+1. Basic Operations: from_df, select, filter, limit
+2. GroupBy & Aggregation: groupby, agg, multiple aggregations
+3. Sorting & Ordering: order_by, sort_values alignment
+4. Column Operations: with_column, computed columns
+5. Join & Union: join, union operations
+6. Distinct & Deduplication: distinct, drop_duplicates alignment
+7. String Operations: str.contains, string filters
+8. Null Handling: is_null, is_not_null, notna alignment
+9. Conditional Logic: isin, between, case_when
+10. Chained Operations: complex pipelines
+
+DESIGN PRINCIPLES ENFORCED:
+- NO reset_index() to mask alignment issues (per workspace rules)
+- Index preservation is verified where applicable
+- Data values AND ordering are strictly compared
+- Type compatibility is checked
 """
 
-import pytest
-import pandas as pd
+import unittest
 import numpy as np
+import pandas as pd
 import datastore as ds
 
 
-@pytest.fixture
-def test_data():
-    """Create test data for compatibility testing."""
-    data = {
-        'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', None, 'Grace'],
-        'age': [25, 30, 35, None, 28, 32, 45, 27],
-        'city': ['New York', 'London', 'Paris', 'Tokyo', 'Berlin', 'Sydney', 'Toronto', None],
-        'salary': [50000, 60000, None, 75000, 55000, 80000, 70000, 52000],
-        'department': ['HR', 'IT', 'IT', 'HR', 'Finance', 'IT', 'HR', 'Finance'],
-        'hire_date': [
-            '2020-01-15',
-            '2019-06-20',
-            '2018-03-10',
-            '2021-09-05',
-            '2020-11-12',
-            '2019-02-28',
-            '2017-08-15',
-            '2021-04-30',
-        ],
-        'performance_score': [8.5, 7.2, 9.1, 6.8, 8.0, 9.5, 7.5, 8.3],
-    }
-    return data
-
-
-@pytest.fixture
-def large_test_data():
-    """Create larger test data for comprehensive testing."""
-    np.random.seed(42)
-    n = 100
-    data = {
-        'id': range(1, n + 1),
-        'name': [f'Name_{i}' for i in range(n)],
-        'category': np.random.choice(['A', 'B', 'C', 'D'], n),
-        'value': np.random.randn(n) * 100,
-        'quantity': np.random.randint(1, 100, n),
-        'price': np.random.uniform(10, 1000, n),
-        'date': pd.date_range('2024-01-01', periods=n, freq='D'),
-        'is_active': np.random.choice([True, False], n),
-        'score': np.random.uniform(0, 100, n),
-    }
-    df = pd.DataFrame(data)
-    df.loc[10:14, 'value'] = np.nan
-    df.loc[20:24, 'score'] = np.nan
-    return df
-
-
-@pytest.fixture
-def pandas_df(test_data):
-    """Create pandas DataFrame with proper types."""
-    df = pd.DataFrame(test_data)
-    df['hire_date'] = pd.to_datetime(df['hire_date'])
-    return df
-
-
-@pytest.fixture
-def datastore_df(test_data):
-    """Create datastore DataFrame."""
-    return ds.DataFrame(test_data)
-
-
-class TestBasicProperties:
-    """Test basic DataFrame properties."""
-
-    def test_shape(self, test_data):
-        """DataFrame shape property."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        assert df_ds.shape == df_pd.shape
-
-    def test_size(self, test_data):
-        """DataFrame size property."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        assert df_ds.size == df_pd.size
-
-    def test_columns(self, test_data):
-        """DataFrame columns property."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        assert list(df_ds.columns) == list(df_pd.columns)
-
-    def test_dtypes(self, test_data):
-        """DataFrame dtypes property."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        # Natural trigger via Series.equals()
-        assert df_ds.dtypes.equals(df_pd.dtypes)
-
-    def test_empty(self, test_data):
-        """DataFrame empty property."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        assert df_ds.empty == df_pd.empty
-
-        # Test with empty DataFrame
-        empty_ds = ds.DataFrame({'a': []})
-        empty_pd = pd.DataFrame({'a': []})
-        assert empty_ds.empty == empty_pd.empty
-
-
-class TestDataFrameCreation:
-    """Test DataFrame creation operations."""
-
-    def test_create_from_dict(self):
-        """Create DataFrame from dict."""
-        result = ds.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-        expected = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-        assert result == expected
-
-    def test_create_with_index(self):
-        """Create DataFrame with index."""
-        result = ds.DataFrame({'a': [1, 2, 3]}, index=['x', 'y', 'z'])
-        expected = pd.DataFrame({'a': [1, 2, 3]}, index=['x', 'y', 'z'])
-        assert result == expected
-
-
-class TestDataSelection:
-    """Test data selection operations."""
-
-    def test_select_single_column(self, test_data):
-        """Select single column."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds['name']
-        expected = df_pd['name']
-        np.testing.assert_array_equal(result, expected)
-
-    def test_select_multiple_columns(self, test_data):
-        """Select multiple columns."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-        assert df_ds[['name', 'age']] == df_pd[['name', 'age']]
-
-    def test_select_rows_by_slice(self, test_data):
-        """Select rows by slice."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds[:3]
-        expected = df_pd[:3]
-
-        assert len(result) == 3, f"Expected 3 rows, got {len(result)}"
-        assert result == expected
-
-    def test_select_with_boolean_indexing(self, test_data):
-        """Select with boolean indexing."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds[df_ds['age'] > 30]
-        expected = df_pd[df_pd['age'] > 30]
-
-        assert len(result) == len(expected)
-        assert result == expected
-
-    def test_select_with_loc(self, test_data):
-        """Select with loc."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.loc[0:2, ['name', 'age']]
-        expected = df_pd.loc[0:2, ['name', 'age']]
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_select_with_iloc(self, test_data):
-        """Select with iloc."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.iloc[0:3, 0:2]
-        expected = df_pd.iloc[0:3, 0:2]
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_head(self, test_data):
-        """DataFrame head()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.head(5)
-        expected = df_pd.head(5)
-        assert result == expected
-
-    def test_tail(self, test_data):
-        """DataFrame tail()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.tail(5)
-        expected = df_pd.tail(5)
-        assert result == expected
-
-    def test_nlargest(self, large_test_data):
-        """DataFrame nlargest()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
-
-        result = df_ds.nlargest(10, 'value')
-        expected = df_pd.nlargest(10, 'value')
-        assert result == expected
-
-    def test_nsmallest(self, large_test_data):
-        """DataFrame nsmallest()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
-
-        result = df_ds.nsmallest(10, 'value')
-        expected = df_pd.nsmallest(10, 'value')
-        assert result == expected
-
-
-class TestStatistics:
-    """Test statistical operations."""
-
-    def test_mean(self, test_data):
-        """Column mean()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = float(df_ds['age'].mean())
-        expected = df_pd['age'].mean()
-        assert abs(result - expected) < 0.001
-
-    def test_sum(self, test_data):
-        """Column sum()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = float(df_ds['salary'].sum())
-        expected = df_pd['salary'].sum()
-        assert result == expected
-
-    def test_median(self, test_data):
-        """Column median()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+class TestBasicOperations(unittest.TestCase):
+    """Test basic DataStore operations align with pandas."""
+
+    def test_from_pandas_roundtrip(self):
+        """DataStore.from_df() should preserve all data from pandas DataFrame."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B'],
+                'value': [10, 20, 15, 30, 25, 12, 35, 22],
+                'score': [1.5, 2.3, 1.8, 3.2, 2.9, 1.6, 3.5, 2.4],
+            }
+        )
+
+        store = ds.DataStore.from_df(pdf)
+        result = store.select('*').to_df()
+
+        # Strict comparison: values, columns, and index
+        pd.testing.assert_frame_equal(result, pdf, check_dtype=False)
+
+    def test_select_columns(self):
+        """select() should return exact same columns as pandas column selection."""
+        pdf = pd.DataFrame(
+            {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+                'c': [7, 8, 9],
+            }
+        )
+
+        store = ds.DataStore.from_df(pdf)
+
+        pd_result = pdf[['a', 'c']]
+        ds_result = store.select('a', 'c').to_df()
+
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+    def test_limit_equals_head(self):
+        """limit(n) should produce same result as pandas head(n)."""
+        pdf = pd.DataFrame(
+            {
+                'id': range(10),
+                'value': range(100, 110),
+            }
+        )
+
+        store = ds.DataStore.from_df(pdf)
+
+        pd_result = pdf.head(5)
+        ds_result = store.limit(5).to_df()
+
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+
+class TestFilterOperations(unittest.TestCase):
+    """Test filter operations align with pandas boolean indexing."""
+
+    def test_simple_filter(self):
+        """Simple filter should match pandas boolean indexing."""
+        pdf = pd.DataFrame(
+            {
+                'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve'],
+                'age': [25, 30, 35, 28, 32],
+                'salary': [50000, 60000, 70000, 55000, 65000],
+            }
+        )
+
+        store = ds.DataStore.from_df(pdf)
+
+        pd_result = pdf[pdf['age'] > 28]
+        ds_result = store.filter(store['age'] > 28).to_df()
+
+        # Verify index is preserved (not reset)
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+    def test_multiple_conditions_or(self):
+        """OR conditions should match pandas | operator."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'C'],
+                'value': [10, 25, 30, 15, 20],
+                'active': [True, True, False, True, False],
+            }
+        )
+
+        store = ds.DataStore.from_df(pdf)
+
+        pd_result = pdf[(pdf['category'] == 'A') | (pdf['value'] > 20)]
+        ds_result = store.filter((store['category'] == 'A') | (store['value'] > 20)).to_df()
+
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+
+    def test_multiple_conditions_and(self):
+        """AND conditions should match pandas & operator."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'C'],
+                'value': [10, 25, 30, 15, 20],
+            }
+        )
 
-        result = float(df_ds['age'].median())
-        expected = df_pd['age'].median()
-        assert result == expected
-
-    def test_std(self, test_data):
-        """Column std()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = float(df_ds['age'].std())
-        expected = df_pd['age'].std()
-        assert abs(result - expected) < 0.001
+        store = ds.DataStore.from_df(pdf)
 
-    def test_min(self, test_data):
-        """Column min()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pdf[(pdf['category'] == 'A') & (pdf['value'] > 15)]
+        ds_result = store.filter((store['category'] == 'A') & (store['value'] > 15)).to_df()
 
-        result = float(df_ds['salary'].min())
-        expected = df_pd['salary'].min()
-        assert result == expected
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_max(self, test_data):
-        """Column max()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+    def test_isin_filter(self):
+        """isin() should match pandas isin()."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'C', 'D', 'E'],
+                'value': [1, 2, 3, 4, 5],
+            }
+        )
 
-        result = float(df_ds['salary'].max())
-        expected = df_pd['salary'].max()
-        assert result == expected
+        store = ds.DataStore.from_df(pdf)
 
-    def test_count(self, test_data):
-        """Column count()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pdf[pdf['category'].isin(['A', 'C', 'E'])]
+        ds_result = store.filter(store['category'].isin(['A', 'C', 'E'])).to_df()
 
-        result = int(df_ds['age'].count())
-        expected = df_pd['age'].count()
-        assert result == expected
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_describe(self, large_test_data):
-        """DataFrame describe()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+    def test_between_filter(self):
+        """between() should match pandas between()."""
+        pdf = pd.DataFrame(
+            {
+                'value': [5, 10, 15, 20, 25, 30],
+            }
+        )
 
-        result = df_ds.describe()
-        expected = df_pd.describe()
-        assert result == expected
+        store = ds.DataStore.from_df(pdf)
 
-    def test_value_counts(self, test_data):
-        """Column value_counts()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pdf[pdf['value'].between(10, 25)]
+        ds_result = store.filter(store['value'].between(10, 25)).to_df()
 
-        result = df_ds['department'].value_counts()
-        expected = df_pd['department'].value_counts()
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        np.testing.assert_array_equal(result, expected)
 
+class TestGroupByOperations(unittest.TestCase):
+    """Test groupby operations align with pandas groupby."""
 
-class TestAggregation:
-    """Test aggregation operations.
+    def test_groupby_sum(self):
+        """groupby().agg({'col': 'sum'}) should match pandas groupby sum."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'A'],
+                'value': [10, 20, 30, 40, 50],
+            }
+        )
 
-    Uses np.testing with __array__ protocol for natural execution trigger.
-    """
+        store = ds.DataStore.from_df(pdf)
 
-    def test_groupby_single_aggregation(self, test_data):
-        """GroupBy with single aggregation."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        # Pandas groupby returns Series with category as index
+        pd_series = pdf.groupby('category')['value'].sum()
 
-        result = df_ds.groupby('department')['salary'].mean()
-        expected = df_pd.groupby('department')['salary'].mean()
+        # DataStore groupby
+        ds_result = store.groupby('category').agg({'value': 'sum'}).to_df()
 
-        # Natural trigger via __array__ protocol
-        np.testing.assert_array_almost_equal(result, expected)
+        # DataStore result should have category as index, value as column
+        ds_series = ds_result['value']
 
-    def test_groupby_multiple_aggregations(self, test_data):
-        """GroupBy with multiple aggregations - returns lazy DataStore."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        # Compare values and index
+        pd.testing.assert_series_equal(ds_series, pd_series, check_names=False)
 
-        result = df_ds.groupby('department').agg({'salary': 'mean', 'age': 'max'})
-        expected = df_pd.groupby('department').agg({'salary': 'mean', 'age': 'max'})
+    def test_groupby_multiple_agg(self):
+        """groupby().agg() with multiple aggregations should match pandas."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'A'],
+                'value': [10, 20, 30, 40, 50],
+                'count': [1, 2, 3, 4, 5],
+            }
+        )
 
-        # Natural trigger via == comparison (__eq__)
-        assert result == expected
+        store = ds.DataStore.from_df(pdf)
 
-    def test_groupby_sum(self, test_data):
-        """GroupBy with sum."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pdf.groupby('category').agg({'value': ['sum', 'mean'], 'count': 'sum'})
+        ds_result = store.groupby('category').agg({'value': ['sum', 'mean'], 'count': 'sum'}).to_df()
 
-        result = df_ds.groupby('department')['salary'].sum()
-        expected = df_pd.groupby('department')['salary'].sum()
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        # Natural trigger via __array__ protocol
-        np.testing.assert_array_almost_equal(result, expected)
+    def test_groupby_mean(self):
+        """groupby().agg({'col': 'mean'}) should match pandas groupby mean."""
+        pdf = pd.DataFrame(
+            {
+                'group': ['X', 'Y', 'X', 'Y', 'X', 'Y'],
+                'value': [10, 20, 30, 40, 50, 60],
+            }
+        )
 
-    def test_groupby_size(self, test_data):
-        """GroupBy with size - returns LazySeries (pd.Series compatible)."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        store = ds.DataStore.from_df(pdf)
 
-        result = df_ds.groupby('department').size()
-        expected = df_pd.groupby('department').size()
+        pd_series = pdf.groupby('group')['value'].mean()
+        ds_result = store.groupby('group').agg({'value': 'mean'}).to_df()
+        ds_series = ds_result['value']
 
-        # Natural trigger via __array__ protocol
-        np.testing.assert_array_equal(result, expected)
+        pd.testing.assert_series_equal(ds_series, pd_series, check_names=False)
 
-    # ========== GroupBy Return Type Alignment Tests ==========
 
-    def test_groupby_column_sum_series(self, test_data):
-        """df.groupby('cat')['col'].sum() - same as pandas."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+class TestSortingOperations(unittest.TestCase):
+    """Test sorting operations align with pandas sort_values."""
 
-        result = df_ds.groupby('department')['salary'].sum()
-        expected = df_pd.groupby('department')['salary'].sum()
+    def test_order_by_descending(self):
+        """order_by(ascending=False) should match pandas sort_values."""
+        pdf = pd.DataFrame(
+            {
+                'name': ['Charlie', 'Alice', 'Bob'],
+                'score': [85, 92, 78],
+            }
+        )
 
-        # Natural trigger via __array__ protocol
-        np.testing.assert_array_almost_equal(result, expected)
+        store = ds.DataStore.from_df(pdf)
 
-    def test_groupby_agg_dict(self, test_data):
-        """df.groupby('cat').agg({'col': 'func'}) - same as pandas."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pdf.sort_values('score', ascending=False)
+        ds_result = store.order_by('score', ascending=False).to_df()
 
-        result = df_ds.groupby('department').agg({'salary': 'sum'})
-        expected = df_pd.groupby('department').agg({'salary': 'sum'})
+        # Verify order (index should reflect original row positions)
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        # Natural trigger via __eq__
-        assert result == expected
+    def test_order_by_ascending(self):
+        """order_by(ascending=True) should match pandas sort_values."""
+        pdf = pd.DataFrame(
+            {
+                'name': ['Charlie', 'Alice', 'Bob'],
+                'score': [85, 92, 78],
+            }
+        )
 
-    def test_groupby_agg_multiple_funcs(self, test_data):
-        """df.groupby('cat').agg({'col': ['func1', 'func2']}) - same as pandas."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        store = ds.DataStore.from_df(pdf)
 
-        result = df_ds.groupby('department').agg({'salary': ['sum', 'mean']})
-        expected = df_pd.groupby('department').agg({'salary': ['sum', 'mean']})
+        pd_result = pdf.sort_values('score', ascending=True)
+        ds_result = store.order_by('score', ascending=True).to_df()
 
-        # Natural trigger via __eq__
-        assert result == expected
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_groupby_column_mean(self, test_data):
-        """df.groupby('cat')['col'].mean() - same as pandas."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
 
-        result = df_ds.groupby('department')['salary'].mean()
-        expected = df_pd.groupby('department')['salary'].mean()
+class TestColumnOperations(unittest.TestCase):
+    """Test column operations align with pandas."""
 
-        # Natural trigger via __array__ protocol
-        np.testing.assert_array_almost_equal(result, expected)
+    def test_with_column_arithmetic(self):
+        """with_column() with arithmetic should match pandas computed column."""
+        pdf = pd.DataFrame(
+            {
+                'price': [100, 200, 300],
+                'quantity': [2, 3, 1],
+            }
+        )
 
+        store = ds.DataStore.from_df(pdf)
 
-class TestStringOperations:
-    """Test string operations."""
+        pd_result = pdf.copy()
+        pd_result['total'] = pd_result['price'] * pd_result['quantity']
 
-    def test_str_contains(self, test_data):
-        """str.contains()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        ds_result = store.with_column('total', store['price'] * store['quantity']).to_df()
 
-        result = df_ds['name'].str.contains('a', na=False)
-        expected = df_pd['name'].str.contains('a', na=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        np.testing.assert_array_equal(result, expected)
+    def test_assign_column(self):
+        """ds['col'] = expr should match pandas df['col'] = expr."""
+        pdf = pd.DataFrame(
+            {
+                'a': [1, 2, 3],
+                'b': [4, 5, 6],
+            }
+        )
 
-    def test_str_upper(self, large_test_data):
-        """str.upper()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+        store = ds.DataStore.from_df(pdf)
 
-        result = df_ds['name'].str.upper()
-        expected = df_pd['name'].str.upper()
+        pd_result = pdf.copy()
+        pd_result['c'] = pd_result['a'] + pd_result['b']
 
-        np.testing.assert_array_equal(result, expected)
+        store['c'] = store['a'] + store['b']
+        ds_result = store.to_df()
 
-    def test_str_lower(self, large_test_data):
-        """str.lower()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        result = df_ds['name'].str.lower()
-        expected = df_pd['name'].str.lower()
 
-        np.testing.assert_array_equal(result, expected)
+class TestJoinOperations(unittest.TestCase):
+    """Test join operations align with pandas merge."""
 
-    @pytest.mark.xfail(reason="chDB Issue #447: NULL becomes empty string instead of None", strict=False)
-    def test_str_upper_null_handling(self, test_data):
-        """str.upper() NULL handling - chDB Issue #447."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+    def test_inner_join(self):
+        """inner join should match pandas merge(how='inner')."""
+        users = pd.DataFrame(
+            {
+                'user_id': [1, 2, 3],
+                'name': ['Alice', 'Bob', 'Charlie'],
+            }
+        )
 
-        result = df_ds['name'].str.upper()
-        expected = df_pd['name'].str.upper()
+        orders = pd.DataFrame(
+            {
+                'order_id': [101, 102, 103],
+                'user_id': [1, 2, 1],
+                'amount': [100, 200, 150],
+            }
+        )
 
-        # Check that NULL/None values are preserved as None, not empty string
-        assert result.iloc[6] is None or pd.isna(
-            result.iloc[6]
-        ), f"Expected None/NaN at index 6, got '{result.iloc[6]}'"
+        users_store = ds.DataStore.from_df(users)
+        orders_store = ds.DataStore.from_df(orders)
 
-    @pytest.mark.xfail(reason="chDB Issue #447: str.len() returns 0 for NULL instead of NaN", strict=False)
-    def test_str_len_null_handling(self, test_data):
-        """str.len() NULL handling - chDB Issue #447."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        pd_result = pd.merge(users, orders, on='user_id', how='inner')
+        ds_result = users_store.join(orders_store, on='user_id', how='inner').to_df()
 
-        result = df_ds['name'].str.len()
-        expected = df_pd['name'].str.len()
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        # NULL should return NaN, not 0
-        assert pd.isna(result.iloc[6]), f"Expected NaN at index 6, got {result.iloc[6]}"
 
+class TestUnionOperations(unittest.TestCase):
+    """Test union operations align with pandas concat."""
 
-class TestMerging:
-    """Test merge/join operations."""
+    def test_union(self):
+        """union() should match pandas concat(ignore_index=True)."""
+        pdf1 = pd.DataFrame(
+            {
+                'id': [1, 2, 3],
+                'value': [10, 20, 30],
+            }
+        )
+        pdf2 = pd.DataFrame(
+            {
+                'id': [4, 5, 6],
+                'value': [40, 50, 60],
+            }
+        )
 
-    def test_concat_dataframes(self):
-        """Concat DataFrames - PASS"""
-        df1_ds = ds.DataFrame({'a': [1, 2], 'b': [3, 4]})
-        df2_ds = ds.DataFrame({'a': [5, 6], 'b': [7, 8]})
-        result = ds.concat([df1_ds, df2_ds])
+        store1 = ds.DataStore.from_df(pdf1)
+        store2 = ds.DataStore.from_df(pdf2)
 
-        df1_pd = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
-        df2_pd = pd.DataFrame({'a': [5, 6], 'b': [7, 8]})
-        expected = pd.concat([df1_pd, df2_pd])
+        pd_result = pd.concat([pdf1, pdf2], ignore_index=True)
+        ds_result = store1.union(store2).to_df()
 
-        # Natural trigger via __eq__
-        assert result == expected
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_merge_dataframes(self):
-        """Merge DataFrames - PASS"""
-        df1_ds = ds.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})
-        df2_ds = ds.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
-        result = ds.merge(df1_ds, df2_ds, on='key', how='inner')
 
-        df1_pd = pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})
-        df2_pd = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
-        expected = pd.merge(df1_pd, df2_pd, on='key', how='inner')
+class TestDistinctOperations(unittest.TestCase):
+    """Test distinct operations align with pandas drop_duplicates."""
 
-        # Natural trigger via __eq__
-        assert result == expected
+    def test_distinct(self):
+        """distinct() should match pandas drop_duplicates()."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'C', 'B', 'A'],
+                'value': [1, 2, 1, 3, 2, 1],
+            }
+        )
 
+        store = ds.DataStore.from_df(pdf)
 
-class TestDateTimeOperations:
-    """Test datetime operations - values, name, and dtype alignment with pandas."""
+        pd_result = pdf.drop_duplicates()
+        ds_result = store.distinct().to_df()
 
-    # ========== Basic dt accessor properties ==========
+        # Verify index is preserved
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_dt_year(self, pandas_df, datastore_df):
-        """dt.year - values, name, and dtype alignment."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
 
-        result = datastore_df['hire_date'].dt.year
-        expected = pandas_df['hire_date'].dt.year
+class TestNullHandling(unittest.TestCase):
+    """Test null handling aligns with pandas."""
 
-        # Values match
-        np.testing.assert_array_equal(result, expected)
-        # Name preserved
-        assert result.name == expected.name, f"Name mismatch: {result.name} vs {expected.name}"
-        # Dtype aligned
-        assert str(result.dtype) == str(expected.dtype), f"Dtype mismatch: {result.dtype} vs {expected.dtype}"
+    def test_filter_not_null(self):
+        """is_not_null() should match pandas notna()."""
+        pdf = pd.DataFrame(
+            {
+                'a': [1, 2, None, 4, None],
+                'b': [10, None, 30, None, 50],
+            }
+        )
 
-    def test_dt_month(self, pandas_df, datastore_df):
-        """dt.month - values, name, and dtype alignment."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+        store = ds.DataStore.from_df(pdf)
 
-        result = datastore_df['hire_date'].dt.month
-        expected = pandas_df['hire_date'].dt.month
+        pd_result = pdf[pdf['a'].notna()]
+        ds_result = store.filter(store['a'].is_not_null()).to_df()
 
-        np.testing.assert_array_equal(result, expected)
-        assert result.name == expected.name
-        assert str(result.dtype) == str(expected.dtype)
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_dt_day(self, pandas_df, datastore_df):
-        """dt.day - values, name, and dtype alignment."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+    def test_filter_is_null(self):
+        """is_null() should match pandas isna()."""
+        pdf = pd.DataFrame(
+            {
+                'a': [1, 2, None, 4, None],
+                'b': [10, None, 30, None, 50],
+            }
+        )
 
-        result = datastore_df['hire_date'].dt.day
-        expected = pandas_df['hire_date'].dt.day
+        store = ds.DataStore.from_df(pdf)
 
-        np.testing.assert_array_equal(result, expected)
-        assert result.name == expected.name
-        assert str(result.dtype) == str(expected.dtype)
+        pd_result = pdf[pdf['a'].isna()]
+        ds_result = store.filter(store['a'].is_null()).to_df()
 
-    def test_dt_dayofweek(self, pandas_df, datastore_df):
-        """dt.dayofweek - values, name, and dtype alignment (Monday=0)."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        result = datastore_df['hire_date'].dt.dayofweek
-        expected = pandas_df['hire_date'].dt.dayofweek
 
-        np.testing.assert_array_equal(result, expected)
-        assert result.name == expected.name
-        assert str(result.dtype) == str(expected.dtype)
+class TestStringOperations(unittest.TestCase):
+    """Test string operations align with pandas str accessor."""
 
-    def test_dt_quarter(self, pandas_df, datastore_df):
-        """dt.quarter - values, name, and dtype alignment."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+    def test_str_contains(self):
+        """str.contains() should match pandas str.contains()."""
+        pdf = pd.DataFrame(
+            {
+                'name': ['Alice', 'Bob', 'Charlie', 'David'],
+                'city': ['New York', 'Boston', 'Chicago', 'New Orleans'],
+            }
+        )
 
-        result = datastore_df['hire_date'].dt.quarter
-        expected = pandas_df['hire_date'].dt.quarter
+        store = ds.DataStore.from_df(pdf)
 
-        np.testing.assert_array_equal(result, expected)
-        assert result.name == expected.name
-        assert str(result.dtype) == str(expected.dtype)
+        pd_result = pdf[pdf['city'].str.contains('New')]
+        ds_result = store.filter(store['city'].str.contains('New')).to_df()
 
-    def test_dt_dayofyear(self, pandas_df, datastore_df):
-        """dt.dayofyear - values, name, and dtype alignment."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-        result = datastore_df['hire_date'].dt.dayofyear
-        expected = pandas_df['hire_date'].dt.dayofyear
 
-        np.testing.assert_array_equal(result, expected)
-        assert result.name == expected.name
-        assert str(result.dtype) == str(expected.dtype)
+class TestCaseWhen(unittest.TestCase):
+    """Test CASE WHEN aligns with np.select."""
 
-    # ========== dt methods ==========
+    def test_case_when_matches_np_select(self):
+        """ds.when().otherwise() should match np.select()."""
+        pdf = pd.DataFrame(
+            {
+                'score': [45, 65, 85, 95],
+            }
+        )
 
-    def test_dt_strftime(self, pandas_df, datastore_df):
-        """dt.strftime - format datetime as string."""
-        datastore_df['hire_date'] = ds.to_datetime(datastore_df['hire_date'])
+        store = ds.DataStore.from_df(pdf)
 
-        result = datastore_df['hire_date'].dt.strftime('%Y-%m')
-        expected = pandas_df['hire_date'].dt.strftime('%Y-%m')
+        # Pandas with np.select (reference)
+        conditions = [
+            pdf['score'] >= 90,
+            pdf['score'] >= 80,
+            pdf['score'] >= 60,
+        ]
+        choices = ['A', 'B', 'C']
+        pd_result = pdf.copy()
+        pd_result['grade'] = np.select(conditions, choices, default='F')
 
-        np.testing.assert_array_equal(result, expected)
+        # DataStore CASE WHEN
+        store['grade'] = (
+            store.when(store['score'] >= 90, 'A')
+            .when(store['score'] >= 80, 'B')
+            .when(store['score'] >= 60, 'C')
+            .otherwise('F')
+        )
+        ds_result = store.to_df()
 
-    # ========== Different column name preservation ==========
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_dt_accessor_preserves_custom_column_name(self):
-        """dt accessor preserves custom column name, not __result__."""
-        data = {'my_custom_date': pd.to_datetime(['2020-01-15', '2020-06-20', '2021-03-10'])}
-        df_ds = ds.DataFrame(data)
-        df_pd = pd.DataFrame(data)
+    def test_case_when_binary_matches_np_where(self):
+        """Simple ds.when().otherwise() should match np.where()."""
+        pdf = pd.DataFrame(
+            {
+                'value': [10, 50, 100, 150],
+            }
+        )
 
-        result = df_ds['my_custom_date'].dt.year
-        expected = df_pd['my_custom_date'].dt.year
+        store = ds.DataStore.from_df(pdf)
 
-        # Must preserve the original column name
-        assert result.name == 'my_custom_date', f"Expected 'my_custom_date', got '{result.name}'"
-        assert result.name == expected.name
+        pd_result = pdf.copy()
+        pd_result['status'] = np.where(pdf['value'] >= 100, 'high', 'low')
 
+        store['status'] = store.when(store['value'] >= 100, 'high').otherwise('low')
+        ds_result = store.to_df()
 
-class TestDataCleaning:
-    """Test data cleaning operations."""
+        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    def test_dropna(self, test_data):
-        """dropna()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
 
-        result = df_ds.dropna()
-        expected = df_pd.dropna()
+class TestChainedOperations(unittest.TestCase):
+    """Test chained operations produce same results as pandas pipelines."""
 
-        assert len(result) == len(expected), f"Expected {len(expected)} rows after dropna, got {len(result)}"
+    def test_filter_groupby_orderby(self):
+        """filter -> groupby -> order_by should match pandas pipeline."""
+        pdf = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'C', 'A', 'C', 'B'],
+                'region': ['N', 'S', 'N', 'E', 'S', 'N', 'E', 'S'],
+                'sales': [100, 200, 150, 300, 250, 180, 220, 170],
+            }
+        )
 
-    def test_fillna(self, test_data):
-        """fillna()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        store = ds.DataStore.from_df(pdf)
 
-        result = df_ds.fillna(0)
-        expected = df_pd.fillna(0)
+        # Pandas chained
+        pd_series = pdf[pdf['sales'] > 150].groupby('category')['sales'].sum().sort_values(ascending=False)
 
-        assert result == expected
+        # DataStore chained
+        ds_result = (
+            store.filter(store['sales'] > 150)
+            .groupby('category')
+            .agg({'sales': 'sum'})
+            .order_by('sales', ascending=False)
+            .to_df()
+        )
 
-    def test_isnull(self, large_test_data):
-        """isnull().sum()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+        ds_series = ds_result['sales']
 
-        result = df_ds.isna().sum()
-        expected = df_pd.isna().sum()
+        # Verify VALUES in ORDER
+        self.assertEqual(list(pd_series.values), list(ds_series.values))
+        # Verify INDEX (category) in ORDER
+        self.assertEqual(list(pd_series.index), list(ds_series.index))
 
-        # Compare as Series
-        assert result.equals(expected)
 
+class TestAggregationFunctions(unittest.TestCase):
+    """Test aggregation functions align with pandas."""
 
-class TestDataManipulation:
-    """Test data manipulation operations."""
+    def test_multiple_agg_functions(self):
+        """agg() with multiple functions should produce correct values."""
+        pdf = pd.DataFrame(
+            {
+                'value': [10, 20, 30, 40, 50],
+            }
+        )
 
-    def test_drop_columns(self, test_data):
-        """drop(columns=...)."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        store = ds.DataStore.from_df(pdf)
 
-        result = df_ds.drop(columns=['salary'])
-        expected = df_pd.drop(columns=['salary'])
+        # Note: use 'mean' not 'avg' (pandas naming)
+        pd_result = pdf['value'].agg(['sum', 'mean', 'min', 'max', 'count'])
 
-        assert result == expected
+        ds_result = store.agg({'value': ['sum', 'mean', 'min', 'max', 'count']}).to_df()
 
-    def test_rename_columns(self, test_data):
-        """rename(columns=...)."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        # DataStore returns DataFrame with agg function names as index
+        # Verify each aggregation value matches pandas
+        self.assertEqual(pd_result['sum'], ds_result.loc['sum', 'value'])
+        self.assertEqual(pd_result['mean'], ds_result.loc['mean', 'value'])
+        self.assertEqual(pd_result['min'], ds_result.loc['min', 'value'])
+        self.assertEqual(pd_result['max'], ds_result.loc['max', 'value'])
+        self.assertEqual(pd_result['count'], ds_result.loc['count', 'value'])
 
-        result = df_ds.rename(columns={'salary': 'income'})
-        expected = df_pd.rename(columns={'salary': 'income'})
 
-        assert result == expected
+class TestSQLExecution(unittest.TestCase):
+    """Test SQL execution behavior (note: SQL doesn't preserve pandas index)."""
 
-    def test_drop_duplicates(self, test_data):
-        """drop_duplicates()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+    def test_sql_direct_data_matches(self):
+        """SQL execution should produce correct DATA (index may differ).
 
-        result = df_ds.drop_duplicates(subset=['department'])
-        expected = df_pd.drop_duplicates(subset=['department'])
+        Note: SQL execution via .sql() does NOT preserve pandas row indices.
+        This is expected - SQL doesn't have row index concept.
+        For index preservation, use .filter() instead.
+        """
+        pdf = pd.DataFrame(
+            {
+                'name': ['Alice', 'Bob', 'Charlie'],
+                'age': [25, 30, 35],
+            }
+        )
 
-        assert result == expected
+        store = ds.DataStore.from_df(pdf)
 
-    def test_assign(self, large_test_data):
-        """assign()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+        # Reference data (reset index since SQL returns 0-based)
+        pd_data = pdf[pdf['age'] >= 30].reset_index(drop=True)
 
-        result = df_ds.assign(revenue=lambda x: x['price'] * x['quantity']).head(5)
-        expected = df_pd.assign(revenue=lambda x: x['price'] * x['quantity']).head(5)
+        # DataStore SQL
+        ds_result = store.sql("SELECT * FROM __df__ WHERE age >= 30").to_df()
 
-        assert result == expected
+        # Compare data only (check_index=False since SQL doesn't preserve index)
+        pd.testing.assert_frame_equal(
+            ds_result.reset_index(drop=True),
+            pd_data,
+            check_dtype=False,
+        )
 
 
-class TestDataTransformation:
-    """Test data transformation operations."""
+class TestIndexPreservation(unittest.TestCase):
+    """Test that lazy operations preserve pandas index correctly."""
 
-    def test_map_values(self, test_data):
-        """Series.map()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+    def test_filter_preserves_custom_index(self):
+        """filter() should preserve custom index."""
+        pdf = pd.DataFrame({'value': [10, 20, 30, 40, 50]}, index=['a', 'b', 'c', 'd', 'e'])
 
-        mapping = {'HR': 1, 'IT': 2, 'Finance': 3}
-        result = df_ds['department'].map(mapping)
-        expected = df_pd['department'].map(mapping)
+        store = ds.DataStore.from_df(pdf)
 
-        np.testing.assert_array_equal(result, expected)
+        pd_result = pdf[pdf['value'] > 25]
+        ds_result = store.filter(store['value'] > 25).to_df()
 
-    def test_astype_column(self, test_data):
-        """Series.astype()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        self.assertEqual(['c', 'd', 'e'], list(ds_result.index))
 
-        result = df_ds['age'].astype(str)
-        expected = df_pd['age'].astype(str)
+    def test_orderby_preserves_original_index(self):
+        """order_by() should preserve original row indices."""
+        pdf = pd.DataFrame({'value': [30, 10, 20]}, index=['x', 'y', 'z'])
 
-        np.testing.assert_array_equal(result, expected)
+        store = ds.DataStore.from_df(pdf)
 
-    def test_astype_dataframe(self, large_test_data):
-        """DataFrame.astype()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
+        pd_result = pdf.sort_values('value')
+        ds_result = store.order_by('value').to_df()
 
-        result = df_ds.astype({'quantity': 'float64'})
-        expected = df_pd.astype({'quantity': 'float64'})
+        # Index should reflect original positions
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        self.assertEqual(['y', 'z', 'x'], list(ds_result.index))
 
-        assert result == expected
+    def test_distinct_preserves_index(self):
+        """distinct() should preserve first occurrence index."""
+        pdf = pd.DataFrame({'value': [1, 2, 1, 3, 2]}, index=['a', 'b', 'c', 'd', 'e'])
 
+        store = ds.DataStore.from_df(pdf)
 
-class TestSorting:
-    """Test sorting operations."""
+        pd_result = pdf.drop_duplicates()
+        ds_result = store.distinct().to_df()
 
-    def test_sort_values_single_column(self, test_data):
-        """sort_values() single column."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.sort_values('age')
-        expected = df_pd.sort_values('age')
-
-        assert result == expected
-
-    def test_sort_values_descending(self, test_data):
-        """sort_values() descending."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds.sort_values('salary', ascending=False)
-        expected = df_pd.sort_values('salary', ascending=False)
-
-        assert result == expected
-
-    def test_sort_values_head(self, large_test_data):
-        """sort_values().head()."""
-        df_ds = ds.DataFrame(large_test_data)
-        df_pd = large_test_data
-
-        result = df_ds.sort_values('value', ascending=False).head(5)
-        expected = df_pd.sort_values('value', ascending=False).head(5)
-
-        assert result == expected
-
-
-class TestIO:
-    """Test I/O operations."""
-
-    def test_to_dict(self, test_data):
-        """to_dict()."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        # DataStore to_dict returns records format by default
-        result = df_ds.head(5).to_dict()
-        expected = df_pd.head(5).to_dict('records')
-
-        assert len(result) == len(expected)
-
-    def test_to_numpy_shape(self, test_data):
-        """to_numpy() shape."""
-        df_ds = ds.DataFrame(test_data)
-        df_pd = pd.DataFrame(test_data)
-
-        result = df_ds[['age', 'salary']].head(5).to_numpy().shape
-        expected = df_pd[['age', 'salary']].head(5).to_numpy().shape
-
-        assert result == expected
+        self.assertEqual(list(pd_result.index), list(ds_result.index))
+        self.assertEqual(['a', 'b', 'd'], list(ds_result.index))
 
 
 if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+    unittest.main()

@@ -30,8 +30,9 @@ class TestDtypeAlignment(unittest.TestCase):
         pd_result = self.df['text'].str.len()
 
         # Both should be int64
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"str.len() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"str.len() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_groupby_count_dtype(self):
@@ -39,8 +40,9 @@ class TestDtypeAlignment(unittest.TestCase):
         ds_result = self.ds.groupby('category')['value'].count()
         pd_result = self.df.groupby('category')['value'].count()
 
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"groupby count dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"groupby count dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_groupby_sum_dtype(self):
@@ -49,8 +51,9 @@ class TestDtypeAlignment(unittest.TestCase):
         pd_result = self.df.groupby('category')['value'].sum()
 
         # Sum of int64 should be int64
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"groupby sum dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"groupby sum dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_groupby_mean_dtype(self):
@@ -59,8 +62,9 @@ class TestDtypeAlignment(unittest.TestCase):
         pd_result = self.df.groupby('category')['value'].mean()
 
         # Mean should be float64
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"groupby mean dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"groupby mean dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
         np.testing.assert_allclose(ds_result.values, pd_result.values)
 
     def test_value_counts_dtype(self):
@@ -69,8 +73,9 @@ class TestDtypeAlignment(unittest.TestCase):
         pd_result = self.df['category'].value_counts()
 
         # value_counts returns int64
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"value_counts dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"value_counts dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
 
     def test_nunique_dtype(self):
         """Test nunique() returns int64 scalar."""
@@ -96,8 +101,9 @@ class TestStringFunctionDtypes(unittest.TestCase):
         pd_result = self.df['text'].str.find('o')
 
         # find returns int64 (-1 for not found, position otherwise)
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"str.find() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"str.find() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
 
     def test_str_count_dtype(self):
         """Test str.count() returns int64 like pandas."""
@@ -105,8 +111,9 @@ class TestStringFunctionDtypes(unittest.TestCase):
         pd_result = self.df['text'].str.count('o')
 
         # count returns int64
-        self.assertEqual(ds_result.dtype, pd_result.dtype,
-                        f"str.count() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}")
+        self.assertEqual(
+            ds_result.dtype, pd_result.dtype, f"str.count() dtype mismatch: {ds_result.dtype} vs {pd_result.dtype}"
+        )
         np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
 
@@ -154,4 +161,3 @@ class TestAggregationDtypes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

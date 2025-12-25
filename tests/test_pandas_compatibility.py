@@ -52,7 +52,9 @@ def pd_df(test_data):
 @pytest.fixture
 def ds_df(test_data):
     """DataStore DataFrame with test data."""
-    return ds.DataFrame(test_data)
+    # Use DataStore.from_df() to create a DataStore object explicitly
+    # ds.DataFrame is now pd.DataFrame for monkey-patching compatibility
+    return ds.DataStore.from_df(pd.DataFrame(test_data))
 
 
 # =============================================================================
@@ -67,7 +69,7 @@ class TestDataFrameCreation:
         """Create DataFrame from dict."""
         data = {'a': [1, 2, 3], 'b': [4, 5, 6]}
         pd_result = pd.DataFrame(data)
-        ds_result = ds.DataFrame(data)
+        ds_result = ds.DataStore.from_df(pd.DataFrame(data)
         assert ds_result == pd_result
 
     def test_create_with_index(self):
@@ -75,7 +77,7 @@ class TestDataFrameCreation:
         data = {'a': [1, 2, 3]}
         index = ['x', 'y', 'z']
         pd_result = pd.DataFrame(data, index=index)
-        ds_result = ds.DataFrame(data, index=index)
+        ds_result = ds.DataStore.from_df(pd.DataFrame(data, index=index)
         assert ds_result == pd_result
 
 
@@ -260,7 +262,7 @@ class TestDataTransformation:
         pd_df = pd_df.copy()
         pd_df['bonus'] = pd_df['salary'] * 0.1
 
-        ds_df = ds_df.copy() if hasattr(ds_df, 'copy') else ds.DataFrame(ds_df.to_df())
+        ds_df = ds_df.copy() if hasattr(ds_df, 'copy') else ds.DataStore.from_df(pd.DataFrame(ds_df.to_df())
         ds_df['bonus'] = ds_df['salary'] * 0.1
 
         assert ds_df == pd_df
@@ -394,8 +396,8 @@ class TestMerging:
         df2_pd = pd.DataFrame({'a': [5, 6], 'b': [7, 8]})
         pd_result = pd.concat([df1_pd, df2_pd])
 
-        df1_ds = ds.DataFrame({'a': [1, 2], 'b': [3, 4]})
-        df2_ds = ds.DataFrame({'a': [5, 6], 'b': [7, 8]})
+        df1_ds = ds.DataStore.from_df(pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
+        df2_ds = ds.DataStore.from_df(pd.DataFrame({'a': [5, 6], 'b': [7, 8]})
         ds_result = ds.concat([df1_ds, df2_ds])
 
         assert ds_result == pd_result
@@ -406,8 +408,8 @@ class TestMerging:
         df2_pd = pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
         pd_result = pd.merge(df1_pd, df2_pd, on='key', how='inner')
 
-        df1_ds = ds.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})
-        df2_ds = ds.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
+        df1_ds = ds.DataStore.from_df(pd.DataFrame({'key': ['A', 'B', 'C'], 'value1': [1, 2, 3]})
+        df2_ds = ds.DataStore.from_df(pd.DataFrame({'key': ['A', 'B', 'D'], 'value2': [4, 5, 6]})
         ds_result = ds.merge(df1_ds, df2_ds, on='key', how='inner')
 
         assert ds_result == pd_result
@@ -469,7 +471,7 @@ class TestDateTimeEngineSwitch:
 
         try:
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
 
             # Get the lazy result
             result = ds_df['date'].dt.year
@@ -498,7 +500,7 @@ class TestDateTimeEngineSwitch:
 
         try:
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
 
             # Get the lazy result
             result = ds_df['date'].dt.year
@@ -531,13 +533,13 @@ class TestDateTimeEngineSwitch:
         try:
             # Test chDB engine
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_chdb = ds_df['date'].dt.month
             np.testing.assert_array_equal(result_chdb, expected)
 
             # Test pandas engine
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_pandas = ds_df['date'].dt.month
             np.testing.assert_array_equal(result_pandas, expected)
 
@@ -556,13 +558,13 @@ class TestDateTimeEngineSwitch:
         try:
             # Test chDB engine
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_chdb = ds_df['date'].dt.dayofweek
             np.testing.assert_array_equal(result_chdb, expected)
 
             # Test pandas engine
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_pandas = ds_df['date'].dt.dayofweek
             np.testing.assert_array_equal(result_pandas, expected)
         finally:
@@ -578,13 +580,13 @@ class TestDateTimeEngineSwitch:
         try:
             # Test chDB engine
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_chdb = ds_df['date'].dt.strftime('%Y-%m')
             np.testing.assert_array_equal(result_chdb, expected)
 
             # Test pandas engine
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             result_pandas = ds_df['date'].dt.strftime('%Y-%m')
             np.testing.assert_array_equal(result_pandas, expected)
         finally:
@@ -599,7 +601,7 @@ class TestDateTimeEngineSwitch:
         try:
             # Test chDB engine
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df['year'] = ds_df['date'].dt.year
 
             # Get explain output
@@ -611,7 +613,7 @@ class TestDateTimeEngineSwitch:
             # Test pandas engine - now also shows toYear (unified DateTimePropertyExpr)
             # but execution engine is determined at runtime by function_config
             set_execution_engine('pandas')
-            ds_df2 = ds.DataFrame(sample_df)
+            ds_df2 = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df2['year'] = ds_df2['date'].dt.year
 
             explain_output2 = ds_df2.explain()
@@ -633,7 +635,7 @@ class TestDateTimeEngineSwitch:
 
         try:
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df['year'] = ds_df['date'].dt.year
             ds_df['month'] = ds_df['date'].dt.month
 
@@ -666,7 +668,7 @@ class TestDateTimeEngineSwitch:
 
         try:
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df['year'] = ds_df['date'].dt.year
             ds_df['month'] = ds_df['date'].dt.month
 
@@ -704,7 +706,7 @@ class TestDateTimeEngineSwitch:
             set_log_level(logging.DEBUG)
 
             set_execution_engine('chdb')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df['year'] = ds_df['date'].dt.year
 
             # Execute to trigger debug logs
@@ -743,7 +745,7 @@ class TestDateTimeEngineSwitch:
             set_log_level(logging.DEBUG)
 
             set_execution_engine('pandas')
-            ds_df = ds.DataFrame(sample_df)
+            ds_df = ds.DataStore.from_df(pd.DataFrame(sample_df)
             ds_df['year'] = ds_df['date'].dt.year
 
             # Clear previous logs
@@ -781,25 +783,25 @@ class TestEdgeCases:
     def test_empty_dataframe(self):
         """Test empty DataFrame operations."""
         pd_df = pd.DataFrame({'a': [], 'b': []})
-        ds_df = ds.DataFrame({'a': [], 'b': []})
+        ds_df = ds.DataStore.from_df(pd.DataFrame({'a': [], 'b': []})
         assert ds_df == pd_df
 
     def test_single_row(self):
         """Test single row DataFrame."""
         pd_df = pd.DataFrame({'a': [1], 'b': [2]})
-        ds_df = ds.DataFrame({'a': [1], 'b': [2]})
+        ds_df = ds.DataStore.from_df(pd.DataFrame({'a': [1], 'b': [2]})
         assert ds_df == pd_df
 
     def test_single_column(self):
         """Test single column DataFrame."""
         pd_df = pd.DataFrame({'a': [1, 2, 3]})
-        ds_df = ds.DataFrame({'a': [1, 2, 3]})
+        ds_df = ds.DataStore.from_df(pd.DataFrame({'a': [1, 2, 3]})
         assert ds_df == pd_df
 
     def test_all_null_column(self):
         """Test column with all nulls."""
         pd_df = pd.DataFrame({'a': [None, None, None]})
-        ds_df = ds.DataFrame({'a': [None, None, None]})
+        ds_df = ds.DataStore.from_df(pd.DataFrame({'a': [None, None, None]})
         # Compare shapes at least
         assert ds_df.shape == pd_df.shape
 
@@ -811,7 +813,7 @@ class TestEdgeCases:
             'str_col': ['a', 'b', 'c'],
         }
         pd_df = pd.DataFrame(data)
-        ds_df = ds.DataFrame(data)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(data)
         assert ds_df == pd_df
 
     def test_chained_operations(self, pd_df, ds_df):
@@ -847,7 +849,7 @@ class TestEdgeCases:
         """Test the typical ML workflow: X = df.copy(); y = X.pop(target)."""
         data = {'feature1': [1, 2, 3, 4, 5], 'feature2': [10, 20, 30, 40, 50], 'target': [0, 1, 0, 1, 0]}
         pd_df = pd.DataFrame(data)
-        ds_df = ds.DataFrame(data)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(data)
 
         # Pandas workflow
         X_pd = pd_df.copy()
@@ -891,7 +893,7 @@ class TestEdgeCases:
         data2 = {'b': [10, 20, 30]}
 
         pd_df = pd.DataFrame(data1)
-        ds_df = ds.DataFrame(data1)
+        ds_df = ds.DataStore.from_df(pd.DataFrame(data1)
 
         update_df = pd.DataFrame(data2)
 
