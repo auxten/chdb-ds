@@ -1016,11 +1016,15 @@ class TestWhereMixedTypeScenarios:
             ds_result = ds.where(ds['score'] > 70, 0)
             pd_result = df.where(df['score'] > 70, 0)
 
-            # All columns should match
+            # All columns should match pandas (falls back to Pandas for mixed types)
             np.testing.assert_array_equal(ds_result.values, pd_result.values)
 
     def test_where_string_column_preserves_int_type(self):
-        """Verify Variant type preserves integer for string columns."""
+        """Verify where() preserves integer type for string columns (pandas alignment).
+
+        When DataFrame has string columns and numeric 'other', DataStore falls back
+        to Pandas execution to preserve mixed type behavior (int 0 in object dtype).
+        """
         df = pd.DataFrame({'name': ['A', 'B', 'C'], 'value': [1, 2, 3]})
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1031,6 +1035,7 @@ class TestWhereMixedTypeScenarios:
             ds_result = ds.where(ds['value'] > 1, 0)
 
             # For rows where value <= 1, name should be 0 (int), not '0' (str)
+            # This matches pandas behavior where object dtype preserves int
             name_values = list(ds_result['name'].values)
             assert name_values[0] == 0  # int, not '0'
             assert isinstance(name_values[0], (int, np.integer))
