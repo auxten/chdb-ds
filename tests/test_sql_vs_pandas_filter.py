@@ -1356,7 +1356,10 @@ class TestExecutionEngineVerification(unittest.TestCase):
         # Verify filter, sort, limit, assign all appear
         self.assertIn('WHERE', explain_output)
         self.assertIn('ORDER', explain_output)
-        self.assertIn('LIMIT', explain_output)
+        # limit() after pandas ops is executed as head in pandas stage
+        self.assertTrue(
+            'LIMIT' in explain_output or 'head' in explain_output.lower(), "Should have LIMIT or head operation"
+        )
         self.assertIn('Assign', explain_output)
 
         # Verify Phase info
@@ -1443,7 +1446,8 @@ class TestExecutionEngineVerification(unittest.TestCase):
             self.assertIn('WHERE', output)
             self.assertIn('Assign', output)
             self.assertIn('ORDER', output)
-            self.assertIn('LIMIT', output)
+            # limit() after pandas ops is executed as head in pandas stage
+            self.assertTrue('LIMIT' in output or 'head' in output.lower(), "Should have LIMIT or head operation")
 
         # Execute
         df = ds.to_df()

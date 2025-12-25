@@ -460,7 +460,8 @@ class TestExplainWithComplexPipelines:
         assert "JOIN" in explain_output or "join" in explain_output.lower()
         assert "computed" in explain_output or "Assign" in explain_output
         assert "ORDER" in explain_output or "sort" in explain_output.lower()
-        assert "LIMIT" in explain_output or "limit" in explain_output.lower()
+        # limit() after pandas ops is executed as head in pandas stage
+        assert "LIMIT" in explain_output or "limit" in explain_output.lower() or "head" in explain_output.lower()
 
 
 class TestDataTypeHandling:
