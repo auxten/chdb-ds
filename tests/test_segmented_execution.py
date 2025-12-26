@@ -186,10 +186,13 @@ class TestExecutionPlanMetadata:
         """total_ops() should count all operations."""
         plan = ExecutionPlan(
             segments=[
-                ExecutionSegment('sql', [
-                    LazyRelationalOp('WHERE', 'f1'),
-                    LazyRelationalOp('WHERE', 'f2'),
-                ]),
+                ExecutionSegment(
+                    'sql',
+                    [
+                        LazyRelationalOp('WHERE', 'f1'),
+                        LazyRelationalOp('WHERE', 'f2'),
+                    ],
+                ),
                 ExecutionSegment('pandas', [LazyApply(lambda x: x, 'a')]),
             ]
         )
@@ -204,11 +207,13 @@ class TestSegmentedExecutionIntegration:
         """Test SQL -> Column Assignment -> SQL pattern."""
         np.random.seed(42)
         n = 1000
-        df = pd.DataFrame({
-            'id': range(n),
-            'value': np.random.randint(0, 100, n),
-            'category': np.random.choice(['A', 'B', 'C'], n),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(n),
+                'value': np.random.randint(0, 100, n),
+                'category': np.random.choice(['A', 'B', 'C'], n),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.csv')
@@ -236,10 +241,12 @@ class TestSegmentedExecutionIntegration:
 
     def test_apply_then_filter_sequence(self):
         """Test Pandas apply -> SQL filter pattern."""
-        df = pd.DataFrame({
-            'id': range(100),
-            'value': np.random.randint(0, 100, 100),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(100),
+                'value': np.random.randint(0, 100, 100),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.parquet')
@@ -247,13 +254,13 @@ class TestSegmentedExecutionIntegration:
 
             # DataStore: apply -> filter
             ds = DataStore.from_file(path)
-            ds['squared'] = ds['value'].apply(lambda x: x ** 2)  # Pandas only
+            ds['squared'] = ds['value'].apply(lambda x: x**2)  # Pandas only
             ds = ds[ds['squared'] > 1000]  # Could be SQL on DataFrame
             ds_result = ds.to_df()
 
             # Pandas equivalent
             pd_result = df.copy()
-            pd_result['squared'] = pd_result['value'].apply(lambda x: x ** 2)
+            pd_result['squared'] = pd_result['value'].apply(lambda x: x**2)
             pd_result = pd_result[pd_result['squared'] > 1000]
 
             # Compare
@@ -266,10 +273,12 @@ class TestSegmentedExecutionIntegration:
     def test_where_apply_where_sequence(self):
         """Test where -> apply -> where pattern."""
         np.random.seed(42)
-        df = pd.DataFrame({
-            'id': range(500),
-            'value': np.random.randint(0, 100, 500),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(500),
+                'value': np.random.randint(0, 100, 500),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.csv')
@@ -293,11 +302,7 @@ class TestSegmentedExecutionIntegration:
 
             assert len(ds_result) == len(pd_result)
             # Use allclose for float comparisons
-            np.testing.assert_allclose(
-                ds_result['value'].values,
-                pd_result['value'].values,
-                rtol=1e-5
-            )
+            np.testing.assert_allclose(ds_result['value'].values, pd_result['value'].values, rtol=1e-5)
 
 
 class TestRowOrderPreservation:
@@ -307,10 +312,12 @@ class TestRowOrderPreservation:
         """Row order must be preserved when transitioning between engines."""
         np.random.seed(42)
         n = 1000
-        df = pd.DataFrame({
-            'id': range(n),
-            'value': np.random.randint(0, 100, n),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(n),
+                'value': np.random.randint(0, 100, n),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.csv')
@@ -338,11 +345,13 @@ class TestRowOrderPreservation:
         """Row order preserved across multiple segment transitions."""
         np.random.seed(123)
         n = 500
-        df = pd.DataFrame({
-            'id': range(n),
-            'a': np.random.randint(0, 50, n),
-            'b': np.random.randint(0, 50, n),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(n),
+                'a': np.random.randint(0, 50, n),
+                'b': np.random.randint(0, 50, n),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.parquet')
@@ -377,10 +386,12 @@ class TestExecuteSqlOnDataFrame:
 
     def test_simple_filter_on_dataframe(self):
         """Test executing a simple filter on an existing DataFrame."""
-        df = pd.DataFrame({
-            'id': range(100),
-            'value': range(100),
-        })
+        df = pd.DataFrame(
+            {
+                'id': range(100),
+                'value': range(100),
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.csv')
@@ -405,10 +416,12 @@ class TestExecuteSqlOnDataFrame:
 
     def test_aggregation_on_dataframe(self):
         """Test executing aggregation on an existing DataFrame."""
-        df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'C'],
-            'value': [10, 20, 30, 40, 50, 60],
-        })
+        df = pd.DataFrame(
+            {
+                'category': ['A', 'B', 'A', 'B', 'A', 'C'],
+                'value': [10, 20, 30, 40, 50, 60],
+            }
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, 'test.csv')
@@ -428,4 +441,3 @@ class TestExecuteSqlOnDataFrame:
 
             # Compare values
             assert result.equals(pd_result)
-
