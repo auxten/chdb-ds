@@ -638,13 +638,6 @@ class TestGroupByComplexScenarios:
         # Just verify it doesn't crash and returns results
         assert len(result) > 0
 
-    @pytest.mark.xfail(
-        reason="BUG: Boolean indexing on groupby result not supported. "
-        "ds_grouped[ds_grouped > 50] raises IndexError because ColumnExpr.__getitem__ "
-        "doesn't handle ColumnExpr as boolean index.",
-        raises=IndexError,
-        strict=True,
-    )
     def test_groupby_then_filter_result(self):
         """GroupBy followed by filter on aggregated result."""
         df = pd.DataFrame({'group': ['A', 'A', 'A', 'B', 'B', 'C'], 'value': [10, 20, 30, 40, 50, 5]})
