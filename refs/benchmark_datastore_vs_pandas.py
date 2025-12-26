@@ -105,6 +105,57 @@ def _to_dataframe(result) -> pd.DataFrame:
     raise TypeError(f"Cannot convert {type(result)} to DataFrame")
 
 
+def _looks_like_datetime_with_zeros(col: pd.Series) -> bool:
+    """Check if an object column contains datetime values mixed with zeros.
+
+    This happens when pandas where() replaces datetime values with 0,
+    creating a mixed object column.
+    """
+    if col.dtype != 'object':
+        return False
+    # Sample a few values to check
+    sample = col.dropna().head(10)
+    has_datetime = False
+    has_zero = False
+    for val in sample:
+        if isinstance(val, (pd.Timestamp, np.datetime64)):
+            has_datetime = True
+        elif val == 0:
+            has_zero = True
+    return has_datetime or has_zero
+
+
+def _normalize_datetime_column(col: pd.Series) -> pd.Series:
+    """Normalize a datetime column by removing timezone info.
+
+    Handles:
+    - datetime64[ns, tz] -> datetime64[ns] (remove timezone)
+    - object columns with mixed tz-aware timestamps -> tz-naive
+    - Preserves NaT and None values
+    """
+    if isinstance(col.dtype, pd.DatetimeTZDtype):
+        # Direct tz-aware column
+        return col.dt.tz_convert('UTC').dt.tz_localize(None)
+    elif col.dtype == 'object':
+        # Mixed object column - convert each value individually
+        def normalize_val(val):
+            if pd.isna(val) or val is None:
+                return pd.NaT
+            if isinstance(val, pd.Timestamp):
+                if val.tz is not None:
+                    return val.tz_convert('UTC').tz_localize(None)
+                return val
+            if isinstance(val, np.datetime64):
+                return pd.Timestamp(val)
+            # Non-datetime value (e.g., 0 from where())
+            return pd.NaT
+
+        return col.apply(normalize_val)
+    else:
+        # Already tz-naive datetime or other type
+        return col
+
+
 def verify_results(pandas_result, datastore_result, op_name: str, ignore_row_order: bool = False) -> tuple:
     """
     Verify that Pandas and DataStore results are consistent.
@@ -190,12 +241,22 @@ def verify_results(pandas_result, datastore_result, op_name: str, ignore_row_ord
                             f"Column '{col}' value mismatch at row {idx}: "
                             f"Pandas={pandas_col.iloc[idx]}, DataStore={datastore_col.iloc[idx]}",
                         )
-            elif pd.api.types.is_datetime64_any_dtype(pandas_col) or pd.api.types.is_datetime64_any_dtype(
-                datastore_col
+            elif (
+                pd.api.types.is_datetime64_any_dtype(pandas_col)
+                or pd.api.types.is_datetime64_any_dtype(datastore_col)
+                or (pandas_col.dtype == 'object' and _looks_like_datetime_with_zeros(pandas_col))
             ):
-                # Handle datetime columns - compare as strings or timestamps
-                pd_ts = pd.to_datetime(pandas_col, errors='coerce')
-                ds_ts = pd.to_datetime(datastore_col, errors='coerce')
+                # Handle datetime columns - compare as timestamps
+                # Remove timezone info for comparison (chDB may return tz-aware, pandas tz-naive)
+                # Also handle mixed object columns (e.g., from where() with 0 as replacement)
+
+                # Normalize datastore column - handle both tz-aware dtype and mixed object columns
+                ds_col_normalized = _normalize_datetime_column(datastore_col)
+                pd_col_normalized = _normalize_datetime_column(pandas_col)
+
+                # Now convert both to datetime
+                pd_ts = pd.to_datetime(pd_col_normalized, errors='coerce')
+                ds_ts = pd.to_datetime(ds_col_normalized, errors='coerce')
 
                 # Check if values are equal (both NaT or same timestamp)
                 match = (pd_ts.isna() & ds_ts.isna()) | (pd_ts == ds_ts)

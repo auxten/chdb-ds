@@ -372,12 +372,15 @@ class TestGroupBy:
         pd_df = pd.DataFrame(groupby_df)
         ds_df = ds.DataStore.from_df(pd.DataFrame(groupby_df))
 
-        pd_result = pd_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
-        ds_result = ds_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
+        pd_result = pd_df.groupby('category', sort=True)['value'].agg(['sum', 'mean', 'count'])
+        ds_result = ds_df.groupby('category', sort=True)['value'].agg(['sum', 'mean', 'count'])
 
-        # Both should return DataFrame
-        assert isinstance(ds_result.to_pandas(), pd.DataFrame)
-        np.testing.assert_allclose(ds_result.to_pandas().values, pd_result.values, rtol=1e-5)
+        # Both should return DataFrame with same columns and values
+        ds_result_df = ds_result.to_df() if hasattr(ds_result, 'to_df') else ds_result
+        assert list(ds_result_df.columns) == list(
+            pd_result.columns
+        ), f"Column mismatch: {list(ds_result_df.columns)} vs {list(pd_result.columns)}"
+        np.testing.assert_allclose(ds_result_df.values, pd_result.values, rtol=1e-5)
 
 
 # ============================================================================

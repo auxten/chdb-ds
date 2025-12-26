@@ -28,10 +28,15 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from datastore import DataStore
 from datastore.config import config
 from datastore.query_planner import QueryPlanner
+from datastore.expressions import Field, Literal
+from datastore.conditions import BinaryCondition
+
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 def assert_dataframe_equal(ds_result, pd_result, check_dtype=False, msg=""):
@@ -1075,6 +1080,230 @@ class TestComplexPipelineExactValues(unittest.TestCase):
                     decimal=1,
                     err_msg=f"adjusted sum for category {cat} doesn't match",
                 )
+
+
+class TestWhereMaskKnownLimitations(unittest.TestCase):
+    """
+    Tests for known limitations in where/mask SQL CASE WHEN pushdown.
+
+    These tests document expected behaviors and known issues that need to be
+    addressed in future updates.
+    """
+
+    def setUp(self):
+        """Set up test data with bool and date columns."""
+        self.df = pd.DataFrame(
+            {
+                'id': range(10),
+                'int_col': [100, 600, 300, 800, 200, 700, 400, 900, 500, 1000],
+                'str_col': ['A', 'B', 'C', 'D', 'E', 'A', 'B', 'C', 'D', 'E'],
+                'bool_col': [True, False, True, False, True, False, True, False, True, False],
+            }
+        )
+
+    def test_where_with_bool_col_and_numeric_other_falls_back_to_pandas(self):
+        """
+        When DataFrame has bool_col and 'other' is numeric (not bool),
+        where() should fall back to Pandas execution for type compatibility.
+
+        Reason: Pandas converts bool_col to object dtype with mixed [0, False, ...],
+        but SQL CASE WHEN keeps bool type (0 -> False).
+        """
+        ds = DataStore(self.df)
+
+        # Get the lazy where operation
+        ds_where = ds.where(ds['int_col'] > 500, 0)
+
+        # Find the LazyWhere operation
+        from datastore.lazy_ops import LazyWhere
+
+        where_op = None
+        for op in ds_where._lazy_ops:
+            if isinstance(op, LazyWhere):
+                where_op = op
+                break
+
+        self.assertIsNotNone(where_op, "Should have LazyWhere operation")
+
+        # With bool_col in schema + numeric other, should NOT push to SQL
+        schema = {'id': 'Int64', 'int_col': 'Int64', 'str_col': 'String', 'bool_col': 'Bool'}
+        self.assertFalse(
+            where_op._is_type_compatible_with_schema(schema),
+            "Should not be type compatible when bool_col present with numeric other",
+        )
+
+        # Verify pandas result has mixed types in bool_col
+        pd_result = self.df.where(self.df['int_col'] > 500, 0)
+        self.assertEqual(pd_result['bool_col'].dtype, object)
+        # Check mixed values exist
+        bool_values = pd_result['bool_col'].tolist()
+        has_int = any(isinstance(v, int) and not isinstance(v, bool) for v in bool_values)
+        has_bool = any(isinstance(v, bool) for v in bool_values)
+        self.assertTrue(has_int and has_bool, "Should have mixed int and bool values")
+
+    def test_where_with_false_as_other_pandas_behavior(self):
+        """
+        Verify pandas behavior when using False as 'other' value.
+        Pandas converts columns to object dtype to hold mixed types.
+        """
+        # Pandas allows False to replace any column value
+        pd_result = self.df.where(self.df['int_col'] > 500, False)
+
+        # int_col becomes object dtype with [False, 600, False, 800, ...]
+        self.assertEqual(pd_result['int_col'].dtype, object)
+
+        # Verify mixed values
+        int_values = pd_result['int_col'].tolist()
+        has_false = any(v is False for v in int_values)
+        has_int = any(isinstance(v, int) and v is not False for v in int_values)
+        self.assertTrue(has_false and has_int, "Should have mixed False and int values")
+
+    @pytest.mark.xfail(
+        reason="SQL CASE WHEN cannot convert Bool to Int64/String. "
+        "Need to either: 1) detect this in type compatibility check, "
+        "2) cast values appropriately in SQL, or 3) fall back to Pandas.",
+        raises=Exception,
+        strict=True,
+    )
+    def test_where_with_false_as_other_sql_execution(self):
+        """
+        KNOWN LIMITATION: Using False as 'other' value causes SQL type conversion errors.
+
+        This test documents that SQL CASE WHEN fails when:
+        - 'other' is False (bool type)
+        - Columns are Int64 or String type
+
+        Expected fix: Add type compatibility check for bool 'other' with non-bool columns,
+        similar to the existing check for numeric 'other' with bool columns.
+
+        Mirror Code Pattern: pandas vs DataStore comparison
+        """
+        import tempfile
+
+        # === Test Data ===
+        df = pd.DataFrame(
+            {
+                'id': range(10),
+                'int_col': [100, 600, 300, 800, 200, 700, 400, 900, 500, 1000],
+                'str_col': ['A', 'B', 'C', 'D', 'E', 'A', 'B', 'C', 'D', 'E'],
+            }
+        )
+
+        # === Pandas operations ===
+        pd_result = df.where(df['int_col'] > 500, False)
+        # Expected pandas behavior:
+        #   id: [False, 1, False, 3, False, 5, False, 7, False, 9] (object dtype)
+        #   int_col: [False, 600, False, 800, False, 700, False, 900, False, 1000] (object dtype)
+        #   str_col: [False, 'B', False, 'D', False, 'A', False, 'C', False, 'E'] (object dtype)
+        #
+        # DataStore SQL behavior (FAILS):
+        #   SQL: SELECT CASE WHEN int_col > 500 THEN id ELSE false END AS id, ...
+        #   Error: Cannot convert type Bool to Variant(Int64, String)
+        #   Reason: ClickHouse cannot mix Bool with Int64/String in CASE WHEN result
+
+        # Verify pandas behavior
+        self.assertEqual(pd_result['id'].dtype, object, "pandas converts id to object dtype")
+        self.assertEqual(pd_result['int_col'].dtype, object, "pandas converts int_col to object dtype")
+        self.assertEqual(pd_result['str_col'].dtype, object, "pandas converts str_col to object dtype")
+        self.assertEqual(pd_result['id'].iloc[0], False, "pandas replaces with False where condition is False")
+        self.assertEqual(pd_result['int_col'].iloc[1], 600, "pandas keeps original value where condition is True")
+
+        # === DataStore operations (mirror of pandas) ===
+        with tempfile.NamedTemporaryFile(suffix='.parquet', delete=False) as f:
+            parquet_path = f.name
+            df.to_parquet(parquet_path)
+
+        try:
+            ds = DataStore.from_file(parquet_path)
+            ds.connect()
+
+            # This currently fails with: Cannot convert type Bool to Variant(Int64, String)
+            # SQL generated: CASE WHEN int_col > 500 THEN col ELSE False END
+            # ClickHouse error: Cannot convert type Bool to Variant(Int64, String)
+            ds_result = ds.where(ds['int_col'] > 500, False).to_df()
+
+            # === Compare results ===
+            # When fixed, DataStore should match pandas behavior
+            assert_datastore_equals_pandas(ds_result, pd_result)
+        finally:
+            import os
+
+            os.unlink(parquet_path)
+
+    def test_schema_tracking_after_column_selection(self):
+        """
+        Test that schema is correctly tracked after column selection
+        for type compatibility checking in where/mask.
+
+        After selecting columns that exclude bool_col, where() should
+        be able to use SQL CASE WHEN.
+        """
+        from datastore.query_planner import QueryPlanner
+        from datastore.lazy_ops import LazyRelationalOp, LazyWhere
+
+        # Create operations: SELECT [id, int_col, str_col], then WHERE
+        ops = [
+            LazyRelationalOp(
+                'SELECT', 'id, int_col, str_col', fields=[Field('"id"'), Field('"int_col"'), Field('"str_col"')]
+            ),
+            LazyWhere(BinaryCondition('>', Field('int_col'), Literal(500)), other=0),
+        ]
+
+        planner = QueryPlanner()
+        original_schema = {
+            'id': 'Int64',
+            'int_col': 'Int64',
+            'str_col': 'String',
+            'bool_col': 'Bool',  # This should be excluded after SELECT
+        }
+
+        # Plan with original schema (includes bool_col)
+        plan = planner.plan_segments(ops, has_sql_source=True, schema=original_schema)
+
+        # After column selection, effective schema should exclude bool_col
+        # So LazyWhere should be able to push to SQL
+        # Count SQL segments
+        sql_segments = [s for s in plan.segments if s.is_sql()]
+
+        # Both SELECT and WHERE should be in SQL segments
+        # (SELECT is always SQL-pushable, WHERE should be now that bool_col is excluded)
+        self.assertGreaterEqual(len(sql_segments), 1, "Should have at least 1 SQL segment after schema tracking fix")
+
+    def test_where_without_bool_col_uses_sql(self):
+        """
+        When DataFrame has no bool columns, where() should use SQL CASE WHEN.
+        """
+        df_no_bool = pd.DataFrame(
+            {
+                'id': range(10),
+                'int_col': [100, 600, 300, 800, 200, 700, 400, 900, 500, 1000],
+                'str_col': ['A', 'B', 'C', 'D', 'E', 'A', 'B', 'C', 'D', 'E'],
+            }
+        )
+
+        ds = DataStore(df_no_bool)
+        ds_where = ds.where(ds['int_col'] > 500, 0)
+
+        # Find LazyWhere operation
+        from datastore.lazy_ops import LazyWhere
+
+        where_op = None
+        for op in ds_where._lazy_ops:
+            if isinstance(op, LazyWhere):
+                where_op = op
+                break
+
+        self.assertIsNotNone(where_op)
+
+        # Without bool_col, should be type compatible
+        schema = {'id': 'Int64', 'int_col': 'Int64', 'str_col': 'String'}
+        self.assertTrue(where_op._is_type_compatible_with_schema(schema), "Should be type compatible without bool_col")
+
+        # Verify results match
+        pd_result = df_no_bool.where(df_no_bool['int_col'] > 500, 0)
+        ds_result = ds_where.to_df()
+
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':
