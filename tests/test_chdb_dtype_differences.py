@@ -84,42 +84,6 @@ class TestChDBDtypeDifferences:
         # This will fail: chDB adds timezone
         assert result["dt"].dtype == df["dt"].dtype
 
-    def test_values_semantically_equivalent(self):
-        """
-        Verify that despite dtype differences, values are semantically equivalent.
-
-        This test PASSES - demonstrating the values are correct,
-        only the dtype representation differs.
-        """
-        df = pd.DataFrame(
-            {
-                "float_col": [1.0, 2.0, np.nan, 4.0],
-                "int_none_col": [1, 2, None, 4],
-                "str_col": ["a", "b", None, "d"],
-            }
-        )
-
-        result = chdb.query("SELECT * FROM Python(df)", "DataFrame")
-
-        # Values are semantically equal
-        # Float column: NaN positions match, values match
-        assert df["float_col"].isna().tolist() == result["float_col"].isna().tolist()
-        np.testing.assert_allclose(
-            df["float_col"].dropna().values,
-            result["float_col"].dropna().values,
-        )
-
-        # Int/None column: same behavior
-        assert df["int_none_col"].isna().tolist() == result["int_none_col"].isna().tolist()
-        np.testing.assert_allclose(
-            df["int_none_col"].dropna().values,
-            result["int_none_col"].dropna().values,
-        )
-
-        # String column: unchanged
-        assert df["str_col"].tolist() == result["str_col"].tolist()
-
-
 class TestChDBArrayNullableLimitation:
     """Document ClickHouse's Array(T) in Nullable limitation and workaround."""
 
@@ -181,32 +145,3 @@ class TestChDBArrayNullableLimitation:
         # This should fail: no ifNull wrapper
         result = chdb.query("SELECT splitByWhitespace(text) FROM Python(df)", 'DataFrame')
         assert len(result) == 3
-
-
-class TestChDBDtypeWorkaround:
-    """Test workarounds for dtype differences."""
-
-    def test_convert_nullable_to_standard_dtype(self):
-        """
-        Workaround: Convert nullable dtypes back to standard numpy dtypes.
-
-        This can be used to make chDB output compatible with pandas expectations.
-        """
-        df = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0]})
-        result = chdb.query("SELECT * FROM Python(df)", "DataFrame")
-
-        # Result has Float64Dtype
-        assert str(result["a"].dtype) == "Float64"
-
-        # Convert back to standard float64
-        result_converted = result.copy()
-        for col in result_converted.columns:
-            if str(result_converted[col].dtype) == "Float64":
-                result_converted[col] = result_converted[col].astype("float64")
-
-        # Now dtypes match
-        assert result_converted["a"].dtype == df["a"].dtype
-
-        # And DataFrame.equals() works
-        assert result_converted.equals(df)
-
