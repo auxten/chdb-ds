@@ -1227,8 +1227,10 @@ class TestExecutionEngineVerification(unittest.TestCase):
         self.assertIn('ORDER', explain_output)
         self.assertIn('LIMIT', explain_output)
 
-        # Should indicate all via SQL engine
-        self.assertIn('All operations will execute via SQL Engine', explain_output)
+        # Should indicate all via SQL engine (new format: single segment with chDB)
+        self.assertIn('Segment 1 [chDB]', explain_output)
+        # Should NOT have any Pandas segments
+        self.assertNotIn('[Pandas]', explain_output)
 
         # Should NOT have Pandas icons (all operations are SQL/chDB)
         self.assertNotIn('🐼', explain_output)
@@ -1255,8 +1257,8 @@ class TestExecutionEngineVerification(unittest.TestCase):
         self.assertIn('🐼 [Pandas]', explain_output)
         self.assertIn('Assign', explain_output)
 
-        # Should indicate Pandas engine phase
-        self.assertIn('Phase 2 (DataFrame Operations)', explain_output)
+        # Should indicate Pandas engine in segment info
+        self.assertIn('[Pandas]', explain_output)
 
         df = ds.to_df()
         self.assertIn('col_doubled', df.columns)
@@ -1291,9 +1293,9 @@ class TestExecutionEngineVerification(unittest.TestCase):
         self.assertIn('🐼 [Pandas]', explain_output)  # Pandas relational ops
         self.assertIn('🐼 [Pandas]', explain_output)  # Pandas assign ops
 
-        # Verify Phase info is shown
-        self.assertIn('Phase 1 (Initial SQL)', explain_output)
-        self.assertIn('Phase 2 (DataFrame Operations)', explain_output)
+        # Verify segment info is shown (new format uses Segments instead of Phases)
+        self.assertIn('Segment 1 [chDB]', explain_output)
+        self.assertIn('[Pandas]', explain_output)
 
         # Verify WHERE, Assign, ORDER BY all appear
         self.assertIn('WHERE', explain_output)
@@ -1360,9 +1362,10 @@ class TestExecutionEngineVerification(unittest.TestCase):
         self.assertIn('LIMIT', explain_output)
         self.assertIn('Assign', explain_output)
 
-        # Verify Phase info
-        self.assertIn('Phase 1 (Initial SQL)', explain_output)
-        self.assertIn('Phase 2 (DataFrame Operations)', explain_output)
+        # Verify segment info (new format uses Segments instead of Phases)
+        self.assertIn('Segment', explain_output)
+        self.assertIn('[chDB]', explain_output)
+        self.assertIn('[Pandas]', explain_output)
 
         # Execute and verify result
         df = ds.to_df()
@@ -1475,15 +1478,18 @@ class TestExecutionEngineVerification(unittest.TestCase):
         # First WHERE should be SQL (🚀 [chDB])
         self.assertIn('🚀 [chDB] WHERE', explain_output)
 
-        # Second WHERE should be Pandas (🐼 [Pandas]) - uses pandas terminology "filter"
-        self.assertIn('🐼 [Pandas] filter', explain_output)
+        # Second WHERE is also executed via chDB (via Python() table function on DataFrame)
+        # With segmented execution, filters after pandas ops can still use SQL
+        # Count 🚀 [chDB] WHERE operations (not counting WHERE in generated SQL)
+        chdb_where_count = explain_output.count('🚀 [chDB] WHERE')
+        self.assertEqual(chdb_where_count, 2, "Should have 2 chDB WHERE operations")
 
         # Assign should be Pandas
         self.assertIn('🐼 [Pandas] Assign', explain_output)
 
-        # Verify Phase info
-        self.assertIn('Phase 1 (Initial SQL)', explain_output)
-        self.assertIn('Phase 2 (DataFrame Operations)', explain_output)
+        # Verify segment info (new format uses Segments instead of Phases)
+        self.assertIn('Segment 1 [chDB]', explain_output)  # First segment with initial filter
+        self.assertIn('[Pandas]', explain_output)  # Should have Pandas segment for assign
 
         # Verify result is correct
         df = ds.to_df()
@@ -1606,9 +1612,10 @@ class TestExecutionEngineVerification(unittest.TestCase):
         print(f"Pandas relational (🐼 [Pandas]): {pandas_relational}")
         print(f"Pandas assign (🐼 [Pandas]): {pandas_assign}")
 
-        # Verify Phase info
-        self.assertIn('Phase 1 (Initial SQL)', explain_output)
-        self.assertIn('Phase 2 (DataFrame Operations)', explain_output)
+        # Verify segment info (new format uses Segments instead of Phases)
+        self.assertIn('Segment', explain_output)
+        self.assertIn('[chDB]', explain_output)
+        self.assertIn('[Pandas]', explain_output)
 
         # Execute and verify
         df = ds.to_df()

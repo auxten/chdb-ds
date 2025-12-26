@@ -949,11 +949,11 @@ class TestDebugLoggingVerification(unittest.TestCase):
         self.assertIn('Data Source:', explain, "Should show data source")
         self.assertIn('Parquet', explain, "Should show Parquet file type")
 
-        # === VERIFY PHASE CLASSIFICATION ===
-        # Backend shows: "Phase 1 (Initial SQL): Operations 1-1"
-        #                "Phase 2 (DataFrame Operations): Operations 2-3"
-        self.assertIn('Phase 1 (Initial SQL)', explain, "Should show Phase 1 as Initial SQL")
-        self.assertIn('Phase 2 (DataFrame Operations)', explain, "Should show Phase 2 as DataFrame Operations")
+        # === VERIFY SEGMENT CLASSIFICATION ===
+        # New format: "Segment 1 [chDB] (from source): Operations 2-2"
+        #             "Segment 2 [Pandas] (on DataFrame): Operations 3-3"
+        self.assertIn('Segment 1 [chDB] (from source)', explain, "Should show Segment 1 as chDB from source")
+        self.assertIn('Segment 2 [Pandas] (on DataFrame)', explain, "Should show Segment 2 as Pandas on DataFrame")
 
         # === VERIFY EXECUTION ENGINE LABELS ===
         # Backend shows: [chDB] for SQL operations, [Pandas] for Pandas operations
@@ -968,8 +968,12 @@ class TestDebugLoggingVerification(unittest.TestCase):
         # Backend shows: "Assign column 'doubled'" for column assignment
         self.assertIn("Assign column 'doubled'", explain, "Should show column assignment for doubled")
 
-        # Backend shows: 'sort_values: doubled' for sort
-        self.assertIn('sort_values', explain, "Should show sort_values operation")
+        # For SQL segments, sort shows as 'ORDER BY: doubled ASC'
+        # For Pandas segments, it would show 'sort_values: doubled'
+        # Since this sort_values follows a Pandas op, it goes to a SQL segment via Python()
+        self.assertTrue(
+            'ORDER BY' in explain or 'sort_values' in explain, "Should show ORDER BY or sort_values operation"
+        )
         self.assertIn('doubled', explain, "Should show doubled in sort")
 
         # === VERIFY FINAL STATE ===
