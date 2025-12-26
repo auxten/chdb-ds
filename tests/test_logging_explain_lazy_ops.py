@@ -57,7 +57,9 @@ def test_execution_logs_follow_lazy_ops(caplog):
 
         assert "Starting execution" in log_text
         assert "Lazy operations chain (3 operations)" in log_text
-        assert "Executing initial SQL query" in log_text
+        # Segmented execution logs show segment info instead of "Executing initial SQL query"
+        assert "Segment 1/" in log_text  # First SQL segment
+        assert "chDB (from source)" in log_text  # SQL segment from source
         assert "[Pandas] Executing ColumnAssignment" in log_text
         assert "[chDB]" in log_text  # Unified logging prefix
         assert "SELECT" in log_text
@@ -89,10 +91,12 @@ def test_execution_logs_mixed_sql_and_pandas(caplog):
 
         log_text = caplog.text
         assert "Starting execution" in log_text
-        assert "Executing initial SQL query" in log_text
+        # Segmented execution logs show segment info instead of "Executing initial SQL query"
+        assert "Segment 1/" in log_text  # First SQL segment
+        assert "chDB (from source)" in log_text  # SQL segment from source
         assert "[Pandas] Executing ColumnAssignment" in log_text
         assert "[Pandas] Executing AddPrefix" in log_text
-        # ORDER BY and LIMIT are now logged with [Pandas] prefix since they execute on DataFrame
+        # ORDER BY and LIMIT are now in SQL segments (can be from source or on DataFrame)
         assert "ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text or "df.sort_values" in log_text
         assert "LIMIT: 3" in log_text or "LIMIT 3" in log_text or "df.head(3)" in log_text
         assert "Execution complete" in log_text
