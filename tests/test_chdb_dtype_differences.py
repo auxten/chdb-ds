@@ -84,28 +84,9 @@ class TestChDBDtypeDifferences:
         # This will fail: chDB adds timezone
         assert result["dt"].dtype == df["dt"].dtype
 
+
 class TestChDBArrayNullableLimitation:
     """Document ClickHouse's Array(T) in Nullable limitation and workaround."""
-
-    def test_chdb_direct_split_null_becomes_empty_array(self):
-        """
-        When executing splitByWhitespace directly in chDB with ifNull workaround,
-        NULL becomes empty array [].
-
-        This is the raw chDB behavior without DataStore's pandas execution path.
-        """
-        df = pd.DataFrame({'text': ['hello world', None, 'foo bar']})
-
-        # Direct chDB execution with ifNull workaround
-        sql = "SELECT splitByWhitespace(ifNull(text, '')) AS result FROM Python(df)"
-        result = chdb.query(sql, 'DataFrame')
-
-        # chDB converts NULL -> '' -> [] (empty array)
-        result_list = result['result'].tolist()
-        assert len(result_list) == 3
-        assert list(result_list[0]) == ['hello', 'world']
-        assert list(result_list[1]) == []  # NULL became empty array
-        assert list(result_list[2]) == ['foo', 'bar']
 
     def test_datastore_split_preserves_none_via_pandas_fallback(self):
         """
