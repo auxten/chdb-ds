@@ -423,15 +423,19 @@ class TestAdvancedFeatureEngineering:
         Test splitByWhitespace() for tokenization.
 
         Functions: splitByWhitespace()
+
+        Note: ClickHouse doesn't support Nullable(Array), so we use ifNull()
+        to convert NULL strings to empty string, which produces empty array [].
         """
         ds = DataStore.from_df(self.df.copy())
 
+        # Use ifNull to handle Nullable columns - ClickHouse doesn't support Nullable(Array)
         result = ds.sql(
             """
             SELECT 
                 last_search_query,
-                splitByWhitespace(last_search_query) as tokens,
-                length(splitByWhitespace(last_search_query)) as word_count
+                splitByWhitespace(ifNull(last_search_query, '')) as tokens,
+                length(splitByWhitespace(ifNull(last_search_query, ''))) as word_count
             FROM __df__
         """
         ).to_df()

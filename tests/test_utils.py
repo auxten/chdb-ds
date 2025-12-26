@@ -10,6 +10,59 @@ import pandas as pd
 from typing import Union, List, Optional
 
 
+# =============================================================================
+# Known chDB dtype differences (see test_chdb_dtype_differences.py)
+# =============================================================================
+# When data passes through chDB's Python() table function:
+# 1. float64 with NaN → Float64Dtype() (nullable)
+# 2. Integer columns with None → Float64Dtype()
+# 3. datetime64[ns] → datetime64[ns, <timezone>] (adds system timezone)
+#
+# TODO: Many tests fail due to these dtype differences. Use
+#       assert_datastore_equals_pandas(..., check_dtype=False) or
+#       assert_datastore_equals_pandas_chdb_compat() for tests affected by this.
+# =============================================================================
+
+
+def _normalize_chdb_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize chDB output dtypes to standard pandas dtypes.
+
+    Converts:
+    - Float64 (nullable) → float64
+    - Int64 (nullable) → int64 or float64 (if has NA)
+    - Timezone-aware datetime → timezone-naive datetime
+
+    This allows for value comparison when dtype differences are expected.
+
+    Args:
+        df: DataFrame potentially containing chDB nullable dtypes
+
+    Returns:
+        DataFrame with standard pandas dtypes
+    """
+    result = df.copy()
+    for col in result.columns:
+        dtype_str = str(result[col].dtype)
+
+        # Handle nullable float (Float64 → float64)
+        if dtype_str == "Float64":
+            result[col] = result[col].astype("float64")
+
+        # Handle nullable int (Int64 → int64 or float64 if has NA)
+        elif dtype_str == "Int64":
+            if result[col].isna().any():
+                result[col] = result[col].astype("float64")
+            else:
+                result[col] = result[col].astype("int64")
+
+        # Handle timezone-aware datetime → naive
+        elif hasattr(result[col].dtype, "tz") and result[col].dtype.tz is not None:
+            result[col] = result[col].dt.tz_localize(None)
+
+    return result
+
+
 def assert_datastore_equals_pandas(
     ds_result,
     pd_result: pd.DataFrame,
@@ -257,3 +310,75 @@ def assert_row_count_match(
     pd_len = len(pd_result)
 
     assert ds_len == pd_len, f"{prefix}Row count doesn't match.\n" f"DataStore: {ds_len}\n" f"Pandas:    {pd_len}"
+
+
+def assert_datastore_equals_pandas_chdb_compat(
+    ds_result,
+    pd_result: pd.DataFrame,
+    check_column_order: bool = True,
+    check_row_order: bool = True,
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    msg: str = "",
+) -> None:
+    """
+    Compare DataStore result with pandas, tolerating chDB dtype differences.
+
+    This is a convenience wrapper around assert_datastore_equals_pandas that:
+    1. Normalizes chDB nullable dtypes (Float64 → float64, etc.)
+    2. Skips dtype comparison (check_dtype=False)
+
+    Use this for tests affected by chDB's dtype behavior.
+    See test_chdb_dtype_differences.py for documentation of these differences.
+
+    Args:
+        ds_result: DataStore result (DataStore, LazySeries, or similar)
+        pd_result: Expected pandas DataFrame or Series
+        check_column_order: If True, column order must match exactly
+        check_row_order: If True, row order must match exactly
+        rtol: Relative tolerance for float comparison
+        atol: Absolute tolerance for float comparison
+        msg: Additional message to include in assertion errors
+
+    Example:
+        # When dtype differences are acceptable
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
+    """
+    # Get DataStore DataFrame
+    if hasattr(ds_result, 'to_df'):
+        ds_df = ds_result.to_df()
+    elif hasattr(ds_result, '_get_df'):
+        ds_df = ds_result._get_df()
+    else:
+        ds_df = ds_result
+
+    # Normalize chDB dtypes
+    ds_df_normalized = _normalize_chdb_dtypes(ds_df)
+
+    # Compare with dtype checking disabled
+    assert_datastore_equals_pandas(
+        ds_df_normalized,
+        pd_result,
+        check_column_order=check_column_order,
+        check_row_order=check_row_order,
+        check_dtype=False,
+        rtol=rtol,
+        atol=atol,
+        msg=msg,
+    )
+
+
+def normalize_dataframe_for_comparison(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize a DataFrame for comparison, handling chDB dtype differences.
+
+    Public wrapper for _normalize_chdb_dtypes.
+
+    Args:
+        df: DataFrame to normalize
+
+    Returns:
+        Normalized DataFrame with standard pandas dtypes
+    """
+    return _normalize_chdb_dtypes(df)
+

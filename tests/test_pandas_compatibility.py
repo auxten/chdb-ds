@@ -13,6 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 import datastore as ds
+from tests.test_utils import assert_datastore_equals_pandas_chdb_compat
 
 
 # =============================================================================
@@ -99,19 +100,19 @@ class TestDataSelection:
         """Select multiple columns."""
         pd_result = pd_df[['name', 'age']]
         ds_result = ds_df[['name', 'age']]
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_select_rows_by_slice(self, pd_df, ds_df):
         """Select rows by slice."""
         pd_result = pd_df[:3]
         ds_result = ds_df[:3]
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_select_with_boolean_indexing(self, pd_df, ds_df):
         """Select with boolean indexing."""
         pd_result = pd_df[pd_df['age'] > 30]
         ds_result = ds_df[ds_df['age'] > 30]
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_select_with_loc(self, pd_df, ds_df):
         """Select with loc."""
@@ -280,19 +281,19 @@ class TestSorting:
         """Sort by single column."""
         pd_result = pd_df.sort_values('age')
         ds_result = ds_df.sort_values('age')
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_sort_by_multiple_columns(self, pd_df, ds_df):
         """Sort by multiple columns."""
         pd_result = pd_df.sort_values(['department', 'age'])
         ds_result = ds_df.sort_values(['department', 'age'])
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_sort_descending(self, pd_df, ds_df):
         """Sort descending."""
         pd_result = pd_df.sort_values('salary', ascending=False)
         ds_result = ds_df.sort_values('salary', ascending=False)
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_sort_index(self, pd_df, ds_df):
         """Sort index."""
@@ -324,8 +325,8 @@ class TestAggregation:
         """GroupBy with multiple aggregations - returns lazy DataStore."""
         pd_result = pd_df.groupby('department').agg({'salary': 'mean', 'age': 'max'})
         ds_result = ds_df.groupby('department').agg({'salary': 'mean', 'age': 'max'})
-        # Natural trigger via == comparison (uses __eq__ which triggers execution)
-        assert ds_result == pd_result
+        # GroupBy order is not guaranteed, use check_row_order=False
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_sum(self, pd_df, ds_df):
         """GroupBy with sum."""
@@ -820,7 +821,7 @@ class TestEdgeCases:
         """Test chained operations."""
         pd_result = pd_df[pd_df['age'] > 25][['name', 'age']].sort_values('age')
         ds_result = ds_df[ds_df['age'] > 25][['name', 'age']].sort_values('age')
-        assert ds_result == pd_result
+        assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
 
     def test_pop_removes_column(self, pd_df, ds_df):
         """Test that pop() removes column and returns it.

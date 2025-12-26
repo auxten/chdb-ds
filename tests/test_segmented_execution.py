@@ -143,10 +143,21 @@ class TestQueryPlannerSegments:
         # (or they might still be classified as SQL but won't be executed via SQL)
         assert plan.has_sql_source is False
 
-    def test_empty_ops_empty_plan(self):
-        """Empty ops list should produce empty plan."""
+    def test_empty_ops_with_sql_source_creates_read_segment(self):
+        """Empty ops with SQL source should create a segment to read data (SELECT *)."""
         planner = QueryPlanner()
         plan = planner.plan_segments([], has_sql_source=True)
+
+        # When there's a SQL source but no ops, we need a segment to read the data
+        assert len(plan.segments) == 1
+        assert plan.segments[0].is_sql()
+        assert plan.segments[0].is_first_segment
+        assert plan.total_ops() == 0  # No user ops, just data source read
+
+    def test_empty_ops_without_sql_source_empty_plan(self):
+        """Empty ops without SQL source should produce empty plan."""
+        planner = QueryPlanner()
+        plan = planner.plan_segments([], has_sql_source=False)
 
         assert len(plan.segments) == 0
         assert plan.total_ops() == 0
