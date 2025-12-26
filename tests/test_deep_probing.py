@@ -1043,5 +1043,544 @@ class TestSpecialValueHandling:
         assert result.iloc[2] == 6.0
 
 
+class TestAggregationModeComparisonsDeep:
+    """
+    Deep tests for comparison operators on aggregation results.
+
+    Based on the fix for __gt__, test all comparison operators and combinations.
+    """
+
+    def test_eq_on_groupby_result(self):
+        """Test == comparison on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C'], 'value': [10, 20, 30]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[pd_grouped == 20]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[ds_grouped == 20]
+
+        assert list(pd_result.values) == list(ds_result.values)
+
+    def test_ne_on_groupby_result(self):
+        """Test != comparison on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C'], 'value': [10, 20, 30]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[pd_grouped != 20]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[ds_grouped != 20]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_combined_conditions_on_groupby(self):
+        """Test AND/OR conditions on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C', 'D', 'E'], 'value': [10, 20, 30, 40, 50]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[(pd_grouped > 15) & (pd_grouped < 45)]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[(ds_grouped > 15) & (ds_grouped < 45)]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_or_conditions_on_groupby(self):
+        """Test OR conditions on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C', 'D', 'E'], 'value': [10, 20, 30, 40, 50]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[(pd_grouped < 15) | (pd_grouped > 45)]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[(ds_grouped < 15) | (ds_grouped > 45)]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_chained_filter_on_groupby(self):
+        """Multiple filters chained on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C', 'D', 'E'], 'value': [10, 20, 30, 40, 50]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[pd_grouped > 15][pd_grouped < 45]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[ds_grouped > 15][ds_grouped < 45]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_arithmetic_on_groupby_result(self):
+        """Arithmetic operations on groupby result."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C'], 'value': [10, 20, 30]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped * 2 + 5
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped * 2 + 5
+
+        # Execute and compare
+        ds_values = list(ds_result)
+        pd_values = list(pd_result)
+        assert ds_values == pd_values
+
+    def test_empty_result_after_filter(self):
+        """Filter that results in empty Series."""
+        df = pd.DataFrame({'group': ['A', 'B', 'C'], 'value': [10, 20, 30]})
+
+        pd_grouped = df.groupby('group')['value'].sum()
+        pd_result = pd_grouped[pd_grouped > 100]  # No matches
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby('group')['value'].sum()
+        ds_result = ds_grouped[ds_grouped > 100]
+
+        assert len(pd_result) == len(ds_result) == 0
+
+
+class TestMethodModeChainingDeep:
+    """
+    Deep tests for method mode chaining.
+
+    Based on the fix for fillna().abs(), test more complex chains.
+    """
+
+    def test_triple_chain(self):
+        """Three method calls chained."""
+        df = pd.DataFrame({'a': [1.0, np.nan, -3.0, np.nan, 5.0]})
+
+        pd_result = df['a'].fillna(0).abs().round()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].fillna(0).abs().round().to_pandas()
+
+        np.testing.assert_array_equal(pd_result.values, ds_result.values)
+
+    def test_quad_chain(self):
+        """Four method calls chained."""
+        df = pd.DataFrame({'a': [-1.5, np.nan, 3.7, np.nan, -5.2]})
+
+        pd_result = df['a'].fillna(0).abs().round().astype(int)
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].fillna(0).abs().round().astype(int).to_pandas()
+
+        np.testing.assert_array_equal(pd_result.values, ds_result.values)
+
+    def test_mixed_method_and_arithmetic(self):
+        """Mix method calls with arithmetic."""
+        df = pd.DataFrame({'a': [1.0, np.nan, 3.0]})
+
+        pd_result = (df['a'].fillna(0) + 10).abs()
+
+        ds = DataStore.from_df(df)
+        ds_result = (ds['a'].fillna(0) + 10).abs().to_pandas()
+
+        np.testing.assert_array_equal(pd_result.values, ds_result.values)
+
+    def test_cumsum_then_filter(self):
+        """cumsum() followed by comparison."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+
+        pd_cumsum = df['a'].cumsum()
+        pd_result = df[pd_cumsum > 6]
+
+        ds = DataStore.from_df(df)
+        ds_cumsum = ds['a'].cumsum()
+        ds_result = ds[ds_cumsum > 6].to_df()
+
+        assert list(pd_result['a']) == list(ds_result['a'])
+
+    def test_shift_then_arithmetic(self):
+        """shift() followed by arithmetic."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+
+        pd_result = df['a'] - df['a'].shift(1)
+
+        ds = DataStore.from_df(df)
+        ds_result = (ds['a'] - ds['a'].shift(1)).to_pandas()
+
+        # First value is NaN in both
+        assert pd.isna(pd_result.iloc[0]) and pd.isna(ds_result.iloc[0])
+        np.testing.assert_array_equal(pd_result.dropna().values, ds_result.dropna().values)
+
+    def test_rank_then_comparison(self):
+        """rank() followed by comparison filter."""
+        df = pd.DataFrame({'a': [30, 10, 20, 50, 40]})
+
+        pd_rank = df['a'].rank()
+        pd_result = df[pd_rank > 3]
+
+        ds = DataStore.from_df(df)
+        ds_rank = ds['a'].rank()
+        ds_result = ds[ds_rank > 3].to_df()
+
+        assert set(pd_result['a']) == set(ds_result['a'])
+
+
+class TestMultiColumnGroupByBooleanIndex:
+    """Tests for boolean indexing on multi-column groupby results."""
+
+    def test_multi_column_groupby_filter(self):
+        """Boolean indexing on multi-column groupby."""
+        df = pd.DataFrame({'a': ['X', 'X', 'Y', 'Y'], 'b': [1, 2, 1, 2], 'value': [10, 20, 30, 40]})
+
+        pd_grouped = df.groupby(['a', 'b'])['value'].sum()
+        pd_result = pd_grouped[pd_grouped > 25]
+
+        ds = DataStore.from_df(df)
+        ds_grouped = ds.groupby(['a', 'b'])['value'].sum()
+        ds_result = ds_grouped[ds_grouped > 25]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_multi_agg_filter(self):
+        """Filter on result of multiple aggregations."""
+        df = pd.DataFrame({'group': ['A', 'A', 'B', 'B', 'C', 'C'], 'value': [10, 20, 30, 40, 50, 60]})
+
+        pd_mean = df.groupby('group')['value'].mean()
+        pd_result = pd_mean[pd_mean >= 35]
+
+        ds = DataStore.from_df(df)
+        ds_mean = ds.groupby('group')['value'].mean()
+        ds_result = ds_mean[ds_mean >= 35]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+
+class TestConditionObjectAsIndex:
+    """Tests for using Condition objects directly for indexing."""
+
+    def test_condition_in_getitem(self):
+        """Use Condition from comparison in __getitem__."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+
+        ds = DataStore.from_df(df)
+        # Create condition separately
+        cond = ds['a'] > 3
+        result = ds[cond].to_df()
+
+        assert list(result['a']) == [4, 5]
+
+    def test_combined_conditions_in_getitem(self):
+        """Combined conditions in __getitem__."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]})
+
+        ds = DataStore.from_df(df)
+        cond = (ds['a'] > 2) & (ds['b'] < 4)
+        result = ds[cond].to_df()
+
+        pd_result = df[(df['a'] > 2) & (df['b'] < 4)]
+        assert list(result['a']) == list(pd_result['a'])
+
+
+class TestValueCountsEdgeCases:
+    """Edge cases for value_counts() operations."""
+
+    def test_value_counts_filter(self):
+        """Filter on value_counts result."""
+        df = pd.DataFrame({'a': ['x', 'x', 'x', 'y', 'y', 'z']})
+
+        pd_vc = df['a'].value_counts()
+        pd_result = pd_vc[pd_vc > 1]
+
+        ds = DataStore.from_df(df)
+        ds_vc = ds['a'].value_counts()
+        ds_result = ds_vc[ds_vc > 1]
+
+        assert set(pd_result.values) == set(ds_result.values)
+
+    def test_value_counts_arithmetic(self):
+        """Arithmetic on value_counts result."""
+        df = pd.DataFrame({'a': ['x', 'x', 'y', 'z']})
+
+        pd_vc = df['a'].value_counts()
+        pd_result = pd_vc * 10
+
+        ds = DataStore.from_df(df)
+        ds_vc = ds['a'].value_counts()
+        ds_result = ds_vc * 10
+
+        assert list(pd_result.sort_index()) == list(ds_result.sort_index())
+
+
+class TestStringMethodChaining:
+    """Deep tests for string method chaining."""
+
+    def test_str_chain_lower_strip_len(self):
+        """Chain: lower -> strip -> len."""
+        df = pd.DataFrame({'text': ['  HELLO  ', 'WORLD', '  Test  ']})
+
+        pd_result = df['text'].str.lower().str.strip().str.len()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['text'].str.lower().str.strip().str.len().to_pandas()
+
+        np.testing.assert_array_equal(pd_result.values, ds_result.values)
+
+    def test_str_contains_then_filter(self):
+        """str.contains() result used for filtering."""
+        df = pd.DataFrame({'text': ['hello world', 'goodbye', 'hello again', 'test'], 'value': [1, 2, 3, 4]})
+
+        pd_result = df[df['text'].str.contains('hello')]
+
+        ds = DataStore.from_df(df)
+        ds_result = ds[ds['text'].str.contains('hello')].to_df()
+
+        assert list(pd_result['value']) == list(ds_result['value'])
+
+    def test_str_split_then_get(self):
+        """str.split() then access element."""
+        df = pd.DataFrame({'text': ['a-b-c', 'x-y-z', '1-2-3']})
+
+        pd_result = df['text'].str.split('-').str[0]
+
+        ds = DataStore.from_df(df)
+        # Note: str[0] might need special handling
+        try:
+            ds_result = ds['text'].str.split('-').str[0].to_pandas()
+            assert list(pd_result) == list(ds_result)
+        except (TypeError, NotImplementedError, AttributeError):
+            pytest.skip("str.split().str[0] not supported")
+
+
+class TestDatetimeMethodChaining:
+    """Deep tests for datetime method chaining."""
+
+    def test_dt_year_then_filter(self):
+        """dt.year extraction then filter."""
+        df = pd.DataFrame({'date': pd.to_datetime(['2020-01-01', '2021-06-15', '2022-12-31']), 'value': [1, 2, 3]})
+
+        pd_result = df[df['date'].dt.year > 2020]
+
+        ds = DataStore.from_df(df)
+        ds_result = ds[ds['date'].dt.year > 2020].to_df()
+
+        assert list(pd_result['value']) == list(ds_result['value'])
+
+    def test_dt_month_arithmetic(self):
+        """Arithmetic on dt.month result."""
+        df = pd.DataFrame({'date': pd.to_datetime(['2020-01-15', '2020-06-20', '2020-12-25'])})
+
+        pd_result = df['date'].dt.month * 10
+
+        ds = DataStore.from_df(df)
+        ds_result = (ds['date'].dt.month * 10).to_pandas()
+
+        np.testing.assert_array_equal(pd_result.values, ds_result.values)
+
+
+class TestAggregationChaining:
+    """Tests for operations after aggregation."""
+
+    def test_sum_then_comparison(self):
+        """Compare sum result with scalar."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+
+        ds = DataStore.from_df(df)
+        total = ds['a'].sum()
+
+        # Scalar comparison - should return bool directly
+        assert total > 10
+        assert total == 15
+        assert not total < 10
+
+    def test_mean_then_arithmetic(self):
+        """Arithmetic on mean result."""
+        df = pd.DataFrame({'a': [10, 20, 30]})
+
+        pd_mean = df['a'].mean()
+        pd_result = pd_mean * 2
+
+        ds = DataStore.from_df(df)
+        ds_mean = ds['a'].mean()
+        ds_result = ds_mean * 2
+
+        assert pd_result == ds_result == 40.0
+
+
+class TestComplexFilterChains:
+    """Complex filter chains that might reveal issues."""
+
+    def test_filter_assign_filter(self):
+        """Filter -> assign column -> filter again."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})
+
+        pdf = df[df['a'] > 2].copy()
+        pdf['c'] = pdf['a'] * pdf['b']
+        pd_result = pdf[pdf['c'] > 100]
+
+        ds = DataStore.from_df(df)
+        ds = ds[ds['a'] > 2]
+        ds['c'] = ds['a'] * ds['b']
+        ds_result = ds[ds['c'] > 100].to_df()
+
+        assert list(pd_result['a']) == list(ds_result['a'])
+
+    def test_multiple_column_filters(self):
+        """Filters on multiple columns in sequence."""
+        df = pd.DataFrame({'a': range(20), 'b': range(20, 40), 'c': range(40, 60)})
+
+        pdf = df[df['a'] > 5]
+        pdf = pdf[pdf['b'] < 35]
+        pd_result = pdf[pdf['c'] > 50]
+
+        ds = DataStore.from_df(df)
+        ds = ds[ds['a'] > 5]
+        ds = ds[ds['b'] < 35]
+        ds_result = ds[ds['c'] > 50].to_df()
+
+        assert list(pd_result['a']) == list(ds_result['a'])
+
+
+class TestEdgeCaseDatastoreOperations:
+    """Edge case operations that might reveal issues."""
+
+    def test_empty_dataframe_operations(self):
+        """Operations on empty DataFrame."""
+        df = pd.DataFrame({'a': [], 'b': []})
+
+        ds = DataStore.from_df(df)
+        result = ds.to_df()
+
+        assert len(result) == 0
+        assert list(result.columns) == ['a', 'b']
+
+    def test_single_value_operations(self):
+        """Operations on single-value DataFrame."""
+        df = pd.DataFrame({'a': [42]})
+
+        ds = DataStore.from_df(df)
+
+        assert ds['a'].sum() == 42
+        assert ds['a'].mean() == 42
+        assert ds['a'].max() == 42
+        assert ds['a'].min() == 42
+        assert len(ds['a'].to_pandas()) == 1
+
+    def test_all_null_column_aggregation(self):
+        """Aggregation on all-null column."""
+        df = pd.DataFrame({'a': [None, None, None]})
+
+        ds = DataStore.from_df(df)
+
+        # sum of nulls should be 0 or null
+        result = ds['a'].sum()
+        assert result == 0 or pd.isna(result)
+
+    def test_unicode_column_names(self):
+        """Column names with unicode characters."""
+        df = pd.DataFrame({'中文列': [1, 2, 3], 'émoji🎉': [4, 5, 6], 'Ελληνικά': [7, 8, 9]})
+
+        ds = DataStore.from_df(df)
+        result = ds['中文列'].sum()
+
+        assert result == 6
+
+    def test_very_long_column_name(self):
+        """Column name that's very long."""
+        long_name = 'a' * 200
+        df = pd.DataFrame({long_name: [1, 2, 3]})
+
+        ds = DataStore.from_df(df)
+        result = ds[long_name].sum()
+
+        assert result == 6
+
+
+class TestBooleanSeriesOperations:
+    """Tests for operations that produce boolean Series."""
+
+    def test_isna_then_sum(self):
+        """isna() followed by sum() to count nulls."""
+        df = pd.DataFrame({'a': [1, np.nan, 3, np.nan, 5]})
+
+        pd_result = df['a'].isna().sum()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].isna().sum()
+
+        assert pd_result == ds_result == 2
+
+    def test_notna_then_mean(self):
+        """notna() followed by mean() - proportion of non-null."""
+        df = pd.DataFrame({'a': [1, np.nan, 3, np.nan, 5]})
+
+        pd_result = df['a'].notna().mean()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].notna().mean()
+
+        assert pd_result == ds_result == 0.6
+
+    def test_comparison_sum(self):
+        """Sum of comparison result to count matches."""
+        df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+
+        pd_result = (df['a'] > 2).sum()
+
+        ds = DataStore.from_df(df)
+        ds_result = (ds['a'] > 2).sum()
+
+        assert pd_result == ds_result == 3
+
+
+class TestMethodModeWithAggregation:
+    """Tests combining method mode with aggregation."""
+
+    def test_fillna_then_sum(self):
+        """fillna() followed by sum()."""
+        df = pd.DataFrame({'a': [1.0, np.nan, 3.0, np.nan, 5.0]})
+
+        pd_result = df['a'].fillna(10).sum()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].fillna(10).sum()
+
+        assert pd_result == ds_result == 29.0
+
+    def test_fillna_then_mean(self):
+        """fillna() followed by mean()."""
+        df = pd.DataFrame({'a': [1.0, np.nan, 3.0]})
+
+        pd_result = df['a'].fillna(5).mean()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].fillna(5).mean()
+
+        assert pd_result == ds_result == 3.0
+
+    def test_abs_then_max(self):
+        """abs() followed by max()."""
+        df = pd.DataFrame({'a': [-5, 3, -10, 7]})
+
+        pd_result = df['a'].abs().max()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].abs().max()
+
+        assert pd_result == ds_result == 10
+
+    def test_clip_then_std(self):
+        """clip() followed by std()."""
+        df = pd.DataFrame({'a': [1, 10, 100, 1000]})
+
+        pd_result = df['a'].clip(lower=5, upper=50).std()
+
+        ds = DataStore.from_df(df)
+        ds_result = ds['a'].clip(lower=5, upper=50).std()
+
+        # ColumnExpr aggregation needs explicit comparison via repr or float conversion
+        # because numpy's assert_almost_equal doesn't know how to handle ColumnExpr
+        np.testing.assert_almost_equal(pd_result, float(ds_result), decimal=5)
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

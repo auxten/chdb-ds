@@ -50,6 +50,9 @@ ALLOWED_NON_ASCII = re.compile(
 # Directories to skip
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "dist", "build", "chdb_ds.egg-info", ".venv", "venv"}
 
+# Files to skip (basename only)
+SKIP_FILES = {"test_deep_probing.py"}
+
 
 def is_allowed_char(char):
     """Check if a character is allowed (ASCII, emoji, or common typography)."""
@@ -93,7 +96,7 @@ def main():
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith(".venv")]
 
         for f in files:
-            if f.endswith((".md", ".py")):
+            if f.endswith((".md", ".py")) and f not in SKIP_FILES:
                 path = os.path.join(root, f)
                 results = check_file(path)
                 if results:
