@@ -26,6 +26,9 @@ from typing import Union, List, Optional
 
 def _normalize_chdb_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     """
+    This function is only used for tests that we already know are chDB issues.
+    Use this function means there is a known issue with chDB!!
+
     Normalize chDB output dtypes to standard pandas dtypes.
 
     Converts:
@@ -381,4 +384,3 @@ def normalize_dataframe_for_comparison(df: pd.DataFrame) -> pd.DataFrame:
         Normalized DataFrame with standard pandas dtypes
     """
     return _normalize_chdb_dtypes(df)
-

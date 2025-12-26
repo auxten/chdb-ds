@@ -248,9 +248,11 @@ class TestLazyPandasOnlyFunctions(unittest.TestCase):
         """fillna should use Pandas even in auto mode."""
         self.assertTrue(function_config.is_pandas_only('fillna'))
 
-    def test_isna_uses_pandas(self):
-        """isna should use Pandas even in auto mode."""
-        self.assertTrue(function_config.is_pandas_only('isna'))
+    def test_isna_uses_sql(self):
+        """isna uses SQL via toBool(isNull()) for bool dtype compatibility."""
+        # isna is now in OVERLAPPING_FUNCTIONS, not PANDAS_ONLY_FUNCTIONS
+        self.assertFalse(function_config.is_pandas_only('isna'))
+        self.assertIn('isna', function_config.OVERLAPPING_FUNCTIONS)
 
 
 class TestLazyChainedOperations(unittest.TestCase):

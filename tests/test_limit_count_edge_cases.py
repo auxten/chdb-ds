@@ -236,15 +236,18 @@ class TestLimitCountEdgeCases(unittest.TestCase):
         self.assertEqual(len(result), 5)
 
     def test_chained_limits_increasing(self):
-        """Test limit(5).limit(10) - later limit overwrites (SQL semantics).
+        """Test limit(5).limit(10) - pandas semantics: chained limits.
 
-        Note: In SQL, later LIMIT replaces earlier LIMIT, so limit(5).limit(10)
-        results in LIMIT 10, returning all 10 rows (not 5).
+        In pandas semantics, df[:5][:10] means:
+        1. Take first 5 rows
+        2. From those 5, take first 10 -> min(5, 10) = 5
+
+        DataStore follows pandas semantics for consistency with user expectations.
         """
         ds = DataStore.from_file(self.medium_csv)
         result = ds.limit(5).limit(10)
-        # SQL semantics: later LIMIT overwrites, so LIMIT 10 returns all 10 rows
-        self.assertEqual(len(result), 10)
+        # Pandas semantics: chained limits, result is min(5, 10) = 5
+        self.assertEqual(len(result), 5)
 
     def test_chained_head(self):
         """Test head(5).head(3) - later head overwrites (SQL semantics)."""
@@ -253,11 +256,16 @@ class TestLimitCountEdgeCases(unittest.TestCase):
         self.assertEqual(len(result), 3)
 
     def test_chained_head_increasing(self):
-        """Test head(3).head(5) - later head overwrites (SQL semantics)."""
+        """Test head(3).head(5) - pandas semantics: chained head.
+
+        In pandas semantics, df.head(3).head(5) means:
+        1. Take first 3 rows
+        2. From those 3, take first 5 -> min(3, 5) = 3
+        """
         ds = DataStore.from_file(self.medium_csv)
         result = ds.head(3).head(5)
-        # SQL semantics: later LIMIT overwrites, so LIMIT 5 returns 5 rows
-        self.assertEqual(len(result), 5)
+        # Pandas semantics: chained head, result is min(3, 5) = 3
+        self.assertEqual(len(result), 3)
 
     # ==================== Offset and Limit Combinations ====================
 

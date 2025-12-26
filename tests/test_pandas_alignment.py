@@ -28,6 +28,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import datastore as ds
+from tests.test_utils import _normalize_chdb_dtypes
 
 
 class TestBasicOperations(unittest.TestCase):
@@ -423,7 +424,9 @@ class TestNullHandling(unittest.TestCase):
         ds_result = store.filter(store['a'].is_not_null()).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        # Normalize chDB dtypes (Float64 with <NA> → float64 with nan) before comparison
+        ds_result_normalized = _normalize_chdb_dtypes(ds_result)
+        pd.testing.assert_frame_equal(ds_result_normalized, pd_result, check_dtype=False)
 
     def test_filter_is_null(self):
         """is_null() should match pandas isna()."""
@@ -440,7 +443,9 @@ class TestNullHandling(unittest.TestCase):
         ds_result = store.filter(store['a'].is_null()).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        # Normalize chDB dtypes (Float64 with <NA> → float64 with nan) before comparison
+        ds_result_normalized = _normalize_chdb_dtypes(ds_result)
+        pd.testing.assert_frame_equal(ds_result_normalized, pd_result, check_dtype=False)
 
 
 class TestStringOperations(unittest.TestCase):

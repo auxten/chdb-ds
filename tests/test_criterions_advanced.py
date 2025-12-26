@@ -29,13 +29,15 @@ class NullConditionTests(unittest.TestCase):
         """Test isNull() condition"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.foo.isnull()).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE isNull("foo") = 1', sql)
+        # toBool wrapper ensures bool dtype compatibility with pandas
+        self.assertEqual('SELECT * FROM "test" WHERE toBool(isNull("foo")) = 1', sql)
 
     def test_notnull(self):
         """Test isNotNull() condition"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.foo.notnull()).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE isNotNull("foo") = 1', sql)
+        # toBool wrapper ensures bool dtype compatibility with pandas
+        self.assertEqual('SELECT * FROM "test" WHERE toBool(isNotNull("foo")) = 1', sql)
 
     def test_isnull_with_field_object(self):
         """Test IS NULL with explicit Field"""
@@ -147,7 +149,8 @@ class CombinedConditionTests(unittest.TestCase):
         """Test isNull() combined with IN"""
         ds = DataStore(table="test")
         sql = ds.select("*").filter(ds.name.isnull() | ds.id.isin([1, 2, 3])).to_sql()
-        self.assertEqual('SELECT * FROM "test" WHERE (isNull("name") = 1 OR "id" IN (1,2,3))', sql)
+        # toBool wrapper ensures bool dtype compatibility with pandas
+        self.assertEqual('SELECT * FROM "test" WHERE (toBool(isNull("name")) = 1 OR "id" IN (1,2,3))', sql)
 
     def test_between_and_like(self):
         """Test BETWEEN combined with LIKE"""
@@ -160,9 +163,11 @@ class CombinedConditionTests(unittest.TestCase):
         ds = DataStore(table="test")
         cond = (ds.age > 18) & (ds.name.notnull()) & (ds.city.isin(['NYC', 'LA']))
         sql = ds.select("*").filter(cond).to_sql()
-        # notnull() returns ColumnExpr wrapping isNotNull(), which is converted to isNotNull() = 1
+        # notnull() returns ColumnExpr wrapping toBool(isNotNull()), which is converted to toBool(isNotNull()) = 1
+        # toBool wrapper ensures bool dtype compatibility with pandas
         self.assertEqual(
-            'SELECT * FROM "test" WHERE (("age" > 18 AND isNotNull("name") = 1) AND "city" IN (\'NYC\',\'LA\'))', sql
+            'SELECT * FROM "test" WHERE (("age" > 18 AND toBool(isNotNull("name")) = 1) AND "city" IN (\'NYC\',\'LA\'))',
+            sql,
         )
 
 
