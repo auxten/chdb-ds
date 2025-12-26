@@ -11,6 +11,7 @@ import logging
 import pandas as pd
 
 from datastore import DataStore, config
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 class TestSQLvsPandasFilter(unittest.TestCase):
@@ -1356,10 +1357,7 @@ class TestExecutionEngineVerification(unittest.TestCase):
         # Verify filter, sort, limit, assign all appear
         self.assertIn('WHERE', explain_output)
         self.assertIn('ORDER', explain_output)
-        # limit() after pandas ops is executed as head in pandas stage
-        self.assertTrue(
-            'LIMIT' in explain_output or 'head' in explain_output.lower(), "Should have LIMIT or head operation"
-        )
+        self.assertIn('LIMIT', explain_output)
         self.assertIn('Assign', explain_output)
 
         # Verify Phase info
@@ -1446,8 +1444,7 @@ class TestExecutionEngineVerification(unittest.TestCase):
             self.assertIn('WHERE', output)
             self.assertIn('Assign', output)
             self.assertIn('ORDER', output)
-            # limit() after pandas ops is executed as head in pandas stage
-            self.assertTrue('LIMIT' in output or 'head' in output.lower(), "Should have LIMIT or head operation")
+            self.assertIn('LIMIT', output)
 
         # Execute
         df = ds.to_df()
@@ -1630,15 +1627,15 @@ class TestExecutionEngineVerification(unittest.TestCase):
             self.assertTrue(all(df['id'] > 3))
 
 
-class TestTrueSQLPandasSQLInterleaving(unittest.TestCase):
+class TestLazyPipelineInterleaving(unittest.TestCase):
     """
-    Tests for TRUE SQL-Pandas-SQL interleaving using chDB's Python() table function.
+    Tests for lazy pipeline interleaving using DataStore pandas-style API.
 
     This demonstrates the ability to:
-    1. Execute SQL on file
-    2. Do Pandas operations on DataFrame
-    3. Push DataFrame back to SQL engine via Python() table function
-    4. Continue with SQL operations
+    1. Filter data using pandas-style API
+    2. Add computed columns lazily
+    3. Chain filter/sort/limit operations
+    4. Compare results with pure pandas (Mirror Code Pattern)
     """
 
     @classmethod
@@ -1647,267 +1644,198 @@ class TestTrueSQLPandasSQLInterleaving(unittest.TestCase):
         cls.temp_dir = tempfile.mkdtemp()
         cls.csv_file = os.path.join(cls.temp_dir, "interleave_test.csv")
 
-        data = {
+        cls.data = {
             'id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             'value': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
             'category': ['A', 'B', 'A', 'B', 'A', 'B', 'A', 'B', 'A', 'B'],
         }
-        pd.DataFrame(data).to_csv(cls.csv_file, index=False)
+        pd.DataFrame(cls.data).to_csv(cls.csv_file, index=False)
 
-    def test_sql_pandas_sql_using_python_table_function(self):
+    def test_filter_assign_filter_sort_limit_pipeline(self):
         """
-        TRUE SQL-Pandas-SQL interleaving using chDB Python() table function.
+        Test filter -> column assignment -> filter -> sort -> limit pipeline.
 
-        This test demonstrates:
-        1. SQL query on file via DataStore
-        2. Pandas column assignment
-        3. Push DataFrame back to chDB SQL engine
-        4. Execute SQL on the transformed DataFrame
+        Using pandas-style API throughout, comparing with pure pandas.
         """
-        import chdb
+        # ============ Pandas operations (reference) ============
+        pd_df = pd.DataFrame(self.data)
+        pd_df = pd_df[pd_df['value'] > 20]
+        pd_df = pd_df[['id', 'value', 'category']].copy()
+        pd_df['doubled'] = pd_df['value'] * 2
+        pd_df['score'] = pd_df['value'] + pd_df['id']
+        pd_result = pd_df[pd_df['doubled'] > 100].sort_values('score', ascending=False).head(5)
 
-        # ============ PHASE 1: SQL on file ============
+        # ============ DataStore operations (mirror) ============
         ds = DataStore.from_file(self.csv_file)
-        ds = ds.filter(ds['value'] > 20)  # SQL filter
+        ds = ds.filter(ds['value'] > 20)
         ds = ds.select('id', 'value', 'category')
+        ds['doubled'] = ds['value'] * 2
+        ds['score'] = ds['value'] + ds['id']
+        ds = ds.filter(ds['doubled'] > 100)
+        ds = ds.sort_values('score', ascending=False)
+        ds = ds.head(5)
 
-        # Execute to DataFrame
-        df1 = ds.to_df()
-        print(f"\n=== Phase 1 (SQL on file) ===")
-        print(f"After SQL filter (value > 20): {len(df1)} rows")
-        print(df1.to_string())
+        # ============ Compare results ============
+        assert_datastore_equals_pandas(ds, pd_result.reset_index(drop=True))
 
-        # ============ PHASE 2: Pandas operations ============
-        df1['doubled'] = df1['value'] * 2
-        df1['score'] = df1['value'] + df1['id']
-        print(f"\n=== Phase 2 (Pandas operations) ===")
-        print(f"Added computed columns: {len(df1)} rows")
-        print(df1.to_string())
+    def test_multi_round_filter_assign_filter_assign_pattern(self):
+        """
+        Multiple rounds of filter -> assign -> filter -> assign.
 
-        # ============ PHASE 3: SQL on DataFrame via Python() ============
-        # Use chDB's Python() table function to run SQL on the DataFrame
-        df2 = chdb.query(
-            '''
-            SELECT id, value, doubled, score, category
-            FROM Python(df1)
-            WHERE doubled > 100
-            ORDER BY score DESC
-            LIMIT 5
-        ''',
-            'DataFrame',
+        All operations through DataStore pandas-style API.
+        """
+        # ============ Pandas operations (reference) ============
+        pd_df = pd.DataFrame(self.data)
+        # Round 1: filter
+        pd_df = pd_df[pd_df['value'] >= 20].copy()
+        # Round 2: assign
+        pd_df['r2_computed'] = pd_df['value'] * 3
+        # Round 3: filter + assign
+        pd_df = pd_df[pd_df['r2_computed'] > 100].copy()
+        pd_df['r3_normalized'] = pd_df['r2_computed'] / 10
+        # Round 4: assign
+        pd_df['r4_final'] = pd_df['r3_normalized'] + pd_df['id']
+        # Round 5: filter + sort + limit
+        pd_result = (
+            pd_df[pd_df['r4_final'] > 15][['id', 'value', 'r2_computed', 'r3_normalized', 'r4_final']]
+            .sort_values('r4_final', ascending=False)
+            .head(3)
         )
 
-        print(f"\n=== Phase 3 (SQL on DataFrame via Python()) ===")
-        print(f"After SQL filter (doubled > 100): {len(df2)} rows")
-        print(df2.to_string())
-
-        # Verify results
-        self.assertGreater(len(df1), 0)
-        self.assertGreater(len(df2), 0)
-        self.assertTrue(all(df2['doubled'] > 100))
-
-        # Verify the SQL engine was used (not just Pandas)
-        # The result is a new DataFrame processed by chDB SQL
-
-    def test_multi_round_sql_pandas_sql_pandas_sql(self):
-        """
-        Multiple rounds of SQL-Pandas-SQL-Pandas-SQL.
-
-        Round 1: SQL on file
-        Round 2: Pandas transformation
-        Round 3: SQL on DataFrame (via Python())
-        Round 4: More Pandas transformation
-        Round 5: SQL on DataFrame again (via Python())
-        """
-        import chdb
-
-        # ============ ROUND 1: SQL on file ============
+        # ============ DataStore operations (mirror) ============
         ds = DataStore.from_file(self.csv_file)
+        # Round 1: filter
         ds = ds.filter(ds['value'] >= 20)
-        df = ds.to_df()
-        print(f"\n=== Round 1 (SQL on file) ===")
-        print(f"Rows after filter: {len(df)}")
+        # Round 2: assign
+        ds['r2_computed'] = ds['value'] * 3
+        # Round 3: filter + assign
+        ds = ds.filter(ds['r2_computed'] > 100)
+        ds['r3_normalized'] = ds['r2_computed'] / 10
+        # Round 4: assign
+        ds['r4_final'] = ds['r3_normalized'] + ds['id']
+        # Round 5: filter + sort + limit
+        ds = ds.filter(ds['r4_final'] > 15)
+        ds = ds.select('id', 'value', 'r2_computed', 'r3_normalized', 'r4_final')
+        ds = ds.sort_values('r4_final', ascending=False)
+        ds = ds.head(3)
 
-        # ============ ROUND 2: Pandas transformation ============
-        df['r2_computed'] = df['value'] * 3
-        print(f"\n=== Round 2 (Pandas) ===")
-        print(f"Added r2_computed column")
+        # ============ Compare results ============
+        assert_datastore_equals_pandas(ds, pd_result.reset_index(drop=True))
 
-        # ============ ROUND 3: SQL on DataFrame ============
-        df = chdb.query(
-            '''
-            SELECT *, r2_computed / 10 AS r3_normalized
-            FROM Python(df)
-            WHERE r2_computed > 100
-        ''',
-            'DataFrame',
-        )
-        print(f"\n=== Round 3 (SQL on DataFrame) ===")
-        print(f"Rows after SQL filter: {len(df)}")
-
-        # ============ ROUND 4: Pandas transformation ============
-        df['r4_final'] = df['r3_normalized'] + df['id']
-        print(f"\n=== Round 4 (Pandas) ===")
-        print(f"Added r4_final column")
-
-        # ============ ROUND 5: SQL on DataFrame ============
-        df = chdb.query(
-            '''
-            SELECT id, value, r2_computed, r3_normalized, r4_final
-            FROM Python(df)
-            WHERE r4_final > 15
-            ORDER BY r4_final DESC
-            LIMIT 3
-        ''',
-            'DataFrame',
-        )
-        print(f"\n=== Round 5 (SQL on DataFrame) ===")
-        print(f"Final rows: {len(df)}")
-        print(df.to_string())
-
-        # Verify
-        self.assertLessEqual(len(df), 3)
-        self.assertTrue(all(df['r4_final'] > 15))
-
-    def test_sql_aggregation_on_pandas_computed_columns(self):
+    def test_complex_expression_filter_on_computed_columns(self):
         """
-        Test SQL aggregation on Pandas-computed columns.
-
-        This demonstrates that after Pandas adds computed columns,
-        we can use SQL's powerful aggregation features on them.
+        Test complex boolean expression filter on computed columns.
         """
-        import chdb
+        # ============ Pandas operations (reference) ============
+        pd_df = pd.DataFrame(self.data)
+        pd_df['value_squared'] = pd_df['value'] ** 2
+        pd_df['ratio'] = pd_df['value_squared'] / pd_df['value']
+        # Complex filter: value_squared > 2000 AND ratio > 50
+        pd_result = pd_df[(pd_df['value_squared'] > 2000) & (pd_df['ratio'] > 50)]
+        pd_result = pd_result[['id', 'value', 'value_squared', 'ratio']].sort_values('id')
 
-        # SQL on file
+        # ============ DataStore operations (mirror) ============
         ds = DataStore.from_file(self.csv_file)
-        df = ds.to_df()
+        ds['value_squared'] = ds['value'] ** 2
+        ds['ratio'] = ds['value_squared'] / ds['value']
+        ds = ds.filter((ds['value_squared'] > 2000) & (ds['ratio'] > 50))
+        ds = ds.select('id', 'value', 'value_squared', 'ratio')
+        ds = ds.sort_values('id')
 
-        # Pandas computed columns
-        df['value_squared'] = df['value'] ** 2
-        df['value_log'] = df['value']  # Placeholder for log
+        # ============ Compare results ============
+        assert_datastore_equals_pandas(ds, pd_result.reset_index(drop=True))
 
-        # SQL aggregation on computed columns
-        result = chdb.query(
-            '''
-            SELECT
-                category,
-                COUNT(*) AS cnt,
-                SUM(value) AS sum_value,
-                AVG(value_squared) AS avg_squared,
-                MAX(value) AS max_value,
-                MIN(value) AS min_value
-            FROM Python(df)
-            GROUP BY category
-            ORDER BY sum_value DESC
-        ''',
-            'DataFrame',
+    def test_groupby_aggregation_on_computed_columns(self):
+        """
+        Test groupby aggregation on computed columns using named aggregation syntax.
+        """
+        # ============ Pandas operations (reference) ============
+        pd_df = pd.DataFrame(self.data)
+        pd_df['value_squared'] = pd_df['value'] ** 2
+        pd_result = (
+            pd_df.groupby('category')
+            .agg(
+                cnt=('id', 'count'),
+                sum_value=('value', 'sum'),
+                avg_squared=('value_squared', 'mean'),
+                max_value=('value', 'max'),
+                min_value=('value', 'min'),
+            )
+            .reset_index()
         )
 
-        print(f"\n=== SQL Aggregation on Pandas Computed Columns ===")
-        print(result.to_string())
-
-        # Verify aggregation worked
-        self.assertEqual(len(result), 2)  # 2 categories: A, B
-        self.assertIn('cnt', result.columns)
-        self.assertIn('sum_value', result.columns)
-        self.assertIn('avg_squared', result.columns)
-
-    def test_sql_join_after_pandas_transformation(self):
-        """
-        Test SQL JOIN between two Pandas-transformed DataFrames.
-        """
-        import chdb
-
-        # Create two DataFrames with Pandas transformations
-        ds = DataStore.from_file(self.csv_file)
-        df1 = ds.to_df()
-        df1['score'] = df1['value'] * 2
-
-        # Create second DataFrame (subset with different transformation)
-        df2 = df1[df1['category'] == 'A'].copy()
-        df2['bonus'] = df2['value'] * 0.1
-        df2 = df2[['id', 'bonus']]
-
-        # SQL JOIN between two Pandas DataFrames
-        result = chdb.query(
-            '''
-            SELECT
-                t1.id,
-                t1.value,
-                t1.score,
-                t2.bonus,
-                t1.score + t2.bonus AS total
-            FROM Python(df1) AS t1
-            INNER JOIN Python(df2) AS t2 ON t1.id = t2.id
-            ORDER BY total DESC
-        ''',
-            'DataFrame',
+        # ============ DataStore operations (mirror) ============
+        ds = DataStore.from_df(pd.DataFrame(self.data))
+        ds['value_squared'] = ds['value'] ** 2
+        ds_result = ds.groupby('category').agg(
+            cnt=('id', 'count'),
+            sum_value=('value', 'sum'),
+            avg_squared=('value_squared', 'mean'),
+            max_value=('value', 'max'),
+            min_value=('value', 'min'),
         )
 
-        print(f"\n=== SQL JOIN on Pandas DataFrames ===")
-        print(result.to_string())
+        # ============ Compare results (order may differ) ============
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-        # Verify JOIN worked
-        self.assertGreater(len(result), 0)
-        self.assertIn('total', result.columns)
-        self.assertIn('bonus', result.columns)
-
-    def test_explain_shows_engine_transition(self):
+    def test_merge_after_transformation(self):
         """
-        Test that we can track the engine transitions in a multi-phase pipeline.
+        Test merge (join) between two transformed DataStores.
         """
-        import chdb
+        # ============ Pandas operations (reference) ============
+        pd_df1 = pd.DataFrame(self.data)
+        pd_df1['score'] = pd_df1['value'] * 2
 
-        execution_log = []
+        pd_df2 = pd_df1[pd_df1['category'] == 'A'][['id', 'value']].copy()
+        pd_df2['bonus'] = pd_df2['value'] * 0.1
+        pd_df2 = pd_df2[['id', 'bonus']]
 
-        # Phase 1: SQL on file
-        execution_log.append("Phase 1: SQL on file (chdb)")
+        pd_result = pd_df1.merge(pd_df2, on='id', how='inner')
+        pd_result['total'] = pd_result['score'] + pd_result['bonus']
+        pd_result = pd_result[['id', 'value', 'score', 'bonus', 'total']].sort_values('total', ascending=False)
+
+        # ============ DataStore operations (mirror) ============
+        ds1 = DataStore.from_df(pd.DataFrame(self.data))
+        ds1['score'] = ds1['value'] * 2
+
+        ds2 = ds1.filter(ds1['category'] == 'A').select('id', 'value')
+        ds2['bonus'] = ds2['value'] * 0.1
+        ds2 = ds2.select('id', 'bonus')
+
+        ds_result = ds1.merge(ds2, on='id', how='inner')
+        ds_result['total'] = ds_result['score'] + ds_result['bonus']
+        ds_result = ds_result.select('id', 'value', 'score', 'bonus', 'total')
+        ds_result = ds_result.sort_values('total', ascending=False)
+
+        # ============ Compare results ============
+        assert_datastore_equals_pandas(ds_result, pd_result.reset_index(drop=True))
+
+    def test_explain_shows_execution_plan(self):
+        """
+        Test that explain() shows the execution plan for the pipeline.
+        """
         ds = DataStore.from_file(self.csv_file)
         ds = ds.filter(ds['value'] > 30)
-        explain1 = ds.explain()
-        self.assertIn('🚀 [chDB]', explain1)
-        df = ds.to_df()
-        execution_log.append(f"  -> {len(df)} rows after SQL filter")
+        ds['computed'] = ds['value'] * 2
+        ds = ds.filter(ds['computed'] > 120)
+        ds = ds.sort_values('computed', ascending=False)
+        ds = ds.head(3)
 
-        # Phase 2: Pandas transformation
-        execution_log.append("Phase 2: Pandas transformation")
-        df['computed'] = df['value'] * 2
-        execution_log.append(f"  -> Added 'computed' column")
+        explain_output = ds.explain()
 
-        # Phase 3: SQL on DataFrame
-        execution_log.append("Phase 3: SQL on DataFrame (chdb via Python())")
-        df = chdb.query(
-            '''
-            SELECT * FROM Python(df) WHERE computed > 120
-        ''',
-            'DataFrame',
-        )
-        execution_log.append(f"  -> {len(df)} rows after SQL filter on computed column")
+        # Verify explain shows useful information
+        self.assertIn('[chDB]', explain_output)
+        # The explain should show filter/sort/limit operations
+        self.assertIsInstance(explain_output, str)
+        self.assertGreater(len(explain_output), 0)
 
-        # Phase 4: Pandas again
-        execution_log.append("Phase 4: Pandas transformation")
-        df['final'] = df['computed'] + df['id']
-        execution_log.append(f"  -> Added 'final' column")
+        # Also verify the actual result is correct
+        pd_df = pd.DataFrame(self.data)
+        pd_df = pd_df[pd_df['value'] > 30].copy()
+        pd_df['computed'] = pd_df['value'] * 2
+        pd_result = pd_df[pd_df['computed'] > 120].sort_values('computed', ascending=False).head(3)
 
-        # Phase 5: SQL again
-        execution_log.append("Phase 5: SQL on DataFrame (chdb via Python())")
-        result = chdb.query(
-            '''
-            SELECT * FROM Python(df) ORDER BY final DESC LIMIT 3
-        ''',
-            'DataFrame',
-        )
-        execution_log.append(f"  -> {len(result)} rows after final SQL")
-
-        print("\n=== Engine Transition Log ===")
-        for log in execution_log:
-            print(log)
-
-        print("\n=== Final Result ===")
-        print(result.to_string())
-
-        # Verify the pipeline worked
-        self.assertLessEqual(len(result), 3)
+        assert_datastore_equals_pandas(ds, pd_result.reset_index(drop=True))
 
 
 class TestSQLMethodInPipeline(unittest.TestCase):
