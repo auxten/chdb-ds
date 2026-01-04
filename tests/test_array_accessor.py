@@ -56,21 +56,28 @@ class TestArrayAccessorBasic:
 
     # ==================== Type/Laziness Tests ====================
 
-    def test_arr_length_returns_function(self, ds_with_arrays):
-        """Test that .arr.length returns Function object."""
-        # Note: Returns Function, not ColumnExpr (this is current behavior)
+    def test_arr_length_returns_column_expr(self, ds_with_arrays):
+        """Test that .arr.length returns ColumnExpr (pandas API compatible)."""
+        from datastore.column_expr import ColumnExpr
+        
         result = ds_with_arrays['nums'].arr.length
-        assert isinstance(result, Function)
+        assert isinstance(result, ColumnExpr)
+        # Should have sort_values for pandas compatibility
+        assert hasattr(result, 'sort_values')
 
-    def test_arr_empty_returns_function(self, ds_with_arrays):
-        """Test that .arr.empty returns Function object."""
+    def test_arr_empty_returns_column_expr(self, ds_with_arrays):
+        """Test that .arr.empty returns ColumnExpr (pandas API compatible)."""
+        from datastore.column_expr import ColumnExpr
+        
         result = ds_with_arrays['nums'].arr.empty
-        assert isinstance(result, Function)
+        assert isinstance(result, ColumnExpr)
 
-    def test_arr_has_returns_function(self, ds_with_arrays):
-        """Test that .arr.has() returns Function object."""
+    def test_arr_has_returns_column_expr(self, ds_with_arrays):
+        """Test that .arr.has() returns ColumnExpr (pandas API compatible)."""
+        from datastore.column_expr import ColumnExpr
+        
         result = ds_with_arrays['nums'].arr.has(1)
-        assert isinstance(result, Function)
+        assert isinstance(result, ColumnExpr)
 
     # ==================== Execution Tests (blocked by chDB issue) ====================
 
@@ -284,19 +291,21 @@ class TestArrayEdgeCases:
 class TestArrayLazyExecution:
     """Test that array operations maintain lazy execution."""
 
-    def test_array_ops_return_function(self):
-        """Test that array operations return Function objects."""
+    def test_array_ops_return_column_expr(self):
+        """Test that array operations return ColumnExpr objects (pandas API compatible)."""
+        from datastore.column_expr import ColumnExpr
+        
         df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
         ds = DataStore.from_df(df)
         
-        # These should return Function objects
+        # These should return ColumnExpr objects (for pandas API compatibility)
         len_expr = ds['nums'].arr.length
         sum_expr = ds['nums'].arr.array_sum()
         has_expr = ds['nums'].arr.has(1)
         
-        assert isinstance(len_expr, Function)
-        assert isinstance(sum_expr, Function)
-        assert isinstance(has_expr, Function)
+        assert isinstance(len_expr, ColumnExpr)
+        assert isinstance(sum_expr, ColumnExpr)
+        assert isinstance(has_expr, ColumnExpr)
 
     @CHDB_ARRAY_TYPE_ISSUE
     def test_multiple_array_columns_lazy(self):
@@ -333,8 +342,9 @@ class TestArrayDirectSQL:
         df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
         ds = DataStore.from_df(df)
         
-        length_func = ds['nums'].arr.length
-        sql_repr = str(length_func)
+        length_result = ds['nums'].arr.length
+        # Get underlying expression's SQL representation
+        sql_repr = length_result._expr.to_sql()
         
         # Should generate length() function call
         assert 'length' in sql_repr.lower()
@@ -366,3 +376,108 @@ class TestArrayDirectSQL:
         assert result['len'].iloc[0] == 3
         assert result['sum'].iloc[0] == 6
         assert result['has_2'].iloc[0] == 1
+
+
+class TestArrayAccessorChaining:
+    """Test that array accessor results can chain with other operations."""
+
+    def test_arr_length_returns_column_expr(self):
+        """Test arr.length returns ColumnExpr for pandas API compatibility."""
+        from datastore.column_expr import ColumnExpr
+        
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        length_result = ds['nums'].arr.length
+        
+        # Should be a ColumnExpr (not raw Function)
+        assert isinstance(length_result, ColumnExpr)
+        
+        # Should have sort_values method (pandas API)
+        assert hasattr(length_result, 'sort_values')
+        
+        # Should have str, arr, json accessors for chaining
+        assert hasattr(length_result, 'str')
+        assert hasattr(length_result, 'arr')
+        assert hasattr(length_result, 'json')
+
+    def test_arr_method_returns_column_expr(self):
+        """Test arr.has() returns ColumnExpr for pandas API compatibility."""
+        from datastore.column_expr import ColumnExpr
+        
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        has_result = ds['nums'].arr.has(2)
+        
+        # Should be a ColumnExpr (not raw Function)
+        assert isinstance(has_result, ColumnExpr)
+        assert hasattr(has_result, 'sort_values')
+
+    def test_arr_length_comparison(self):
+        """Test arr.length can be used in comparisons."""
+        from datastore.column_expr import ColumnExpr
+        
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        # arr.length should support comparison operators
+        length_result = ds['nums'].arr.length
+        condition = length_result > 2
+        
+        # Should return a ColumnExpr wrapping a Condition (usable for filtering)
+        assert isinstance(condition, ColumnExpr)
+
+    def test_arr_has_comparison(self):
+        """Test arr.has() can be used in boolean context."""
+        from datastore.column_expr import ColumnExpr
+        
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        # arr.has returns ColumnExpr which can be compared
+        has_result = ds['nums'].arr.has(2)
+        condition = has_result == 1
+        
+        assert isinstance(condition, ColumnExpr)
+
+    def test_arr_function_arithmetic(self):
+        """Test array accessor results support arithmetic operations."""
+        from datastore.column_expr import ColumnExpr
+        
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        # arr.length * 10
+        length_result = ds['nums'].arr.length
+        result = length_result * 10
+        
+        # Should return ColumnExpr (supports chaining)
+        assert isinstance(result, ColumnExpr)
+
+    def test_arr_sql_generation_with_comparison(self):
+        """Verify arr accessor in comparison generates correct SQL."""
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        condition = ds['nums'].arr.length > 2
+        # Get underlying expression's SQL
+        sql_repr = condition._expr.to_sql()
+        
+        # Should have length function and comparison
+        assert 'length' in sql_repr.lower()
+        assert '>' in sql_repr
+        assert '2' in sql_repr
+
+    def test_arr_sql_generation_with_arithmetic(self):
+        """Verify arr accessor with arithmetic generates correct SQL."""
+        df = chdb.query("SELECT [1, 2, 3] as nums", "DataFrame")
+        ds = DataStore.from_df(df)
+        
+        result = ds['nums'].arr.length + 10
+        # Get underlying expression's SQL
+        sql_repr = result._expr.to_sql()
+        
+        # Should have length function and addition
+        assert 'length' in sql_repr.lower()
+        assert '+' in sql_repr or '10' in sql_repr

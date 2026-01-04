@@ -401,6 +401,164 @@ class TestStrAccessorEdgeCases:
         assert isinstance(result, DataStore)
 
 
+class TestStrAccessorChaining:
+    """Test that str accessor results can chain with other operations."""
+
+    @pytest.fixture
+    def ds(self):
+        """Create a test DataStore."""
+        df = pd.DataFrame(
+            {
+                'id': [1, 2, 3],
+                'name': ['alice', 'bob', 'charlie'],
+                'text': ['hello world', 'foo bar', 'test string'],
+            }
+        )
+        return DataStore.from_df(df)
+
+    def test_str_upper_returns_column_expr_with_accessors(self, ds):
+        """Test str.upper() returns ColumnExpr which has accessors."""
+        result = ds['name'].str.upper()
+
+        # Should be a ColumnExpr
+        assert isinstance(result, ColumnExpr)
+
+        # ColumnExpr should have str accessor for continued chaining
+        assert hasattr(result, 'str')
+
+    def test_str_upper_sort_values(self, ds):
+        """Test str.upper().sort_values() - pandas API compatibility."""
+        result = ds['name'].str.upper().sort_values()
+
+        # Should return ColumnExpr
+        assert isinstance(result, ColumnExpr)
+
+        # Values should be sorted alphabetically (uppercase)
+        expected = ['ALICE', 'BOB', 'CHARLIE']
+        assert list(result.values) == expected
+
+    def test_str_len_sort_values(self, ds):
+        """Test str.len().sort_values() - pandas API compatibility."""
+        result = ds['name'].str.len().sort_values()
+
+        # Should return ColumnExpr
+        assert isinstance(result, ColumnExpr)
+
+        # Values should be sorted: bob(3), alice(5), charlie(7)
+        expected = [3, 5, 7]
+        assert list(result.values) == expected
+
+    def test_str_chain_upper_then_len(self, ds):
+        """Test chaining str.upper().str.len()."""
+        result = ds['name'].str.upper().str.len()
+
+        # Should return ColumnExpr (still lazy)
+        assert isinstance(result, ColumnExpr)
+
+        # Assign and execute
+        ds['name_len'] = result
+        df = ds.order_by('id').to_df()
+
+        # Lengths: 'ALICE'=5, 'BOB'=3, 'CHARLIE'=7
+        expected = [5, 3, 7]
+        assert list(df['name_len']) == expected
+
+    def test_str_chain_slice_then_upper(self, ds):
+        """Test chaining str.slice().str.upper()."""
+        result = ds['name'].str.slice(0, 3).str.upper()
+
+        ds['prefix'] = result
+        df = ds.order_by('id').to_df()
+
+        # First 3 chars uppercased: 'ALI', 'BOB', 'CHA'
+        expected = ['ALI', 'BOB', 'CHA']
+        assert list(df['prefix']) == expected
+
+    def test_str_chain_replace_then_len(self, ds):
+        """Test chaining str.replace().str.len()."""
+        result = ds['text'].str.replace(' ', '').str.len()
+
+        ds['compact_len'] = result
+        df = ds.order_by('id').to_df()
+
+        # 'helloworld'=10, 'foobar'=6, 'teststring'=10
+        expected = [10, 6, 10]
+        assert list(df['compact_len']) == expected
+
+    def test_str_len_comparison(self, ds):
+        """Test str.len() can be used in comparisons for filtering."""
+        # Filter names with length > 3
+        result = ds[ds['name'].str.len() > 3]
+        df = result.to_df()
+
+        # 'alice'(5) and 'charlie'(7) should pass
+        assert len(df) == 2
+        names = set(df['name'])
+        assert 'alice' in names
+        assert 'charlie' in names
+        assert 'bob' not in names
+
+    def test_str_len_arithmetic(self, ds):
+        """Test str.len() can be used in arithmetic operations."""
+        result = ds['name'].str.len() * 10
+
+        ds['name_len_x10'] = result
+        df = ds.order_by('id').to_df()
+
+        expected = [50, 30, 70]  # 5*10, 3*10, 7*10
+        assert list(df['name_len_x10']) == expected
+
+    def test_str_upper_then_contains(self, ds):
+        """Test chaining str.upper() then str.contains()."""
+        result = ds['name'].str.upper().str.contains('LI')
+
+        ds['has_li'] = result
+        df = ds.order_by('id').to_df()
+
+        # 'ALICE' contains 'LI', 'BOB' doesn't, 'CHARLIE' contains 'LI'
+        expected = [True, False, True]
+        assert list(df['has_li']) == expected
+
+    def test_str_triple_chain(self, ds):
+        """Test three chained str operations."""
+        result = ds['name'].str.upper().str.slice(0, 2).str.lower()
+
+        ds['result'] = result
+        df = ds.order_by('id').to_df()
+
+        # 'alice' -> 'ALICE' -> 'AL' -> 'al'
+        expected = ['al', 'bo', 'ch']
+        assert list(df['result']) == expected
+
+    def test_str_chain_sql_generation(self, ds):
+        """Verify chained str accessor generates correct SQL."""
+        result = ds['name'].str.upper().str.len()
+
+        # Get the underlying expression and check SQL
+        expr = result._expr if hasattr(result, '_expr') else result
+        sql_repr = str(expr)
+
+        # Should have both upper and length functions
+        assert 'upper' in sql_repr.lower()
+        assert 'length' in sql_repr.lower()
+
+    def test_str_accessor_from_function_result(self, ds):
+        """Test that Function results have str accessor."""
+        from datastore.functions import Function
+        from datastore.expressions import Expression
+
+        # Create a Function manually
+        upper_func = Function('upper', ds['name']._expr)
+
+        # Function should have str accessor (inherited from Expression)
+        assert hasattr(upper_func, 'str')
+
+        # Should be able to chain .str.len() - returns another Expression (Function or ColumnExpr)
+        len_func = upper_func.str.len()
+        # The result is an Expression (could be Function, ColumnExpr, or another Expression subtype)
+        assert isinstance(len_func, (Expression, ColumnExpr))
+
+
 class TestStrContainsFilter:
     """Test that .str.contains() works correctly for filtering.
 

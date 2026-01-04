@@ -95,21 +95,21 @@ class TestChainedOperations:
             .filter(ds.salary > 50000)
             .groupby("city")
             .agg({"salary": ["mean", "sum", "count"]})
-            .sort("mean", ascending=False)
+            .sort_values("salary_mean", ascending=False)  # Use flat name in SQL context
             .limit(10)
             .to_df()
         )
 
         # Verify result structure
         assert len(result) > 0
-        assert 'city' in result.columns or result.index.name == 'city'
+        assert result.index.name == 'city'  # With dict agg, city is index
 
     def test_sql_generation(self, employee_csv):
         """Test that SQL is generated correctly."""
         from datastore import DataStore
 
         ds = DataStore.uri(employee_csv)
-        query = ds.filter(ds.age > 25).groupby("city").agg({"salary": "mean"}).sort("mean").limit(5)
+        query = ds.filter(ds.age > 25).groupby("city").agg({"salary": "mean"}).sort("salary").limit(5)
 
         sql = query.to_sql()
 
