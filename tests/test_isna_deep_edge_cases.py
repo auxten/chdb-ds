@@ -37,8 +37,7 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype, "dtype should match")
-        self.assertEqual(list(ds_result.values), pd_result.tolist(), "values should match")
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_with_none(self):
         """Test isna with Python None values."""
@@ -48,8 +47,7 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_with_mixed_null_types(self):
         """Test isna with mixed np.nan and None - should all be detected as null."""
@@ -61,11 +59,10 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # Both np.nan and None should be True
-        self.assertEqual(ds_result.values[1], True)
-        self.assertEqual(ds_result.values[3], True)
+        self.assertEqual(list(ds_result.values)[1], True)
+        self.assertEqual(list(ds_result.values)[3], True)
 
     def test_isna_with_integer_column_no_nulls(self):
         """Test isna with integer column containing no nulls."""
@@ -75,8 +72,7 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # All should be False
         self.assertTrue(all(v == False for v in ds_result.values))
 
@@ -88,8 +84,7 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         pd_result = df['name'].isna()
         ds_result = ds['name'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_string_empty_vs_null(self):
         """Test that isna distinguishes empty string from NULL."""
@@ -100,10 +95,11 @@ class TestIsnaWithDifferentNullTypes(unittest.TestCase):
         ds_result = ds['name'].isna()
 
         # Empty string is NOT null
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
-        self.assertEqual(ds_result.values[1], False)  # empty string is not null
-        self.assertEqual(ds_result.values[2], True)   # None is null
-        self.assertEqual(ds_result.values[4], False)  # empty string is not null
+        assert_datastore_equals_pandas(ds_result, pd_result)
+        ds_values = list(ds_result.values)
+        self.assertEqual(ds_values[1], False)  # empty string is not null
+        self.assertEqual(ds_values[2], True)   # None is null
+        self.assertEqual(ds_values[4], False)  # empty string is not null
 
 
 class TestIsnaWithDatetimeColumns(unittest.TestCase):
@@ -125,8 +121,7 @@ class TestIsnaWithDatetimeColumns(unittest.TestCase):
         pd_result = df['date'].isna()
         ds_result = ds['date'].isna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_notna_with_nat(self):
         """Test notna with NaT values."""
@@ -138,8 +133,7 @@ class TestIsnaWithDatetimeColumns(unittest.TestCase):
         pd_result = df['date'].notna()
         ds_result = ds['date'].notna()
 
-        self.assertEqual(ds_result.values.dtype, pd_result.dtype)
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestIsnaBooleanAlgebra(unittest.TestCase):
@@ -161,7 +155,7 @@ class TestIsnaBooleanAlgebra(unittest.TestCase):
         pd_result = self.df['a'].isna() & self.df['a'].notna()
         ds_result = self.ds['a'].isna() & self.ds['a'].notna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # Should all be False
         self.assertTrue(all(v == False for v in ds_result.values))
 
@@ -170,7 +164,7 @@ class TestIsnaBooleanAlgebra(unittest.TestCase):
         pd_result = self.df['a'].isna() | self.df['a'].notna()
         ds_result = self.ds['a'].isna() | self.ds['a'].notna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # Should all be True
         self.assertTrue(all(v == True for v in ds_result.values))
 
@@ -181,8 +175,9 @@ class TestIsnaBooleanAlgebra(unittest.TestCase):
         ds_not_isna = ~self.ds['a'].isna()
         ds_notna = self.ds['a'].notna()
 
-        self.assertEqual(list(ds_not_isna.values), pd_not_isna.tolist())
-        self.assertEqual(list(ds_notna.values), pd_notna.tolist())
+        assert_datastore_equals_pandas(ds_not_isna, pd_not_isna)
+        assert_datastore_equals_pandas(ds_notna, pd_notna)
+        # ~isna() should equal notna() - compare the two DataStore results directly
         self.assertEqual(list(ds_not_isna.values), list(ds_notna.values))
 
     def test_isna_cross_column_and(self):
@@ -191,7 +186,7 @@ class TestIsnaBooleanAlgebra(unittest.TestCase):
         pd_result = self.df['a'].isna() & self.df['b'].isna()
         ds_result = self.ds['a'].isna() & self.ds['b'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # Only positions where BOTH are null
         expected = [False, False, False, False, False]
         self.assertEqual(list(ds_result.values), expected)
@@ -202,7 +197,7 @@ class TestIsnaBooleanAlgebra(unittest.TestCase):
         pd_result = self.df['a'].isna() | self.df['b'].isna()
         ds_result = self.ds['a'].isna() | self.ds['b'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestIsnaInFilterChains(unittest.TestCase):
@@ -223,14 +218,14 @@ class TestIsnaInFilterChains(unittest.TestCase):
     def test_filter_by_isna(self):
         """Filter rows where a column is null."""
         pd_result = self.df[self.df['name'].isna()]
-        ds_result = self.ds.filter(self.ds['name'].isna()).to_df()
+        ds_result = self.ds.filter(self.ds['name'].isna())
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_by_notna(self):
         """Filter rows where a column is not null."""
         pd_result = self.df[self.df['name'].notna()]
-        ds_result = self.ds.filter(self.ds['name'].notna()).to_df()
+        ds_result = self.ds.filter(self.ds['name'].notna())
 
         # Note: chDB returns Float64Dtype for nullable float columns
         # This is a known dtype difference, values should still match
@@ -239,7 +234,7 @@ class TestIsnaInFilterChains(unittest.TestCase):
     def test_filter_isna_and_other_condition(self):
         """Filter by isna combined with another condition."""
         pd_result = self.df[self.df['name'].notna() & (self.df['age'] > 25)]
-        ds_result = self.ds.filter(self.ds['name'].notna() & (self.ds['age'] > 25)).to_df()
+        ds_result = self.ds.filter(self.ds['name'].notna() & (self.ds['age'] > 25))
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -249,7 +244,7 @@ class TestIsnaInFilterChains(unittest.TestCase):
         pd_result = self.df[self.df['name'].notna() & self.df['age'].isna()]
         ds_result = self.ds.filter(
             self.ds['name'].notna() & self.ds['age'].isna()
-        ).to_df()
+        )
 
         # Note: chDB returns Float64Dtype for nullable float columns
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
@@ -260,7 +255,7 @@ class TestIsnaInFilterChains(unittest.TestCase):
         pd_result = pd_result[pd_result['age'].notna()]
         
         ds_result = self.ds.filter(self.ds['name'].notna())
-        ds_result = ds_result.filter(ds_result['age'].notna()).to_df()
+        ds_result = ds_result.filter(ds_result['age'].notna())
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -285,11 +280,9 @@ class TestIsnaColumnAssignment(unittest.TestCase):
 
         ds = DataStore(self.df)
         ds['is_null'] = ds['value'].isna()
-        ds_result = ds.to_df()
 
-        # Check the is_null column
-        self.assertEqual(ds_result['is_null'].dtype, pdf['is_null'].dtype)
-        self.assertEqual(ds_result['is_null'].tolist(), pdf['is_null'].tolist())
+        # Check the is_null column using natural triggers
+        assert_datastore_equals_pandas(ds, pdf)
 
     def test_assign_notna_to_column(self):
         """Assign notna result to a new column."""
@@ -298,10 +291,8 @@ class TestIsnaColumnAssignment(unittest.TestCase):
 
         ds = DataStore(self.df)
         ds['is_valid'] = ds['value'].notna()
-        ds_result = ds.to_df()
 
-        self.assertEqual(ds_result['is_valid'].dtype, pdf['is_valid'].dtype)
-        self.assertEqual(ds_result['is_valid'].tolist(), pdf['is_valid'].tolist())
+        assert_datastore_equals_pandas(ds, pdf)
 
 
 class TestIsnaWithAggregations(unittest.TestCase):
@@ -380,7 +371,7 @@ class TestIsnaWithStringOperations(unittest.TestCase):
         pd_result = self.df['name'].str.upper().isna()
         ds_result = self.ds['name'].str.upper().isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_on_str_contains_result(self):
         """Test isna on str.contains result."""
@@ -388,7 +379,7 @@ class TestIsnaWithStringOperations(unittest.TestCase):
         pd_result = self.df['name'].str.contains('a', case=False, na=False)
         ds_result = self.ds['name'].str.contains('a', case=False, na=False)
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestIsnaEdgeCases(unittest.TestCase):
@@ -408,8 +399,7 @@ class TestIsnaEdgeCases(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(len(ds_result.values), 0)
-        self.assertEqual(len(ds_result.values), len(pd_result))
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_all_nulls(self):
         """Test isna when all values are null."""
@@ -419,7 +409,7 @@ class TestIsnaEdgeCases(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertTrue(all(v == True for v in ds_result.values))
 
     def test_isna_no_nulls(self):
@@ -430,7 +420,7 @@ class TestIsnaEdgeCases(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertTrue(all(v == False for v in ds_result.values))
 
     def test_isna_single_value_null(self):
@@ -441,8 +431,8 @@ class TestIsnaEdgeCases(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
-        self.assertEqual(ds_result.values[0], True)
+        assert_datastore_equals_pandas(ds_result, pd_result)
+        self.assertEqual(list(ds_result.values)[0], True)
 
     def test_isna_single_value_not_null(self):
         """Test isna with single non-null value."""
@@ -452,8 +442,8 @@ class TestIsnaEdgeCases(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
-        self.assertEqual(ds_result.values[0], False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
+        self.assertEqual(list(ds_result.values)[0], False)
 
 
 class TestRestoreNullsWorkaroundInteraction(unittest.TestCase):
@@ -495,16 +485,16 @@ class TestRestoreNullsWorkaroundInteraction(unittest.TestCase):
         ds_result = self.ds['value'].isna()
 
         # isna should return [False, True, False], not [False, nan, False]
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertEqual(ds_result.values.dtype, bool)
-        self.assertEqual(list(ds_result.values), [False, True, False])
 
     def test_notna_does_not_get_nulls_restored(self):
         """notna should NOT have nulls restored."""
         pd_result = self.df['value'].notna()
         ds_result = self.ds['value'].notna()
 
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertEqual(ds_result.values.dtype, bool)
-        self.assertEqual(list(ds_result.values), [True, False, True])
 
 
 class TestToBoolWrapperBehavior(unittest.TestCase):
@@ -575,7 +565,7 @@ class TestIsnaWithComplexPipelines(unittest.TestCase):
         pd_result = self.df[pd_mask]
 
         ds_mask = self.ds['name'].notna() & self.ds['age'].notna() & self.ds['salary'].notna()
-        ds_result = self.ds.filter(ds_mask).to_df()
+        ds_result = self.ds.filter(ds_mask)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -589,10 +579,8 @@ class TestIsnaWithComplexPipelines(unittest.TestCase):
         ds = DataStore(self.df)
         ds['name_null'] = ds['name'].isna()
         ds['age_null'] = ds['age'].isna()
-        ds_result = ds.to_df()
 
-        self.assertEqual(ds_result['name_null'].tolist(), pdf['name_null'].tolist())
-        self.assertEqual(ds_result['age_null'].tolist(), pdf['age_null'].tolist())
+        assert_datastore_equals_pandas(ds, pdf)
 
 
 class TestIsnaIsnullNotnullNotnaNaming(unittest.TestCase):
@@ -645,12 +633,16 @@ class TestIsnaWithSelectAndProject(unittest.TestCase):
 
     def test_select_isna_column(self):
         """Select only the isna result as a column."""
+        pdf = self.df.copy()
+        pdf['is_null'] = pdf['value'].isna()
+        pdf_result = pdf[['name', 'is_null']]
+
         ds = DataStore(self.df)
         ds['is_null'] = ds['value'].isna()
-        result = ds.select('name', 'is_null').to_df()
+        ds_result = ds.select('name', 'is_null')
 
-        self.assertIn('is_null', result.columns)
-        self.assertEqual(result['is_null'].tolist(), [False, True, False])
+        # Note: chDB may return uint8 for boolean columns, use check_dtype=False
+        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
 
 
 class TestIsnaWithSpecialFloatValues(unittest.TestCase):
@@ -670,10 +662,11 @@ class TestIsnaWithSpecialFloatValues(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
         # inf is not null, only nan is
-        self.assertEqual(ds_result.values[1], False)  # inf is not null
-        self.assertEqual(ds_result.values[2], True)   # nan is null
+        ds_values = list(ds_result.values)
+        self.assertEqual(ds_values[1], False)  # inf is not null
+        self.assertEqual(ds_values[2], True)   # nan is null
 
     def test_isna_with_negative_infinity(self):
         """Negative infinity is NOT null."""
@@ -683,9 +676,10 @@ class TestIsnaWithSpecialFloatValues(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
-        self.assertEqual(ds_result.values[1], False)  # -inf is not null
-        self.assertEqual(ds_result.values[2], True)   # nan is null
+        assert_datastore_equals_pandas(ds_result, pd_result)
+        ds_values = list(ds_result.values)
+        self.assertEqual(ds_values[1], False)  # -inf is not null
+        self.assertEqual(ds_values[2], True)   # nan is null
 
     def test_isna_with_negative_zero(self):
         """Negative zero is NOT null."""
@@ -695,8 +689,8 @@ class TestIsnaWithSpecialFloatValues(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
-        self.assertEqual(ds_result.values[1], False)  # -0.0 is not null
+        assert_datastore_equals_pandas(ds_result, pd_result)
+        self.assertEqual(list(ds_result.values)[1], False)  # -0.0 is not null
 
 
 class TestFillnaDeepEdgeCases(unittest.TestCase):
@@ -716,7 +710,7 @@ class TestFillnaDeepEdgeCases(unittest.TestCase):
         pd_result = df['value'].fillna(0)
         ds_result = ds['value'].fillna(0)
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_with_negative_value(self):
         """Fill nulls with negative value."""
@@ -726,7 +720,7 @@ class TestFillnaDeepEdgeCases(unittest.TestCase):
         pd_result = df['value'].fillna(-999)
         ds_result = ds['value'].fillna(-999)
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_with_string(self):
         """Fill string nulls."""
@@ -743,11 +737,12 @@ class TestFillnaDeepEdgeCases(unittest.TestCase):
         """After fillna, isna should return all False."""
         df = pd.DataFrame({'value': [1.0, np.nan, 3.0, np.nan, 5.0]})
         ds = DataStore(df)
-
-        filled_ds = DataStore(ds.to_df().fillna(0))  # Apply fillna via pandas
-        ds_result = filled_ds['value'].isna()
+        ds['value'] = ds['value'].fillna(0)  # Use DataStore fillna method
+        ds_result = ds['value'].isna()
 
         # All should be False after fillna
+        pd_result = df['value'].fillna(0).isna()
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertTrue(all(v == False for v in ds_result.values))
 
 
@@ -767,32 +762,41 @@ class TestIsnaInSelectVsFilter(unittest.TestCase):
 
     def test_isna_in_select_as_column(self):
         """Use isna result as a selected column."""
+        pdf = self.df.copy()
+        pdf['is_null'] = pdf['value'].isna()
+        pdf_result = pdf[['name', 'value', 'is_null']]
+
         ds = DataStore(self.df)
         ds['is_null'] = ds['value'].isna()
-        result = ds.select('name', 'value', 'is_null').to_df()
+        ds_result = ds.select('name', 'value', 'is_null')
 
-        expected_is_null = [False, True, False]
-        self.assertEqual(result['is_null'].tolist(), expected_is_null)
+        # Note: chDB may return Float64Dtype for nullable float and uint8 for boolean
+        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
 
     def test_isna_in_filter_condition(self):
         """Use isna in filter condition."""
         pd_result = self.df[self.df['value'].isna()]
-        ds_result = self.ds.filter(self.ds['value'].isna()).to_df()
+        ds_result = self.ds.filter(self.ds['value'].isna())
 
         # Should return only the row with null value
-        self.assertEqual(len(ds_result), 1)
-        self.assertEqual(len(ds_result), len(pd_result))
+        # Note: chDB may return Float64Dtype for nullable float columns
+        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
     def test_isna_select_and_filter_combined(self):
         """Combine isna in both SELECT and WHERE."""
+        pdf = self.df.copy()
+        pdf['name_null'] = pdf['name'].isna()
+        pdf_result = pdf[pdf['value'].notna()][['name', 'name_null']]
+
         ds = DataStore(self.df)
         ds['name_null'] = ds['name'].isna()
-        
+
         # Filter where value is not null, but show name_null column
-        result = ds.filter(ds['value'].notna()).select('name', 'name_null').to_df()
+        ds_result = ds.filter(ds['value'].notna()).select('name', 'name_null')
 
         # Should have 2 rows (rows where value is not null)
-        self.assertEqual(len(result), 2)
+        # Note: chDB may return uint8 for boolean columns
+        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
 
 
 class TestIsnaComparisonOperations(unittest.TestCase):
@@ -849,8 +853,8 @@ class TestIsnaWithLargeDataset(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertEqual(pd_result.sum(), sum(ds_result.values))
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
 
     def test_isna_mostly_nulls(self):
         """Test with 90% null values."""
@@ -865,7 +869,7 @@ class TestIsnaWithLargeDataset(unittest.TestCase):
         pd_result = df['value'].isna()
         ds_result = ds['value'].isna()
 
-        self.assertEqual(pd_result.sum(), sum(ds_result.values))
+        assert_datastore_equals_pandas(ds_result, pd_result)
         self.assertEqual(sum(ds_result.values), 90)  # 90 nulls
 
 
@@ -889,14 +893,14 @@ class TestIsnaWithMultipleColumns(unittest.TestCase):
         pd_any_null = self.df['a'].isna() | self.df['b'].isna() | self.df['c'].isna()
         ds_any_null = self.ds['a'].isna() | self.ds['b'].isna() | self.ds['c'].isna()
 
-        self.assertEqual(list(ds_any_null.values), pd_any_null.tolist())
+        assert_datastore_equals_pandas(ds_any_null, pd_any_null)
 
     def test_all_columns_have_null(self):
         """Check if all columns in each row have null (unlikely in this dataset)."""
         pd_all_null = self.df['a'].isna() & self.df['b'].isna() & self.df['c'].isna()
         ds_all_null = self.ds['a'].isna() & self.ds['b'].isna() & self.ds['c'].isna()
 
-        self.assertEqual(list(ds_all_null.values), pd_all_null.tolist())
+        assert_datastore_equals_pandas(ds_all_null, pd_all_null)
         # No row has all nulls in this dataset
         self.assertTrue(all(v == False for v in ds_all_null.values))
 
@@ -941,7 +945,7 @@ class TestSpecialColumnNameEscaping(unittest.TestCase):
         pd_result = df['col"quote'].isna()
         ds_result = ds['col"quote'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_column_name_with_backslash(self):
         """Column name containing backslash should work."""
@@ -951,7 +955,7 @@ class TestSpecialColumnNameEscaping(unittest.TestCase):
         pd_result = df['col\\backslash'].isna()
         ds_result = ds['col\\backslash'].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_column_name_with_single_quote(self):
         """Column name containing single quote should work."""
@@ -961,7 +965,7 @@ class TestSpecialColumnNameEscaping(unittest.TestCase):
         pd_result = df["col'apostrophe"].isna()
         ds_result = ds["col'apostrophe"].isna()
 
-        self.assertEqual(list(ds_result.values), pd_result.tolist())
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_column_name_with_spaces(self):
         """Column name containing spaces should work."""
@@ -1004,7 +1008,7 @@ class TestIsnaWithSortingOperations(unittest.TestCase):
         pd_sorted = self.df.sort_values('name', na_position='last')
         pd_result = pd_sorted['value'].isna()
 
-        ds_sorted = self.ds.sort_values('name').to_df()
+        ds_sorted = self.ds.sort_values('name')
         ds_result = ds_sorted['value'].isna()
 
         # Values should still be correctly identified as null/not null
@@ -1013,11 +1017,10 @@ class TestIsnaWithSortingOperations(unittest.TestCase):
     def test_filter_notna_then_sort(self):
         """Filter out nulls then sort."""
         pd_result = self.df[self.df['name'].notna()].sort_values('name')
-        ds_result = self.ds.filter(self.ds['name'].notna()).sort_values('name').to_df()
+        ds_result = self.ds.filter(self.ds['name'].notna()).sort_values('name')
 
         # Should have 3 rows, no nulls
-        self.assertEqual(len(ds_result), 3)
-        self.assertEqual(ds_result['name'].isna().sum(), 0)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':
