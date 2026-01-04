@@ -237,6 +237,38 @@ class TestCategorizationFunctions:
             result = result.to_df()
         pd.testing.assert_frame_equal(result, expected)
 
+    def test_get_dummies_datastore_with_columns(self):
+        """get_dummies should work with DataStore input and columns parameter."""
+        df = pd.DataFrame({
+            'A': ['a', 'b', 'a'],
+            'B': ['x', 'y', 'x'],
+            'C': [1, 2, 3]
+        })
+        ds_df = ds.DataStore(df)
+
+        # This was a bug - DataStore input caused ValueError
+        result = ds.get_dummies(ds_df, columns=['A', 'B'])
+        expected = pd.get_dummies(df, columns=['A', 'B'])
+
+        assert isinstance(result, ds.DataStore)
+        result_df = result.to_df()
+        pd.testing.assert_frame_equal(result_df, expected)
+
+    def test_get_dummies_datastore_no_columns(self):
+        """get_dummies should work with DataStore input without columns parameter."""
+        df = pd.DataFrame({
+            'A': ['a', 'b', 'a'],
+            'C': [1, 2, 3]
+        })
+        ds_df = ds.DataStore(df)
+
+        result = ds.get_dummies(ds_df)
+        expected = pd.get_dummies(df)
+
+        assert isinstance(result, ds.DataStore)
+        result_df = result.to_df()
+        pd.testing.assert_frame_equal(result_df, expected)
+
     def test_factorize_basic(self):
         """factorize should encode values."""
         data = ['b', 'a', 'c', 'b']
