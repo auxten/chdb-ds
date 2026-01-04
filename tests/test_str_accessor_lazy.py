@@ -401,5 +401,85 @@ class TestStrAccessorEdgeCases:
         assert isinstance(result, DataStore)
 
 
+class TestStrContainsFilter:
+    """Test that .str.contains() works correctly for filtering.
+
+    This is a regression test for the bug where str.contains() only returned
+    the first matching row because it was using position() instead of
+    position() > 0 for boolean filtering.
+    """
+
+    @pytest.fixture
+    def ds(self):
+        """Create a test DataStore with names containing various characters."""
+        df = pd.DataFrame({'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'], 'value': [1, 2, 3, 4, 5]})
+        return DataStore.from_df(df)
+
+    def test_contains_filter_case_insensitive(self, ds):
+        """Test str.contains() with case=False returns all matching rows."""
+        # 'a' (case insensitive) should match Alice, Charlie, David, Eva
+        result = ds[ds['name'].str.contains('a', case=False)]
+        names = list(result['name'].values)
+        assert len(names) == 4, f"Expected 4 matches, got {len(names)}: {names}"
+        assert 'Alice' in names
+        assert 'Charlie' in names
+        assert 'David' in names
+        assert 'Eva' in names
+
+    def test_contains_filter_case_sensitive(self, ds):
+        """Test str.contains() with case=True returns only exact matches."""
+        # lowercase 'a' should only match Charlie, David, Eva (not Alice)
+        result = ds[ds['name'].str.contains('a')]
+        names = list(result['name'].values)
+        assert 'Alice' not in names
+        assert 'Charlie' in names
+        assert 'David' in names
+        # Note: Eva doesn't contain lowercase 'a'
+
+    def test_contains_filter_uppercase(self, ds):
+        """Test str.contains() with uppercase letter."""
+        # 'A' should only match Alice
+        result = ds[ds['name'].str.contains('A')]
+        names = list(result['name'].values)
+        assert len(names) == 1
+        assert names[0] == 'Alice'
+
+    def test_contains_filter_no_matches(self, ds):
+        """Test str.contains() returns empty when no matches."""
+        result = ds[ds['name'].str.contains('xyz')]
+        assert len(result) == 0
+
+    def test_contains_filter_all_match(self, ds):
+        """Test str.contains() returns all rows when all match."""
+        # Empty string matches everything
+        # Or we use a common pattern
+        df = pd.DataFrame({'name': ['test1', 'test2', 'test3'], 'value': [1, 2, 3]})
+        ds = DataStore.from_df(df)
+        result = ds[ds['name'].str.contains('test')]
+        assert len(result) == 3
+
+    def test_contains_mask_values(self, ds):
+        """Test that str.contains() mask values are correct booleans."""
+        mask = ds['name'].str.contains('a', case=False)
+        values = list(mask.values)
+        # Alice, Bob, Charlie, David, Eva
+        # A: True, B: False, C: True, D: True, E: True
+        assert values == [True, False, True, True, True]
+
+    def test_contains_pandas_alignment(self, ds):
+        """Test str.contains() matches pandas behavior exactly."""
+        df = pd.DataFrame({'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'], 'value': [1, 2, 3, 4, 5]})
+
+        # Test case insensitive
+        pd_result = df[df['name'].str.contains('a', case=False)]
+        ds_result = ds[ds['name'].str.contains('a', case=False)]
+        assert list(ds_result['name'].values) == list(pd_result['name'].values)
+
+        # Test case sensitive
+        pd_result2 = df[df['name'].str.contains('a')]
+        ds_result2 = ds[ds['name'].str.contains('a')]
+        assert list(ds_result2['name'].values) == list(pd_result2['name'].values)
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
