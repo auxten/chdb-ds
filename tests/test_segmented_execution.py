@@ -28,6 +28,7 @@ from datastore.lazy_ops import (
     LazyWhere,
     LazyMask,
 )
+from tests.test_utils import assert_datastore_equals_pandas
 from datastore.expressions import Field, Literal
 from datastore.conditions import BinaryCondition
 
@@ -224,7 +225,6 @@ class TestSegmentedExecutionIntegration:
             ds = ds[ds['value'] > 30]  # SQL pushable
             ds['double_value'] = ds['value'] * 2  # Pandas only
             ds = ds[ds['double_value'] > 100]  # Could be SQL on DataFrame
-            ds_result = ds.to_df()
 
             # Pandas equivalent
             pd_result = df[df['value'] > 30].copy()
@@ -232,12 +232,7 @@ class TestSegmentedExecutionIntegration:
             pd_result = pd_result[pd_result['double_value'] > 100]
 
             # Compare
-            ds_result = ds_result.reset_index(drop=True)
-            pd_result = pd_result.reset_index(drop=True)
-
-            assert len(ds_result) == len(pd_result)
-            assert list(ds_result.columns) == list(pd_result.columns)
-            np.testing.assert_array_equal(ds_result['id'].values, pd_result['id'].values)
+            assert_datastore_equals_pandas(ds, pd_result)
 
     def test_apply_then_filter_sequence(self):
         """Test Pandas apply -> SQL filter pattern."""
@@ -256,7 +251,6 @@ class TestSegmentedExecutionIntegration:
             ds = DataStore.from_file(path)
             ds['squared'] = ds['value'].apply(lambda x: x**2)  # Pandas only
             ds = ds[ds['squared'] > 1000]  # Could be SQL on DataFrame
-            ds_result = ds.to_df()
 
             # Pandas equivalent
             pd_result = df.copy()
@@ -264,11 +258,7 @@ class TestSegmentedExecutionIntegration:
             pd_result = pd_result[pd_result['squared'] > 1000]
 
             # Compare
-            ds_result = ds_result.reset_index(drop=True)
-            pd_result = pd_result.reset_index(drop=True)
-
-            assert len(ds_result) == len(pd_result)
-            np.testing.assert_array_equal(ds_result['id'].values, pd_result['id'].values)
+            assert_datastore_equals_pandas(ds, pd_result)
 
     def test_where_apply_where_sequence(self):
         """Test where -> apply -> where pattern."""
@@ -289,20 +279,14 @@ class TestSegmentedExecutionIntegration:
             ds = ds.where(ds['value'] > 50, 0)  # SQL pushable (CASE WHEN)
             ds['log_value'] = ds['value'].apply(lambda x: np.log1p(x))  # Pandas only
             ds = ds.where(ds['log_value'] > 2, -1)  # SQL on DataFrame
-            ds_result = ds.to_df()
 
             # Pandas
             pd_result = df.where(df['value'] > 50, 0).copy()
             pd_result['log_value'] = pd_result['value'].apply(lambda x: np.log1p(x))
             pd_result = pd_result.where(pd_result['log_value'] > 2, -1)
 
-            # Compare
-            ds_result = ds_result.reset_index(drop=True)
-            pd_result = pd_result.reset_index(drop=True)
-
-            assert len(ds_result) == len(pd_result)
-            # Use allclose for float comparisons
-            np.testing.assert_allclose(ds_result['value'].values, pd_result['value'].values, rtol=1e-5)
+            # Compare - use assert_datastore_equals_pandas which handles float comparisons
+            assert_datastore_equals_pandas(ds, pd_result, rtol=1e-5)
 
 
 class TestRowOrderPreservation:
@@ -328,7 +312,6 @@ class TestRowOrderPreservation:
             ds = ds[ds['value'] > 20]  # SQL
             ds['transformed'] = ds['value'].apply(lambda x: x + 1)  # Pandas
             ds = ds[ds['transformed'] > 50]  # SQL on DataFrame
-            ds_result = ds.to_df()
 
             # Pandas equivalent
             pd_result = df[df['value'] > 20].copy()
@@ -336,10 +319,7 @@ class TestRowOrderPreservation:
             pd_result = pd_result[pd_result['transformed'] > 50]
 
             # Compare - row order is critical
-            ds_result = ds_result.reset_index(drop=True)
-            pd_result = pd_result.reset_index(drop=True)
-
-            np.testing.assert_array_equal(ds_result['id'].values, pd_result['id'].values)
+            assert_datastore_equals_pandas(ds, pd_result)
 
     def test_row_order_with_multiple_segments(self):
         """Row order preserved across multiple segment transitions."""
@@ -364,7 +344,6 @@ class TestRowOrderPreservation:
             ds = ds[ds['b'] < 40]  # SQL 2
             ds['product'] = ds['a'].apply(lambda x: x * 2)  # Pandas 2
             ds = ds[ds['sum'] > 30]  # SQL 3
-            ds_result = ds.to_df()
 
             # Pandas equivalent
             pd_result = df[df['a'] > 10].copy()
@@ -374,11 +353,7 @@ class TestRowOrderPreservation:
             pd_result = pd_result[pd_result['sum'] > 30]
 
             # Compare
-            ds_result = ds_result.reset_index(drop=True)
-            pd_result = pd_result.reset_index(drop=True)
-
-            assert len(ds_result) == len(pd_result)
-            np.testing.assert_array_equal(ds_result['id'].values, pd_result['id'].values)
+            assert_datastore_equals_pandas(ds, pd_result)
 
 
 class TestExecuteSqlOnDataFrame:
@@ -400,19 +375,20 @@ class TestExecuteSqlOnDataFrame:
             # Use DataStore to test SQL on DataFrame capability
             ds = DataStore.from_file(path)
 
-            # Manually trigger execution to get DataFrame
+            # Trigger execution naturally by accessing columns
             ds['extra'] = ds['value'] * 2  # Force Pandas execution
-            intermediate_df = ds.to_df()
+            # Access columns to trigger execution and get intermediate result
+            _ = list(ds.columns)  # Natural trigger
+            intermediate_df = pd.DataFrame({col: ds[col].values for col in ds.columns})
 
             # Now create new DataStore from DataFrame and filter
             ds2 = DataStore.from_dataframe(intermediate_df)
             ds2 = ds2[ds2['extra'] > 100]
-            result = ds2.to_df()
 
             # Pandas equivalent
             pd_result = intermediate_df[intermediate_df['extra'] > 100]
 
-            assert len(result) == len(pd_result)
+            assert_datastore_equals_pandas(ds2, pd_result)
 
     def test_aggregation_on_dataframe(self):
         """Test executing aggregation on an existing DataFrame."""
@@ -430,14 +406,16 @@ class TestExecuteSqlOnDataFrame:
             # Create intermediate DataFrame with transformation
             ds = DataStore.from_file(path)
             ds['doubled'] = ds['value'] * 2  # Force Pandas
-            intermediate_df = ds.to_df()
+            # Access columns to trigger execution and get intermediate result
+            _ = list(ds.columns)  # Natural trigger
+            intermediate_df = pd.DataFrame({col: ds[col].values for col in ds.columns})
 
             # Aggregate on the transformed DataFrame
             ds2 = DataStore.from_dataframe(intermediate_df)
-            result = ds2.groupby('category')['doubled'].sum()
+            ds_result = ds2.groupby('category')['doubled'].sum()
 
             # Pandas equivalent
             pd_result = intermediate_df.groupby('category')['doubled'].sum()
 
-            # Compare values
-            assert result.equals(pd_result)
+            # Compare using assert_datastore_equals_pandas (supports Series)
+            assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)

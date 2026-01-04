@@ -98,22 +98,16 @@ class TestExplainSegmentedExecution(unittest.TestCase):
         pd_df = pd_df[pd_df['doubled'] > 25]
         pd_df['float_age'] = pd_df['doubled'].astype('float64')
 
-        # Reset index for both to compare values
-        pd_result = pd_df.reset_index(drop=True)
-
-        # Compare numeric columns (avoid date format differences from chDB)
+        # Compare using assert_datastore_equals_pandas (complete comparison)
         # Note: after add_prefix('col_'), age_minus_10 becomes col_age_minus_10
+        # Select only numeric columns to avoid date format differences from chDB
         numeric_cols = ['col_user_id', 'col_age', 'col_age_minus_10', 'doubled', 'float_age']
-        for col in numeric_cols:
-            ds_values = list(ds_result[col].values)
-            pd_values = list(pd_result[col].values)
-            self.assertEqual(
-                ds_values, pd_values,
-                f"Column {col} should match: DataStore={ds_values}, Pandas={pd_values}"
-            )
-
+        pd_result = pd_df[numeric_cols]
+        ds_result_selected = ds_result[numeric_cols]
+        
+        assert_datastore_equals_pandas(ds_result_selected, pd_result, check_dtype=False)
+        
         # Verify row count matches
-        self.assertEqual(len(ds_result), len(pd_result))
         self.assertEqual(len(ds_result), 3)  # Alice, Diana, Grace
 
     def test_explain_segment_numbering(self):
@@ -199,10 +193,9 @@ class TestSegmentedExecutionDailyUsage(unittest.TestCase):
         self.assertIn('🚀 [chDB] WHERE: "col_age" > 25', explain_output)
         self.assertIn('🚀 [chDB] WHERE: "col_country"', explain_output)
 
-        # Verify execution produces correct result
-        result_df = nat2._execute()
-        self.assertEqual(len(result_df), 3)  # Alice, Diana, Grace
-        self.assertIn('float_age', result_df.columns)
+        # Verify execution produces correct result using natural triggers
+        self.assertEqual(len(nat2), 3)  # Alice, Diana, Grace - natural trigger via len()
+        self.assertIn('float_age', list(nat2.columns))  # Natural trigger via columns property
 
 
 if __name__ == '__main__':
