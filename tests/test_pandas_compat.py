@@ -1115,18 +1115,20 @@ class TestSQLPushdownOptimizations(unittest.TestCase):
             if os.path.exists(test_parquet):
                 os.remove(test_parquet)
 
-    def test_groupby_agg_single_column_multi_func_uses_func_alias(self):
-        """Test groupby().agg() with single column uses function name as alias (no conflict)."""
+    def test_groupby_agg_single_column_multi_func_uses_multiindex(self):
+        """Test groupby().agg() with single column returns MultiIndex columns (matching pandas)."""
         from datastore import DataStore
+        import pandas as pd
 
         ds = DataStore.from_file(self.parquet_path)
         result = ds.groupby('category').agg({'value': ['sum', 'mean', 'max']}).reset_index()
 
         # result.columns triggers natural execution
-        # Single column should use function names as aliases (sum, mean, max)
-        self.assertIn('sum', result.columns)
-        self.assertIn('mean', result.columns)
-        self.assertIn('max', result.columns)
+        # Dict agg with multiple funcs returns MultiIndex columns matching pandas
+        self.assertTrue(isinstance(result.columns, pd.MultiIndex))
+        self.assertIn(('value', 'sum'), result.columns)
+        self.assertIn(('value', 'mean'), result.columns)
+        self.assertIn(('value', 'max'), result.columns)
 
     def test_groupby_agg_multi_column_single_func_uses_col_alias(self):
         """Test groupby().agg() with multiple columns but single func per col uses column names."""

@@ -1780,7 +1780,7 @@ class TestLazyPipelineInterleaving(unittest.TestCase):
             avg_squared=('value_squared', 'mean'),
             max_value=('value', 'max'),
             min_value=('value', 'min'),
-        )
+        ).reset_index()  # Match pandas which also calls reset_index()
 
         # ============ Compare results (order may differ) ============
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
