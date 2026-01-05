@@ -1,14 +1,14 @@
 """
-Test verifying dtype consistency between chDB and pandas.
+Test documenting dtype differences between chDB and pandas.
 
-These tests verify that chDB now correctly preserves dtypes when data passes
+These tests document known dtype differences when data passes
 through chDB's Python() table function:
 
-1. Float columns with NaN: now correctly preserves float64
-2. Integer columns with None: now correctly preserves original dtype  
-3. Datetime columns: now correctly preserves naive datetime64[ns]
+1. Float columns with NaN: chDB converts to nullable Float64Dtype
+2. Integer columns with None: chDB converts to Float64Dtype
+3. Datetime columns: chDB adds system timezone (Etc/UTC)
 
-These issues were fixed in recent chDB versions.
+These are expected behaviors due to how chDB handles nullable types.
 """
 
 import numpy as np
@@ -19,9 +19,23 @@ from tests.xfail_markers import chdb_array_nullable
 import chdb
 
 
+# Marker for dtype conversion differences
+# strict=False because behavior varies by Python/chDB version
+chdb_float64_nullable = pytest.mark.xfail(
+    reason="chDB converts float64 with NaN to nullable Float64Dtype",
+    strict=False,
+)
+
+chdb_datetime_adds_timezone = pytest.mark.xfail(
+    reason="chDB adds system timezone to naive datetime columns",
+    strict=False,
+)
+
+
 class TestChDBDtypeDifferences:
     """Document known dtype differences between chDB output and pandas."""
 
+    @chdb_float64_nullable
     def test_float_nan_dtype_preservation(self):
         """
         chDB converts float64 columns containing NaN to nullable Float64Dtype.
@@ -36,9 +50,10 @@ class TestChDBDtypeDifferences:
 
         result = chdb.query("SELECT * FROM Python(df)", "DataFrame")
 
-        # This will fail: chDB returns Float64Dtype() instead of float64
+        # chDB returns Float64Dtype() instead of float64
         assert result["a"].dtype == np.float64
 
+    @chdb_float64_nullable
     def test_integer_none_dtype_preservation(self):
         """
         chDB converts columns with None to nullable Float64Dtype.
@@ -51,9 +66,10 @@ class TestChDBDtypeDifferences:
 
         result = chdb.query("SELECT * FROM Python(df)", "DataFrame")
 
-        # This will fail: chDB returns Float64Dtype()
+        # chDB returns Float64Dtype()
         assert result["a"].dtype == original_dtype
 
+    @chdb_datetime_adds_timezone
     def test_datetime_timezone_preservation(self):
         """
         chDB adds system timezone to naive datetime columns.
@@ -66,7 +82,7 @@ class TestChDBDtypeDifferences:
 
         result = chdb.query("SELECT * FROM Python(df)", "DataFrame")
 
-        # This will fail: chDB adds timezone
+        # chDB adds timezone
         assert result["dt"].dtype == df["dt"].dtype
 
 

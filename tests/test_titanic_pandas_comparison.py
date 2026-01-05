@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import pytest
-from tests.xfail_markers import chdb_null_in_groupby
+from tests.xfail_markers import chdb_null_in_groupby, bug_groupby_index
 
 from datastore import DataStore, LazyGroupBy
 from datastore.config import config
@@ -418,6 +418,7 @@ class TestChdbNaNHandling(unittest.TestCase):
 
         self.assertTrue(ds_result.equals(pd_result), "count() results should be equal")
 
+    @bug_groupby_index
     def test_groupby_age_nan_in_value_column(self):
         """
         Test aggregation where the VALUE column (not groupby column) has NaN.
@@ -425,11 +426,22 @@ class TestChdbNaNHandling(unittest.TestCase):
         Age column has NaN values. When computing mean(Age), chDB should:
         - Skip NaN values (skipna=True is default in pandas)
         - Return correct mean for non-NaN values
+        - Preserve index structure (groupby column as index)
         """
         ds_result = self.ds.groupby('Pclass')['Age'].mean()
         pd_result = self.pd_df.groupby('Pclass')['Age'].mean()
 
-        self.assertTrue(ds_result.equals(pd_result), "mean(Age) results should be equal")
+        # Convert ColumnExpr to pandas Series for comparison
+        ds_series = ds_result.to_pandas()
+
+        # Compare with index intact - no reset_index() to mask bugs
+        pd.testing.assert_series_equal(
+            ds_series,
+            pd_result,
+            check_names=False,
+            check_dtype=False,
+            rtol=1e-5,
+        )
 
 
 class TestOrderSensitiveOperationsCritical(unittest.TestCase):
