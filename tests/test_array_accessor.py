@@ -20,11 +20,7 @@ from datastore.column_expr import ColumnExpr
 from datastore.functions import Function
 
 
-# Mark for tests blocked by chDB array type conversion issue
-CHDB_ARRAY_TYPE_ISSUE = pytest.mark.xfail(
-    reason="chDB converts numpy arrays to strings via Python() table function",
-    strict=True,
-)
+from tests.xfail_markers import chdb_array_string_conversion
 
 
 class TestArrayAccessorBasic:
@@ -81,7 +77,7 @@ class TestArrayAccessorBasic:
 
     # ==================== Execution Tests (blocked by chDB issue) ====================
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_arr_length_execution(self, ds_with_arrays):
         """Test that .arr.length executes correctly."""
         ds_with_arrays['num_length'] = ds_with_arrays['nums'].arr.length
@@ -92,7 +88,7 @@ class TestArrayAccessorBasic:
         expected_lengths = [3, 2, 1]
         assert list(df['num_length']) == expected_lengths
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_arr_size_alias(self, ds_with_arrays):
         """Test that .arr.size is an alias for length."""
         ds_with_arrays['size_result'] = ds_with_arrays['nums'].arr.size
@@ -101,7 +97,7 @@ class TestArrayAccessorBasic:
         expected_lengths = [3, 2, 1]
         assert list(df['size_result']) == expected_lengths
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_arr_empty_execution(self, ds_with_arrays):
         """Test empty check on arrays."""
         ds_with_arrays['is_empty'] = ds_with_arrays['empty_arr'].arr.empty
@@ -121,7 +117,7 @@ class TestArrayAccessorBasic:
         # All nums arrays (now strings) should be not empty
         assert all(df['has_items'] == 1)
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_arr_has_execution(self, ds_with_arrays):
         """Test has() for element containment."""
         ds_with_arrays['has_1'] = ds_with_arrays['nums'].arr.has(1)
@@ -130,7 +126,7 @@ class TestArrayAccessorBasic:
         expected = [1, 0, 0]
         assert list(df['has_1']) == expected
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_arr_has_string(self, ds_with_arrays):
         """Test has() with string arrays."""
         ds_with_arrays['has_a'] = ds_with_arrays['tags'].arr.has('a')
@@ -161,7 +157,7 @@ class TestArrayAggregations:
         """, "DataFrame")
         return DataStore.from_df(df)
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_array_sum(self, ds_numeric_arrays):
         """Test arraySum function."""
         ds_numeric_arrays['sum'] = ds_numeric_arrays['nums'].arr.array_sum()
@@ -170,7 +166,7 @@ class TestArrayAggregations:
         expected = [15, 30, 100]
         assert list(df['sum']) == expected
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_array_avg(self, ds_numeric_arrays):
         """Test arrayAvg function."""
         ds_numeric_arrays['avg'] = ds_numeric_arrays['nums'].arr.array_avg()
@@ -179,7 +175,7 @@ class TestArrayAggregations:
         expected = [3.0, 15.0, 100.0]
         assert list(df['avg']) == expected
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_array_min(self, ds_numeric_arrays):
         """Test arrayMin function."""
         ds_numeric_arrays['min'] = ds_numeric_arrays['nums'].arr.array_min()
@@ -188,7 +184,7 @@ class TestArrayAggregations:
         expected = [1, 10, 100]
         assert list(df['min']) == expected
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_array_max(self, ds_numeric_arrays):
         """Test arrayMax function."""
         ds_numeric_arrays['max'] = ds_numeric_arrays['nums'].arr.array_max()
@@ -219,7 +215,7 @@ class TestArrayStringOperations:
         """, "DataFrame")
         return DataStore.from_df(df)
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_array_string_concat(self, ds_string_arrays):
         """Test arrayStringConcat (join) function."""
         ds_string_arrays['joined'] = ds_string_arrays['words'].arr.array_string_concat(',')
@@ -232,7 +228,7 @@ class TestArrayStringOperations:
 class TestArrayEdgeCases:
     """Test edge cases for array accessor."""
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_empty_array_length(self):
         """Test length of empty array."""
         df = chdb.query("SELECT [] as arr", "DataFrame")
@@ -242,7 +238,7 @@ class TestArrayEdgeCases:
         
         assert result['len'].iloc[0] == 0
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_empty_array_sum(self):
         """Test sum of empty numeric array."""
         df = chdb.query("SELECT CAST([] AS Array(Int64)) as nums", "DataFrame")
@@ -252,7 +248,7 @@ class TestArrayEdgeCases:
         
         assert result['sum'].iloc[0] == 0
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_single_element_array(self):
         """Test operations on single element array."""
         df = chdb.query("SELECT [42] as nums", "DataFrame")
@@ -307,7 +303,7 @@ class TestArrayLazyExecution:
         assert isinstance(sum_expr, ColumnExpr)
         assert isinstance(has_expr, ColumnExpr)
 
-    @CHDB_ARRAY_TYPE_ISSUE
+    @chdb_array_string_conversion
     def test_multiple_array_columns_lazy(self):
         """Test multiple array column assignments remain lazy."""
         df = chdb.query("SELECT [1, 2, 3] as nums, ['a', 'b'] as tags", "DataFrame")

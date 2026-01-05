@@ -11,6 +11,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import chdb_datetime_timezone, chdb_dt_month_type
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -254,7 +255,7 @@ class TestDateTimeEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="chDB adds timezone to datetime, causing boundary comparison differences")
+    @chdb_datetime_timezone
     def test_date_between_filter(self):
         """Test filtering dates between two values."""
         dates = pd.date_range('2023-01-01', periods=31, freq='D')
@@ -271,7 +272,7 @@ class TestDateTimeEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="chDB type mismatch: dt.month returns different types in SQL vs DataFrame")
+    @chdb_dt_month_type
     def test_datetime_groupby_date_part(self):
         """Test groupby with datetime part extraction."""
         dates = pd.date_range('2023-01-01', periods=100, freq='D')

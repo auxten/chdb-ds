@@ -23,6 +23,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 import pytest
+from tests.xfail_markers import design_datetime_fillna_nat
 
 from datastore import DataStore
 
@@ -274,10 +275,7 @@ class TestDatetimeWhereMaskDesignDifference:
     that is currently bypassed in the benchmark verification.
     """
 
-    @pytest.mark.xfail(
-        reason="Design difference: Pandas replaces datetime with 0, DataStore uses NaT",
-        strict=True,
-    )
+    @design_datetime_fillna_nat
     def test_where_datetime_column_replaced_with_zero(self):
         """
         Test where() on DataFrame with datetime column - Pandas replaces with 0.
@@ -326,10 +324,7 @@ class TestDatetimeWhereMaskDesignDifference:
                         pd_result['date_col'].iloc[i] == ds_result['date_col'].iloc[i]
                     ), f"Row {i}: Pandas={pd_result['date_col'].iloc[i]}, DataStore={ds_result['date_col'].iloc[i]}"
 
-    @pytest.mark.xfail(
-        reason="Design difference: Pandas replaces datetime with -1, DataStore uses NaT",
-        strict=True,
-    )
+    @design_datetime_fillna_nat
     def test_mask_datetime_column_replaced_with_minus_one(self):
         """
         Test mask() on DataFrame with datetime column - Pandas replaces with -1.

@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import pytest
+from tests.xfail_markers import chdb_case_bool_conversion
 
 from datastore import DataStore
 from datastore.config import config
@@ -1162,13 +1163,7 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
         has_int = any(isinstance(v, int) and v is not False for v in int_values)
         self.assertTrue(has_false and has_int, "Should have mixed False and int values")
 
-    @pytest.mark.xfail(
-        reason="SQL CASE WHEN cannot convert Bool to Int64/String. "
-        "Need to either: 1) detect this in type compatibility check, "
-        "2) cast values appropriately in SQL, or 3) fall back to Pandas.",
-        raises=Exception,
-        strict=True,
-    )
+    @chdb_case_bool_conversion
     def test_where_with_false_as_other_sql_execution(self):
         """
         KNOWN LIMITATION: Using False as 'other' value causes SQL type conversion errors.

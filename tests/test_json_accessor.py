@@ -16,11 +16,7 @@ from datastore.column_expr import ColumnExpr
 from datastore.functions import Function
 
 
-# Mark for tests blocked by chDB array-in-nullable issue
-CHDB_ARRAY_NULLABLE_ISSUE = pytest.mark.xfail(
-    reason="chDB: Nested type Array cannot be inside Nullable type",
-    strict=True,
-)
+from tests.xfail_markers import chdb_array_nullable
 
 
 class TestJsonAccessorBasic:
@@ -357,7 +353,7 @@ class TestJsonArrayExtraction:
         )
         return DataStore.from_df(df)
 
-    @CHDB_ARRAY_NULLABLE_ISSUE
+    @chdb_array_nullable
     def test_json_extract_array_raw(self, ds_json_arrays):
         """Test extracting array as raw JSON.
 

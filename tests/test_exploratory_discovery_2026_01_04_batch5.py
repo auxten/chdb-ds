@@ -10,6 +10,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import chdb_nan_sum_behavior, datastore_callable_index
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -19,7 +20,7 @@ from tests.test_utils import assert_datastore_equals_pandas, get_series, get_val
 class TestChainedOperationsEdgeCases:
     """Test edge cases of chained operations"""
 
-    @pytest.mark.xfail(reason="DataStore does not support callable as index")
+    @datastore_callable_index
     def test_filter_assign_filter(self):
         """filter -> assign -> filter"""
         df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})
@@ -407,7 +408,7 @@ class TestAggregationEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
 
-    @pytest.mark.xfail(reason="chDB returns NA for sum of all-NaN, pandas returns 0")
+    @chdb_nan_sum_behavior
     def test_agg_with_all_nan(self):
         """Aggregate all-NaN column"""
         df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [np.nan, np.nan, np.nan, np.nan]})

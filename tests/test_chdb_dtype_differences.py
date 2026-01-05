@@ -14,6 +14,7 @@ These issues were fixed in recent chDB versions.
 import numpy as np
 import pandas as pd
 import pytest
+from tests.xfail_markers import chdb_array_nullable
 
 import chdb
 
@@ -94,10 +95,7 @@ class TestChDBArrayNullableLimitation:
         assert pd_result.iloc[1] is None
         assert ds_result.iloc[1] is None
 
-    @pytest.mark.xfail(
-        reason="chDB doesn't support Nullable(Array), raw SQL needs ifNull workaround",
-        strict=True,
-    )
+    @chdb_array_nullable
     def test_raw_sql_split_without_ifnull_fails(self):
         """
         Using splitByWhitespace directly in SQL without ifNull fails

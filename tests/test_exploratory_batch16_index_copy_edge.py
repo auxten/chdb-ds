@@ -13,6 +13,7 @@ This batch focuses on:
 """
 
 import pytest
+from tests.xfail_markers import chdb_strip_whitespace, chdb_unicode_filter
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -221,7 +222,7 @@ class TestUnicodeAndSpecialCharacters:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="Unicode string equality in SQL filter has encoding issues")
+    @chdb_unicode_filter
     def test_unicode_string_values(self):
         """Unicode string values"""
         pd_df = pd.DataFrame({'name': ['アリス', 'ボブ', '中文'], 'value': [1, 2, 3]})
@@ -242,7 +243,7 @@ class TestUnicodeAndSpecialCharacters:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="str.strip() doesn't handle all whitespace types correctly")
+    @chdb_strip_whitespace
     def test_whitespace_handling(self):
         """Whitespace in string values"""
         pd_df = pd.DataFrame({'name': ['  Alice  ', 'Bob\t', '\nCharlie'], 'id': [1, 2, 3]})

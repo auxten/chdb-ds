@@ -11,6 +11,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import chdb_median_in_where, datastore_str_join_array
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -402,7 +403,7 @@ class TestDataFrameSeriesInteraction:
         
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="Aggregate function median() in WHERE clause - requires subquery")
+    @chdb_median_in_where
     def test_series_comparison_with_dataframe_filter(self):
         """Use Series comparison result to filter DataFrame."""
         pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5], 'B': ['a', 'b', 'c', 'd', 'e']})
@@ -433,7 +434,7 @@ class TestSeriesStringOperations:
             
         pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
-    @pytest.mark.xfail(reason="str.join() requires Array type column, not string column")
+    @datastore_str_join_array
     def test_str_join(self):
         """Join strings from list column."""
         pd_df = pd.DataFrame({'letters': [['a', 'b', 'c'], ['d', 'e', 'f']]})

@@ -16,6 +16,7 @@ Bug patterns explored:
 import numpy as np
 import pandas as pd
 import pytest
+from tests.xfail_markers import chdb_null_in_groupby
 import tempfile
 import os
 
@@ -130,11 +131,7 @@ class TestGroupByWithNullAndEdgeCases:
             }
         )
 
-    @pytest.mark.xfail(
-        reason="pandas groupby excludes NULL by default (dropna=True), SQL includes NULL. "
-        "DataStore follows SQL semantics. Use dropna=False in pandas for equivalent behavior.",
-        strict=True,
-    )
+    @chdb_null_in_groupby
     def test_groupby_count_null_category_pandas_default(self, df_with_nulls):
         """Test that pandas default excludes NULL while DataStore includes it.
 
@@ -193,10 +190,7 @@ class TestGroupByWithNullAndEdgeCases:
             else:
                 assert abs(pd_val - ds_val) < 0.001
 
-    @pytest.mark.xfail(
-        reason="pandas groupby excludes NULL by default, DataStore/SQL includes NULL.",
-        strict=True,
-    )
+    @chdb_null_in_groupby
     def test_groupby_multiple_agg_null_pandas_default(self, df_with_nulls):
         """Test that pandas default excludes NULL in multiple aggregations."""
         pdf = df_with_nulls.copy()

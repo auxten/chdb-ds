@@ -15,6 +15,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import datastore_unstack_column_expr
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -252,7 +253,7 @@ class TestDataFrameMethodEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="ColumnExpr doesn't support unstack - Series method on MultiIndex")
+    @datastore_unstack_column_expr
     def test_unstack_basic(self):
         """Basic unstack operation."""
         pd_df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}, index=['x', 'y'])

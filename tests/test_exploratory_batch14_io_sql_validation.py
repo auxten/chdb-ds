@@ -11,6 +11,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import chdb_category_type, chdb_nullable_int64_comparison, chdb_timedelta_type
 import pandas as pd
 import numpy as np
 import tempfile
@@ -280,7 +281,7 @@ class TestMultiSourceMerge:
 class TestSpecialDataTypes:
     """Test handling of special pandas data types."""
     
-    @pytest.mark.xfail(reason="chDB engine does not handle Nullable Int64 comparison correctly - returns raw bytes")
+    @chdb_nullable_int64_comparison
     def test_nullable_integer(self):
         """Test nullable integer type."""
         pd_df = pd.DataFrame({'a': pd.array([1, 2, None, 4], dtype=pd.Int64Dtype())})
@@ -293,7 +294,7 @@ class TestSpecialDataTypes:
         # DataStore may convert to float64, which is acceptable
         assert len(ds_result._execute()) == len(pd_result)
     
-    @pytest.mark.xfail(reason="chDB engine does not support CATEGORY numpy type")
+    @chdb_category_type
     def test_categorical_basic(self):
         """Test categorical data type."""
         pd_df = pd.DataFrame({'cat': pd.Categorical(['a', 'b', 'a', 'c'])})
@@ -318,7 +319,7 @@ class TestSpecialDataTypes:
         
         assert len(ds_result._execute()) == len(pd_result)
     
-    @pytest.mark.xfail(reason="chDB engine does not support TIMEDELTA numpy type")
+    @chdb_timedelta_type
     def test_timedelta_basic(self):
         """Test timedelta type."""
         pd_df = pd.DataFrame({

@@ -9,6 +9,7 @@ Mirror Code Pattern: All tests compare DataStore behavior against pandas.
 """
 
 import pytest
+from tests.xfail_markers import chdb_datetime_extraction_conflict
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -570,7 +571,7 @@ class TestDateTimeChainedOps:
 
         assert len(ds_result) == len(pd_result)
 
-    @pytest.mark.xfail(reason="chDB column name conflict with multiple datetime extractions")
+    @chdb_datetime_extraction_conflict
     def test_dt_multiple_extractions(self):
         """Test multiple datetime extractions in one query."""
         dates = pd.date_range('2023-01-01 10:30:45', periods=5, freq='H')

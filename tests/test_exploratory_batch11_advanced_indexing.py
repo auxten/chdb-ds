@@ -13,6 +13,7 @@ Testing areas:
 """
 
 import pytest
+from tests.xfail_markers import chdb_array_nullable, chdb_no_normalize_utf8, lazy_extractall_multiindex
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
@@ -391,7 +392,7 @@ class TestAdvancedStringOperations:
         ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="extractall returns MultiIndex DataFrame, index info lost through lazy execution")
+    @lazy_extractall_multiindex
     def test_str_extractall(self):
         """str.extractall for multiple matches."""
         pd_df = pd.DataFrame({'text': ['a1b2', 'c3', 'd4e5f6']})
@@ -403,7 +404,7 @@ class TestAdvancedStringOperations:
         ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="chDB: Array(String) cannot be inside Nullable type")
+    @chdb_array_nullable
     def test_str_findall(self):
         """str.findall returns all matches."""
         pd_df = pd.DataFrame({'text': ['a1b2c3', 'x9', 'no_match']})
@@ -461,7 +462,7 @@ class TestAdvancedStringOperations:
         ds_result = get_series(ds_result)
         assert_series_equal(ds_result, pd_result, check_names=False)
 
-    @pytest.mark.xfail(reason="chDB: normalizeUTF8NFD function does not exist")
+    @chdb_no_normalize_utf8
     def test_str_normalize(self):
         """str.normalize unicode normalization."""
         pd_df = pd.DataFrame({'text': ['café', 'naïve']})

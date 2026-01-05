@@ -12,6 +12,7 @@ Uses Mirror Code Pattern: test DataStore vs pandas for correctness.
 """
 
 import pytest
+from tests.xfail_markers import chdb_duplicate_column_rename
 import pandas as pd
 import numpy as np
 
@@ -403,7 +404,7 @@ class TestColumnSelectionEdgeCases:
         assert list(ds_result._execute().columns) == ['c', 'a', 'b']
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="SQL automatically renames duplicate columns - known limitation")
+    @chdb_duplicate_column_rename
     def test_select_duplicate_columns(self):
         """Select same column multiple times."""
         pd_result = self.df[['a', 'a', 'b']]

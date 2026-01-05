@@ -16,6 +16,7 @@ Known limitations (chDB engine):
 """
 
 import pytest
+from tests.xfail_markers import chdb_category_type, datastore_loc_conditional_assignment
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -29,7 +30,7 @@ from tests.test_utils import assert_datastore_equals_pandas
 class TestCategoryAccessor:
     """Test Category accessor methods on categorical columns."""
 
-    @pytest.mark.xfail(reason="chDB does not support CATEGORY numpy type")
+    @chdb_category_type
     def test_categorical_column_creation(self):
         """Create DataFrame with categorical column."""
         pd_df = pd.DataFrame({
@@ -42,7 +43,7 @@ class TestCategoryAccessor:
 
         assert list(ds_result['category'].values) == list(pd_result['category'].values)
 
-    @pytest.mark.xfail(reason="chDB does not support CATEGORY numpy type")
+    @chdb_category_type
     def test_categorical_ordered(self):
         """Create ordered categorical column."""
         pd_df = pd.DataFrame({
@@ -59,7 +60,7 @@ class TestCategoryAccessor:
 
         assert list(ds_result['size'].values) == list(pd_result['size'].values)
 
-    @pytest.mark.xfail(reason="chDB does not support CATEGORY numpy type")
+    @chdb_category_type
     def test_filter_categorical_column(self):
         """Filter based on categorical values."""
         pd_df = pd.DataFrame({
@@ -73,7 +74,7 @@ class TestCategoryAccessor:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="chDB does not support CATEGORY numpy type")
+    @chdb_category_type
     def test_groupby_categorical(self):
         """GroupBy on categorical column."""
         pd_df = pd.DataFrame({
@@ -775,7 +776,7 @@ class TestValueSetting:
 
         assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
 
-    @pytest.mark.xfail(reason="loc conditional assignment with ColumnExpr not fully supported")
+    @datastore_loc_conditional_assignment
     def test_setitem_conditional(self):
         """Set values based on condition."""
         pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
