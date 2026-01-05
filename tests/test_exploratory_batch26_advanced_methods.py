@@ -13,6 +13,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import datastore_query_variable_scope
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -605,7 +606,7 @@ class TestQueryMethod:
         
         assert_datastore_equals_pandas(ds_result, pd_result)
     
-    @pytest.mark.xfail(reason="query() with @variable requires local variable scope, not available after _get_df()")
+    @datastore_query_variable_scope
     def test_query_with_variable(self):
         """Test query with external variable - known limitation."""
         pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})

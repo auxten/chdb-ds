@@ -12,6 +12,7 @@ Tests use Mirror Code Pattern: compare DataStore results with pandas results.
 """
 
 import pytest
+from tests.xfail_markers import lazy_index_not_preserved
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -731,7 +732,7 @@ class TestIndexOperations:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="Known limitation: index info not preserved through lazy SQL execution")
+    @lazy_index_not_preserved
     def test_set_index_preserve_in_operations(self):
         """Test that operations preserve custom index."""
         # pandas

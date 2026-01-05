@@ -18,6 +18,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import pytest
+from tests.xfail_markers import chdb_null_in_groupby
 
 from datastore import DataStore, LazyGroupBy
 from datastore.config import config
@@ -386,7 +387,7 @@ class TestChdbNaNHandling(unittest.TestCase):
     def tearDown(self):
         config.execution_engine = 'auto'
 
-    @pytest.mark.xfail(reason="chDB treats NaN as empty string in GROUP BY column")
+    @chdb_null_in_groupby
     def test_groupby_embarked_nan_handling(self):
         """
         Test groupby on column with NaN values using chDB engine.
@@ -409,7 +410,7 @@ class TestChdbNaNHandling(unittest.TestCase):
             f"chDB returned {list(ds_result.index)}, expected {list(pd_result.index)}",
         )
 
-    @pytest.mark.xfail(reason="chDB treats NaN as empty string in GROUP BY column")
+    @chdb_null_in_groupby
     def test_groupby_embarked_count_nan_handling(self):
         """Test count aggregation with NaN-containing groupby column."""
         ds_result = self.ds.groupby('Embarked')['PassengerId'].count()

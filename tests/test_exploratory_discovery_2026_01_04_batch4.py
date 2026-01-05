@@ -10,6 +10,7 @@ Based on architecture analysis, test the following edge cases:
 """
 
 import pytest
+from tests.xfail_markers import chdb_no_product_function, chdb_null_in_groupby
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -82,7 +83,7 @@ class TestGroupByMissingMethods:
         ds_result = ds.groupby('category').tail(2)
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-    @pytest.mark.xfail(reason="chDB does not support product() function - chDB engine limitation")
+    @chdb_no_product_function
     def test_groupby_prod(self, sample_df):
         pd_df = sample_df
         ds = DataStore(sample_df)
@@ -114,7 +115,7 @@ class TestGroupByMissingMethods:
 class TestGroupByParameters:
     """Test groupby parameter support."""
 
-    @pytest.mark.xfail(reason="chDB treats None/NaN as empty string in groupby - behavior differs from pandas")
+    @chdb_null_in_groupby
     def test_groupby_dropna_true(self, df_with_nan):
         pd_df = df_with_nan
         ds = DataStore(df_with_nan)

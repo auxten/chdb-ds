@@ -11,6 +11,7 @@ Focus areas:
 """
 
 import pytest
+from tests.xfail_markers import datastore_where_condition
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -293,7 +294,7 @@ class TestDataFrameComparison:
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
     #
-    @pytest.mark.xfail(reason="DataFrame.where with DataStore condition has SQL execution bug")
+    @datastore_where_condition
     def test_df_where(self):
         """Test DataFrame where operation."""
         pd_df = pd.DataFrame({
