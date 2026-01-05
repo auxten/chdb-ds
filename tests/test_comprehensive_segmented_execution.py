@@ -1117,17 +1117,18 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
             }
         )
 
-    def test_where_with_bool_col_and_numeric_other_falls_back_to_pandas(self):
+    def test_where_with_bool_col_and_zero_uses_sql_pushdown(self):
         """
-        When DataFrame has bool_col and 'other' is numeric (not bool),
-        where() should fall back to Pandas execution for type compatibility.
-
-        Reason: Pandas converts bool_col to object dtype with mixed [0, False, ...],
-        but SQL CASE WHEN keeps bool type (0 -> False).
+        When DataFrame has bool_col and 'other' is 0 (or 1),
+        where() now uses SQL pushdown because values are equivalent:
+        - 0 becomes false (equivalent to int 0)
+        - 1 becomes true (equivalent to int 1)
+        
+        Only for other values not in (0, 1), we fall back to Pandas.
         """
         ds = DataStore(self.df)
 
-        # Get the lazy where operation
+        # Get the lazy where operation with other=0
         ds_where = ds.where(ds['int_col'] > 500, 0)
 
         # Find the LazyWhere operation
@@ -1141,21 +1142,24 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
 
         self.assertIsNotNone(where_op, "Should have LazyWhere operation")
 
-        # With bool_col in schema + numeric other, should NOT push to SQL
+        # With bool_col in schema + other=0, should NOW push to SQL (values equivalent)
         schema = {'id': 'Int64', 'int_col': 'Int64', 'str_col': 'String', 'bool_col': 'Bool'}
-        self.assertFalse(
+        self.assertTrue(
             where_op._is_type_compatible_with_schema(schema),
-            "Should not be type compatible when bool_col present with numeric other",
+            "Should be type compatible when other=0 (0=False is equivalent)",
         )
 
-        # Verify pandas result has mixed types in bool_col
-        pd_result = self.df.where(self.df['int_col'] > 500, 0)
-        self.assertEqual(pd_result['bool_col'].dtype, object)
-        # Check mixed values exist
-        bool_values = pd_result['bool_col'].tolist()
-        has_int = any(isinstance(v, int) and not isinstance(v, bool) for v in bool_values)
-        has_bool = any(isinstance(v, bool) for v in bool_values)
-        self.assertTrue(has_int and has_bool, "Should have mixed int and bool values")
+        # Test with other=-1 (should NOT be compatible)
+        ds_where_neg = ds.where(ds['int_col'] > 500, -1)
+        where_op_neg = None
+        for op in ds_where_neg._lazy_ops:
+            if isinstance(op, LazyWhere):
+                where_op_neg = op
+                break
+        self.assertFalse(
+            where_op_neg._is_type_compatible_with_schema(schema),
+            "Should not be type compatible when other=-1 with bool column",
+        )
 
     def test_where_with_false_as_other_pandas_behavior(self):
         """
