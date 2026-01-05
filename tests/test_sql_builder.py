@@ -240,7 +240,7 @@ class TestSQLBuilderColumnOverride(unittest.TestCase):
     """Test column override scenarios using EXCEPT."""
 
     def test_override_known_column(self):
-        """Override a known original column should use EXCEPT."""
+        """Override a known original column uses explicit column list to preserve order."""
         # Known columns
         builder = SQLBuilder(
             "file('data.csv', 'CSVWithNames')",
@@ -253,10 +253,14 @@ class TestSQLBuilderColumnOverride(unittest.TestCase):
 
         sql = builder.build()
 
-        # Should use EXCEPT
-        self.assertIn('* EXCEPT("value")', sql)
+        # Should use explicit column list (preserves order) instead of EXCEPT
+        # Old behavior: SELECT * EXCEPT("value"), ("value"*2) AS "value"
+        # New behavior: SELECT "a", "b", ("value"*2) AS "value"
+        self.assertIn('"a", "b"', sql)
         self.assertIn('AS "value"', sql)
         self.assertIn('"value"*2', sql)
+        # Should NOT use EXCEPT (we use explicit list for order preservation)
+        self.assertNotIn('EXCEPT', sql)
 
     def test_override_same_layer_computed(self):
         """Override a computed column in same layer should wrap first."""
@@ -565,8 +569,8 @@ class TestSQLBuilderEdgeCases(unittest.TestCase):
         self.assertIn('AS "three"', sql)
         self.assertIn('1+2', sql)
 
-    def test_multiple_except_columns(self):
-        """Multiple columns in EXCEPT clause."""
+    def test_multiple_override_columns_preserve_order(self):
+        """Multiple column overrides preserve original column order."""
         builder = SQLBuilder("my_table", known_columns=['a', 'b', 'c'])
 
         expr_a = ArithmeticExpression('*', Field('a'), Literal(2))
@@ -577,10 +581,20 @@ class TestSQLBuilderEdgeCases(unittest.TestCase):
 
         sql = builder.build()
 
-        # Should have EXCEPT with both columns
-        self.assertIn('EXCEPT(', sql)
-        self.assertIn('"a"', sql)
-        self.assertIn('"b"', sql)
+        # Should use explicit column list preserving order: a, b, c
+        # Old behavior: SELECT * EXCEPT("a", "b"), ("a"*2) AS "a", ("b"*2) AS "b"
+        # New behavior: SELECT ("a"*2) AS "a", ("b"*2) AS "b", "c"
+        self.assertIn('AS "a"', sql)
+        self.assertIn('AS "b"', sql)
+        self.assertIn('"c"', sql)
+        # Should NOT use EXCEPT (we use explicit list for order preservation)
+        self.assertNotIn('EXCEPT', sql)
+        # Verify order is preserved (a, b, c - not c, a, b or any other order)
+        a_pos = sql.find('AS "a"')
+        b_pos = sql.find('AS "b"')
+        c_pos = sql.find('"c"')
+        self.assertLess(a_pos, b_pos, "Column 'a' should come before 'b'")
+        self.assertLess(b_pos, c_pos, "Column 'b' should come before 'c'")
 
 
 if __name__ == '__main__':
