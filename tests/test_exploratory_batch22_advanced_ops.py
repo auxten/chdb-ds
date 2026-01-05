@@ -16,7 +16,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestGroupByCumcount:
@@ -35,12 +35,7 @@ class TestGroupByCumcount:
 
         # cumcount returns a Series with same index as original DataFrame
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -59,12 +54,7 @@ class TestGroupByCumcount:
         ds_result = ds_df.groupby('category').cumcount(ascending=False)
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -84,12 +74,7 @@ class TestGroupByCumcount:
         ds_result = ds_df.groupby(['cat1', 'cat2']).cumcount()
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -291,12 +276,7 @@ class TestAssignTransformChains:
         ds_result = ds_df.groupby('category')['doubled'].transform('mean')
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -358,12 +338,7 @@ class TestSeriesOperationsEdge:
         ds_result = ds_df['A'].drop_duplicates(keep=False)
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -379,12 +354,7 @@ class TestSeriesOperationsEdge:
         ds_result = ds_df['A'].nlargest(3, keep='all')
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -400,12 +370,7 @@ class TestSeriesOperationsEdge:
         ds_result = ds_df['A'].nsmallest(3, keep='last')
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -421,7 +386,7 @@ class TestSeriesOperationsEdge:
         ds_df = DataStore({'A': [1, 2, 3, 4, 5]})
         ds_result_both = ds_df['A'].between(2, 4, inclusive='both')
         # between() returns LazyCondition - use _execute() to get Series
-        ds_series = ds_result_both._execute() if hasattr(ds_result_both, '_execute') else ds_result_both
+        ds_series = get_series(ds_result_both)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result_both,
@@ -433,7 +398,7 @@ class TestSeriesOperationsEdge:
         ds_df2 = DataStore({'A': [1, 2, 3, 4, 5]})
         ds_result_neither = ds_df2['A'].between(2, 4, inclusive='neither')
         # between() returns LazyCondition - use _execute() to get Series
-        ds_series2 = ds_result_neither._execute() if hasattr(ds_result_neither, '_execute') else ds_result_neither
+        ds_series2 = get_series(ds_result_neither)
         pd.testing.assert_series_equal(
             ds_series2,
             pd_result_neither,
@@ -572,12 +537,7 @@ class TestStringAccessorEdge:
         ds_result = ds_df['A'].str.cat(ds_df['B']._execute(), sep='-')
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,
@@ -608,12 +568,7 @@ class TestStringAccessorEdge:
         ds_decoded = ds_encoded.str.decode('utf-8')
 
         # Execute ColumnExpr if needed
-        if hasattr(ds_decoded, '_execute'):
-            ds_series = ds_decoded._execute()
-        elif hasattr(ds_decoded, '_get_df'):
-            ds_series = ds_decoded._get_df()
-        else:
-            ds_series = ds_decoded
+        ds_series = get_series(ds_decoded)
         pd.testing.assert_series_equal(
             ds_series,
             pd_decoded,
@@ -737,12 +692,7 @@ class TestSpecialValues:
         ds_result = ds_df['A'] + ds_df['B']
 
         # Execute ColumnExpr/LazySeries if needed
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series,
             pd_result,

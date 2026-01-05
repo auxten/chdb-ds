@@ -18,7 +18,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 # =============================================================================
@@ -94,12 +94,7 @@ class TestBitwiseOperations:
         ds_result = ds_df['A'] & ds_df['B']
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -120,12 +115,7 @@ class TestBitwiseOperations:
         ds_result = ds_df['A'] | ds_df['B']
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -146,12 +136,7 @@ class TestBitwiseOperations:
         ds_result = ds_df['A'] ^ ds_df['B']
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -169,12 +154,7 @@ class TestBitwiseOperations:
         ds_result = ~ds_df['A']
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -478,12 +458,7 @@ class TestApplyMap:
         ds_result = ds_df['A'].map({'cat': 1, 'dog': 2, 'bird': 3})
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -779,12 +754,7 @@ class TestStringColumnOps:
         ds_result = ds_df['A'].str[:3]
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -801,12 +771,7 @@ class TestStringColumnOps:
         ds_result = ds_df['A'].str.split('-')
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         # Compare first element - chDB returns numpy array, pandas returns list
         # Both should contain the same values
@@ -821,12 +786,7 @@ class TestStringColumnOps:
         ds_result = ds_df['A'].str.len()
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -916,12 +876,7 @@ class TestNumericPrecision:
         ds_result = ds_df['A'] * 1e10
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         np.testing.assert_array_almost_equal(
             ds_series.values.flatten(),
@@ -967,12 +922,7 @@ class TestSpecialValues:
         ds_result = ds_df['A'] + ds_df['B']
 
         # Execute if lazy
-        if hasattr(ds_result, '_execute'):
-            ds_series = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_series = ds_result._get_df()
-        else:
-            ds_series = ds_result
+        ds_series = get_series(ds_result)
 
         # Check NaN positions match
         assert pd.isna(ds_series.iloc[1]) == pd.isna(pd_result.iloc[1])

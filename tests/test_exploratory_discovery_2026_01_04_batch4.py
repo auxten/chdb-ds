@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
 
 
 @pytest.fixture
@@ -141,7 +141,7 @@ class TestGroupByParameters:
         try:
             ds_result = ds.groupby('category', sort=False)['value'].sum()
             pd_result_sorted = pd_result.sort_index()
-            ds_values = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+            ds_values = get_series(ds_result)
             if hasattr(ds_values, 'sort_index'):
                 ds_values = ds_values.sort_index()
             assert set(pd_result.values) == set(ds_values.values) or list(pd_result_sorted.values) == list(
@@ -223,7 +223,7 @@ class TestRollingWindowBoundary:
         pd_result = pd_df['value'].rolling(2).sum()
         try:
             ds_result = ds['value'].rolling(2).sum()
-            ds_values = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+            ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
                 ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
             )
@@ -236,7 +236,7 @@ class TestRollingWindowBoundary:
         pd_result = pd_df['value'].rolling(3, center=True).mean()
         try:
             ds_result = ds['value'].rolling(3, center=True).mean()
-            ds_values = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+            ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
                 ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
             )
@@ -249,7 +249,7 @@ class TestRollingWindowBoundary:
         pd_result = pd_df['value'].rolling(3, min_periods=1).sum()
         try:
             ds_result = ds['value'].rolling(3, min_periods=1).sum()
-            ds_values = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+            ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
                 ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
             )
@@ -283,7 +283,7 @@ class TestMultiColumnOperations:
         pd_result = pd_df.groupby('category').agg({'value': ['sum', 'mean'], 'score': ['min', 'max']})
         try:
             ds_result = ds.groupby('category').agg({'value': ['sum', 'mean'], 'score': ['min', 'max']})
-            ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+            ds_exec = get_series(ds_result)
             assert len(ds_exec) == len(pd_df['category'].unique())
         except Exception as e:
             pytest.skip(f"agg(dict with multiple funcs) not fully implemented: {e}")
@@ -311,7 +311,7 @@ class TestSpecialValuesBoundary:
         ds = DataStore(pd_df)
         pd_sum = pd_df['b'].sum()
         ds_result = ds['b'].sum()
-        ds_val = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_val = get_value(ds_result)
         assert pd.isna(ds_val) or ds_val == 0 or ds_val == pd_sum
 
     def test_unicode_column_names(self):

@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestReverseArithmeticOperators:
@@ -188,7 +188,7 @@ class TestColumnExprReverseOperators:
         ds_result = 10 + ds_df['a']
         
         # Execute and compare
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rsub(self):
@@ -199,7 +199,7 @@ class TestColumnExprReverseOperators:
         pd_result = 10 - pd_df['a']
         ds_result = 10 - ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rmul(self):
@@ -210,7 +210,7 @@ class TestColumnExprReverseOperators:
         pd_result = 5 * pd_df['a']
         ds_result = 5 * ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rtruediv(self):
@@ -221,7 +221,7 @@ class TestColumnExprReverseOperators:
         pd_result = 100 / pd_df['a']
         ds_result = 100 / ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rfloordiv(self):
@@ -232,7 +232,7 @@ class TestColumnExprReverseOperators:
         pd_result = 10 // pd_df['a']
         ds_result = 10 // ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rmod(self):
@@ -243,7 +243,7 @@ class TestColumnExprReverseOperators:
         pd_result = 10 % pd_df['a']
         ds_result = 10 % ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
     
     def test_columnexpr_rpow(self):
@@ -254,7 +254,7 @@ class TestColumnExprReverseOperators:
         pd_result = 2 ** pd_df['a']
         ds_result = 2 ** ds_df['a']
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 

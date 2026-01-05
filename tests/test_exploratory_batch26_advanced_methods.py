@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestMatrixOperations:
@@ -756,8 +756,7 @@ class TestApplyMapOperations:
         ds_result = ds_df['b'].map({'x': 'X', 'y': 'Y', 'z': 'Z'})
         
         # ColumnExpr.map() returns ColumnExpr, need to execute
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         
         pd.testing.assert_series_equal(ds_result, pd_result)
     
@@ -770,8 +769,7 @@ class TestApplyMapOperations:
         ds_result = ds_df['a'].map(lambda x: x * 10)
         
         # ColumnExpr.map() returns ColumnExpr, need to execute
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         
         pd.testing.assert_series_equal(ds_result, pd_result)
 

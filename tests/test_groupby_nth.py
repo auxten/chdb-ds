@@ -9,6 +9,7 @@ import numpy as np
 import sys
 sys.path.insert(0, '.')
 from datastore import DataStore
+from tests.test_utils import get_series
 
 
 class TestGroupByNth:
@@ -133,7 +134,7 @@ class TestGroupByNth:
         ds_result = ds.groupby('g1')['val'].nth(0)
 
         # ds_result is ColumnExpr, execute to get Series
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=True)
 
     def test_series_nth_second(self, sample_df):
@@ -145,7 +146,7 @@ class TestGroupByNth:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('g1')['val'].nth(1)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=True)
 
     def test_series_nth_negative(self, sample_df):
@@ -157,7 +158,7 @@ class TestGroupByNth:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('g1')['val'].nth(-1)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=True)
 
     # ========== Multi-column groupby ==========

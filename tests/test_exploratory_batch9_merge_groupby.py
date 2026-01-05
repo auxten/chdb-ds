@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestMergeEdgeCases:
@@ -124,12 +124,7 @@ class TestGroupByAdvanced:
         ds_result = ds.groupby('group').size()
 
         # Execute and compare
-        if hasattr(ds_result, '_execute'):
-            ds_df = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_df = ds_result._get_df()
-        else:
-            ds_df = ds_result
+        ds_df = get_series(ds_result)
 
         assert isinstance(ds_df, pd.Series)
         assert ds_df.equals(pd_result)
@@ -146,12 +141,7 @@ class TestGroupByAdvanced:
         ds_result = ds.groupby('group')['value'].sum().sort_values(ascending=False)
 
         # Execute and compare
-        if hasattr(ds_result, '_execute'):
-            ds_df = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_df = ds_result._get_df()
-        else:
-            ds_df = ds_result
+        ds_df = get_series(ds_result)
 
         assert ds_df.equals(pd_result)
 
@@ -211,12 +201,7 @@ class TestChainedOperations:
         ds_result = ds[ds['value'] > 15].groupby('group')['value'].sum()
         
         # Execute ColumnExpr to get actual result
-        if hasattr(ds_result, '_execute'):
-            ds_df = ds_result._execute()
-        elif hasattr(ds_result, '_get_df'):
-            ds_df = ds_result._get_df()
-        else:
-            ds_df = ds_result
+        ds_df = get_series(ds_result)
         
         # Compare Series
         assert ds_df.equals(pd_result), f"Results differ: DS={ds_df}, PD={pd_result}"
