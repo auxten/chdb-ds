@@ -130,7 +130,7 @@ class TestInplaceErrorRaised:
     def test_sort_values_inplace(self):
         """Test sort_values with inplace=True raises error"""
         ds = DataStore({"a": [3, 1, 2]})
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ImmutableError) as exc_info:
             ds.sort_values("a", inplace=True)
         # Should mention immutable and inplace
         assert "immutable" in str(exc_info.value).lower() or "inplace" in str(exc_info.value).lower()
@@ -138,7 +138,7 @@ class TestInplaceErrorRaised:
     def test_fillna_inplace(self):
         """Test fillna with inplace=True raises error"""
         ds = DataStore({"a": [1, None, 3]})
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ImmutableError) as exc_info:
             ds.fillna(0, inplace=True)
         assert "immutable" in str(exc_info.value).lower() or "inplace" in str(exc_info.value).lower()
 
