@@ -753,44 +753,55 @@ class TestSegmentEngineVerification(unittest.TestCase):
 
     def test_multiple_pandas_ops_single_segment(self):
         """
-        Verify multiple consecutive Pandas ops stay in single segment.
+        Verify consecutive Pandas-only ops stay in same segment, but SQL-compatible
+        ops get their own segment.
 
         Pipeline:
-        1. Apply doubled (Pandas - LazyColumnAssignment)
-        2. Apply tripled (Pandas - LazyColumnAssignment)
-        3. Compute sum (Pandas - LazyColumnAssignment)
+        1. Apply doubled (Pandas - LazyColumnAssignment with apply lambda)
+        2. Apply tripled (Pandas - LazyColumnAssignment with apply lambda)
+        3. Compute sum (SQL - simple arithmetic can be pushed to SQL)
 
-        Expected: All 3 ops in 1 Pandas segment
+        Expected:
+        - Segment 1: Pandas (2 ops - apply lambdas)
+        - Segment 2: chDB (1 op - simple arithmetic)
         """
         ds = DataStore.from_file(self.test_file)
-        ds['doubled'] = ds['value'].apply(lambda x: x * 2)  # Pandas
-        ds['tripled'] = ds['value'].apply(lambda x: x * 3)  # Pandas
-        ds['computed'] = ds['doubled'] + ds['tripled']  # Pandas (column assignment)
+        ds['doubled'] = ds['value'].apply(lambda x: x * 2)  # Pandas (apply is pandas-only)
+        ds['tripled'] = ds['value'].apply(lambda x: x * 3)  # Pandas (apply is pandas-only)
+        ds['computed'] = ds['doubled'] + ds['tripled']  # SQL (simple arithmetic)
 
         planner = QueryPlanner()
         plan = planner.plan_segments(ds._lazy_ops, has_sql_source=True)
 
         # === SEGMENT STRUCTURE VERIFICATION ===
-        # All Pandas ops should be in a single segment
-        self.assertEqual(len(plan.segments), 1, f"Expected 1 segment, got {len(plan.segments)}:\n{plan.describe()}")
+        # In unified architecture: pandas-only ops (apply) stay in pandas segment,
+        # but SQL-compatible ops (simple arithmetic) can go to SQL segment
+        self.assertEqual(len(plan.segments), 2, f"Expected 2 segments, got {len(plan.segments)}:\n{plan.describe()}")
 
-        # Verify it's a Pandas segment
-        seg = plan.segments[0]
-        self.assertEqual(seg.segment_type, 'pandas', f"Segment should be Pandas, got {seg.segment_type}")
+        # First segment should be Pandas with apply operations
+        seg1 = plan.segments[0]
+        self.assertEqual(seg1.segment_type, 'pandas', f"Segment 1 should be Pandas, got {seg1.segment_type}")
+        self.assertEqual(len(seg1.ops), 2, f"Segment 1 should have 2 ops, got {len(seg1.ops)}")
 
-        # Verify it contains all 3 operations
-        self.assertEqual(len(seg.ops), 3, f"Segment should have 3 ops, got {len(seg.ops)}")
+        # Second segment should be SQL with arithmetic operation
+        seg2 = plan.segments[1]
+        self.assertIn(seg2.segment_type, ['chdb', 'sql'], f"Segment 2 should be SQL, got {seg2.segment_type}")
+        self.assertEqual(len(seg2.ops), 1, f"Segment 2 should have 1 op, got {len(seg2.ops)}")
 
-        # Verify each op is a ColumnAssignment
-        for i, op in enumerate(seg.ops):
-            self.assertIn(
-                'ColumnAssignment',
-                op.__class__.__name__,
-                f"Op {i+1} should be ColumnAssignment, got {op.__class__.__name__}",
-            )
+        # Verify results match pandas
+        pdf = pd.read_parquet(self.test_file)
+        pdf['doubled'] = pdf['value'].apply(lambda x: x * 2)
+        pdf['tripled'] = pdf['value'].apply(lambda x: x * 3)
+        pdf['computed'] = pdf['doubled'] + pdf['tripled']
 
-        # No SQL segments
-        self.assertEqual(plan.sql_segment_count(), 0, f"Expected 0 SQL segments, got {plan.sql_segment_count()}")
+        ds_result = ds.to_df()
+        np.testing.assert_array_equal(
+            ds_result['computed'].values, pdf['computed'].values,
+            err_msg="computed values don't match"
+        )
+
+        # Verify segment counts
+        self.assertEqual(plan.sql_segment_count(), 1, f"Expected 1 SQL segment, got {plan.sql_segment_count()}")
         self.assertEqual(
             plan.pandas_segment_count(), 1, f"Expected 1 Pandas segment, got {plan.pandas_segment_count()}"
         )

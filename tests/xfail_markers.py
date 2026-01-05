@@ -101,6 +101,12 @@ chdb_strip_whitespace = pytest.mark.xfail(
     strict=True,
 )
 
+# FIXED: String concatenation now auto-converts '+' to concat() in ArithmeticExpression
+# chdb_string_plus_operator = pytest.mark.xfail(
+#     reason="chDB/ClickHouse does not support '+' operator for string concatenation, must use concat() function",
+#     strict=True,
+# )
+
 # Datetime
 chdb_datetime_timezone = pytest.mark.xfail(
     reason="chDB adds timezone to datetime, causing boundary comparison differences",
@@ -204,6 +210,18 @@ design_datetime_fillna_nat = pytest.mark.xfail(
     reason="Design difference: Pandas replaces datetime with 0/-1, DataStore uses NaT",
     strict=True,
 )
+
+# FIXED: DataStore now restricts column access after select() to match pandas behavior
+# design_sql_select_column_access = pytest.mark.xfail(
+#     reason="Design difference: SQL pushdown allows accessing original columns after select(), pandas restricts to selected columns only",
+#     strict=True,
+# )
+
+# FIXED: SQL builder now properly layers computed columns between LIMIT and WHERE
+# limit_sql_column_dependency_after_limit = pytest.mark.xfail(
+#     reason="SQL pushdown limitation: FILTER referencing computed column created after LIMIT requires complex subquery nesting not yet implemented",
+#     strict=True,
+# )
 
 
 # =============================================================================

@@ -193,19 +193,18 @@ class TestColumnSelectionEdgeCases:
     """Test edge cases with column selection."""
 
     def test_select_then_assign_uses_unselected_column(self):
-        """Select columns, then try to use an unselected column."""
+        """Select columns, then try to use an unselected column.
+        
+        After select(), only the selected columns should be accessible.
+        This matches pandas behavior where selecting columns restricts what can be accessed.
+        """
         users = DataStore.from_file(dataset_path("users.csv"))
 
         ds = users.select("name")  # Only select name
-        # Now try to use age which wasn't selected
-        ds["age_copy"] = ds["age"]
-
-        try:
-            df = ds.to_df()
-            # This should fail because age wasn't selected
-            pytest.fail("Should have failed - age column not selected")
-        except (KeyError, Exception):
-            pass  # Expected behavior
+        
+        # Now try to use age which wasn't selected - should raise KeyError
+        with pytest.raises(KeyError, match="Column 'age' is not accessible"):
+            ds["age_copy"] = ds["age"]
 
     def test_column_selection_after_assignment(self):
         """Column selection after assignment should include new column."""

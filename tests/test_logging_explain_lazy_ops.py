@@ -60,7 +60,9 @@ def test_execution_logs_follow_lazy_ops(caplog):
         # Segmented execution logs show segment info instead of "Executing initial SQL query"
         assert "Segment 1/" in log_text  # First SQL segment
         assert "chDB (from source)" in log_text  # SQL segment from source
-        assert "[Pandas] Executing ColumnAssignment" in log_text
+        # ColumnAssignment for simple arithmetic (age + 1) is pushed to SQL now
+        # So we check that it's included in the SQL query instead of executed separately
+        assert "age_plus_1" in log_text  # Column appears in execution output
         assert "[chDB]" in log_text  # Unified logging prefix
         assert "SELECT" in log_text
         assert "[chDB] Result:" in log_text  # Unified result logging
@@ -80,7 +82,8 @@ def test_execution_logs_mixed_sql_and_pandas(caplog):
         users = DataStore.from_file(dataset_path("users.csv"))
         users = users.select("name", "age").filter(users.age > 25).sort("age", ascending=False)
         users["age_plus_1"] = users["age"] + 1
-        users = users.add_prefix("p_").filter(users["p_age_plus_1"] > 30)
+        users = users.add_prefix("p_")
+        users = users.filter(users["p_age_plus_1"] > 30)
         users = users.limit(3)
 
         with caplog.at_level(logging.DEBUG, logger="datastore"):
@@ -94,7 +97,8 @@ def test_execution_logs_mixed_sql_and_pandas(caplog):
         # Segmented execution logs show segment info instead of "Executing initial SQL query"
         assert "Segment 1/" in log_text  # First SQL segment
         assert "chDB (from source)" in log_text  # SQL segment from source
-        assert "[Pandas] Executing ColumnAssignment" in log_text
+        # ColumnAssignment for simple arithmetic can be pushed to SQL
+        # AddPrefix is pandas-only, so it should be executed in pandas segment
         assert "[Pandas] Executing AddPrefix" in log_text
         # ORDER BY and LIMIT are now in SQL segments (can be from source or on DataFrame)
         assert "ORDER BY: age DESC" in log_text or 'ORDER BY "age" DESC' in log_text or "df.sort_values" in log_text
@@ -155,7 +159,8 @@ def test_execution_logs_sql_join_and_pandas(caplog):
         log_text = caplog.text
         assert "JOIN" in log_text
         assert "[chDB]" in log_text  # Unified logging prefix
-        assert "[Pandas] Executing ColumnAssignment" in log_text
+        # ColumnAssignment for simple arithmetic can be pushed to SQL
+        # AddSuffix is pandas-only, so it should be executed in pandas segment
         assert "[Pandas] Executing AddSuffix" in log_text
         assert "Execution complete" in log_text
     finally:

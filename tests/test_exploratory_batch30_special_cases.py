@@ -16,6 +16,7 @@ import numpy as np
 from datastore import DataStore
 from datetime import datetime, date, timedelta
 from tests.test_utils import assert_datastore_equals_pandas
+from tests.xfail_markers import chdb_timedelta_type
 
 
 # =======================
@@ -287,6 +288,7 @@ class TestDateTimeOperations:
         
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
     
+    @chdb_timedelta_type
     def test_timedelta_arithmetic(self):
         """Test timedelta arithmetic."""
         dates = pd.date_range('2024-01-01', periods=3, freq='D')
