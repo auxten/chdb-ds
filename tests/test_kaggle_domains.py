@@ -24,6 +24,8 @@ import pytest
 import pandas as pd
 import numpy as np
 import datastore as ds
+from datastore.exceptions import UnsupportedOperationError
+
 import tempfile
 import os
 
@@ -891,12 +893,12 @@ class TestReadCSVBackendSelection:
         Note: pandas.read_csv with chunksize returns TextFileReader, not DataFrame.
         DataStore doesn't support chunked reading, so we raise a clear error.
         """
-        with pytest.raises(NotImplementedError, match="does not support chunked reading"):
+        with pytest.raises(UnsupportedOperationError, match="does not support chunked reading"):
             ds.read_csv(simple_csv, chunksize=1)
 
     def test_iterator_raises_not_implemented(self, simple_csv):
         """iterator parameter is not supported and raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="does not support chunked reading"):
+        with pytest.raises(UnsupportedOperationError, match="does not support chunked reading"):
             ds.read_csv(simple_csv, iterator=True)
 
     def test_header_gt_0_uses_pandas(self, temp_dir):
