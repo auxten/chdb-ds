@@ -1117,14 +1117,13 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
             }
         )
 
-    def test_where_with_bool_col_and_zero_uses_sql_pushdown(self):
+    def test_where_with_bool_col_falls_back_to_pandas(self):
         """
-        When DataFrame has bool_col and 'other' is 0 (or 1),
-        where() now uses SQL pushdown because values are equivalent:
-        - 0 becomes false (equivalent to int 0)
-        - 1 becomes true (equivalent to int 1)
+        When DataFrame has bool_col and 'other' is numeric (including 0 or 1),
+        where() always falls back to Pandas to ensure type correctness.
         
-        Only for other values not in (0, 1), we fall back to Pandas.
+        SQL CASE WHEN converts 0 to false, which changes both dtype and value.
+        Pandas preserves the actual int value with object dtype.
         """
         ds = DataStore(self.df)
 
@@ -1142,14 +1141,14 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
 
         self.assertIsNotNone(where_op, "Should have LazyWhere operation")
 
-        # With bool_col in schema + other=0, should NOW push to SQL (values equivalent)
+        # With bool_col in schema + any numeric other, should NOT push to SQL
         schema = {'id': 'Int64', 'int_col': 'Int64', 'str_col': 'String', 'bool_col': 'Bool'}
-        self.assertTrue(
+        self.assertFalse(
             where_op._is_type_compatible_with_schema(schema),
-            "Should be type compatible when other=0 (0=False is equivalent)",
+            "Should not be type compatible when bool column exists with numeric other",
         )
 
-        # Test with other=-1 (should NOT be compatible)
+        # Test with other=-1 (should also NOT be compatible)
         ds_where_neg = ds.where(ds['int_col'] > 500, -1)
         where_op_neg = None
         for op in ds_where_neg._lazy_ops:

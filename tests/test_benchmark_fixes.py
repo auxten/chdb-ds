@@ -852,25 +852,19 @@ class TestBenchmarkScenarios:
 
 class TestBoolColumnBehavior:
     """
-    Tests for bool column type behavior differences between Pandas and DataStore.
+    Tests for bool column type behavior with Pandas and DataStore.
 
-    Note: There are subtle differences in how Pandas and DataStore handle
-    bool columns with numeric replacement values:
-    - Pandas: promotes to object type to hold mixed int/bool values
-    - DataStore: keeps bool type (numeric values are coerced to bool)
-
-    Most tests pass because the values are semantically equivalent.
+    DataStore now falls back to Pandas execution when DataFrame has bool columns
+    and where/mask is called with a numeric other value. This ensures type
+    correctness: Pandas promotes bool to object dtype to hold mixed int/bool values.
     """
 
     def test_where_bool_column_type_behavior(self):
         """
-        Test where() on DataFrame with bool column.
+        Test where() on DataFrame with bool column matches Pandas exactly.
 
-        Note: Type behavior differs between Pandas and DataStore:
-        - Pandas: converts bool column to object type, replaces with int 0
-        - DataStore: keeps bool type, replaces with False
-
-        This test verifies the values match (0 == False in boolean context).
+        DataStore falls back to Pandas execution for bool columns with numeric other,
+        ensuring both dtype and values match exactly.
         """
         np.random.seed(42)
         n = 1000
@@ -891,13 +885,11 @@ class TestBoolColumnBehavior:
             ds = DataStore.from_file(path)
             ds_result = ds.where(ds['int_col'] > 500, 0).to_df()
 
-            # Pandas converts bool to object, DataStore keeps bool
-            # But values should be semantically equivalent (0 == False)
-            assert pd_result['bool_col'].dtype == 'object'  # Pandas: mixed int/bool
-            # Compare as bool (0 and False are equivalent)
-            pd_bool = pd_result['bool_col'].astype(bool)
-            ds_bool = ds_result['bool_col'].astype(bool)
-            np.testing.assert_array_equal(ds_bool.values, pd_bool.values)
+            # Both should have object dtype (DataStore falls back to Pandas)
+            assert pd_result['bool_col'].dtype == 'object'
+            assert ds_result['bool_col'].dtype == 'object'
+            # Values should match exactly
+            np.testing.assert_array_equal(ds_result['bool_col'].values, pd_result['bool_col'].values)
 
     def test_mask_bool_column_type_mismatch(self):
         """
@@ -1159,19 +1151,18 @@ class TestStableSortWithFilter:
 
 
 class TestBoolColumnWhereMaskFallback:
-    """Tests for bool column where/mask behavior with different numeric other values.
+    """Tests for bool column where/mask behavior - always falls back to Pandas.
     
-    SQL pushdown is used when other=0 or other=1 (values equivalent: 0=False, 1=True).
-    Falls back to Pandas for other values (e.g., -1) to preserve actual numeric values.
+    DataStore falls back to Pandas execution for ALL bool columns with numeric other values
+    to ensure type correctness. SQL CASE WHEN converts numeric values to bool, which changes
+    both dtype and values. Pandas preserves the actual values with object dtype.
     """
 
-    def test_where_bool_column_with_zero_uses_sql(self):
-        """Test that where() on bool column with other=0 uses SQL pushdown.
+    def test_where_bool_column_with_zero_falls_back_to_pandas(self):
+        """Test that where() on bool column with other=0 falls back to Pandas.
         
-        With other=0 (or 1), SQL CASE WHEN produces equivalent values:
-        - 0 becomes false (equivalent to 0)
-        - True stays True (equivalent to 1)
-        - Values are semantically equivalent, only dtype differs
+        DataStore always falls back to Pandas for bool columns with numeric other
+        to ensure type correctness. Both dtype and values must match exactly.
         """
         np.random.seed(42)
         df = pd.DataFrame(
@@ -1189,24 +1180,22 @@ class TestBoolColumnWhereMaskFallback:
             # Pandas
             pd_result = df.where(df['int_col'] > 50, 0)
 
-            # DataStore (uses SQL pushdown for other=0)
+            # DataStore (falls back to Pandas for bool column)
             ds = DataStore.from_file(path)
             ds_result = ds.where(ds['int_col'] > 50, 0).to_df()
 
-            # Dtypes differ: Pandas object, DataStore bool - but values are equivalent
+            # Both should have object dtype (DataStore falls back to Pandas)
             assert pd_result['bool_col'].dtype == object
-            # DataStore may return bool dtype (SQL CASE WHEN returns bool for other=0)
+            assert ds_result['bool_col'].dtype == object
             
-            # Compare values (True=1, False=0)
-            pd_vals = pd_result['bool_col'].apply(lambda x: 1 if x is True else 0)
-            ds_vals = ds_result['bool_col'].apply(lambda x: 1 if x is True else 0)
-            np.testing.assert_array_equal(ds_vals.values, pd_vals.values)
+            # Values should match exactly
+            np.testing.assert_array_equal(ds_result['bool_col'].values, pd_result['bool_col'].values)
 
-    def test_mask_bool_column_with_non_01_falls_back_to_pandas(self):
-        """Test that mask() on bool column with other=-1 falls back to Pandas.
+    def test_mask_bool_column_falls_back_to_pandas(self):
+        """Test that mask() on bool column with any numeric other falls back to Pandas.
         
-        For other values not in (0, 1), SQL would return NULL instead of the actual value,
-        so we fall back to Pandas to preserve the correct numeric values.
+        DataStore always falls back to Pandas for bool columns with numeric other values
+        to ensure type correctness.
         """
         np.random.seed(42)
         df = pd.DataFrame(
