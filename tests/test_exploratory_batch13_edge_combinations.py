@@ -24,6 +24,7 @@ from tests.test_utils import assert_datastore_equals_pandas
 
 # ========== Section 1: Complex Expression Chains ==========
 
+
 class TestComplexExpressionChains:
     """Test complex chains of operations on ColumnExpr."""
 
@@ -80,6 +81,7 @@ class TestComplexExpressionChains:
 
 # ========== Section 2: Chained Assign Operations ==========
 
+
 class TestChainedAssignOperations:
     """Test chained assign operations."""
 
@@ -128,6 +130,7 @@ class TestChainedAssignOperations:
 
 
 # ========== Section 3: LazyOp Combinations ==========
+
 
 class TestLazyOpCombinations:
     """Test combinations of different lazy operations."""
@@ -199,6 +202,7 @@ class TestLazyOpCombinations:
 
 # ========== Section 4: DataFrame Method Edge Cases ==========
 
+
 class TestDataFrameMethodEdgeCases:
     """Test edge cases in DataFrame methods."""
 
@@ -268,11 +272,7 @@ class TestDataFrameMethodEdgeCases:
 
     def test_pivot_basic(self):
         """Basic pivot operation."""
-        pd_df = pd.DataFrame({
-            'foo': ['one', 'one', 'two', 'two'],
-            'bar': ['A', 'B', 'A', 'B'],
-            'baz': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'foo': ['one', 'one', 'two', 'two'], 'bar': ['A', 'B', 'A', 'B'], 'baz': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.pivot(index='foo', columns='bar', values='baz')
@@ -282,6 +282,7 @@ class TestDataFrameMethodEdgeCases:
 
 
 # ========== Section 5: Type Coercion and Special Dtypes ==========
+
 
 class TestTypeCoercion:
     """Test type coercion and special dtypes."""
@@ -340,6 +341,7 @@ class TestTypeCoercion:
 
 # ========== Section 6: Index Operations ==========
 
+
 class TestIndexOperations:
     """Test index-related operations."""
 
@@ -385,6 +387,7 @@ class TestIndexOperations:
 
 
 # ========== Section 7: Empty DataFrame Edge Cases ==========
+
 
 class TestEmptyDataFrameEdgeCases:
     """Test edge cases with empty DataFrames."""
@@ -433,6 +436,7 @@ class TestEmptyDataFrameEdgeCases:
 
 
 # ========== Section 8: Single-Row DataFrame Operations ==========
+
 
 class TestSingleRowDataFrame:
     """Test operations on single-row DataFrames."""
@@ -492,6 +496,7 @@ class TestSingleRowDataFrame:
 
 # ========== Section 9: Numeric Precision Edge Cases ==========
 
+
 class TestNumericPrecision:
     """Test numeric precision edge cases."""
 
@@ -537,6 +542,7 @@ class TestNumericPrecision:
 
 
 # ========== Section 10: String Accessor Chaining ==========
+
 
 class TestStringAccessorChaining:
     """Test string accessor method chaining."""
@@ -584,6 +590,7 @@ class TestStringAccessorChaining:
 
 # ========== Section 11: Complex Real-World Scenarios ==========
 
+
 class TestComplexRealWorldScenarios:
     """Test complex real-world scenarios."""
 
@@ -592,34 +599,23 @@ class TestComplexRealWorldScenarios:
         Note: DataStore creates duplicate column when assign overrides existing column.
         Using new column name 'name_clean' to avoid this issue.
         """
-        pd_df = pd.DataFrame({
-            'name': ['  John  ', 'Jane', '  Bob  '],
-            'age': [25, None, 35],
-            'salary': [50000, 60000, None]
-        })
+        pd_df = pd.DataFrame(
+            {'name': ['  John  ', 'Jane', '  Bob  '], 'age': [25, None, 35], 'salary': [50000, 60000, None]}
+        )
         ds_df = DataStore(pd_df.copy())
 
         # Pipeline: clean names (new column), fill NaN, filter by age
-        pd_result = (pd_df
-            .assign(name_clean=pd_df['name'].str.strip())
-            .fillna({'age': 0, 'salary': 0})
-        )
+        pd_result = pd_df.assign(name_clean=pd_df['name'].str.strip()).fillna({'age': 0, 'salary': 0})
         pd_result = pd_result[pd_result['age'] > 0][['name_clean', 'age', 'salary']]
 
-        ds_result = (ds_df
-            .assign(name_clean=ds_df['name'].str.strip())
-            .fillna({'age': 0, 'salary': 0})
-        )
+        ds_result = ds_df.assign(name_clean=ds_df['name'].str.strip()).fillna({'age': 0, 'salary': 0})
         ds_result = ds_result[ds_result['age'] > 0][['name_clean', 'age', 'salary']]
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
     def test_aggregation_then_join_back(self):
         """Aggregate then merge back to original."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [10, 20, 30, 40]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
         ds_df = DataStore(pd_df.copy())
 
         # Get category totals
@@ -635,18 +631,19 @@ class TestComplexRealWorldScenarios:
 
     def test_window_then_filter(self):
         """Window function then filter."""
-        pd_df = pd.DataFrame({
-            'group': ['A', 'A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'group': ['A', 'A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_df_copy = pd_df.copy()
-        pd_df_copy['rolling_sum'] = pd_df_copy.groupby('group')['value'].transform(lambda x: x.rolling(2, min_periods=1).sum())
+        pd_df_copy['rolling_sum'] = pd_df_copy.groupby('group')['value'].transform(
+            lambda x: x.rolling(2, min_periods=1).sum()
+        )
         pd_result = pd_df_copy[pd_df_copy['rolling_sum'] > 2]
 
         ds_df_copy = ds_df.copy()
-        ds_df_copy['rolling_sum'] = ds_df_copy.groupby('group')['value'].transform(lambda x: x.rolling(2, min_periods=1).sum())
+        ds_df_copy['rolling_sum'] = ds_df_copy.groupby('group')['value'].transform(
+            lambda x: x.rolling(2, min_periods=1).sum()
+        )
         ds_result = ds_df_copy[ds_df_copy['rolling_sum'] > 2]
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
