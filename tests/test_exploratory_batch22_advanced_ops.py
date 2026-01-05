@@ -16,7 +16,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
 
 
 class TestGroupByCumcount:
@@ -102,7 +102,7 @@ class TestGroupByPipe:
 
         # Compare results - pipe returns what the function returns
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
             check_dtype=False,
         )
@@ -126,7 +126,7 @@ class TestIndexOperations:
         ds_result = ds_df.set_index('B', append=True)
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -145,7 +145,7 @@ class TestIndexOperations:
         ds_result = ds_df.reset_index(level='A')
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -161,7 +161,7 @@ class TestIndexOperations:
         ds_result = ds_df.set_index('A', drop=False)
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -426,7 +426,7 @@ class TestStackUnstackEdge:
         ds_result = ds_df.stack(level=0)
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -449,7 +449,7 @@ class TestStackUnstackEdge:
         ds_result = ds_df.unstack(fill_value=0)
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -493,7 +493,7 @@ class TestMergeConcatEdge:
         ds_result = ds_concat([ds_df1, ds_df2], keys=['first', 'second'])
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -553,7 +553,7 @@ class TestStringAccessorEdge:
         ds_result = ds_df['A'].str.get_dummies(sep='|')
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -591,7 +591,7 @@ class TestDataFrameMethodsEdge:
         ds_result = ds_df.T
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -606,7 +606,7 @@ class TestDataFrameMethodsEdge:
         ds_result = ds_df1.dot(ds_df2._get_df())
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
         )
 
@@ -718,7 +718,7 @@ class TestGroupByAdvanced:
         ds_result = ds_df.groupby('category', sort=False).sum()
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
             check_dtype=False,
         )
@@ -740,7 +740,7 @@ class TestGroupByAdvanced:
         ds_result_true = ds_df.groupby('category', dropna=True).sum()
 
         pd.testing.assert_frame_equal(
-            ds_result_true._get_df() if hasattr(ds_result_true, '_get_df') else ds_result_true,
+            get_dataframe(ds_result_true),
             pd_result_true,
             check_dtype=False,
         )
@@ -760,7 +760,7 @@ class TestGroupByAdvanced:
         ds_result = ds_df.groupby('category').agg(['sum', 'mean', 'count'])
 
         pd.testing.assert_frame_equal(
-            ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result,
+            get_dataframe(ds_result),
             pd_result,
             check_dtype=False,
         )

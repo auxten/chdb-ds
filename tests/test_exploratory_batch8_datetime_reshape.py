@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_dataframe
 
 
 # =============================================================================
@@ -253,7 +253,7 @@ class TestPivotTable:
         ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='sum')
 
         # Compare shape and values
-        ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_pandas = get_dataframe(ds_result)
         assert ds_pandas.shape == pd_result.shape
 
     def test_pivot_table_mean(self, sales_data):
@@ -264,7 +264,7 @@ class TestPivotTable:
         pd_result = pd_df.pivot_table(values='sales', index='product', columns='region', aggfunc='mean')
         ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='mean')
 
-        ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_pandas = get_dataframe(ds_result)
         assert ds_pandas.shape == pd_result.shape
 
     def test_pivot_table_multiple_values(self, sales_data):
@@ -276,7 +276,7 @@ class TestPivotTable:
 
         try:
             ds_result = ds_df.pivot_table(values=['sales', 'quantity'], index='product', columns='region', aggfunc='sum')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             # Just check it executes
             assert ds_pandas is not None
         except Exception as e:
@@ -291,7 +291,7 @@ class TestPivotTable:
 
         try:
             ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='sum', fill_value=0)
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"fill_value not supported: {e}")
@@ -305,7 +305,7 @@ class TestPivotTable:
 
         try:
             ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='sum', margins=True)
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"margins not supported: {e}")
@@ -328,7 +328,7 @@ class TestPivot:
 
         try:
             ds_result = ds_df.pivot(index='date', columns='variable', values='value')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas.shape == pd_result.shape
         except Exception as e:
             pytest.skip(f"pivot not implemented: {e}")
@@ -348,7 +348,7 @@ class TestPivot:
 
         try:
             ds_result = ds_df.pivot(index='row', columns='col')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"pivot without values not supported: {e}")
@@ -375,7 +375,7 @@ class TestMelt:
         pd_result = pd_df.melt(id_vars=['id', 'name'], value_vars=['score_math', 'score_eng'])
         ds_result = ds_df.melt(id_vars=['id', 'name'], value_vars=['score_math', 'score_eng'])
 
-        ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_pandas = get_dataframe(ds_result)
         assert ds_pandas.shape == pd_result.shape
 
     def test_melt_var_name_value_name(self, wide_data):
@@ -397,7 +397,7 @@ class TestMelt:
                 var_name='subject',
                 value_name='score'
             )
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert 'subject' in ds_pandas.columns
             assert 'score' in ds_pandas.columns
         except Exception as e:
@@ -411,7 +411,7 @@ class TestMelt:
         pd_result = pd_df.melt()
         ds_result = ds_df.melt()
 
-        ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_pandas = get_dataframe(ds_result)
         assert len(ds_pandas) == len(pd_result)
 
     def test_melt_ignore_index(self, wide_data):
@@ -423,7 +423,7 @@ class TestMelt:
 
         try:
             ds_result = ds_df.melt(id_vars=['id'], ignore_index=False)
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"ignore_index not supported: {e}")
@@ -446,7 +446,7 @@ class TestStack:
 
         try:
             ds_result = ds_df.stack()
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"stack not implemented: {e}")
@@ -465,7 +465,7 @@ class TestStack:
 
         try:
             ds_result = ds_df.stack(dropna=True)
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"stack with dropna not supported: {e}")
@@ -487,7 +487,7 @@ class TestUnstack:
         try:
             ds_s = DataStore({'first': ['A', 'A', 'B', 'B'], 'second': ['one', 'two', 'one', 'two'], 'value': [1, 2, 3, 4]})
             ds_result = ds_s.unstack()
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"unstack not implemented: {e}")
@@ -509,7 +509,7 @@ class TestExplode:
 
         try:
             ds_result = ds_df.explode('values')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"explode not implemented: {e}")
@@ -527,7 +527,7 @@ class TestExplode:
 
         try:
             ds_result = ds_df.explode('values')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"explode with empty lists not supported: {e}")
@@ -545,7 +545,7 @@ class TestExplode:
 
         try:
             ds_result = ds_df.explode('values', ignore_index=True)
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"explode with ignore_index not supported: {e}")
@@ -590,7 +590,7 @@ class TestDateTimeChainedOps:
             hour=ds_df['ts'].dt.hour
         )
 
-        ds_pandas = ds_df.to_pandas() if hasattr(ds_df, 'to_pandas') else ds_df
+        ds_pandas = get_dataframe(ds_df)
         assert list(ds_pandas['year']) == list(pd_df['year'])
         assert list(ds_pandas['month']) == list(pd_df['month'])
 
@@ -631,7 +631,7 @@ class TestReshapeChainedOps:
         try:
             ds_result = ds_df.melt(id_vars=['id'])
             ds_result = ds_result[ds_result['value'] > 20]
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"melt then filter not supported: {e}")
@@ -651,7 +651,7 @@ class TestReshapeChainedOps:
         try:
             ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='sum')
             ds_result = ds_result.reset_index()
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas is not None
         except Exception as e:
             pytest.skip(f"pivot_table then reset_index not supported: {e}")
@@ -684,7 +684,7 @@ class TestEdgeCases:
 
         try:
             ds_result = ds_df.melt(id_vars=['id'])
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert len(ds_pandas) == len(pd_result)
         except Exception as e:
             pytest.skip(f"Empty DataFrame melt failed: {e}")
@@ -703,7 +703,7 @@ class TestEdgeCases:
 
         try:
             ds_result = ds_df.pivot_table(values='sales', index='product', columns='region', aggfunc='sum')
-            ds_pandas = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+            ds_pandas = get_dataframe(ds_result)
             assert ds_pandas.shape == pd_result.shape
         except Exception as e:
             pytest.skip(f"Single row pivot_table failed: {e}")

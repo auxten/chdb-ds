@@ -18,7 +18,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
 
 
 # =============================================================================
@@ -268,7 +268,7 @@ class TestTypeConversion:
         ds_result = ds_df.infer_objects()
 
         # Check that the result is a valid DataFrame
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert len(ds_df_result) == len(pd_result)
         assert list(ds_df_result.columns) == list(pd_result.columns)
 
@@ -285,7 +285,7 @@ class TestTypeConversion:
         ds_result = ds_df.convert_dtypes()
 
         # Check that the result is a valid DataFrame
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert len(ds_df_result) == len(pd_result)
         assert list(ds_df_result.columns) == list(pd_result.columns)
 
@@ -338,7 +338,7 @@ class TestTransform:
         ds_result = ds_df.transform(['sqrt', 'abs'])
 
         # For multi-function transform, just verify the shape and non-empty
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert len(ds_df_result) == len(pd_result)
 
     def test_transform_per_column(self):
@@ -490,7 +490,7 @@ class TestConstructionEdgeCases:
         ds_df = DataStore({'A': [1, 2, 3]}, index=['x', 'y', 'z'])
 
         # Just verify the data matches, index handling may differ
-        ds_df_result = ds_df._get_df() if hasattr(ds_df, '_get_df') else ds_df
+        ds_df_result = get_dataframe(ds_df)
         assert list(ds_df_result['A']) == list(pd_df['A'])
 
     def test_construct_from_records(self):
@@ -508,7 +508,7 @@ class TestConstructionEdgeCases:
 
         ds_df = DataStore(columns=['A', 'B', 'C'])
 
-        ds_df_result = ds_df._get_df() if hasattr(ds_df, '_get_df') else ds_df
+        ds_df_result = get_dataframe(ds_df)
         assert list(ds_df_result.columns) == ['A', 'B', 'C']
         assert len(ds_df_result) == 0
 
@@ -634,7 +634,7 @@ class TestStackUnstack:
         ds_result = ds_df.stack()
 
         # Stack returns a Series with MultiIndex
-        ds_series = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_series = get_series(ds_result)
         # Just verify the values match
         assert list(ds_series.values) == list(pd_result.values)
 
@@ -653,7 +653,7 @@ class TestStackUnstack:
         ds_result = ds_stacked.unstack()
 
         # Just verify the shape and values roughly match
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert ds_df_result.shape == pd_result.shape
 
 
@@ -676,7 +676,7 @@ class TestPivotVariations:
         ds_result = ds_df.pivot(index='foo', columns='bar', values='baz')
 
         # Just verify the shape
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert ds_df_result.shape == pd_result.shape
 
     def test_pivot_table_with_aggfunc(self):
@@ -692,7 +692,7 @@ class TestPivotVariations:
         ds_result = ds_df.pivot_table(index='A', columns='B', values='C', aggfunc='sum')
 
         # Just verify the shape
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert ds_df_result.shape == pd_result.shape
 
 
@@ -714,7 +714,7 @@ class TestMemoryCopySemantics:
         pd_df.iloc[0, 0] = 999
 
         # Copy should be unchanged
-        ds_copy_df = ds_copy._get_df() if hasattr(ds_copy, '_get_df') else ds_copy
+        ds_copy_df = get_dataframe(ds_copy)
         assert ds_copy_df.iloc[0, 0] != 999
 
     def test_to_numpy_basic(self):
@@ -812,7 +812,7 @@ class TestDataFrameCompare:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds_df1.compare(ds_df2)
 
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         # Just verify it produces a result with differences
         assert len(ds_df_result) > 0
 
@@ -826,7 +826,7 @@ class TestDataFrameCompare:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds_df1.compare(ds_df2, keep_equal=True)
 
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_dataframe(ds_result)
         assert len(ds_df_result) == len(pd_result)
 
 
@@ -892,9 +892,9 @@ class TestNumericPrecision:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.sum()
 
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_series = get_series(ds_result)
         # Check sum is approximately correct
-        assert abs(ds_df_result['A'] - pd_result['A']) / pd_result['A'] < 1e-10
+        assert abs(ds_series['A'] - pd_result['A']) / pd_result['A'] < 1e-10
 
 
 # =============================================================================

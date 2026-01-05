@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
 
 
 class TestSeriesMapAdvanced:
@@ -160,7 +160,7 @@ class TestDataFrameXS:
         
         # xs returns a Series for single row
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result
         )
 
@@ -428,11 +428,8 @@ class TestSeriesStringOperations:
         pd_result = pd_df['text'].str.split('-', expand=True)
         ds_result = ds_df['text'].str.split('-', expand=True)
         
-        # This might need special handling
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result_df = ds_result.to_pandas()
-        else:
-            ds_result_df = ds_result
+        # Convert to DataFrame using Duck Typing
+        ds_result_df = get_dataframe(ds_result)
             
         pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
@@ -446,7 +443,7 @@ class TestSeriesStringOperations:
         ds_result = ds_df['letters'].str.join('-')
         
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result
         )
 
@@ -459,7 +456,7 @@ class TestSeriesStringOperations:
         ds_result = ds_df['category'].str.get_dummies('|')
         
         pd.testing.assert_frame_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result
         )
 
@@ -476,7 +473,7 @@ class TestSeriesMethodChains:
         ds_result = ds_df['text'].str.lower().str.strip().str.replace(' ', '_', regex=False)
         
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result
         )
 
@@ -489,7 +486,7 @@ class TestSeriesMethodChains:
         ds_result = ds_df['value'].abs().round().clip(lower=0, upper=3)
         
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result,
             check_dtype=False  # May have dtype differences
         )
@@ -507,7 +504,7 @@ class TestRollingEwmEdgeCases:
         ds_result = ds_df['value'].rolling(window=5, min_periods=1).mean()
         
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result,
             check_names=False
         )
@@ -521,7 +518,7 @@ class TestRollingEwmEdgeCases:
         ds_result = ds_df['value'].ewm(halflife=2).mean()
         
         pd.testing.assert_series_equal(
-            ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result,
+            get_series(ds_result),
             pd_result,
             check_names=False
         )

@@ -27,6 +27,7 @@ Design Principle:
     Avoid explicit _execute() calls - use natural triggers instead.
 """
 
+from tests.test_utils import get_series
 import pytest
 import pandas as pd
 import numpy as np
@@ -141,8 +142,7 @@ class TestTextPreprocessing:
         pd_result = pd_df['text'].str.lower()
         ds_result = ds_df['text'].str.lower()
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
 
@@ -154,8 +154,7 @@ class TestTextPreprocessing:
         pd_result = pd_df['text'].str.replace(r'[^\w\s]', '', regex=True)
         ds_result = ds_df['text'].str.replace(r'[^\w\s]', '', regex=True)
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
 
@@ -168,8 +167,7 @@ class TestTextPreprocessing:
         pd_result = pd_df['text'].str.strip()
         ds_result = ds_df['text'].str.strip()
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
 
@@ -181,8 +179,7 @@ class TestTextPreprocessing:
         pd_result = pd_df['text'].str.len()
         ds_result = ds_df['text'].str.len()
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         np.testing.assert_array_equal(pd_result.values, ds_result.values)
 
@@ -203,8 +200,7 @@ class TestDuplicateDetection:
         pd_result = pd_df.duplicated(subset=['id'])
         ds_result = ds_df.duplicated(subset=['id'])
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         np.testing.assert_array_equal(pd_result.values, ds_result.values)
 
@@ -216,10 +212,7 @@ class TestDuplicateDetection:
         pd_result = pd_df.duplicated(subset=['id']).sum()
         ds_result = ds_df.duplicated(subset=['id'])
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas().sum()
-        elif hasattr(ds_result, 'sum'):
-            ds_result = ds_result.sum()
+        ds_result = get_series(ds_result).sum()
 
         assert pd_result == ds_result
 
@@ -240,8 +233,7 @@ class TestMissingValueHandling:
         pd_result = pd_df.dropna(subset=['text'])
         ds_result = ds_df.dropna(subset=['text'])
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
 
@@ -254,8 +246,7 @@ class TestMissingValueHandling:
         pd_df_copy['text'] = pd_df_copy['text'].fillna('')
         ds_result = ds_df.fillna({'text': ''})
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_frame_equal(pd_df_copy, ds_result)
 
@@ -276,8 +267,7 @@ class TestTextFeatureEngineering:
         pd_result = pd_df['text'].str.split().str.len()
         ds_result = ds_df['text'].str.split().str.len()
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         np.testing.assert_array_equal(pd_result.values, ds_result.values)
 
@@ -289,8 +279,7 @@ class TestTextFeatureEngineering:
         pd_result = pd_df['text'].str.contains('learning', case=False)
         ds_result = ds_df['text'].str.contains('learning', case=False)
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         np.testing.assert_array_equal(pd_result.values, ds_result.values)
 
@@ -302,8 +291,7 @@ class TestTextFeatureEngineering:
         pd_result = pd_df['text'].str.split().str[0]
         ds_result = ds_df['text'].str.split().str[0]
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         np.testing.assert_array_equal(pd_result.values, ds_result.values)
 
@@ -324,8 +312,7 @@ class TestSubmissionCreation:
         pd_submission = pd.DataFrame({'id': ids, 'prediction': predictions})
         ds_submission = ds.DataFrame({'id': ids, 'prediction': predictions})
 
-        if hasattr(ds_submission, 'to_pandas'):
-            ds_submission = ds_submission.to_pandas()
+        ds_submission = get_series(ds_submission)
 
         pd.testing.assert_frame_equal(pd_submission, ds_submission)
 
@@ -346,8 +333,7 @@ class TestSamplingAndSplitting:
         pd_result = pd_df.sample(n=3, random_state=42)
         ds_result = ds_df.sample(n=3, random_state=42)
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
 
@@ -359,7 +345,6 @@ class TestSamplingAndSplitting:
         pd_result = pd_df.sample(frac=0.6, random_state=42)
         ds_result = ds_df.sample(frac=0.6, random_state=42)
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
 
         pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
