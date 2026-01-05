@@ -17,6 +17,7 @@ Design Principle:
     Avoid explicit _execute() calls - use natural triggers instead.
 """
 
+from tests.test_utils import get_dataframe, get_series
 import pytest
 import pandas as pd
 import numpy as np
@@ -376,7 +377,7 @@ class TestGroupBy:
         ds_result = ds_df.groupby('category', sort=True)['value'].agg(['sum', 'mean', 'count'])
 
         # Both should return DataFrame with same columns and values
-        ds_result_df = ds_result.to_df() if hasattr(ds_result, 'to_df') else ds_result
+        ds_result_df = get_dataframe(ds_result)
         assert list(ds_result_df.columns) == list(
             pd_result.columns
         ), f"Column mismatch: {list(ds_result_df.columns)} vs {list(pd_result.columns)}"

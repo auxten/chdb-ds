@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_dataframe, get_series
 
 
 # =============================================================================
@@ -212,7 +212,7 @@ class TestTimezoneOperations:
         ds_result = ds_df['dates'].dt.tz_localize('UTC')
 
         assert pd_result.dt.tz is not None
-        ds_series = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_series = get_series(ds_result)
         # Verify data matches
         assert len(pd_result) == len(ds_series)
 
@@ -227,7 +227,7 @@ class TestTimezoneOperations:
 
         # Compare string representations
         pd_strs = pd_result.astype(str).tolist()
-        ds_df = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df = get_series(ds_result)
         ds_strs = ds_df.astype(str).tolist()
         assert pd_strs == ds_strs
 
@@ -241,7 +241,7 @@ class TestTimezoneOperations:
         ds_result = ds_series.dt.to_period('M')
 
         pd_strs = pd_result.astype(str).tolist()
-        ds_df = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df = get_series(ds_result)
         ds_strs = ds_df.astype(str).tolist()
         assert pd_strs == ds_strs
 
@@ -379,8 +379,8 @@ class TestUrlAccessorResults:
         ds_df = DataStore({'url': urls})
 
         result = ds_df['url'].url.domain()
-        result_df = result._get_df() if hasattr(result, '_get_df') else result
-        result_list = result_df.tolist()
+        result_series = get_series(result)
+        result_list = result_series.tolist()
 
         # Check domains are extracted correctly
         assert 'google.com' in result_list[0] or 'www.google.com' in result_list[0]
@@ -393,8 +393,8 @@ class TestUrlAccessorResults:
         ds_df = DataStore({'url': urls})
 
         result = ds_df['url'].url.protocol()
-        result_df = result._get_df() if hasattr(result, '_get_df') else result
-        result_list = result_df.tolist()
+        result_series = get_series(result)
+        result_list = result_series.tolist()
 
         assert result_list[0] == 'https'
         assert result_list[1] == 'http'
@@ -406,8 +406,8 @@ class TestUrlAccessorResults:
         ds_df = DataStore({'url': urls})
 
         result = ds_df['url'].url.url_path()
-        result_df = result._get_df() if hasattr(result, '_get_df') else result
-        result_list = result_df.tolist()
+        result_series = get_series(result)
+        result_list = result_series.tolist()
 
         assert '/path/to/resource' in result_list[0]
         assert result_list[2] == '/api/v1/users' or 'api/v1/users' in result_list[2]
@@ -422,8 +422,8 @@ class TestIpAccessorResults:
         ds_df = DataStore({'ip': ips})
 
         result = ds_df['ip'].ip.is_ipv4_string()
-        result_df = result._get_df() if hasattr(result, '_get_df') else result
-        result_list = result_df.tolist()
+        result_series = get_series(result)
+        result_list = result_series.tolist()
 
         assert result_list[0] == 1 or result_list[0] == True
         assert result_list[1] == 1 or result_list[1] == True
@@ -435,8 +435,8 @@ class TestIpAccessorResults:
         ds_df = DataStore({'ip': ips})
 
         result = ds_df['ip'].ip.ipv4_string_to_num()
-        result_df = result._get_df() if hasattr(result, '_get_df') else result
-        result_list = result_df.tolist()
+        result_series = get_series(result)
+        result_list = result_series.tolist()
 
         # 127.0.0.1 = 2130706433
         assert result_list[2] == 2130706433
@@ -488,7 +488,7 @@ class TestAlignmentMethods:
 
         # Check structure matches
         pd_shape = pd_result.shape
-        ds_shape = ds_result._get_df().shape if hasattr(ds_result, '_get_df') else ds_result.shape
+        ds_shape = get_series(ds_result).shape if len(get_series(ds_result).shape) == 1 else get_dataframe(ds_result).shape
         assert pd_shape == ds_shape
 
     def test_compare_keep_shape(self):
@@ -806,7 +806,7 @@ class TestMiscEdgeCases:
         ds_result = ds_df['A'].mode()
 
         assert pd_result.iloc[0] == 3
-        ds_val = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_val = get_series(ds_result)
         assert ds_val.iloc[0] == 3
 
     def test_nlargest_with_keep(self):

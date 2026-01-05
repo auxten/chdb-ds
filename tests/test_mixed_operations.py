@@ -5,6 +5,7 @@ This module tests the critical behavior of mixing DataStore SQL operations
 with pandas DataFrame operations in a chain.
 """
 
+from tests.test_utils import get_dataframe
 import unittest
 import tempfile
 import os
@@ -194,7 +195,7 @@ class TestMixedOperations(unittest.TestCase):
 
         # Verify final result has all transformations
         # Get DataFrame to access columns as Series
-        result_df = result.to_df() if hasattr(result, 'to_df') else result
+        result_df = get_dataframe(result)
 
         self.assertIn('emp_id', result_df.columns)
         self.assertIn('emp_name', result_df.columns)

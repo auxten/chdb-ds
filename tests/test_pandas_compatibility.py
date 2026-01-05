@@ -263,7 +263,7 @@ class TestDataTransformation:
         pd_df = pd_df.copy()
         pd_df['bonus'] = pd_df['salary'] * 0.1
 
-        ds_df = ds_df.copy() if hasattr(ds_df, 'copy') else ds.DataStore.from_df(pd.DataFrame(ds_df.to_df()))
+        ds_df = ds_df.copy()
         ds_df['bonus'] = ds_df['salary'] * 0.1
 
         assert ds_df == pd_df

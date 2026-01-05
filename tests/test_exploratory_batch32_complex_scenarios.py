@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 # =============================================================================
@@ -742,7 +742,7 @@ class TestApplyTransform:
         pd_result = pd_df.apply(sum, axis=1)
         ds_result = ds_df.apply(sum, axis=1)
 
-        pd.testing.assert_series_equal(ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_series_equal(get_series(ds_result), pd_result, check_dtype=False)
 
     def test_transform_with_function(self):
         """Test transform with function."""
@@ -755,8 +755,7 @@ class TestApplyTransform:
         pd_result = pd_df.groupby('group')['value'].transform('mean')
         ds_result = ds_df.groupby('group')['value'].transform('mean')
 
-        if hasattr(ds_result, 'to_pandas'):
-            ds_result = ds_result.to_pandas()
+        ds_result = get_series(ds_result)
         pd.testing.assert_series_equal(ds_result, pd_result, check_dtype=False)
 
 

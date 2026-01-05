@@ -9,6 +9,7 @@ to pandas, including:
 - Index values
 """
 
+from tests.test_utils import get_dataframe, get_series
 import numpy as np
 import pandas as pd
 import pytest
@@ -151,22 +152,17 @@ class TestReadmeExample:
         ds_df = ds.read_csv(str(csv_path))
         ds_filtered = ds_df[(ds_df['age'] > 25) & (ds_df['salary'] > 50000)]
         ds_grouped = ds_filtered.groupby('city')['salary'].mean()
-        ds_result = ds_grouped.to_df() if hasattr(ds_grouped, 'to_df') else ds_grouped.values
+        ds_result = get_dataframe(ds_grouped).values
 
         # Pandas
         pd_filtered = raw_data[(raw_data['age'] > 25) & (raw_data['salary'] > 50000)]
         pd_grouped = pd_filtered.groupby('city')['salary'].mean()
 
         # Compare values (sorted by index for consistent ordering)
-        if hasattr(ds_grouped, 'to_df'):
-            ds_series = ds_grouped.to_df()
-            if isinstance(ds_series, pd.DataFrame):
-                ds_series = ds_series.iloc[:, 0] if len(ds_series.columns) == 1 else ds_series
-        else:
-            ds_series = pd.Series(ds_grouped.values, index=pd_grouped.index)
+        ds_series = get_series(ds_grouped)
 
         # Sort both for comparison
-        ds_sorted = ds_series.sort_index() if hasattr(ds_series, 'sort_index') else ds_series
+        ds_sorted = ds_series.sort_index()
         pd_sorted = pd_grouped.sort_index()
 
         np.testing.assert_array_almost_equal(

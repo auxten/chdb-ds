@@ -430,13 +430,10 @@ def get_dataframe(ds_result) -> pd.DataFrame:
     Get a pandas DataFrame from a DataStore result using Duck Typing.
 
     Triggers execution implicitly by accessing standard properties.
-    NEVER uses hasattr checks or explicit _execute() calls.
-
-    This function relies on the fact that accessing .values or similar
-    properties on lazy objects triggers execution.
+    Handles various input types: DataStore, DataFrame, Series, numpy array.
 
     Args:
-        ds_result: DataStore result (DataStore, lazy object, or similar)
+        ds_result: DataStore result (DataStore, DataFrame, Series, numpy array, or similar)
 
     Returns:
         pandas DataFrame
@@ -444,15 +441,48 @@ def get_dataframe(ds_result) -> pd.DataFrame:
     Example:
         df = get_dataframe(ds_result)
     """
-    # Access columns to trigger execution if needed
-    columns = list(ds_result.columns)
-
-    # Build DataFrame from values - this triggers execution implicitly
-    data = {}
-    for col in columns:
-        data[col] = np.asarray(ds_result[col].values)
-
-    return pd.DataFrame(data, columns=columns)
+    # If already a pandas DataFrame, return it directly
+    if isinstance(ds_result, pd.DataFrame):
+        return ds_result
+    
+    # If pandas Series, convert to DataFrame
+    if isinstance(ds_result, pd.Series):
+        return ds_result.to_frame()
+    
+    # If numpy array, wrap in DataFrame
+    if isinstance(ds_result, np.ndarray):
+        if ds_result.ndim == 1:
+            return pd.DataFrame(ds_result)
+        return pd.DataFrame(ds_result)
+    
+    # If None, raise error
+    if ds_result is None:
+        raise ValueError("Cannot convert None to DataFrame")
+    
+    # For DataStore and similar objects, try accessing _get_df() first
+    try:
+        df = ds_result._get_df()
+        if isinstance(df, pd.DataFrame):
+            return df
+        if isinstance(df, pd.Series):
+            return df.to_frame()
+        # Recursively handle nested DataStore
+        return get_dataframe(df)
+    except (AttributeError, TypeError):
+        pass
+    
+    # Fall back to building DataFrame from columns
+    try:
+        columns = list(ds_result.columns)
+        data = {}
+        for col in columns:
+            data[col] = np.asarray(ds_result[col].values)
+        return pd.DataFrame(data, columns=columns)
+    except (AttributeError, TypeError):
+        pass
+    
+    # Last resort: try to convert using pd.DataFrame constructor
+    return pd.DataFrame(ds_result)
 
 
 def get_series(ds_result) -> pd.Series:
@@ -552,6 +582,9 @@ def assert_datastore_equals_pandas_chdb_compat(
     Use this for tests affected by chDB's dtype behavior.
     See test_chdb_dtype_differences.py for documentation of these differences.
 
+    Uses Duck Typing principle: triggers execution implicitly via standard properties.
+    NEVER uses hasattr checks or explicit _execute() calls.
+
     Args:
         ds_result: DataStore result (DataStore, LazySeries, or similar)
         pd_result: Expected pandas DataFrame or Series
@@ -565,13 +598,9 @@ def assert_datastore_equals_pandas_chdb_compat(
         # When dtype differences are acceptable
         assert_datastore_equals_pandas_chdb_compat(ds_result, pd_result)
     """
-    # Get DataStore DataFrame
-    if hasattr(ds_result, 'to_df'):
-        ds_df = ds_result.to_df()
-    elif hasattr(ds_result, '_get_df'):
-        ds_df = ds_result._get_df()
-    else:
-        ds_df = ds_result
+    # Duck Typing: use get_dataframe() helper to trigger execution implicitly
+    # This avoids hasattr checks and works uniformly for all DataStore types
+    ds_df = get_dataframe(ds_result)
 
     # Normalize chDB dtypes
     ds_df_normalized = _normalize_chdb_dtypes(ds_df)

@@ -20,6 +20,7 @@ SQL pattern used:
 Reference: benchmark_datastore_vs_pandas.py verification failures
 """
 
+from tests.test_utils import get_dataframe
 import os
 import tempfile
 
@@ -315,8 +316,7 @@ class TestGroupBySortParameter:
             # DataStore (now also default sort=True)
             ds = DataStore.from_file(path)
             ds_result = ds.groupby('str_col').size().reset_index(name='count')
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
 
             # Order should match (A, B, C, D, E)
             assert pd_result['str_col'].tolist() == ['A', 'B', 'C', 'D', 'E']
@@ -339,8 +339,7 @@ class TestGroupBySortParameter:
 
             ds = DataStore.from_file(path)
             ds_result = ds.groupby('str_col', sort=False).size().reset_index(name='count')
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
 
             # Should have all groups (order not guaranteed)
             assert set(ds_result['str_col'].tolist()) == {'A', 'B', 'C', 'D', 'E'}
@@ -366,8 +365,7 @@ class TestGroupBySortParameter:
             # DataStore
             ds = DataStore.from_file(path)
             ds_result = ds.groupby('category').agg({'value': 'sum'}).reset_index()
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
 
             # Order should match (cat1, cat2, cat3, cat4, cat5)
             assert pd_result['category'].tolist() == ['cat1', 'cat2', 'cat3', 'cat4', 'cat5']
@@ -391,8 +389,7 @@ class TestGroupBySortParameter:
 
             ds = DataStore.from_file(path)
             ds_result = ds.groupby('str_col').size().reset_index(name='count')
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
 
             # Should be exactly equal
             pd.testing.assert_frame_equal(
@@ -570,8 +567,7 @@ class TestBenchmarkScenarios:
             ds = DataStore.from_file(path)
             ds_result = ds.groupby('category').agg({'int_col': 'sum', 'float_col': 'mean'})
             ds_result = ds_result.reset_index()
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
             ds_result.columns = ['category', 'int_sum', 'float_avg']
 
             # Sort for comparison
@@ -644,8 +640,7 @@ class TestBenchmarkScenarios:
             ds = DataStore.from_file(path)
             ds_result = ds[ds['int_col'] > 200]
             ds_result = ds_result.groupby('category').agg({'int_col': 'sum', 'float_col': 'mean'}).reset_index()
-            if hasattr(ds_result, 'to_df'):
-                ds_result = ds_result.to_df()
+            ds_result = get_dataframe(ds_result)
             ds_result.columns = ['category', 'int_sum', 'float_avg']
             ds_result = ds_result.sort_values('int_sum', ascending=False)
 

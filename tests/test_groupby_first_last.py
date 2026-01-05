@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 
 import datastore as ds
+from tests.test_utils import get_series, get_dataframe
 
 
 class TestGroupByFirstLast(unittest.TestCase):
@@ -33,7 +34,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         ds_result = self.ds.groupby('category')['value'].first()
         
         # Get the Series from ColumnExpr
-        ds_series = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_series = get_series(ds_result)
         
         # Compare values (ignore index name)
         pd.testing.assert_series_equal(
@@ -47,7 +48,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         pd_result = self.df.groupby('category')['value'].last()
         ds_result = self.ds.groupby('category')['value'].last()
         
-        ds_series = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_series = get_series(ds_result)
         
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True),
@@ -67,7 +68,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         pd_result = df.groupby(['g1', 'g2'])['value'].first()
         ds_result = ds_df.groupby(['g1', 'g2'])['value'].first()
         
-        ds_series = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_series = get_series(ds_result)
         
         # Compare values (multi-index groupby may have different order)
         self.assertEqual(len(ds_series), len(pd_result))
@@ -85,7 +86,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         pd_result = df.groupby('category')['value'].first()
         ds_result = ds_df.groupby('category')['value'].first()
         
-        ds_series = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
+        ds_series = get_series(ds_result)
         
         # Both should return the first non-NaN value if available
         # Note: behavior may differ slightly between pandas and chDB
@@ -111,8 +112,8 @@ class TestGroupByFirstLast(unittest.TestCase):
         ds_agg = self.ds.groupby('category')['value'].agg('first')
         
         # Convert to pandas
-        ds_first_series = ds_first.to_pandas() if hasattr(ds_first, 'to_pandas') else ds_first
-        ds_agg_df = ds_agg._get_df() if hasattr(ds_agg, '_get_df') else ds_agg
+        ds_first_series = get_series(ds_first)
+        ds_agg_df = get_dataframe(ds_agg)
         
         # pandas first() and agg('first') should be equal
         pd.testing.assert_series_equal(pd_first, pd_agg)

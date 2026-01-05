@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
 
 
 class TestGroupByTransform:
@@ -154,7 +154,7 @@ class TestGroupByApply:
         ds_result = ds_df.groupby('category').apply(lambda x: x['value'].head(1))
 
         # Just check it runs without error and has correct shape
-        ds_df_result = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_df_result = get_series(ds_result)
         assert len(ds_df_result) == len(pd_result)
 
 

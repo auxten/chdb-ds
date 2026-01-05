@@ -20,7 +20,7 @@ sys.path.insert(0, '/Users/auxten/Codes/go/src/github.com/auxten/chdb-ds')
 
 from datastore import DataStore
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
 
 
 class TestMergeAsof:
@@ -352,7 +352,7 @@ class TestPivotTableAdvanced:
 
         # Flatten column names for comparison
         pd_result.columns = ['_'.join(map(str, col)).strip() for col in pd_result.columns.values]
-        ds_result_df = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
+        ds_result_df = get_dataframe(ds_result)
         if hasattr(ds_result_df.columns, 'to_flat_index'):
             ds_result_df.columns = ['_'.join(map(str, col)).strip() for col in ds_result_df.columns.to_flat_index()]
 
@@ -704,10 +704,10 @@ class TestIsNaFunctions:
         ds_result = ds.isna(ds_df)
 
         # ds.isna may return a DataFrame, DataStore, or numpy array
-        if hasattr(ds_result, '_get_df'):
-            ds_result = ds_result._get_df()
         if isinstance(ds_result, np.ndarray):
             ds_result = pd.DataFrame(ds_result, columns=pd_result.columns)
+        else:
+            ds_result = get_dataframe(ds_result)
         pd.testing.assert_frame_equal(ds_result.reset_index(drop=True), 
                                       pd_result.reset_index(drop=True))
 
@@ -730,10 +730,10 @@ class TestIsNaFunctions:
         ds_result = ds.notna(ds_df)
 
         # ds.notna may return a DataFrame, DataStore, or numpy array
-        if hasattr(ds_result, '_get_df'):
-            ds_result = ds_result._get_df()
         if isinstance(ds_result, np.ndarray):
             ds_result = pd.DataFrame(ds_result, columns=pd_result.columns)
+        else:
+            ds_result = get_dataframe(ds_result)
         pd.testing.assert_frame_equal(ds_result.reset_index(drop=True), 
                                       pd_result.reset_index(drop=True))
 

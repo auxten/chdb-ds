@@ -5,6 +5,7 @@ These tests verify that datastore module-level functions work correctly
 and produce results compatible with pandas.
 """
 
+from tests.test_utils import get_dataframe
 import numpy as np
 import pandas as pd
 import pytest
@@ -215,8 +216,7 @@ class TestCategorizationFunctions:
         result = ds.get_dummies(data)
         expected = pd.get_dummies(data)
         # Result is DataStore, convert to DataFrame for comparison
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_get_dummies_with_prefix(self):
@@ -224,8 +224,7 @@ class TestCategorizationFunctions:
         data = ['a', 'b', 'a']
         result = ds.get_dummies(data, prefix='cat')
         expected = pd.get_dummies(data, prefix='cat')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_get_dummies_drop_first(self):
@@ -233,8 +232,7 @@ class TestCategorizationFunctions:
         data = ['a', 'b', 'a', 'c']
         result = ds.get_dummies(data, drop_first=True)
         expected = pd.get_dummies(data, drop_first=True)
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_get_dummies_datastore_with_columns(self):
@@ -308,8 +306,7 @@ class TestReshapingFunctions:
         df = pd.DataFrame({'A': [1, 2], 'B': [3, 4], 'C': [5, 6]})
         result = ds.melt(df, id_vars=['A'], value_vars=['B', 'C'])
         expected = pd.melt(df, id_vars=['A'], value_vars=['B', 'C'])
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_pivot_basic(self):
@@ -317,8 +314,7 @@ class TestReshapingFunctions:
         df = pd.DataFrame({'foo': ['one', 'one', 'two', 'two'], 'bar': ['A', 'B', 'A', 'B'], 'baz': [1, 2, 3, 4]})
         result = ds.pivot(df, columns='bar', index='foo', values='baz')
         expected = pd.pivot(df, columns='bar', index='foo', values='baz')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_pivot_table_basic(self):
@@ -326,8 +322,7 @@ class TestReshapingFunctions:
         df = pd.DataFrame({'A': ['foo', 'foo', 'bar', 'bar'], 'B': ['one', 'two', 'one', 'two'], 'C': [1, 2, 3, 4]})
         result = ds.pivot_table(df, values='C', index='A', columns='B', aggfunc='sum')
         expected = pd.pivot_table(df, values='C', index='A', columns='B', aggfunc='sum')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_crosstab_basic(self):
@@ -336,8 +331,7 @@ class TestReshapingFunctions:
         b = ['one', 'two', 'one', 'two']
         result = ds.crosstab(a, b)
         expected = pd.crosstab(a, b)
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_wide_to_long_basic(self):
@@ -345,8 +339,7 @@ class TestReshapingFunctions:
         df = pd.DataFrame({'A1970': [1, 2], 'A1980': [3, 4], 'B1970': [5, 6], 'B1980': [7, 8], 'id': [0, 1]})
         result = ds.wide_to_long(df, stubnames=['A', 'B'], i='id', j='year')
         expected = pd.wide_to_long(df, stubnames=['A', 'B'], i='id', j='year')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
 
@@ -359,8 +352,7 @@ class TestMergeFunctions:
         right = pd.DataFrame({'key': ['a', 'b', 'd'], 'other': [4, 5, 6]})
         result = ds.merge(left, right, on='key')
         expected = pd.merge(left, right, on='key')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_merge_asof_basic(self):
@@ -369,8 +361,7 @@ class TestMergeFunctions:
         right = pd.DataFrame({'a': [1, 2, 3, 6, 7], 'right_val': [1, 2, 3, 6, 7]})
         result = ds.merge_asof(left, right, on='a')
         expected = pd.merge_asof(left, right, on='a')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_merge_ordered_basic(self):
@@ -379,8 +370,7 @@ class TestMergeFunctions:
         right = pd.DataFrame({'key': ['b', 'c', 'd'], 'rvalue': [4, 5, 6]})
         result = ds.merge_ordered(left, right, on='key')
         expected = pd.merge_ordered(left, right, on='key')
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
 
@@ -393,8 +383,7 @@ class TestConcatFunction:
         df2 = pd.DataFrame({'A': [5, 6], 'B': [7, 8]})
         result = ds.concat([df1, df2])
         expected = pd.concat([df1, df2])
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result.reset_index(drop=True), expected.reset_index(drop=True))
 
     def test_concat_axis1(self):
@@ -403,8 +392,7 @@ class TestConcatFunction:
         df2 = pd.DataFrame({'B': [3, 4]})
         result = ds.concat([df1, df2], axis=1)
         expected = pd.concat([df1, df2], axis=1)
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_concat_ignore_index(self):
@@ -413,8 +401,7 @@ class TestConcatFunction:
         df2 = pd.DataFrame({'A': [3, 4]}, index=[0, 1])
         result = ds.concat([df1, df2], ignore_index=True)
         expected = pd.concat([df1, df2], ignore_index=True)
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
 
@@ -443,8 +430,7 @@ class TestUtilityFunctions:
         ]
         result = ds.json_normalize(data)
         expected = pd.json_normalize(data)
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_array_basic(self):
@@ -496,8 +482,7 @@ class TestIOFunctions:
 
         result = ds.read_fwf(file_path, widths=[10, 3])
         expected = pd.read_fwf(file_path, widths=[10, 3])
-        if hasattr(result, 'to_df'):
-            result = result.to_df()
+        result = get_dataframe(result)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_read_xml(self, tmp_path):
@@ -513,8 +498,7 @@ class TestIOFunctions:
         try:
             result = ds.read_xml(file_path, parser='etree')
             expected = pd.read_xml(file_path, parser='etree')
-            if hasattr(result, 'to_df'):
-                result = result.to_df()
+            result = get_dataframe(result)
             pd.testing.assert_frame_equal(result, expected)
         except ImportError:
             pytest.skip("XML parser not available")
