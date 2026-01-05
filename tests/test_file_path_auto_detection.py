@@ -15,6 +15,7 @@ import numpy as np
 import os
 import tempfile
 from datastore import DataStore
+from tests.test_utils import get_series
 
 
 @pytest.fixture
@@ -105,10 +106,10 @@ class TestFilePathAutoDetection:
         ds_result = ds.groupby('category')['value'].sum()
         pd_result = pd_df.groupby('category')['value'].sum()
         
-        ds_df = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result.to_df()
+        ds_series = get_series(ds_result)
         
         # Compare sums (order may differ)
-        ds_sums = set(ds_df.values if hasattr(ds_df, 'values') else ds_df['value'].values)
+        ds_sums = set(ds_series.values)
         pd_sums = set(pd_result.values)
         
         assert ds_sums == pd_sums

@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
 
 
 # =============================================================================
@@ -132,7 +132,7 @@ class TestRollingSingleColumn:
         ds_result = ds['A'].rolling(window=2).mean()
         
         # Compare as Series
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -147,7 +147,7 @@ class TestRollingSingleColumn:
         ds = DataStore(sample_df)
         ds_result = ds['A'].rolling(window=2).sum()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -342,7 +342,7 @@ class TestShift:
         ds = DataStore(sample_df)
         ds_result = ds['A'].shift(periods=1)
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -395,7 +395,7 @@ class TestDiff:
         ds = DataStore(sample_df)
         ds_result = ds['A'].diff()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -439,7 +439,7 @@ class TestPctChange:
         ds = DataStore(sample_df)
         ds_result = ds['A'].pct_change()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -584,7 +584,7 @@ class TestSqueeze:
         ds = DataStore(pd_df)
         ds_result = ds.squeeze()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -600,7 +600,7 @@ class TestSqueeze:
         ds = DataStore(pd_df)
         ds_result = ds.squeeze()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
@@ -617,7 +617,7 @@ class TestSqueeze:
         ds_result = ds.squeeze()
         
         # Single value squeeze should return scalar
-        ds_val = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_val = get_value(ds_result)
         assert ds_val == pd_result
     
     def test_squeeze_no_effect(self):
@@ -716,7 +716,7 @@ class TestEval:
         ds = DataStore(sample_df)
         ds_result = ds.eval('A + B')
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),

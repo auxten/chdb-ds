@@ -20,7 +20,7 @@ sys.path.insert(0, '/Users/auxten/Codes/go/src/github.com/auxten/chdb-ds')
 
 from datastore import DataStore
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestMergeAsof:
@@ -686,8 +686,7 @@ class TestDataFrameSeriesConstructors:
         ds_result = ds.Series([1, 2, 3], name='values')
 
         # ds.Series should return a ColumnExpr or pandas Series
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 

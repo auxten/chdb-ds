@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
 
 
 class TestChainedOperationsEdgeCases:
@@ -375,8 +375,7 @@ class TestAggregationEdgeCases:
 
         # Reset index for comparison
         pd_result = pd_result.reset_index()
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         if hasattr(ds_result, 'reset_index'):
             ds_result = ds_result.reset_index(drop=True) if 'category' in ds_result.columns else ds_result.reset_index()
 
@@ -392,8 +391,7 @@ class TestAggregationEdgeCases:
 
         # Reset index
         pd_result = pd_result.reset_index()
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.reset_index(drop=True) if 'category' in ds_result.columns else ds_result.reset_index()
 
@@ -474,8 +472,7 @@ class TestStringMethodEdgeCases:
         ds_result = ds['text'].str.replace(r'\d+', 'NUM', regex=True)
 
         # Execute if ColumnExpr (lazy evaluation)
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         # Returns Series
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.iloc[:, 0]
@@ -540,8 +537,7 @@ class TestMiscellaneousEdgeCases:
         ds_result = ds.pivot_table(values='value', index='row', columns='col', fill_value=0)
 
         # pivot_table result is usually a DataFrame
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_value(ds_result)
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
@@ -565,8 +561,7 @@ class TestMiscellaneousEdgeCases:
         ds_stacked = ds.stack()
 
         # Compare stack result
-        if hasattr(ds_stacked, '_execute'):
-            ds_stacked = ds_stacked._execute()
+        ds_stacked = get_series(ds_stacked)
 
         # stack returns Series with MultiIndex, compare values
         assert len(ds_stacked) == len(pd_stacked)

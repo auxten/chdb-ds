@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
 
 
 class TestMultiIndexOperations:
@@ -388,11 +388,7 @@ class TestAdvancedStringOperations:
         pd_result = pd_df['text'].str.extract(r'([a-z]+)(\d+)')
         ds_result = ds_df['text'].str.extract(r'([a-z]+)(\d+)')
 
-        # Execute lazy result if needed
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-        if isinstance(ds_result, DataStore):
-            ds_result = ds_result._get_df()
+        ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
     @pytest.mark.xfail(reason="extractall returns MultiIndex DataFrame, index info lost through lazy execution")
@@ -404,11 +400,7 @@ class TestAdvancedStringOperations:
         pd_result = pd_df['text'].str.extractall(r'([a-z])(\d)')
         ds_result = ds_df['text'].str.extractall(r'([a-z])(\d)')
 
-        # Execute lazy result if needed
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-        if isinstance(ds_result, DataStore):
-            ds_result = ds_result._get_df()
+        ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
     @pytest.mark.xfail(reason="chDB: Array(String) cannot be inside Nullable type")
@@ -430,11 +422,7 @@ class TestAdvancedStringOperations:
         pd_result = pd_df['text'].str.split(',', expand=True)
         ds_result = ds_df['text'].str.split(',', expand=True)
 
-        # Execute lazy result if needed
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-        if isinstance(ds_result, DataStore):
-            ds_result = ds_result._get_df()
+        ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result, check_dtype=False)
 
     def test_str_get_dummies(self):
@@ -470,8 +458,7 @@ class TestAdvancedStringOperations:
         ds_result = ds_df['text'].str.wrap(10)
 
         # Execute lazy result if needed
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
+        ds_result = get_series(ds_result)
         assert_series_equal(ds_result, pd_result, check_names=False)
 
     @pytest.mark.xfail(reason="chDB: normalizeUTF8NFD function does not exist")

@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
 
 
 class TestIterationProtocols:
@@ -676,7 +676,7 @@ class TestColumnExprCumulative:
         ds_result = ds_df['A'].cumprod()
         
         # Execute and compare
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_cummin(self):
@@ -687,7 +687,7 @@ class TestColumnExprCumulative:
         pd_result = pd_df['A'].cummin()
         ds_result = ds_df['A'].cummin()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_cummax(self):
@@ -698,7 +698,7 @@ class TestColumnExprCumulative:
         pd_result = pd_df['A'].cummax()
         ds_result = ds_df['A'].cummax()
         
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_prod(self):
@@ -710,7 +710,7 @@ class TestColumnExprCumulative:
         ds_result = ds_df['A'].prod()
         
         # Execute if lazy
-        ds_value = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_value = get_value(ds_result)
         assert pd_result == ds_value
 
 

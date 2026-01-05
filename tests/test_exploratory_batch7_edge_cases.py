@@ -16,15 +16,12 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 def assert_series_equals(ds_result, pd_result, check_dtype=True, check_names=False, msg=""):
     """Compare Series results."""
-    if hasattr(ds_result, '_execute'):
-        ds_series = ds_result._execute()
-    else:
-        ds_series = ds_result
+    ds_series = get_series(ds_result)
 
     if isinstance(ds_series, pd.DataFrame) and len(ds_series.columns) == 1:
         ds_series = ds_series.iloc[:, 0]

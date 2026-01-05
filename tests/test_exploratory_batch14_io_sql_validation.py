@@ -20,7 +20,7 @@ import json
 import datastore
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestIOOperationsRoundTrip:
@@ -463,7 +463,7 @@ class TestErrorHandling:
         pd_result = pd_df['a'].replace([np.inf, -np.inf], np.nan)
         
         # Just check length since exact NaN handling may differ
-        ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_exec = get_series(ds_result)
         assert len(ds_exec) == len(pd_result)
 
 
@@ -560,7 +560,7 @@ class TestColumnExprChaining:
         ds_result = ds['name'].str.strip().str.lower()
         pd_result = pd_df['name'].str.strip().str.lower()
         
-        ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_exec = get_series(ds_result)
         
         # Compare values
         assert list(ds_exec) == list(pd_result)
@@ -573,7 +573,7 @@ class TestColumnExprChaining:
         ds_result = ds['a'].abs().round()
         pd_result = pd_df['a'].abs().round()
         
-        ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_exec = get_series(ds_result)
         
         assert list(ds_exec) == list(pd_result)
     
@@ -600,7 +600,7 @@ class TestColumnExprChaining:
         ds_expr = (ds['a'] + ds['b']) * 2 - 1
         pd_expr = (pd_df['a'] + pd_df['b']) * 2 - 1
         
-        ds_exec = ds_expr._execute() if hasattr(ds_expr, '_execute') else ds_expr
+        ds_exec = get_series(ds_expr)
         
         assert list(ds_exec) == list(pd_expr)
 

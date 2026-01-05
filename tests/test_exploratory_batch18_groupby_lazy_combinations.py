@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
 class TestGroupByTransform:
@@ -32,7 +32,7 @@ class TestGroupByTransform:
         ds_result = ds_df.groupby('category')['value'].transform(lambda x: x - x.mean())
 
         # Series name may differ
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_transform_with_builtin_func(self):
@@ -46,7 +46,7 @@ class TestGroupByTransform:
         pd_result = pd_df.groupby('category')['value'].transform('mean')
         ds_result = ds_df.groupby('category')['value'].transform('mean')
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_transform_normalize(self):
@@ -63,7 +63,7 @@ class TestGroupByTransform:
         pd_result = pd_df.groupby('group')['score'].transform(normalize)
         ds_result = ds_df.groupby('group')['score'].transform(normalize)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_transform_cumulative(self):
@@ -77,7 +77,7 @@ class TestGroupByTransform:
         pd_result = pd_df.groupby('category')['value'].transform('cumsum')
         ds_result = ds_df.groupby('category')['value'].transform('cumsum')
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
 
@@ -139,7 +139,7 @@ class TestGroupByApply:
         pd_result = pd_df.groupby('category').apply(lambda x: x['value'].sum(), include_groups=False)
         ds_result = ds_df.groupby('category').apply(lambda x: x['value'].sum())
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_apply_returns_series(self):
@@ -238,7 +238,7 @@ class TestSeriesWhere:
         pd_result = pd_df['a'].where(pd_df['a'] > 2)
         ds_result = ds_df['a'].where(ds_df['a'] > 2)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_series_where_with_other(self):
@@ -249,7 +249,7 @@ class TestSeriesWhere:
         pd_result = pd_df['a'].where(pd_df['a'] > 2, -1)
         ds_result = ds_df['a'].where(ds_df['a'] > 2, -1)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_series_mask_simple(self):
@@ -260,7 +260,7 @@ class TestSeriesWhere:
         pd_result = pd_df['a'].mask(pd_df['a'] > 2)
         ds_result = ds_df['a'].mask(ds_df['a'] > 2)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_series_mask_with_other(self):
@@ -271,7 +271,7 @@ class TestSeriesWhere:
         pd_result = pd_df['a'].mask(pd_df['a'] > 2, 0)
         ds_result = ds_df['a'].mask(ds_df['a'] > 2, 0)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
 
@@ -333,7 +333,7 @@ class TestArgsortMethods:
         pd_result = pd_df['a'].argsort()
         ds_result = ds_df['a'].argsort()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_argmin(self):
@@ -380,7 +380,7 @@ class TestColumnExprAgg:
 
         # Check values match
         pd_dict = pd_result.to_dict()
-        ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_exec = get_series(ds_result)
         ds_dict = ds_exec.to_dict()
         for key in pd_dict:
             assert abs(pd_dict[key] - ds_dict[key]) < 1e-6
@@ -397,7 +397,7 @@ class TestExpandingMethods:
         pd_result = pd_df['a'].expanding().sum()
         ds_result = ds_df['a'].expanding().sum()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_expanding_mean(self):
@@ -408,7 +408,7 @@ class TestExpandingMethods:
         pd_result = pd_df['a'].expanding().mean()
         ds_result = ds_df['a'].expanding().mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_expanding_min_periods(self):
@@ -419,7 +419,7 @@ class TestExpandingMethods:
         pd_result = pd_df['a'].expanding(min_periods=3).mean()
         ds_result = ds_df['a'].expanding(min_periods=3).mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
 
@@ -434,7 +434,7 @@ class TestEwmMethods:
         pd_result = pd_df['a'].ewm(span=3).mean()
         ds_result = ds_df['a'].ewm(span=3).mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_ewm_mean_alpha(self):
@@ -445,7 +445,7 @@ class TestEwmMethods:
         pd_result = pd_df['a'].ewm(alpha=0.5).mean()
         ds_result = ds_df['a'].ewm(alpha=0.5).mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
 
@@ -460,7 +460,7 @@ class TestRollingEdgeCases:
         pd_result = pd_df['a'].rolling(3, min_periods=1).mean()
         ds_result = ds_df['a'].rolling(3, min_periods=1).mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_rolling_center(self):
@@ -471,7 +471,7 @@ class TestRollingEdgeCases:
         pd_result = pd_df['a'].rolling(3, center=True).mean()
         ds_result = ds_df['a'].rolling(3, center=True).mean()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_rolling_std(self):
@@ -482,7 +482,7 @@ class TestRollingEdgeCases:
         pd_result = pd_df['a'].rolling(3).std()
         ds_result = ds_df['a'].rolling(3).std()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
 
@@ -558,7 +558,7 @@ class TestComplexChains:
         pd_result = pd_df[pd_df['flag']].groupby('category')['value'].sum()
         ds_result = ds_df[ds_df['flag']].groupby('category')['value'].sum()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_assign_filter_sort(self):
@@ -613,7 +613,7 @@ class TestModeUnique:
         pd_result = pd_df['a'].mode()
         ds_result = ds_df['a'].mode()
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_mode_multiple_values(self):
@@ -625,7 +625,7 @@ class TestModeUnique:
         ds_result = ds_df['a'].mode()
 
         # Both should return all modes
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         assert len(ds_series) == len(pd_result)
 
     def test_unique(self):
@@ -638,7 +638,7 @@ class TestModeUnique:
 
         # Compare as sets since order may differ
         pd_set = set(pd_result)
-        ds_exec = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_exec = get_series(ds_result)
         ds_set = set(ds_exec)
         assert pd_set == ds_set
 
@@ -665,7 +665,7 @@ class TestMapApply:
         pd_result = pd_df['a'].map(mapping)
         ds_result = ds_df['a'].map(mapping)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_map_with_function(self):
@@ -676,7 +676,7 @@ class TestMapApply:
         pd_result = pd_df['a'].map(lambda x: x * 2)
         ds_result = ds_df['a'].map(lambda x: x * 2)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
     def test_apply_with_function(self):
@@ -687,7 +687,7 @@ class TestMapApply:
         pd_result = pd_df['a'].apply(lambda x: x ** 2)
         ds_result = ds_df['a'].apply(lambda x: x ** 2)
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
 
 
@@ -787,7 +787,7 @@ class TestGetMethod:
         pd_result = pd_df.get('a')
         ds_result = ds_df.get('a')
 
-        ds_series = ds_result._execute() if hasattr(ds_result, '_execute') else ds_result
+        ds_series = get_series(ds_result)
         pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_get_non_existing_column(self):
