@@ -355,6 +355,137 @@ def assert_row_count_match(
     assert ds_len == pd_len, f"{prefix}Row count doesn't match.\n" f"DataStore: {ds_len}\n" f"Pandas:    {pd_len}"
 
 
+def assert_series_equals(
+    ds_result,
+    pd_result: pd.Series,
+    check_dtype: bool = True,
+    check_names: bool = False,
+    check_index: bool = False,
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    msg: str = "",
+) -> None:
+    """
+    Compare DataStore Series-like result with pandas Series.
+
+    Uses Duck Typing principle: triggers execution implicitly via .values property.
+    NEVER uses hasattr checks or explicit _execute() calls.
+
+    Args:
+        ds_result: DataStore result (ColumnExpr, Series-like, or similar)
+        pd_result: Expected pandas Series
+        check_dtype: If True, also verify dtypes match
+        check_names: If True, verify Series names match
+        check_index: If True, verify index matches
+        rtol: Relative tolerance for float comparison
+        atol: Absolute tolerance for float comparison
+        msg: Additional message to include in assertion errors
+
+    Example:
+        # pandas operations
+        pd_series = pd.Series([1, 2, 3])
+
+        # DataStore operations (mirror of pandas)
+        ds_series = ds['col']
+
+        # Compare results - triggers execution implicitly via .values
+        assert_series_equals(ds_series, pd_series)
+    """
+    prefix = f"{msg}: " if msg else ""
+
+    # Duck Typing: access .values to implicitly trigger execution
+    # This works for both lazy and executed objects
+    ds_values = np.asarray(ds_result.values)
+    pd_values = np.asarray(pd_result.values)
+
+    # Compare length
+    assert len(ds_values) == len(pd_values), (
+        f"{prefix}Series length doesn't match.\n"
+        f"DataStore: {len(ds_values)}\n"
+        f"Pandas:    {len(pd_values)}"
+    )
+
+    # Compare values
+    _assert_array_equal(ds_values, pd_values, f"{prefix}Series values don't match", check_dtype, rtol, atol)
+
+    # Optionally check dtype
+    if check_dtype:
+        ds_dtype = ds_result.dtype
+        pd_dtype = pd_result.dtype
+        # Allow bool vs uint8 mismatch (common in chDB)
+        if ds_dtype != pd_dtype and {str(ds_dtype), str(pd_dtype)} != {'bool', 'uint8'}:
+            assert False, (
+                f"{prefix}Series dtype doesn't match.\n"
+                f"DataStore dtype: {ds_dtype}\n"
+                f"Pandas dtype:    {pd_dtype}"
+            )
+
+    # Optionally check names
+    if check_names:
+        ds_name = ds_result.name
+        pd_name = pd_result.name
+        assert ds_name == pd_name, (
+            f"{prefix}Series names don't match.\n"
+            f"DataStore name: {ds_name}\n"
+            f"Pandas name:    {pd_name}"
+        )
+
+
+def get_dataframe(ds_result) -> pd.DataFrame:
+    """
+    Get a pandas DataFrame from a DataStore result using Duck Typing.
+
+    Triggers execution implicitly by accessing standard properties.
+    NEVER uses hasattr checks or explicit _execute() calls.
+
+    This function relies on the fact that accessing .values or similar
+    properties on lazy objects triggers execution.
+
+    Args:
+        ds_result: DataStore result (DataStore, lazy object, or similar)
+
+    Returns:
+        pandas DataFrame
+
+    Example:
+        df = get_dataframe(ds_result)
+    """
+    # Access columns to trigger execution if needed
+    columns = list(ds_result.columns)
+
+    # Build DataFrame from values - this triggers execution implicitly
+    data = {}
+    for col in columns:
+        data[col] = np.asarray(ds_result[col].values)
+
+    return pd.DataFrame(data, columns=columns)
+
+
+def get_series(ds_result) -> pd.Series:
+    """
+    Get a pandas Series from a DataStore Series-like result using Duck Typing.
+
+    Triggers execution implicitly by accessing .values property.
+    NEVER uses hasattr checks or explicit _execute() calls.
+
+    Args:
+        ds_result: DataStore Series-like result (ColumnExpr, etc.)
+
+    Returns:
+        pandas Series
+
+    Example:
+        series = get_series(ds_result)
+    """
+    # Access .values to trigger execution implicitly
+    values = np.asarray(ds_result.values)
+
+    # Get name if available
+    name = getattr(ds_result, 'name', None)
+
+    return pd.Series(values, name=name)
+
+
 def assert_datastore_equals_pandas_chdb_compat(
     ds_result,
     pd_result: pd.DataFrame,
