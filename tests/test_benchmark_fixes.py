@@ -593,20 +593,21 @@ class TestBenchmarkScenarios:
             path = os.path.join(tmpdir, 'test.parquet')
             df.to_parquet(path)
 
-            # Pandas
+            # Pandas - use secondary sort key for deterministic order
+            # (SQL sort doesn't guarantee stability, so we need deterministic order)
             pd_result = df.copy()
             pd_result['computed'] = pd_result['int_col'] * 2
             pd_result = pd_result[pd_result['computed'] > 500]
             pd_result = pd_result[['id', 'int_col', 'str_col', 'computed']]
-            pd_result = pd_result.sort_values('computed', ascending=False, kind='stable')
+            pd_result = pd_result.sort_values(['computed', 'id'], ascending=[False, True])
             pd_result = pd_result.head(500)
 
-            # DataStore
+            # DataStore - use same secondary sort key
             ds = DataStore.from_file(path)
             ds['computed'] = ds['int_col'] * 2
             ds_result = ds[ds['computed'] > 500]
             ds_result = ds_result[['id', 'int_col', 'str_col', 'computed']]
-            ds_result = ds_result.sort_values('computed', ascending=False)
+            ds_result = ds_result.sort_values(['computed', 'id'], ascending=[False, True])
             ds_result = ds_result.head(500).to_df()
 
             pd_result = pd_result.reset_index(drop=True)
@@ -957,6 +958,7 @@ class TestBoolColumnBehavior:
             df.to_parquet(path)
 
             # Pandas - ultra-complex pipeline
+            # Use secondary sort key for deterministic order (SQL sort isn't stable)
             pd_result = df.copy()
             pd_result['computed'] = pd_result['int_col'] * 2
             pd_result['computed2'] = pd_result['float_col'] / 2
@@ -967,10 +969,10 @@ class TestBoolColumnBehavior:
             pd_result = pd_result[pd_result['str_col'].isin(['A', 'B', 'C'])]
             pd_result = pd_result[pd_result['computed'] > 300]
             pd_result = pd_result[pd_result['computed2'] < 400]
-            pd_result = pd_result.sort_values('int_col', ascending=False, kind='stable')
+            pd_result = pd_result.sort_values(['int_col', 'id'], ascending=[False, True])
             pd_result = pd_result.head(100)
 
-            # DataStore
+            # DataStore - use same secondary sort key
             ds = DataStore.from_file(path)
             ds['computed'] = ds['int_col'] * 2
             ds['computed2'] = ds['float_col'] / 2
@@ -981,7 +983,7 @@ class TestBoolColumnBehavior:
             ds_result = ds_result[ds_result['str_col'].isin(['A', 'B', 'C'])]
             ds_result = ds_result[ds_result['computed'] > 300]
             ds_result = ds_result[ds_result['computed2'] < 400]
-            ds_result = ds_result.sort_values('int_col', ascending=False)
+            ds_result = ds_result.sort_values(['int_col', 'id'], ascending=[False, True])
             ds_result = ds_result.head(100).to_df()
 
             pd_result = pd_result.reset_index(drop=True)
