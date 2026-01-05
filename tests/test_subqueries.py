@@ -176,7 +176,7 @@ class TestSubqueryExecution(unittest.TestCase):
         result = query.execute()
         self.assertEqual(2, len(result))  # Alice has 2 orders (Charlie is inactive but still counts)
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         order_ids = [row['order_id'] for row in rows]
         self.assertIn(101, order_ids)
         self.assertIn(102, order_ids)
@@ -190,7 +190,7 @@ class TestSubqueryExecution(unittest.TestCase):
         result = query.execute()
         self.assertEqual(3, len(result))  # All except Bob's order
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         order_ids = [row['order_id'] for row in rows]
         self.assertIn(101, order_ids)
         self.assertIn(102, order_ids)
@@ -206,7 +206,7 @@ class TestSubqueryExecution(unittest.TestCase):
         result = query.execute()
         self.assertEqual(2, len(result))  # Only Alice's orders (she's active)
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         # All orders should be from user_id 1 (Alice)
         for row in rows:
             self.assertEqual(1, row['user_id'])
@@ -227,7 +227,7 @@ class TestSubqueryExecution(unittest.TestCase):
         result = ds_archive.select('*').execute()
         self.assertEqual(2, len(result))  # 2 high-value orders
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         amounts = [row['amount'] for row in rows]
         self.assertIn(200.0, amounts)
         self.assertIn(300.0, amounts)
@@ -251,7 +251,7 @@ class TestSubqueryExecution(unittest.TestCase):
         result = orders_query.execute()
         self.assertEqual(3, len(result))  # Alice's 2 orders + Diana's 1 order
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         order_ids = [row['order_id'] for row in rows]
         self.assertIn(101, order_ids)  # Alice
         self.assertIn(102, order_ids)  # Alice

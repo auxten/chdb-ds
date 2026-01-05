@@ -73,7 +73,7 @@ class TestJsonAccessorBasic:
     def test_json_extract_string_execution(self, ds_with_json):
         """Test extracting string values from JSON."""
         ds_with_json['name'] = ds_with_json['data'].json.json_extract_string('name')
-        df = ds_with_json.to_df()
+        df = ds_with_json.sort_values('id').to_df()
 
         assert 'name' in df.columns
         expected_names = ['Alice', 'Bob', 'Charlie']
@@ -84,7 +84,7 @@ class TestJsonAccessorBasic:
     def test_json_extract_int_execution(self, ds_with_json):
         """Test extracting integer values from JSON."""
         ds_with_json['age'] = ds_with_json['data'].json.json_extract_int('age')
-        df = ds_with_json.to_df()
+        df = ds_with_json.sort_values('id').to_df()
 
         # Note: ORDER BY id in fixture ensures consistent order
         expected_ages = [30, 25, 35]
@@ -95,7 +95,7 @@ class TestJsonAccessorBasic:
     def test_json_extract_bool_execution(self, ds_with_json):
         """Test extracting boolean values from JSON."""
         ds_with_json['is_active'] = ds_with_json['data'].json.json_extract_bool('active')
-        df = ds_with_json.to_df()
+        df = ds_with_json.sort_values('id').to_df()
 
         expected = [1, 0, 1]  # ClickHouse returns 1/0 for bool
         assert list(df['is_active']) == expected

@@ -1,18 +1,14 @@
 """
-Test documenting dtype differences between chDB and pandas.
+Test verifying dtype consistency between chDB and pandas.
 
-When data passes through chDB's Python() table function, the returned DataFrame
-may have different dtypes than the original:
+These tests verify that chDB now correctly preserves dtypes when data passes
+through chDB's Python() table function:
 
-1. Float columns with NaN: pandas `float64` → chDB `Float64Dtype()` (nullable)
-2. Integer columns with None: converted to `Float64Dtype()`
-3. Datetime columns: naive `datetime64[ns]` → timezone-aware `datetime64[ns, <timezone>]`
+1. Float columns with NaN: now correctly preserves float64
+2. Integer columns with None: now correctly preserves original dtype  
+3. Datetime columns: now correctly preserves naive datetime64[ns]
 
-These are known chDB behaviors documented here for tracking.
-See: https://github.com/chdb-io/chdb/issues/XXX (to be filed)
-
-The values are semantically equivalent (NaN positions match, values match),
-but the dtype representation differs.
+These issues were fixed in recent chDB versions.
 """
 
 import numpy as np
@@ -25,10 +21,6 @@ import chdb
 class TestChDBDtypeDifferences:
     """Document known dtype differences between chDB output and pandas."""
 
-    @pytest.mark.xfail(
-        reason="chDB converts float64 with NaN to nullable Float64Dtype",
-        strict=True,
-    )
     def test_float_nan_dtype_preservation(self):
         """
         chDB converts float64 columns containing NaN to nullable Float64Dtype.
@@ -46,10 +38,6 @@ class TestChDBDtypeDifferences:
         # This will fail: chDB returns Float64Dtype() instead of float64
         assert result["a"].dtype == np.float64
 
-    @pytest.mark.xfail(
-        reason="chDB converts integer-like columns with None to Float64Dtype",
-        strict=True,
-    )
     def test_integer_none_dtype_preservation(self):
         """
         chDB converts columns with None to nullable Float64Dtype.
@@ -65,10 +53,6 @@ class TestChDBDtypeDifferences:
         # This will fail: chDB returns Float64Dtype()
         assert result["a"].dtype == original_dtype
 
-    @pytest.mark.xfail(
-        reason="chDB adds timezone to naive datetime columns",
-        strict=True,
-    )
     def test_datetime_timezone_preservation(self):
         """
         chDB adds system timezone to naive datetime columns.

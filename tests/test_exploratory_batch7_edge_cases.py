@@ -16,41 +16,7 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
-
-
-# Helper for comparison
-def assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=True, check_row_order=True, msg=""):
-    """Compare DataStore result with pandas result."""
-    if isinstance(ds_result, DataStore):
-        ds_df = ds_result._execute()
-    elif hasattr(ds_result, '_execute'):
-        ds_df = ds_result._execute()
-    else:
-        ds_df = ds_result
-
-    # Convert to DataFrame if Series
-    if isinstance(ds_df, pd.Series):
-        ds_df = ds_df.to_frame()
-    if isinstance(pd_result, pd.Series):
-        pd_result = pd_result.to_frame()
-
-    # Reset index for comparison
-    ds_df = ds_df.reset_index(drop=True)
-    pd_result = pd_result.reset_index(drop=True)
-
-    if not check_row_order:
-        # Sort both by all columns for unordered comparison
-        sort_cols = list(ds_df.columns)
-        ds_df = ds_df.sort_values(by=sort_cols).reset_index(drop=True)
-        pd_result = pd_result.sort_values(by=sort_cols).reset_index(drop=True)
-
-    # Compare
-    pd.testing.assert_frame_equal(
-        ds_df, pd_result,
-        check_dtype=check_dtype,
-        check_names=False,
-        obj=msg or "DataStore vs Pandas"
-    )
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 def assert_series_equals(ds_result, pd_result, check_dtype=True, check_names=False, msg=""):
@@ -67,16 +33,18 @@ def assert_series_equals(ds_result, pd_result, check_dtype=True, check_names=Fal
     pd_result = pd_result.reset_index(drop=True)
 
     pd.testing.assert_series_equal(
-        ds_series, pd_result,
+        ds_series,
+        pd_result,
         check_dtype=check_dtype,
         check_names=check_names,
-        obj=msg or "DataStore Series vs Pandas Series"
+        obj=msg or "DataStore Series vs Pandas Series",
     )
 
 
 # ============================================================================
 # Section 1: Empty DataFrame Operations
 # ============================================================================
+
 
 class TestEmptyDataFrameOperations:
     """Tests for operations on empty DataFrames."""
@@ -197,6 +165,7 @@ class TestEmptyDataFrameOperations:
 # Section 2: Single Row DataFrame Operations
 # ============================================================================
 
+
 class TestSingleRowOperations:
     """Tests for operations on single-row DataFrames."""
 
@@ -266,16 +235,15 @@ class TestSingleRowOperations:
 # Section 3: NULL/NaN Handling Edge Cases
 # ============================================================================
 
+
 class TestNullHandlingEdgeCases:
     """Tests for NULL/NaN handling edge cases."""
 
     def setup_method(self):
         """Create test data with NaN values."""
-        self.df_with_nan = pd.DataFrame({
-            'a': [1, None, 3, None, 5],
-            'b': [None, 2, None, 4, None],
-            'c': ['x', 'y', None, 'z', None]
-        })
+        self.df_with_nan = pd.DataFrame(
+            {'a': [1, None, 3, None, 5], 'b': [None, 2, None, 4, None], 'c': ['x', 'y', None, 'z', None]}
+        )
         self.ds_with_nan = DataStore(self.df_with_nan)
 
     def test_filter_on_null_column(self):
@@ -308,11 +276,7 @@ class TestNullHandlingEdgeCases:
 
     def test_dropna_all(self):
         """dropna with how='all'."""
-        df = pd.DataFrame({
-            'a': [1, None, None],
-            'b': [2, None, None],
-            'c': [3, 4, None]
-        })
+        df = pd.DataFrame({'a': [1, None, None], 'b': [2, None, None], 'c': [3, 4, None]})
         ds = DataStore(df)
 
         pd_result = df.dropna(how='all')
@@ -404,16 +368,13 @@ class TestNullHandlingEdgeCases:
 # Section 4: Column Selection Edge Cases
 # ============================================================================
 
+
 class TestColumnSelectionEdgeCases:
     """Tests for column selection edge cases."""
 
     def setup_method(self):
         """Create test data."""
-        self.df = pd.DataFrame({
-            'a': [1, 2, 3],
-            'b': [4, 5, 6],
-            'c': ['x', 'y', 'z']
-        })
+        self.df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': ['x', 'y', 'z']})
         self.ds = DataStore(self.df)
 
     def test_select_single_column_as_list(self):
@@ -434,10 +395,7 @@ class TestColumnSelectionEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_names=False,
-            check_dtype=False
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
         )
 
     def test_select_columns_in_different_order(self):
@@ -488,16 +446,15 @@ class TestColumnSelectionEdgeCases:
 # Section 5: Groupby Edge Cases
 # ============================================================================
 
+
 class TestGroupbyEdgeCases:
     """Tests for groupby edge cases."""
 
     def setup_method(self):
         """Create test data."""
-        self.df = pd.DataFrame({
-            'cat': ['A', 'B', 'A', 'B', 'A', 'C'],
-            'val': [1, 2, 3, 4, 5, 6],
-            'val2': [10, 20, 30, 40, 50, 60]
-        })
+        self.df = pd.DataFrame(
+            {'cat': ['A', 'B', 'A', 'B', 'A', 'C'], 'val': [1, 2, 3, 4, 5, 6], 'val2': [10, 20, 30, 40, 50, 60]}
+        )
         self.ds = DataStore(self.df)
 
     def test_groupby_single_group(self):
@@ -607,16 +564,13 @@ class TestGroupbyEdgeCases:
 # Section 6: Arithmetic Edge Cases
 # ============================================================================
 
+
 class TestArithmeticEdgeCases:
     """Tests for arithmetic edge cases."""
 
     def setup_method(self):
         """Create test data."""
-        self.df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5],
-            'b': [10, 20, 30, 40, 50],
-            'c': [0, 1, 0, 2, 0]
-        })
+        self.df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50], 'c': [0, 1, 0, 2, 0]})
         self.ds = DataStore(self.df)
 
     def test_division_by_zero(self):
@@ -644,10 +598,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_names=False,
-            check_dtype=False
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
         )
 
     def test_float_precision(self):
@@ -688,10 +639,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_names=False,
-            check_dtype=False
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
         )
 
     def test_power_operation(self):
@@ -704,10 +652,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_names=False,
-            check_dtype=False
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
         )
 
 
@@ -715,15 +660,15 @@ class TestArithmeticEdgeCases:
 # Section 7: String Operations Edge Cases
 # ============================================================================
 
+
 class TestStringOperationsEdgeCases:
     """Tests for string operations edge cases."""
 
     def setup_method(self):
         """Create test data with strings."""
-        self.df = pd.DataFrame({
-            'text': ['hello', 'WORLD', 'Hello World', '', '  spaces  ', None],
-            'num': [1, 2, 3, 4, 5, 6]
-        })
+        self.df = pd.DataFrame(
+            {'text': ['hello', 'WORLD', 'Hello World', '', '  spaces  ', None], 'num': [1, 2, 3, 4, 5, 6]}
+        )
         self.ds = DataStore(self.df)
 
     def test_str_lower(self):
@@ -809,6 +754,7 @@ class TestStringOperationsEdgeCases:
 # Section 8: Type Conversion Edge Cases
 # ============================================================================
 
+
 class TestTypeConversionEdgeCases:
     """Tests for type conversion edge cases."""
 
@@ -887,15 +833,13 @@ class TestTypeConversionEdgeCases:
 # Section 9: Slice/Range Edge Cases
 # ============================================================================
 
+
 class TestSliceEdgeCases:
     """Tests for slice/range edge cases."""
 
     def setup_method(self):
         """Create test data."""
-        self.df = pd.DataFrame({
-            'a': list(range(10)),
-            'b': list(range(10, 20))
-        })
+        self.df = pd.DataFrame({'a': list(range(10)), 'b': list(range(10, 20))})
         self.ds = DataStore(self.df)
 
     def test_head_zero(self):
@@ -934,7 +878,6 @@ class TestSliceEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="Step in slice not supported - known DataStore design limitation", raises=ValueError)
     def test_slice_with_step(self):
         """Slice with step parameter."""
         pd_result = self.df[::2]
@@ -942,7 +885,6 @@ class TestSliceEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @pytest.mark.xfail(reason="Negative OFFSET not supported by chDB - known chDB limitation")
     def test_slice_negative_start(self):
         """Slice with negative start."""
         pd_result = self.df[-3:]
@@ -963,16 +905,13 @@ class TestSliceEdgeCases:
 # Section 10: Sort Edge Cases
 # ============================================================================
 
+
 class TestSortEdgeCases:
     """Tests for sort edge cases."""
 
     def setup_method(self):
         """Create test data."""
-        self.df = pd.DataFrame({
-            'a': [3, 1, 2, 1, 3],
-            'b': [1, 2, 3, 4, 5],
-            'c': ['z', 'a', 'b', 'c', 'd']
-        })
+        self.df = pd.DataFrame({'a': [3, 1, 2, 1, 3], 'b': [1, 2, 3, 4, 5], 'c': ['z', 'a', 'b', 'c', 'd']})
         self.ds = DataStore(self.df)
 
     def test_sort_ascending(self):

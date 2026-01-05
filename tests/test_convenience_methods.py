@@ -60,9 +60,9 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertEqual(list(df.columns), ["id", "name", "age", "city"])
 
     def test_to_dict_returns_list_of_dicts(self):
-        """Test that to_dict() returns a list of dictionaries."""
+        """Test that to_dict(orient='records') returns a list of dictionaries."""
         ds = DataStore.from_file(self.csv_file)
-        records = ds.select("*").to_dict()
+        records = ds.select("*").to_dict(orient='records')
 
         # Check it's a list of dicts
         self.assertIsInstance(records, list)
@@ -80,9 +80,9 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertEqual(len(df), 3)
 
     def test_to_dict_with_filter(self):
-        """Test to_dict() with filter applied."""
+        """Test to_dict(orient='records') with filter applied."""
         ds = DataStore.from_file(self.csv_file)
-        records = ds.select("*").filter(ds.age > 25).to_dict()
+        records = ds.select("*").filter(ds.age > 25).to_dict(orient='records')
 
         # Should only include Bob, Charlie, and Diana (age > 25)
         self.assertEqual(len(records), 3)
@@ -99,9 +99,9 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertEqual(len(df), 2)
 
     def test_to_dict_with_select_columns(self):
-        """Test to_dict() with specific column selection."""
+        """Test to_dict(orient='records') with specific column selection."""
         ds = DataStore.from_file(self.csv_file)
-        records = ds.select("name", "age").to_dict()
+        records = ds.select("name", "age").to_dict(orient='records')
 
         # Should only include name and age columns
         self.assertEqual(len(records), 4)
@@ -126,7 +126,7 @@ class TestConvenienceMethods(unittest.TestCase):
         """Test that to_dict() produces the same result as execute().to_dict()."""
         ds = DataStore.from_file(self.csv_file)
 
-        # Old way
+        # Old way - pandas DataFrame.to_dict() default is 'dict' orient
         dict1 = ds.select("*").filter(ds.age > 25).execute().to_dict()
 
         # New way
@@ -145,9 +145,9 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertEqual(list(df["name"]), ["Diana", "Bob"])
 
     def test_to_dict_with_complex_query(self):
-        """Test to_dict() with a complex query."""
+        """Test to_dict(orient='records') with a complex query."""
         ds = DataStore.from_file(self.csv_file)
-        records = ds.select("name", "city").filter(ds.age < 35).sort("name").to_dict()
+        records = ds.select("name", "city").filter(ds.age < 35).sort("name").to_dict(orient='records')
 
         # Should return Alice, Bob, Diana (all < 35), sorted by name
         self.assertEqual(len(records), 3)

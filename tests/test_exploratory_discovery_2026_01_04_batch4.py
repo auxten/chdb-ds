@@ -13,50 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-
-
-# ============================================================================
-# Helper Functions
-# ============================================================================
-
-
-def assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=True, check_row_order=True, msg=""):
-    """Compare DataStore result with pandas result."""
-    if hasattr(ds_result, '_execute'):
-        ds_df = ds_result._execute()
-    elif hasattr(ds_result, 'to_frame'):
-        ds_df = ds_result.to_frame()
-    elif isinstance(ds_result, pd.DataFrame):
-        ds_df = ds_result
-    elif isinstance(ds_result, pd.Series):
-        ds_df = ds_result
-    else:
-        ds_df = ds_result
-
-    if isinstance(pd_result, pd.Series) and isinstance(ds_df, pd.DataFrame):
-        if len(ds_df.columns) == 1:
-            ds_df = ds_df.iloc[:, 0]
-
-    if isinstance(pd_result, pd.DataFrame) and isinstance(ds_df, pd.DataFrame):
-        pd_result = pd_result.reset_index(drop=True)
-        ds_df = ds_df.reset_index(drop=True)
-
-        if not check_row_order:
-            pd_result = pd_result.sort_values(by=list(pd_result.columns)).reset_index(drop=True)
-            ds_df = ds_df.sort_values(by=list(ds_df.columns)).reset_index(drop=True)
-
-        pd.testing.assert_frame_equal(ds_df, pd_result, check_dtype=check_dtype, check_names=False)
-    elif isinstance(pd_result, pd.Series) and isinstance(ds_df, pd.Series):
-        pd_result = pd_result.reset_index(drop=True)
-        if hasattr(ds_df, 'reset_index'):
-            ds_df = ds_df.reset_index(drop=True)
-
-        pd.testing.assert_series_equal(ds_df, pd_result, check_dtype=check_dtype, check_names=False)
-    else:
-        if pd.isna(pd_result) and pd.isna(ds_df):
-            pass
-        else:
-            assert ds_df == pd_result, f"{msg}: {ds_df} != {pd_result}"
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 @pytest.fixture

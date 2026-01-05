@@ -13,40 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-
-
-def assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=True, check_row_order=True):
-    """Helper to compare DataStore result with pandas result."""
-    if hasattr(ds_result, '_execute'):
-        ds_df = ds_result._execute()
-    elif hasattr(ds_result, 'to_pandas'):
-        ds_df = ds_result.to_pandas()
-    else:
-        ds_df = ds_result
-
-    # Handle Series
-    if isinstance(pd_result, pd.Series):
-        if isinstance(ds_df, pd.DataFrame) and len(ds_df.columns) == 1:
-            ds_df = ds_df.iloc[:, 0]
-        elif not isinstance(ds_df, pd.Series):
-            ds_df = pd.Series(ds_df)
-
-    if not check_row_order:
-        if isinstance(ds_df, pd.DataFrame):
-            ds_df = ds_df.sort_values(by=list(ds_df.columns)).reset_index(drop=True)
-            pd_result = pd_result.sort_values(by=list(pd_result.columns)).reset_index(drop=True)
-        else:
-            ds_df = ds_df.sort_values().reset_index(drop=True)
-            pd_result = pd_result.sort_values().reset_index(drop=True)
-
-    if isinstance(pd_result, pd.DataFrame):
-        pd.testing.assert_frame_equal(
-            ds_df.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=check_dtype, check_names=False
-        )
-    else:
-        pd.testing.assert_series_equal(
-            ds_df.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=check_dtype, check_names=False
-        )
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 class TestChainedOperationsEdgeCases:
@@ -432,7 +399,6 @@ class TestAggregationEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
 
-    @pytest.mark.xfail(reason="as_index=False should return DataFrame but returns Series")
     def test_groupby_agg_as_index_false(self):
         """groupby with as_index=False"""
         df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
@@ -479,7 +445,6 @@ class TestStringMethodEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="str.split expand=True not supported")
     def test_str_split_expand(self):
         """str.split with expand=True"""
         df = pd.DataFrame({'text': ['a-b-c', 'd-e-f', 'g-h-i']})
@@ -490,7 +455,6 @@ class TestStringMethodEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @pytest.mark.xfail(reason="str.extract returns Series instead of DataFrame for multiple groups")
     def test_str_extract(self):
         """str.extract with regex groups"""
         df = pd.DataFrame({'text': ['user_123', 'user_456', 'admin_789']})

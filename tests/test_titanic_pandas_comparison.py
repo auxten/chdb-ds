@@ -363,17 +363,13 @@ class TestOrderSensitiveOperations(unittest.TestCase):
         self.assertEqual(list(ds_count.index), list(pd_count.index))
 
 
-@pytest.mark.xfail(reason="chDB treats NaN as empty string, awaiting fix in future chDB version")
 class TestChdbNaNHandling(unittest.TestCase):
     """
     Tests for chDB's NaN handling behavior.
 
-    KNOWN ISSUE: chDB currently treats NaN values as empty strings ('') in GROUP BY,
-    while pandas properly excludes NaN from groupby operations.
-
-    These tests are marked xfail until chDB fixes this behavior.
-    When chDB is updated to handle NaN correctly, these tests should pass
-    and the xfail marker can be removed.
+    NOTE: Some NaN handling issues have been fixed in recent chDB versions.
+    The remaining xfail tests document cases where chDB still treats NaN
+    as empty string in GROUP BY columns.
     """
 
     @classmethod
@@ -390,6 +386,7 @@ class TestChdbNaNHandling(unittest.TestCase):
     def tearDown(self):
         config.execution_engine = 'auto'
 
+    @pytest.mark.xfail(reason="chDB treats NaN as empty string in GROUP BY column")
     def test_groupby_embarked_nan_handling(self):
         """
         Test groupby on column with NaN values using chDB engine.
@@ -412,6 +409,7 @@ class TestChdbNaNHandling(unittest.TestCase):
             f"chDB returned {list(ds_result.index)}, expected {list(pd_result.index)}",
         )
 
+    @pytest.mark.xfail(reason="chDB treats NaN as empty string in GROUP BY column")
     def test_groupby_embarked_count_nan_handling(self):
         """Test count aggregation with NaN-containing groupby column."""
         ds_result = self.ds.groupby('Embarked')['PassengerId'].count()

@@ -70,7 +70,7 @@ class TestComprehensiveJoins(unittest.TestCase):
 
         # Execute with chdb
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0, "Should return joined results")
@@ -110,7 +110,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Three-way Join SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0, "Should return joined results")
@@ -144,7 +144,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Left Join with Filter SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0, "Should return filtered joined results")
@@ -180,7 +180,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Join with Aggregation SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0, "Should return aggregated results")
@@ -225,7 +225,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Four-way Join SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0, "Should return joined results")
@@ -249,10 +249,10 @@ class TestComprehensiveJoins(unittest.TestCase):
 
         # Simply query both sources separately to demonstrate they work
         orders_result = orders.select("*").limit(5).connect().execute()
-        orders_data = orders_result.to_dict()
+        orders_data = orders_result.to_dict(orient='records')
 
         numbers_result = numbers.select("*").limit(5).connect().execute()
-        numbers_data = numbers_result.to_dict()
+        numbers_data = numbers_result.to_dict(orient='records')
 
         print(f"\n=== Numbers Generator Demo ===")
         print(f"Orders count: {len(orders_data)}")
@@ -293,7 +293,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Complex Conditions SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         if len(data) > 0:
@@ -328,7 +328,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Join with ORDER and LIMIT SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertLessEqual(len(data), 5, "Should respect LIMIT")
@@ -367,7 +367,7 @@ class TestComprehensiveJoins(unittest.TestCase):
         print(f"\n=== Country Aggregation SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         print("\nCountry Statistics:")
@@ -409,7 +409,7 @@ class TestCrossDataSourceJoins(unittest.TestCase):
         print(f"\n=== File Enrichment SQL ===\n{sql}\n")
 
         result = result_ds.connect().execute()
-        data = result.to_dict()
+        data = result.to_dict(orient='records')
 
         print(f"Result rows: {len(data)}")
         self.assertGreater(len(data), 0)

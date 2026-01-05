@@ -13,42 +13,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from datastore import DataStore
-
-
-def assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=True, check_row_order=True):
-    """Compare DataStore result against pandas result."""
-    if hasattr(ds_result, '__len__') and hasattr(pd_result, '__len__'):
-        ds_df = ds_result.to_pandas() if hasattr(ds_result, 'to_pandas') else ds_result
-        pd_df = pd_result
-
-        # Handle Series vs DataFrame
-        if isinstance(ds_df, pd.Series) and isinstance(pd_df, pd.Series):
-            if not check_row_order:
-                ds_df = ds_df.sort_index()
-                pd_df = pd_df.sort_index()
-            pd.testing.assert_series_equal(
-                ds_df, pd_df,
-                check_dtype=check_dtype,
-                check_names=False
-            )
-        else:
-            if isinstance(ds_df, pd.Series):
-                ds_df = ds_df.to_frame()
-            if isinstance(pd_df, pd.Series):
-                pd_df = pd_df.to_frame()
-
-            if not check_row_order:
-                ds_df = ds_df.sort_values(by=list(ds_df.columns)).reset_index(drop=True)
-                pd_df = pd_df.sort_values(by=list(pd_df.columns)).reset_index(drop=True)
-
-            pd.testing.assert_frame_equal(
-                ds_df, pd_df,
-                check_dtype=check_dtype,
-                check_names=False
-            )
-    else:
-        # Scalar comparison
-        assert ds_result == pd_result, f"DS: {ds_result}, PD: {pd_result}"
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 # =============================================================================
@@ -153,7 +118,6 @@ class TestDateTimeAccessorBasic:
 class TestDateTimeAccessorEdgeCases:
     """Test datetime accessor edge cases."""
 
-    @pytest.mark.xfail(reason="chDB timezone handling differs from pandas")
     def test_dt_year_boundary(self):
         """Test year extraction at year boundaries."""
         dates = pd.to_datetime(['2022-12-31 23:59:59', '2023-01-01 00:00:00'])
@@ -176,7 +140,6 @@ class TestDateTimeAccessorEdgeCases:
 
         assert list(ds_result.to_pandas()) == list(pd_result)
 
-    @pytest.mark.xfail(reason="chDB timezone handling differs from pandas")
     def test_dt_hour_minute_second_combined(self):
         """Test combined time extraction."""
         dates = pd.to_datetime(['2023-01-15 00:00:00', '2023-01-15 12:30:45', '2023-01-15 23:59:59'])
@@ -234,7 +197,6 @@ class TestDateTimeAccessorEdgeCases:
 class TestDateTimeAccessorNullHandling:
     """Test datetime accessor with NULL/NaT values."""
 
-    @pytest.mark.xfail(reason="chDB cannot convert NaT to integer")
     def test_dt_with_nat(self):
         """Test datetime accessor with NaT values."""
         dates = pd.to_datetime(['2023-01-15', None, '2023-01-17'])
@@ -252,7 +214,6 @@ class TestDateTimeAccessorNullHandling:
         assert ds_vals[0] == pd_vals[0]
         assert ds_vals[2] == pd_vals[2]
 
-    @pytest.mark.xfail(reason="chDB cannot convert NaT to integer")
     def test_dt_all_nat(self):
         """Test datetime accessor with all NaT values."""
         dates = pd.to_datetime([None, None, None])
