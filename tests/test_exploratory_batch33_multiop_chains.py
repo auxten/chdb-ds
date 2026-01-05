@@ -312,7 +312,8 @@ class TestRollingExpandingCombined:
         ds_df = ds_df.assign(rolling_sum=ds_df['value'].rolling(window=2).sum())
         ds_result = ds_df
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        # check_dtype=False because chDB adds timezone to datetime columns
+        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
     def test_expanding_mean_with_filter(self):
         """Test expanding mean followed by filter."""
