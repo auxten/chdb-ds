@@ -400,9 +400,7 @@ def assert_series_equals(
 
     # Compare length
     assert len(ds_values) == len(pd_values), (
-        f"{prefix}Series length doesn't match.\n"
-        f"DataStore: {len(ds_values)}\n"
-        f"Pandas:    {len(pd_values)}"
+        f"{prefix}Series length doesn't match.\n" f"DataStore: {len(ds_values)}\n" f"Pandas:    {len(pd_values)}"
     )
 
     # Compare values
@@ -415,9 +413,7 @@ def assert_series_equals(
         # Allow bool vs uint8 mismatch (common in chDB)
         if ds_dtype != pd_dtype and {str(ds_dtype), str(pd_dtype)} != {'bool', 'uint8'}:
             assert False, (
-                f"{prefix}Series dtype doesn't match.\n"
-                f"DataStore dtype: {ds_dtype}\n"
-                f"Pandas dtype:    {pd_dtype}"
+                f"{prefix}Series dtype doesn't match.\n" f"DataStore dtype: {ds_dtype}\n" f"Pandas dtype:    {pd_dtype}"
             )
 
     # Optionally check names
@@ -425,9 +421,7 @@ def assert_series_equals(
         ds_name = ds_result.name
         pd_name = pd_result.name
         assert ds_name == pd_name, (
-            f"{prefix}Series names don't match.\n"
-            f"DataStore name: {ds_name}\n"
-            f"Pandas name:    {pd_name}"
+            f"{prefix}Series names don't match.\n" f"DataStore name: {ds_name}\n" f"Pandas name:    {pd_name}"
         )
 
 
@@ -481,23 +475,23 @@ def get_series(ds_result) -> pd.Series:
     # If already a pandas Series, return it directly
     if isinstance(ds_result, pd.Series):
         return ds_result
-    
+
     # If numpy array, wrap in Series
     if isinstance(ds_result, np.ndarray):
         return pd.Series(ds_result)
-    
+
     # If pandas DataFrame, return first column as Series
     if isinstance(ds_result, pd.DataFrame):
         if len(ds_result.columns) == 1:
             return ds_result.iloc[:, 0]
         raise ValueError(f"Cannot convert DataFrame with {len(ds_result.columns)} columns to Series")
-    
+
     # For DataStore and ColumnExpr, use len() to trigger execution, then get the result
     # We try different approaches to preserve as much information (especially index) as possible
     try:
         # Trigger execution by accessing len
         _ = len(ds_result)
-        
+
         # Try _get_df() first (DataStore) - preserves index for groupby results
         try:
             df = ds_result._get_df()
@@ -509,7 +503,7 @@ def get_series(ds_result) -> pd.Series:
             return df
         except AttributeError:
             pass
-        
+
         # Try _execute() for ColumnExpr - preserves index information
         try:
             executed = ds_result._execute()
@@ -525,7 +519,7 @@ def get_series(ds_result) -> pd.Series:
             pass
     except (TypeError, AttributeError):
         pass
-    
+
     # Fallback: access .values to trigger execution
     # This works for ColumnExpr objects but may lose index information
     try:
@@ -534,7 +528,7 @@ def get_series(ds_result) -> pd.Series:
         return pd.Series(values, name=name)
     except AttributeError:
         pass
-    
+
     # Last resort: try to convert to Series directly
     return pd.Series(ds_result)
 
@@ -613,39 +607,39 @@ def normalize_dataframe_for_comparison(df: pd.DataFrame) -> pd.DataFrame:
 def get_value(ds_result):
     """
     Get the executed value from a DataStore result using Duck Typing.
-    
+
     Unlike get_series(), this function returns the result as-is (scalar, Series, or DataFrame)
     without forcing conversion to Series.
-    
+
     Args:
         ds_result: DataStore result (ColumnExpr, DataStore, scalar, etc.)
-    
+
     Returns:
         The executed result (may be scalar, Series, DataFrame, or numpy array)
     """
     # If already a primitive type, return as-is
     if isinstance(ds_result, (int, float, str, bool, type(None))):
         return ds_result
-    
-    # If already pandas type, return as-is  
+
+    # If already pandas type, return as-is
     if isinstance(ds_result, (pd.Series, pd.DataFrame)):
         return ds_result
-    
+
     # If numpy array, return as-is
     if isinstance(ds_result, np.ndarray):
         return ds_result
-    
+
     # Try _execute() for lazy objects
     try:
         return ds_result._execute()
     except AttributeError:
         pass
-    
+
     # Try _get_df() for DataStore
     try:
         return ds_result._get_df()
     except AttributeError:
         pass
-    
+
     # Return as-is if nothing else works
     return ds_result
