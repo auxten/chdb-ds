@@ -501,10 +501,15 @@ class TestSliceStyleLimit(unittest.TestCase):
         df = result.to_df()
         self.assertEqual(df['id'].iloc[0], 5)
 
-    def test_slice_negative_not_supported(self):
-        """Test that step in slice raises error."""
-        with self.assertRaises(ValueError):
-            _ = self.ds[::2]  # Step not supported
+    def test_slice_with_step(self):
+        """Test that step in slice is supported via LazySliceStep."""
+        # Step slicing is now supported using pandas iloc
+        result = self.ds[::2]  # Every 2nd row
+        df = result.to_df()
+        # Should get every other row from original 20 rows
+        self.assertEqual(len(df), 10)
+        # Should get rows at indices 0, 2, 4, 6, 8, 10, 12, 14, 16, 18
+        self.assertEqual(list(df['id']), [0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
 
     # ==================== Chained Slice Tests ====================
 

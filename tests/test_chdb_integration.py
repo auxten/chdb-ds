@@ -162,10 +162,10 @@ class TestChdbBasics(unittest.TestCase):
         self.assertEqual(3, len(result))  # 3 unique cities
 
     def test_result_to_dict(self):
-        """Test converting result to list of dicts"""
+        """Test converting result to list of dicts (using orient='records')"""
         result = self.ds.select("name", "age").limit(2).execute()
 
-        dicts = result.to_dict()
+        dicts = result.to_dict(orient='records')  # explicitly request records format
         self.assertEqual(2, len(dicts))
         self.assertIn("name", dicts[0])
         self.assertIn("age", dicts[0])

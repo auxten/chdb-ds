@@ -18,38 +18,7 @@ from io import StringIO
 
 from datastore import DataStore
 from datastore.config import get_logger
-
-
-# Helper for comparison
-def assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=True, check_row_order=True, msg=""):
-    """Compare DataStore result with pandas result."""
-    if isinstance(ds_result, DataStore):
-        ds_df = ds_result._execute()
-    elif hasattr(ds_result, '_execute'):
-        ds_df = ds_result._execute()
-    else:
-        ds_df = ds_result
-
-    # Convert to DataFrame if Series
-    if isinstance(ds_df, pd.Series):
-        ds_df = ds_df.to_frame()
-    if isinstance(pd_result, pd.Series):
-        pd_result = pd_result.to_frame()
-
-    # Reset index for comparison
-    ds_df = ds_df.reset_index(drop=True)
-    pd_result = pd_result.reset_index(drop=True)
-
-    if not check_row_order:
-        # Sort both by all columns for unordered comparison
-        sort_cols = list(ds_df.columns)
-        ds_df = ds_df.sort_values(by=sort_cols).reset_index(drop=True)
-        pd_result = pd_result.sort_values(by=sort_cols).reset_index(drop=True)
-
-    # Compare
-    pd.testing.assert_frame_equal(
-        ds_df, pd_result, check_dtype=check_dtype, check_names=False, obj=msg or "DataStore vs Pandas"
-    )
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 class TestSQLMergingVerification:

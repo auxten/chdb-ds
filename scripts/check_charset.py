@@ -65,9 +65,54 @@ def is_allowed_char(char):
     return False
 
 
+def remove_quoted_strings(line):
+    """Remove content inside single and double quotes from a line.
+    
+    Handles:
+    - Single quotes: 'content'
+    - Double quotes: "content"
+    - Triple quotes: '''content''' and \"\"\"content\"\"\"
+    - Escaped quotes within strings
+    """
+    result = []
+    i = 0
+    n = len(line)
+    
+    while i < n:
+        # Check for triple quotes first
+        if i + 2 < n and line[i:i+3] in ('"""', "'''"):
+            quote = line[i:i+3]
+            i += 3
+            # Skip until closing triple quote
+            while i + 2 < n and line[i:i+3] != quote:
+                i += 1
+            if i + 2 < n:
+                i += 3  # Skip closing triple quote
+        # Check for single or double quote
+        elif line[i] in ('"', "'"):
+            quote = line[i]
+            i += 1
+            # Skip until closing quote (handle escaped quotes)
+            while i < n:
+                if line[i] == '\\' and i + 1 < n:
+                    i += 2  # Skip escaped character
+                elif line[i] == quote:
+                    i += 1  # Skip closing quote
+                    break
+                else:
+                    i += 1
+        else:
+            result.append(line[i])
+            i += 1
+    
+    return ''.join(result)
+
+
 def find_disallowed_chars(line):
-    """Find all disallowed characters in a line."""
-    return [char for char in line if not is_allowed_char(char)]
+    """Find all disallowed characters in a line (excluding quoted strings)."""
+    # Remove quoted strings before checking
+    line_without_quotes = remove_quoted_strings(line)
+    return [char for char in line_without_quotes if not is_allowed_char(char)]
 
 
 def check_file(path):

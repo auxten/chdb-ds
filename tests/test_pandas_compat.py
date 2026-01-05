@@ -442,8 +442,16 @@ class TestPandasCompatibility(unittest.TestCase):
                 os.unlink(output_file)
 
     def test_to_dict(self):
-        """Test to_dict method (from existing API)."""
-        result = self.ds.to_dict()
+        """Test to_dict method matches pandas default behavior."""
+        # Default orient='dict' returns dict like {column -> {index -> value}}
+        ds_result = self.ds.to_dict()
+        pd_result = self.df.to_dict()
+        self.assertEqual(ds_result, pd_result)
+        self.assertIsInstance(ds_result, dict)
+
+    def test_to_dict_records(self):
+        """Test to_dict with orient='records' returns list of dicts."""
+        result = self.ds.to_dict(orient='records')
         self.assertIsInstance(result, list)
         self.assertTrue(all(isinstance(item, dict) for item in result))
 

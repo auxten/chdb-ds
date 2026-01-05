@@ -186,7 +186,7 @@ class TestInsertExecution(unittest.TestCase):
         self.assertEqual(3, len(result))
 
         # Check specific values
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         self.assertEqual('Alice', rows[0]['name'])
         self.assertEqual(25, rows[0]['age'])
 
@@ -198,7 +198,7 @@ class TestInsertExecution(unittest.TestCase):
         result = self.ds.select('*').execute()
         self.assertEqual(2, len(result))
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         self.assertIsNone(rows[0]['email'])
         self.assertEqual('bob@test.com', rows[1]['email'])
 
@@ -208,7 +208,7 @@ class TestInsertExecution(unittest.TestCase):
         query.execute()
 
         result = self.ds.select('name', 'active').execute()
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
 
         self.assertEqual(1, rows[0]['active'])  # True -> 1
         self.assertEqual(0, rows[1]['active'])  # False -> 0
@@ -239,7 +239,7 @@ class TestInsertExecution(unittest.TestCase):
         result = ds_backup.select('*').execute()
         self.assertEqual(2, len(result))  # Alice and Charlie
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         names = [row['name'] for row in rows]
         self.assertIn('Alice', names)
         self.assertIn('Charlie', names)
@@ -294,7 +294,7 @@ class TestUpdateExecution(unittest.TestCase):
 
         # Verify update
         result = self.ds.select('name', 'age').filter(self.ds.id == 1).execute()
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         self.assertEqual('Alice', rows[0]['name'])
         self.assertEqual(26, rows[0]['age'])
 
@@ -306,7 +306,7 @@ class TestUpdateExecution(unittest.TestCase):
 
         # Verify update
         result = self.ds.select('*').filter(self.ds.id == 2).execute()
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         self.assertEqual(31, rows[0]['age'])
         self.assertEqual('SF', rows[0]['city'])
 
@@ -318,7 +318,7 @@ class TestUpdateExecution(unittest.TestCase):
 
         # Verify - only Charlie should be affected
         result = self.ds.select('name', 'active').filter(self.ds.active == 0).execute()
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
 
         # Charlie was already inactive, should still be there
         names = [row['name'] for row in rows]
@@ -330,7 +330,7 @@ class TestUpdateExecution(unittest.TestCase):
         query.execute()
 
         result = self.ds.select('name').filter(self.ds.id == 1).execute()
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         self.assertEqual("O'Brien", rows[0]['name'])
 
 
@@ -382,7 +382,7 @@ class TestDeleteExecution(unittest.TestCase):
         result = self.ds.select('*').execute()
         self.assertEqual(3, len(result))
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         names = [row['name'] for row in rows]
         self.assertNotIn('Bob', names)
 
@@ -396,7 +396,7 @@ class TestDeleteExecution(unittest.TestCase):
         result = self.ds.select('*').execute()
         self.assertEqual(2, len(result))  # Bob and Diana remain
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         names = [row['name'] for row in rows]
         self.assertIn('Bob', names)
         self.assertIn('Diana', names)
@@ -412,7 +412,7 @@ class TestDeleteExecution(unittest.TestCase):
         result = self.ds.select('*').execute()
         self.assertEqual(3, len(result))  # Only Alice deleted
 
-        rows = result.to_dict()
+        rows = result.to_dict(orient='records')
         names = [row['name'] for row in rows]
         self.assertNotIn('Alice', names)
         self.assertIn('Charlie', names)  # NYC but not under 20
