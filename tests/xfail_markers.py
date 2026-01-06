@@ -304,6 +304,9 @@ MARKER_REGISTRY = {
     "design_datetime_fillna_nat": ("design", None, "Use NaT instead of 0/-1"),
     # Deprecated
     "deprecated_fillna_downcast": ("deprecated", None, "fillna downcast deprecated"),
+    # Bugs discovered in exploratory batch 38
+    "bug_setitem_computed_column_groupby": ("bug", None, "setitem computed column not tracked for groupby"),
+    "chdb_empty_df_str_dtype": ("chdb", None, "Empty df str accessor dtype issue"),
 }
 
 
@@ -315,3 +318,20 @@ def get_markers_by_category(category: str) -> List[str]:
 def get_all_categories() -> List[str]:
     """Get all unique categories."""
     return list(set(cat for cat, _, _ in MARKER_REGISTRY.values()))
+
+
+# =============================================================================
+# Bug: setitem computed column not tracked in _computed_columns
+# =============================================================================
+
+bug_setitem_computed_column_groupby = pytest.mark.xfail(
+    reason="Bug: ds['col'] = expr does not populate _computed_columns, causing groupby on computed column to fail with SQL UNKNOWN_IDENTIFIER error",
+    strict=True,
+)
+
+# Add to MARKER_REGISTRY at the end
+
+chdb_empty_df_str_dtype = pytest.mark.xfail(
+    reason="chDB: str accessor on empty DataFrame returns float64 instead of object dtype",
+    strict=True,
+)
