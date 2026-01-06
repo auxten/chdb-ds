@@ -17,7 +17,6 @@ import pandas as pd
 import pytest
 
 from tests.xfail_markers import (
-    chdb_nullable_int64_comparison,
     chdb_array_nullable,
     chdb_null_in_groupby,
     chdb_no_normalize_utf8,
@@ -55,7 +54,6 @@ class TestTypeSupportResolved:
 class TestTypeSupportLimitations:
     """Tests for remaining chDB type support limitations."""
 
-    @chdb_nullable_int64_comparison
     def test_nullable_int64_comparison(self):
         """Check if chDB handles Nullable Int64 comparison correctly."""
         df = pd.DataFrame({'val': pd.array([1, pd.NA, 3], dtype='Int64')})

@@ -53,10 +53,11 @@ chdb_array_string_conversion = pytest.mark.xfail(
     strict=True,
 )
 
-chdb_nullable_int64_comparison = pytest.mark.xfail(
-    reason="chDB does not handle Nullable Int64 comparison correctly - returns raw bytes",
-    strict=True,
-)
+# FIXED: chDB now handles Nullable Int64 comparison correctly (resolved in recent chDB version)
+# chdb_nullable_int64_comparison = pytest.mark.xfail(
+#     reason="chDB does not handle Nullable Int64 comparison correctly - returns raw bytes",
+#     strict=True,
+# )
 
 # Function Limitations
 chdb_no_product_function = pytest.mark.xfail(

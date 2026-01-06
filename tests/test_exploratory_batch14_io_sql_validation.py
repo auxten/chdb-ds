@@ -11,7 +11,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import chdb_category_type, chdb_nullable_int64_comparison, chdb_timedelta_type
+from tests.xfail_markers import chdb_category_type, chdb_timedelta_type
 import pandas as pd
 import numpy as np
 import tempfile
@@ -281,7 +281,6 @@ class TestMultiSourceMerge:
 class TestSpecialDataTypes:
     """Test handling of special pandas data types."""
     
-    @chdb_nullable_int64_comparison
     def test_nullable_integer(self):
         """Test nullable integer type."""
         pd_df = pd.DataFrame({'a': pd.array([1, 2, None, 4], dtype=pd.Int64Dtype())})
