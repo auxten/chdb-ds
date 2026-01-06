@@ -141,19 +141,21 @@ chdb_case_bool_conversion = pytest.mark.xfail(
 # Should be fixed to match pandas behavior
 # =============================================================================
 
-bug_groupby_first_last = pytest.mark.xfail(
-    reason="""DataStore first()/last() not pandas-compatible.
-    Uses chDB any()/anyLast() which don't guarantee row-order.
-    Fix: use argMin/argMax with row_number or pandas fallback.""",
-    strict=False,  # behavior varies by chDB version
-)
+# FIXED: chDB any()/anyLast() now correctly returns row-order based first/last (2026-01-06)
+# bug_groupby_first_last = pytest.mark.xfail(
+#     reason="""DataStore first()/last() not pandas-compatible.
+#     Uses chDB any()/anyLast() which don't guarantee row-order.
+#     Fix: use argMin/argMax with row_number or pandas fallback.""",
+#     strict=False,  # behavior varies by chDB version
+# )
 
-bug_groupby_index = pytest.mark.xfail(
-    reason="""DataStore groupby aggregation doesn't preserve index correctly.
-    Pandas groupby().agg() returns Series with groupby column as index.
-    DataStore should match this behavior.""",
-    strict=False,  # behavior varies by chDB version
-)
+# FIXED: DataStore groupby aggregation now preserves index correctly (2026-01-06)
+# bug_groupby_index = pytest.mark.xfail(
+#     reason="""DataStore groupby aggregation doesn't preserve index correctly.
+#     Pandas groupby().agg() returns Series with groupby column as index.
+#     DataStore should match this behavior.""",
+#     strict=False,  # behavior varies by chDB version
+# )
 
 bug_index_not_preserved = pytest.mark.xfail(
     reason="Index info not preserved through lazy SQL execution",
@@ -242,8 +244,8 @@ deprecated_fillna_downcast = pytest.mark.xfail(
 # =============================================================================
 
 # bug_* aliases
-datastore_groupby_first_last_order = bug_groupby_first_last
-datastore_groupby_index_preservation = bug_groupby_index
+# datastore_groupby_first_last_order = bug_groupby_first_last  # FIXED
+# datastore_groupby_index_preservation = bug_groupby_index  # FIXED
 lazy_index_not_preserved = bug_index_not_preserved
 lazy_extractall_multiindex = bug_extractall_multiindex
 

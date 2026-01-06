@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import pytest
-from tests.xfail_markers import chdb_null_in_groupby, bug_groupby_index
+from tests.xfail_markers import chdb_null_in_groupby
 
 from datastore import DataStore, LazyGroupBy
 from datastore.config import config
@@ -418,7 +418,7 @@ class TestChdbNaNHandling(unittest.TestCase):
 
         self.assertTrue(ds_result.equals(pd_result), "count() results should be equal")
 
-    @bug_groupby_index
+
     def test_groupby_age_nan_in_value_column(self):
         """
         Test aggregation where the VALUE column (not groupby column) has NaN.

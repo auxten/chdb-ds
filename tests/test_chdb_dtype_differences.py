@@ -1,14 +1,15 @@
 """
-Test documenting dtype differences between chDB and pandas.
+Test verifying dtype preservation between chDB and pandas.
 
-These tests document known dtype differences when data passes
+These tests verify that chDB correctly preserves dtypes when data passes
 through chDB's Python() table function:
 
-1. Float columns with NaN: chDB converts to nullable Float64Dtype
-2. Integer columns with None: chDB converts to Float64Dtype
-3. Datetime columns: chDB adds system timezone (Etc/UTC)
+1. Float columns with NaN: preserved as float64
+2. Integer columns with None: preserved as float64
+3. Datetime columns: preserved as datetime64[ns]
 
-These are expected behaviors due to how chDB handles nullable types.
+NOTE: These tests were previously marked xfail due to dtype conversion issues
+in older chDB versions. As of 2026-01-06, chDB correctly preserves dtypes.
 """
 
 import numpy as np
@@ -19,31 +20,15 @@ from tests.xfail_markers import chdb_array_nullable
 import chdb
 
 
-# Marker for dtype conversion differences
-# strict=False because behavior varies by Python/chDB version
-chdb_float64_nullable = pytest.mark.xfail(
-    reason="chDB converts float64 with NaN to nullable Float64Dtype",
-    strict=False,
-)
-
-chdb_datetime_adds_timezone = pytest.mark.xfail(
-    reason="chDB adds system timezone to naive datetime columns",
-    strict=False,
-)
-
-
 class TestChDBDtypeDifferences:
-    """Document known dtype differences between chDB output and pandas."""
+    """Verify dtype preservation between chDB output and pandas."""
 
-    @chdb_float64_nullable
     def test_float_nan_dtype_preservation(self):
         """
-        chDB converts float64 columns containing NaN to nullable Float64Dtype.
+        Verify chDB preserves float64 columns containing NaN.
 
         Original: float64 with NaN (numpy.nan)
-        After chDB: Float64 with <NA> (pandas NA)
-
-        The values are equivalent, but DataFrame.equals() returns False due to dtype.
+        After chDB: float64 (preserved)
         """
         df = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0]})
         assert df["a"].dtype == np.float64
@@ -53,13 +38,12 @@ class TestChDBDtypeDifferences:
         # chDB returns Float64Dtype() instead of float64
         assert result["a"].dtype == np.float64
 
-    @chdb_float64_nullable
     def test_integer_none_dtype_preservation(self):
         """
-        chDB converts columns with None to nullable Float64Dtype.
+        Verify chDB preserves columns with None.
 
         Note: pandas converts int-like list with None to float64 (not int64),
-        and chDB further converts it to Float64Dtype.
+        and chDB preserves this as float64.
         """
         df = pd.DataFrame({"a": [1, 2, None, 4]})
         original_dtype = df["a"].dtype  # float64 (because of None)
@@ -69,13 +53,12 @@ class TestChDBDtypeDifferences:
         # chDB returns Float64Dtype()
         assert result["a"].dtype == original_dtype
 
-    @chdb_datetime_adds_timezone
     def test_datetime_timezone_preservation(self):
         """
-        chDB adds system timezone to naive datetime columns.
+        Verify chDB preserves naive datetime columns.
 
         Original: datetime64[ns] (naive)
-        After chDB: datetime64[ns, <system_timezone>] (timezone-aware)
+        After chDB: datetime64[ns] (preserved)
         """
         df = pd.DataFrame({"dt": pd.to_datetime(["2021-01-01", "2021-01-02"])})
         assert df["dt"].dtype == "datetime64[ns]"

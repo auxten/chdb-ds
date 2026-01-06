@@ -4,9 +4,8 @@ Test groupby().first() and groupby().last() methods.
 These tests verify that ColumnExpr.first() and ColumnExpr.last()
 work correctly with groupby operations.
 
-Known issue: DataStore uses chDB's any()/anyLast() which don't guarantee
-row-order based first/last like pandas. Tests are marked with
-@bug_groupby_first_last xfail marker until fixed.
+NOTE: As of 2026-01-06, chDB's any()/anyLast() correctly returns
+row-order based first/last values, matching pandas behavior.
 """
 
 import unittest
@@ -16,7 +15,6 @@ import pytest
 
 import datastore as ds
 from tests.test_utils import get_series, get_dataframe
-from tests.xfail_markers import bug_groupby_first_last
 
 
 class TestGroupByFirstLast(unittest.TestCase):
@@ -33,7 +31,6 @@ class TestGroupByFirstLast(unittest.TestCase):
         )
         self.ds = ds.DataFrame(self.df.copy())
 
-    @bug_groupby_first_last
     def test_groupby_first_single_column(self):
         """Test groupby().first() on a single column."""
         pd_result = self.df.groupby('category')['value'].first()
@@ -47,7 +44,6 @@ class TestGroupByFirstLast(unittest.TestCase):
             ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
         )
 
-    @bug_groupby_first_last
     def test_groupby_last_single_column(self):
         """Test groupby().last() on a single column."""
         pd_result = self.df.groupby('category')['value'].last()
@@ -101,7 +97,6 @@ class TestGroupByFirstLast(unittest.TestCase):
         series = result.to_pandas()
         self.assertIsInstance(series, pd.Series)
 
-    @bug_groupby_first_last
     def test_groupby_agg_first_equivalent(self):
         """Test that .first() is equivalent to .agg('first')."""
         pd_first = self.df.groupby('category')['value'].first()
