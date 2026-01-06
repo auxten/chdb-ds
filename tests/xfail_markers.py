@@ -91,6 +91,16 @@ chdb_nan_sum_behavior = pytest.mark.xfail(
     strict=True,
 )
 
+chdb_null_comparison_semantics = pytest.mark.xfail(
+    reason="SQL NULL comparison returns NULL, pandas returns False - SQL standard behavior",
+    strict=True,
+)
+
+chdb_null_string_comparison = pytest.mark.xfail(
+    reason="SQL: 'string' != NULL returns NULL, pandas returns True - SQL standard behavior",
+    strict=True,
+)
+
 # String/Unicode
 chdb_unicode_filter = pytest.mark.xfail(
     reason="Unicode string equality in SQL filter has encoding issues",
@@ -281,6 +291,8 @@ MARKER_REGISTRY = {
     "chdb_median_in_where": ("chdb", None, "Aggregate in WHERE requires subquery"),
     "chdb_null_in_groupby": ("chdb", None, "NULL handling differs in groupby"),
     "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA"),
+    "chdb_null_comparison_semantics": ("chdb", None, "SQL NULL comparison returns NULL"),
+    "chdb_null_string_comparison": ("chdb", None, "SQL NULL string comparison returns NULL"),
     "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter issues"),
     "chdb_strip_whitespace": ("chdb", None, "strip() whitespace handling"),
     "chdb_datetime_timezone": ("chdb", None, "Timezone handling differs"),
