@@ -3,7 +3,7 @@ Heuristic edge case tests - discovered through exploratory testing.
 These tests cover less common pandas operations to ensure DataStore compatibility.
 """
 
-from tests.test_utils import get_dataframe
+from tests.test_utils import assert_frame_equal, assert_series_equal, get_dataframe
 import pandas as pd
 import numpy as np
 import pytest
@@ -24,10 +24,9 @@ class TestCrosstab:
         ds_result = ds.crosstab(ds_df['A'], ds_df['B'])
 
         # Compare values (index/column names may differ)
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.to_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_names=False)
+            pd_result.reset_index(drop=True))
 
 
 class TestExplode:
@@ -40,7 +39,7 @@ class TestExplode:
         pd_result = df.explode('A')
         ds_result = ds_df.explode('A')
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.to_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -55,7 +54,7 @@ class TestAssign:
         pd_result = df.assign(C=lambda x: x['A'] + x['B'])
         ds_result = ds_df.assign(C=lambda x: x['A'] + x['B'])
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_assign_scalar(self):
         df = pd.DataFrame({'A': [1, 2, 3]})
@@ -64,7 +63,7 @@ class TestAssign:
         pd_result = df.assign(B=10)
         ds_result = ds_df.assign(B=10)
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestTransform:
@@ -77,7 +76,7 @@ class TestTransform:
         pd_result = df[['A', 'B']].transform(lambda x: x * 2)
         ds_result = ds_df[['A', 'B']].transform(lambda x: x * 2)
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestAgg:
@@ -90,7 +89,7 @@ class TestAgg:
         pd_result = df.agg(['sum', 'mean'])
         ds_result = ds_df.agg(['sum', 'mean'])
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_agg_dict(self):
         df = pd.DataFrame({'A': [1, 2, 3, 4], 'B': [5, 6, 7, 8]})
@@ -99,7 +98,7 @@ class TestAgg:
         pd_result = df.agg({'A': 'sum', 'B': 'mean'})
         ds_result = ds_df.agg({'A': 'sum', 'B': 'mean'})
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestEvalQuery:
@@ -112,7 +111,7 @@ class TestEvalQuery:
         pd_result = df.eval('C = A + B')
         ds_result = ds_df.eval('C = A + B')
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_query_filter(self):
         df = pd.DataFrame({'A': [1, 2, 3, 4], 'B': [5, 6, 7, 8]})
@@ -121,7 +120,7 @@ class TestEvalQuery:
         pd_result = df.query('A > 2')
         ds_result = ds_df.query('A > 2')
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.to_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -143,7 +142,7 @@ class TestPipe:
         pd_result = df.pipe(double_col_a)
         ds_result = ds_df.pipe(double_col_a)
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestGroupbyVariants:
@@ -160,7 +159,7 @@ class TestGroupbyVariants:
         pd_result = df.groupby('A', as_index=False).sum()
         ds_result = ds_df.groupby('A', as_index=False).sum()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.to_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -179,7 +178,7 @@ class TestRollingExpanding:
         ds_result = ds_df.rolling(window=2).mean()
 
         # rolling returns pandas DataFrame directly
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_expanding_sum(self):
         df = pd.DataFrame({'A': [1.0, 2.0, 3.0, 4.0, 5.0]})
@@ -189,7 +188,7 @@ class TestRollingExpanding:
         ds_result = ds_df.expanding().sum()
 
         # expanding returns pandas DataFrame directly
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
 
 class TestCumulativeFunctions:
@@ -202,7 +201,7 @@ class TestCumulativeFunctions:
         pd_result = df.cumsum()
         ds_result = ds_df.cumsum()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_cumprod(self):
         df = pd.DataFrame({'A': [1, 2, 3, 4]})
@@ -211,7 +210,7 @@ class TestCumulativeFunctions:
         pd_result = df.cumprod()
         ds_result = ds_df.cumprod()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_cummax(self):
         df = pd.DataFrame({'A': [1, 3, 2, 4]})
@@ -220,7 +219,7 @@ class TestCumulativeFunctions:
         pd_result = df.cummax()
         ds_result = ds_df.cummax()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_cummin(self):
         df = pd.DataFrame({'A': [4, 2, 3, 1]})
@@ -229,7 +228,7 @@ class TestCumulativeFunctions:
         pd_result = df.cummin()
         ds_result = ds_df.cummin()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestShiftDiff:
@@ -242,7 +241,7 @@ class TestShiftDiff:
         pd_result = df.shift(1)
         ds_result = ds_df.shift(1)
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_shift_negative(self):
         df = pd.DataFrame({'A': [1.0, 2.0, 3.0, 4.0]})
@@ -251,7 +250,7 @@ class TestShiftDiff:
         pd_result = df.shift(-1)
         ds_result = ds_df.shift(-1)
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_diff(self):
         df = pd.DataFrame({'A': [1.0, 3.0, 6.0, 10.0]})
@@ -260,7 +259,7 @@ class TestShiftDiff:
         pd_result = df.diff()
         ds_result = ds_df.diff()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestRank:
@@ -273,7 +272,7 @@ class TestRank:
         pd_result = df.rank()
         ds_result = ds_df.rank()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
     def test_rank_method_min(self):
         df = pd.DataFrame({'A': [3.0, 1.0, 4.0, 1.0, 5.0]})
@@ -282,7 +281,7 @@ class TestRank:
         pd_result = df.rank(method='min')
         ds_result = ds_df.rank(method='min')
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)
 
 
 class TestPctChange:
@@ -295,4 +294,4 @@ class TestPctChange:
         pd_result = df.pct_change()
         ds_result = ds_df.pct_change()
 
-        pd.testing.assert_frame_equal(get_dataframe(ds_result), pd_result)
+        assert_frame_equal(get_dataframe(ds_result), pd_result)

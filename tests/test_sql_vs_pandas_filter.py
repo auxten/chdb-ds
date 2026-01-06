@@ -11,7 +11,7 @@ import logging
 import pandas as pd
 
 from datastore import DataStore, config
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal
 
 
 class TestSQLvsPandasFilter(unittest.TestCase):
@@ -2096,7 +2096,7 @@ class TestSQLMethodInPipeline(unittest.TestCase):
         ds2 = ds.sql("value > 50")
         df2 = ds2.to_df()
         # Row order is now preserved with the pre-added index column solution
-        pd.testing.assert_frame_equal(df1.reset_index(drop=True), df2.reset_index(drop=True))
+        assert_frame_equal(df1.reset_index(drop=True), df2.reset_index(drop=True))
         print(f"Confirmed: 'WHERE value > 50' === 'value > 50'")
 
         # Test 3: WHERE with ORDER BY and LIMIT

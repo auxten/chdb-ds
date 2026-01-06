@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_series, get_value
 
 
 class TestIterationProtocols:
@@ -34,7 +34,7 @@ class TestIterationProtocols:
         assert len(pd_rows) == len(ds_rows)
         for (pd_idx, pd_row), (ds_idx, ds_row) in zip(pd_rows, ds_rows):
             assert pd_idx == ds_idx
-            pd.testing.assert_series_equal(pd_row, ds_row)
+            assert_series_equal(pd_row, ds_row)
     
     def test_iterrows_empty(self):
         """Test iterrows on empty DataFrame."""
@@ -91,7 +91,7 @@ class TestIterationProtocols:
         assert len(pd_items) == len(ds_items)
         for (pd_col, pd_series), (ds_col, ds_series) in zip(pd_items, ds_items):
             assert pd_col == ds_col
-            pd.testing.assert_series_equal(pd_series, ds_series)
+            assert_series_equal(pd_series, ds_series)
     
     def test_iter_columns(self):
         """Test __iter__ iterates over column names."""
@@ -117,7 +117,7 @@ class TestRareMethods:
         
         # Should return Series
         assert isinstance(pd_result, pd.Series)
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_squeeze_single_row(self):
         """Test squeeze on single-row DataFrame."""
@@ -128,7 +128,7 @@ class TestRareMethods:
         ds_result = ds_df.squeeze()
         
         assert isinstance(pd_result, pd.Series)
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_squeeze_single_value(self):
         """Test squeeze on 1x1 DataFrame."""
@@ -149,7 +149,7 @@ class TestRareMethods:
         pd_result = pd_df.squeeze(axis='columns')
         ds_result = ds_df.squeeze(axis='columns')
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_squeeze_no_change(self):
         """Test squeeze on multi-row multi-column DataFrame."""
@@ -213,7 +213,7 @@ class TestRareMethods:
         ds_result = ds_df.isetitem(0, [10, 20])
         
         # Original should be unchanged
-        pd.testing.assert_frame_equal(ds_df._execute(), pd_df)
+        assert_frame_equal(ds_df._execute(), pd_df)
         
         # Result should have the new values
         expected = pd.DataFrame({'A': [10, 20], 'B': [3, 4]})
@@ -336,7 +336,7 @@ class TestModeAndProd:
         pd_result = pd_df.prod()
         ds_result = ds_df.prod()
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_prod_with_nan_skipna(self):
         """Test product with NaN and skipna."""
@@ -346,7 +346,7 @@ class TestModeAndProd:
         pd_result = pd_df.prod(skipna=True)
         ds_result = ds_df.prod(skipna=True)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_prod_axis_columns(self):
         """Test product along columns axis."""
@@ -356,7 +356,7 @@ class TestModeAndProd:
         pd_result = pd_df.prod(axis=1)
         ds_result = ds_df.prod(axis=1)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_product_alias(self):
         """Test product() as alias for prod()."""
@@ -366,7 +366,7 @@ class TestModeAndProd:
         pd_result = pd_df.product()
         ds_result = ds_df.product()
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestArrayProtocol:
@@ -402,7 +402,7 @@ class TestArrayProtocol:
         pd_sum = np.sum(pd_df, axis=0)
         ds_sum = np.sum(ds_df, axis=0)
         
-        pd.testing.assert_series_equal(pd_sum, ds_sum)
+        assert_series_equal(pd_sum, ds_sum)
     
     def test_array_column_expr(self):
         """Test __array__ on ColumnExpr."""
@@ -426,7 +426,7 @@ class TestXSMethod:
         pd_result = pd_df.xs('y')
         ds_result = ds_df.xs('y')
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_xs_column_selection(self):
         """Test xs for column selection."""
@@ -436,7 +436,7 @@ class TestXSMethod:
         pd_result = pd_df.xs('A', axis=1)
         ds_result = ds_df.xs('A', axis=1)
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
 
 class TestSwapMethods:
@@ -574,7 +574,7 @@ class TestEdgeCases:
         pd_popped = pd_df.pop('A')
         ds_popped = ds_df.pop('A')
         
-        pd.testing.assert_series_equal(pd_popped, ds_popped)
+        assert_series_equal(pd_popped, ds_popped)
         assert_datastore_equals_pandas(ds_df, pd_df)
     
     def test_get_with_default(self):
@@ -651,7 +651,7 @@ class TestEdgeCases:
         pd_result = pd_df.idxmax()
         ds_result = ds_df.idxmax()
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_idxmin_method(self):
         """Test idxmin method."""
@@ -661,7 +661,7 @@ class TestEdgeCases:
         pd_result = pd_df.idxmin()
         ds_result = ds_df.idxmin()
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
 
 class TestColumnExprCumulative:
@@ -677,7 +677,7 @@ class TestColumnExprCumulative:
         
         # Execute and compare
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(pd_result, ds_series)
+        assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_cummin(self):
         """Test cummin on ColumnExpr."""
@@ -688,7 +688,7 @@ class TestColumnExprCumulative:
         ds_result = ds_df['A'].cummin()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(pd_result, ds_series)
+        assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_cummax(self):
         """Test cummax on ColumnExpr."""
@@ -699,7 +699,7 @@ class TestColumnExprCumulative:
         ds_result = ds_df['A'].cummax()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(pd_result, ds_series)
+        assert_series_equal(pd_result, ds_series)
     
     def test_column_expr_prod(self):
         """Test prod on ColumnExpr."""
@@ -728,7 +728,7 @@ class TestMiscellaneousEdgeCases:
         assert len(pd_items) == len(ds_items)
         for (pd_col, pd_series), (ds_col, ds_series) in zip(pd_items, ds_items):
             assert pd_col == ds_col
-            pd.testing.assert_series_equal(pd_series, ds_series)
+            assert_series_equal(pd_series, ds_series)
     
     def test_empty_df_itertuples(self):
         """Test itertuples on empty DataFrame."""
@@ -745,7 +745,7 @@ class TestMiscellaneousEdgeCases:
         pd_result = pd_df.squeeze(axis=0)
         ds_result = ds_df.squeeze(axis=0)
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_filter_then_cumulative(self):
         """Test filter followed by cumulative operation."""
@@ -772,7 +772,7 @@ class TestMiscellaneousEdgeCases:
         pd_result = pd_agg.xs('A')
         ds_result = ds_agg.xs('A')
         
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
     
     def test_large_cumulative(self):
         """Test cumulative on larger dataset."""

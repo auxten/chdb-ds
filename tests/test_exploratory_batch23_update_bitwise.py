@@ -18,7 +18,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_dataframe, get_series
 
 
 # =============================================================================
@@ -96,10 +96,9 @@ class TestBitwiseOperations:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_bitwise_or(self):
@@ -116,10 +115,9 @@ class TestBitwiseOperations:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_bitwise_xor(self):
@@ -136,10 +134,9 @@ class TestBitwiseOperations:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_bitwise_not(self):
@@ -153,10 +150,9 @@ class TestBitwiseOperations:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_combined_boolean_filter(self):
@@ -456,10 +452,9 @@ class TestApplyMap:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
 
@@ -751,11 +746,10 @@ class TestStringColumnOps:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
-        )
+            )
 
     def test_str_split_basic(self):
         """Basic string split."""
@@ -783,10 +777,9 @@ class TestStringColumnOps:
         # Execute if lazy
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
 

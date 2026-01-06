@@ -37,7 +37,7 @@ from datastore.dtype_correction.rules import (
     Float32PreserveRule,
     ALL_RULES,
 )
-from tests.test_utils import assert_datastore_equals_pandas, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_dataframe
 
 
 # =============================================================================
@@ -809,11 +809,10 @@ class TestDtypeCorrectionEdgeCases:
         ds_df['abs_a'] = ds_df['a'].abs()
 
         ds_result = get_dataframe(ds_df)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_result['abs_a'].astype('Int64'),
             pd_df['abs_a'],
-            check_names=False,
-        )
+            )
 
     def test_abs_empty_dataframe(self):
         """abs() on empty DataFrame should work.

@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal, assert_series_equal
 
 
 class TestPandasCompatibility(unittest.TestCase):
@@ -189,53 +190,53 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test mean method matches pandas."""
         ds_mean = self.ds.mean(numeric_only=True)
         pd_mean = self.df.mean(numeric_only=True)
-        pd.testing.assert_series_equal(ds_mean, pd_mean, check_names=False)
+        assert_series_equal(ds_mean, pd_mean)
 
     def test_median(self):
         """Test median method matches pandas."""
         ds_median = self.ds.median(numeric_only=True)
         pd_median = self.df.median(numeric_only=True)
-        pd.testing.assert_series_equal(ds_median, pd_median, check_names=False)
+        assert_series_equal(ds_median, pd_median)
 
     def test_std(self):
         """Test std method matches pandas."""
         ds_std = self.ds.std(numeric_only=True)
         pd_std = self.df.std(numeric_only=True)
-        pd.testing.assert_series_equal(ds_std, pd_std, check_names=False, rtol=1e-5)
+        assert_series_equal(ds_std, pd_std, rtol=1e-5)
 
     def test_min_max(self):
         """Test min and max methods match pandas."""
         ds_min = self.ds.min(numeric_only=True)
         pd_min = self.df.min(numeric_only=True)
-        pd.testing.assert_series_equal(ds_min, pd_min, check_names=False)
+        assert_series_equal(ds_min, pd_min)
 
         ds_max = self.ds.max(numeric_only=True)
         pd_max = self.df.max(numeric_only=True)
-        pd.testing.assert_series_equal(ds_max, pd_max, check_names=False)
+        assert_series_equal(ds_max, pd_max)
 
     def test_sum(self):
         """Test sum method matches pandas."""
         ds_sum = self.ds.sum(numeric_only=True)
         pd_sum = self.df.sum(numeric_only=True)
-        pd.testing.assert_series_equal(ds_sum, pd_sum, check_names=False)
+        assert_series_equal(ds_sum, pd_sum)
 
     def test_corr(self):
         """Test correlation method matches pandas."""
         ds_corr = self.ds.corr(numeric_only=True)
         pd_corr = self.df.corr(numeric_only=True)
-        pd.testing.assert_frame_equal(ds_corr, pd_corr, rtol=1e-5)
+        assert_frame_equal(ds_corr, pd_corr, rtol=1e-5)
 
     def test_quantile(self):
         """Test quantile method matches pandas."""
         ds_q50 = self.ds.quantile(0.5, numeric_only=True)
         pd_q50 = self.df.quantile(0.5, numeric_only=True)
-        pd.testing.assert_series_equal(ds_q50, pd_q50, check_names=False)
+        assert_series_equal(ds_q50, pd_q50)
 
     def test_nunique(self):
         """Test nunique method matches pandas."""
         ds_nunique = self.ds.nunique()
         pd_nunique = self.df.nunique()
-        pd.testing.assert_series_equal(ds_nunique, pd_nunique)
+        assert_series_equal(ds_nunique, pd_nunique)
 
     # ========== Data Manipulation Tests ==========
 
@@ -313,7 +314,7 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test aggregate method matches pandas."""
         ds_result = self.ds.agg({'age': 'mean', 'salary': 'sum'})
         pd_result = self.df.agg({'age': 'mean', 'salary': 'sum'})
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     # ========== Indexing Tests ==========
 
@@ -396,7 +397,7 @@ class TestPandasCompatibility(unittest.TestCase):
         """Test isna().sum() matches pandas."""
         ds_result = self.ds.isna().sum()
         pd_result = self.df.isna().sum()
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_notna(self):
         """Test notna method matches pandas."""
@@ -469,7 +470,7 @@ class TestPandasCompatibility(unittest.TestCase):
         pd_rows = list(self.df.iterrows())
         self.assertEqual(len(ds_rows), len(pd_rows))
         for (ds_idx, ds_row), (pd_idx, pd_row) in zip(ds_rows, pd_rows):
-            pd.testing.assert_series_equal(ds_row, pd_row)
+            assert_series_equal(ds_row, pd_row)
 
     def test_itertuples(self):
         """Test itertuples method matches pandas."""

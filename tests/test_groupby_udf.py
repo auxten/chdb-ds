@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 import datastore as ds
+from tests.test_utils import assert_frame_equal
 
 
 class TestTransformUDF(unittest.TestCase):
@@ -233,7 +234,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(has_common_words)
         ds_result = self.data_ds.groupby('category').filter(has_common_words)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_complex_business_rules(self):
         """Test complex business rule checking."""
@@ -246,7 +247,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(business_rule_check)
         ds_result = self.data_ds.groupby('category').filter(business_rule_check)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_high_variance_filter(self):
         """Test filtering by variance threshold."""
@@ -256,7 +257,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(has_high_variance)
         ds_result = self.data_ds.groupby('category').filter(has_high_variance)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_positive_correlation_filter(self):
         """Test filtering by correlation."""
@@ -269,7 +270,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(has_positive_correlation)
         ds_result = self.data_ds.groupby('category').filter(has_positive_correlation)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_skewness_filter(self):
         """Test statistical skewness detection."""
@@ -287,7 +288,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(is_normally_distributed_like)
         ds_result = self.data_ds.groupby('category').filter(is_normally_distributed_like)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_iqr_outlier_detection(self):
         """Test IQR-based outlier detection."""
@@ -304,7 +305,7 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(has_no_outliers)
         ds_result = self.data_ds.groupby('category').filter(has_no_outliers)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_multiple_criteria_filter(self):
         """Test multiple criteria with different column operations."""
@@ -314,13 +315,13 @@ class TestFilterUDF(unittest.TestCase):
 
         pd_result = self.data_pd.groupby('category').filter(meets_multiple_criteria)
         ds_result = self.data_ds.groupby('category').filter(meets_multiple_criteria)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_std_threshold_filter(self):
         """Test filtering by standard deviation threshold."""
         pd_result = self.data_pd.groupby('category').filter(lambda x: x['value'].std() > 15)
         ds_result = self.data_ds.groupby('category').filter(lambda x: x['value'].std() > 15)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestTransformWithGroupByDataFrame(unittest.TestCase):

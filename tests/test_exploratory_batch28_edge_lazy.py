@@ -12,10 +12,9 @@ Focus areas:
 import pytest
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_frame_equal, assert_series_equal
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal
 
 
 # =============================================================================
@@ -420,7 +419,7 @@ class TestColumnNameEdgeCases:
         ds = DataStore({'col-1': [1, 2, 3], 'col_2': [4, 5, 6]})
         ds_result = ds['col-1'] + ds['col_2']
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rename_columns(self):
         """Rename columns."""

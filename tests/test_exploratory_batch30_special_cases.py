@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 from datetime import datetime, date, timedelta
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 from tests.xfail_markers import chdb_timedelta_type
 
 
@@ -321,7 +321,7 @@ class TestMixedObjectType:
         ds_result = ds_df['mixed'].astype(str)
         
         # Compare as Series
-        pd.testing.assert_series_equal(ds_result._execute(), pd_result)
+        assert_series_equal(ds_result._execute(), pd_result)
     
     def test_mixed_object_fillna(self, df_mixed_object):
         """Test fillna on mixed object."""

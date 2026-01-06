@@ -18,6 +18,7 @@ import os
 import pandas as pd
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestLimitCountEdgeCases(unittest.TestCase):
@@ -558,13 +559,13 @@ class TestSliceStyleLimit(unittest.TestCase):
         """Test ds[:n] matches ds.head(n)."""
         slice_result = self.ds[:7].to_df()
         head_result = self.ds.head(7).to_df()
-        pd.testing.assert_frame_equal(slice_result, head_result)
+        assert_frame_equal(slice_result, head_result)
 
     def test_slice_matches_limit(self):
         """Test ds[:n] matches ds.limit(n)."""
         slice_result = self.ds[:8].to_df()
         limit_result = self.ds.limit(8).to_df()
-        pd.testing.assert_frame_equal(slice_result, limit_result)
+        assert_frame_equal(slice_result, limit_result)
 
     # ==================== Count with Slice ====================
 

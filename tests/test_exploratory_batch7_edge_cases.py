@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series
 
 
 # ============================================================================
@@ -373,9 +373,8 @@ class TestColumnSelectionEdgeCases:
         if isinstance(ds_executed, pd.DataFrame):
             ds_executed = ds_executed.iloc[:, 0]
 
-        pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_select_columns_in_different_order(self):
         """Select columns in different order than original."""
@@ -576,9 +575,8 @@ class TestArithmeticEdgeCases:
         if isinstance(ds_executed, pd.DataFrame):
             ds_executed = ds_executed.iloc[:, 0]
 
-        pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_float_precision(self):
         """Float precision in operations."""
@@ -617,9 +615,8 @@ class TestArithmeticEdgeCases:
         if isinstance(ds_executed, pd.DataFrame):
             ds_executed = ds_executed.iloc[:, 0]
 
-        pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_power_operation(self):
         """Power/exponent operation."""
@@ -630,9 +627,8 @@ class TestArithmeticEdgeCases:
         if isinstance(ds_executed, pd.DataFrame):
             ds_executed = ds_executed.iloc[:, 0]
 
-        pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
 
 
 # ============================================================================

@@ -23,7 +23,7 @@ import pandas as pd
 import pytest
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 from tests.xfail_markers import (
     chdb_integer_column_names,
 )
@@ -147,7 +147,7 @@ class TestCorrelationCovarianceChains:
         ds_result = ds_df.corrwith(pd_series)
 
         # corrwith returns Series
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -241,7 +241,7 @@ class TestRankSkewKurtChains:
         ds_result = ds_df.skew()
 
         # skew returns Series
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_skew_after_filter(self):
         """Skewness after filtering."""
@@ -257,7 +257,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df[ds_df['group'] == 'A'][['value']].skew()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_kurt_basic(self):
         """Basic kurtosis calculation."""
@@ -273,7 +273,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df.kurt()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_kurt_after_dropna(self):
         """Kurtosis after dropping NA."""
@@ -289,7 +289,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df.dropna().kurt()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -711,7 +711,7 @@ class TestSelectDtypesOperations:
         })
         ds_result = ds_df.select_dtypes(include='number').sum()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -736,7 +736,7 @@ class TestXsOperations:
         }, index=['x', 'y', 'z'])
         ds_result = ds_df.xs('y')
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_xs_multiindex(self):
         """xs operation on MultiIndex."""
@@ -831,7 +831,7 @@ class TestComplexNumericReductionChains:
         })
         ds_result = ds_df.sem()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_sem_after_dropna(self):
         """SEM after dropping NA values."""
@@ -847,7 +847,7 @@ class TestComplexNumericReductionChains:
         })
         ds_result = ds_df.dropna().sem()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_var_after_filter(self):
         """Variance after filter."""
@@ -1148,7 +1148,7 @@ class TestProductOperations:
         })
         ds_result = ds_df.prod()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_prod_with_na(self):
         """Product with NA values (skipna=True)."""
@@ -1164,7 +1164,7 @@ class TestProductOperations:
         })
         ds_result = ds_df.prod(skipna=True)
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_cumprod_basic(self):
         """Basic cumulative product."""

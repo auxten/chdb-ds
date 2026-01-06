@@ -180,10 +180,18 @@ chdb_mask_dtype_nullable = pytest.mark.xfail(
 #     strict=False,  # behavior varies by chDB version
 # )
 
-bug_index_not_preserved = pytest.mark.xfail(
-    reason="Index info not preserved through lazy SQL execution",
-    strict=True,
-)
+# FIXED (2026-01-06): Index info is now preserved through lazy SQL execution
+# The fix tracks index info in _index_info during _ensure_sql_source() and 
+# restores the index after SQL execution in _execute().
+# bug_index_not_preserved = pytest.mark.xfail(
+#     reason="Index info not preserved through lazy SQL execution",
+#     strict=True,
+# )
+
+# No-op decorator for import compatibility
+def bug_index_not_preserved(func):
+    """FIXED: Index info is now preserved through lazy SQL execution."""
+    return func
 
 bug_extractall_multiindex = pytest.mark.xfail(
     reason="extractall returns MultiIndex DataFrame, index info lost through lazy execution",
@@ -277,7 +285,8 @@ deprecated_fillna_downcast = pytest.mark.xfail(
 # bug_* aliases
 # datastore_groupby_first_last_order = bug_groupby_first_last  # FIXED
 # datastore_groupby_index_preservation = bug_groupby_index  # FIXED
-lazy_index_not_preserved = bug_index_not_preserved
+# lazy_index_not_preserved = bug_index_not_preserved  # FIXED - now a no-op
+lazy_index_not_preserved = bug_index_not_preserved  # Now a no-op function
 lazy_extractall_multiindex = bug_extractall_multiindex
 
 # limit_* aliases

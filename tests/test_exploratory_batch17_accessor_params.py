@@ -19,6 +19,7 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 from datastore.column_expr import ColumnExpr
+from tests.test_utils import assert_frame_equal
 
 
 # =============================================================================
@@ -234,7 +235,7 @@ class TestFillnaParameters:
         pd_result = pd_df.fillna(0)
 
         ds_df = ds_result._execute()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_df.reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -249,7 +250,7 @@ class TestFillnaParameters:
         pd_result = pd_df.fillna({'a': 100, 'b': 200})
 
         ds_df = ds_result._execute()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_df.reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -586,7 +587,7 @@ class TestSortValuesEdgeCases:
 
         ds_df = ds_result._execute()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_df.reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -606,7 +607,7 @@ class TestSortValuesEdgeCases:
 
         ds_df = ds_result._execute()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_df.reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -799,7 +800,7 @@ class TestSampleParameters:
         df1 = ds_large.sample(n=10, random_state=42)._execute()
         df2 = ds_large.sample(n=10, random_state=42)._execute()
 
-        pd.testing.assert_frame_equal(df1, df2)
+        assert_frame_equal(df1, df2)
 
 
 # =============================================================================

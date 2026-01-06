@@ -18,6 +18,7 @@ import numpy as np
 from datastore import DataStore, Field, ColumnExpr
 from datastore.conditions import BinaryCondition, Condition
 from datastore.lazy_ops import LazyDataFrameSource
+from tests.test_utils import assert_series_equal
 
 
 class TestColumnExprPandasAlignment(unittest.TestCase):
@@ -1240,7 +1241,7 @@ class TestColumnExprPlot(unittest.TestCase):
 
         # Natural trigger: compare plot's data with expected pandas Series
         expected = self.df['value']
-        pd.testing.assert_series_equal(plot_accessor._parent, expected)
+        assert_series_equal(plot_accessor._parent, expected)
 
 
 class TestColumnExprPandasProperties(unittest.TestCase):

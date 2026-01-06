@@ -10,6 +10,7 @@ These tests verify that assign() works correctly when:
 import pandas as pd
 import pytest
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestAssignMixed:
@@ -38,7 +39,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -54,7 +55,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -76,7 +77,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -102,7 +103,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -118,7 +119,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -142,7 +143,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -178,7 +179,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -201,7 +202,7 @@ class TestAssignMixed:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -242,7 +243,7 @@ class TestAssignWithColumnExpr:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -273,7 +274,7 @@ class TestAssignWithColumnExpr:
         
         # Reorder ds columns to match pandas for comparison
         ds_df = ds_df[pd_df.columns]
-        pd.testing.assert_frame_equal(ds_df, pd_df)
+        assert_frame_equal(ds_df, pd_df)
 
     def test_assign_with_transform_mixed_with_lambda(self, sample_data):
         """Test assign mixing transform result with lambda."""
@@ -293,7 +294,7 @@ class TestAssignWithColumnExpr:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -317,7 +318,7 @@ class TestAssignWithColumnExpr:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -340,7 +341,7 @@ class TestAssignWithColumnExpr:
         
         # Compare
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -383,7 +384,7 @@ class TestAssignThenFilter:
         ds_filtered = ds_with_c[ds_with_c['C'] > 30]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
             pd_filtered.reset_index(drop=True))
 
@@ -400,7 +401,7 @@ class TestAssignThenFilter:
         ds_filtered = ds_with_c[ds_with_c['C'] > 50]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
             pd_filtered.reset_index(drop=True))
 
@@ -417,7 +418,7 @@ class TestAssignThenFilter:
         ds_filtered = ds_result[ds_result['D'] > 100]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
             pd_filtered.reset_index(drop=True))
 
@@ -434,7 +435,7 @@ class TestAssignThenFilter:
         ds_filtered = ds_result[ds_result['C'] > 5]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
             pd_filtered.reset_index(drop=True))
 
@@ -451,7 +452,7 @@ class TestAssignThenFilter:
         ds_filtered = ds_with_c[(ds_with_c['C'] > 20) & (ds_with_c['A'] > 1)]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
             pd_filtered.reset_index(drop=True))
 
@@ -470,7 +471,7 @@ class TestAssignThenFilter:
         ds_result = ds_step2.assign(D=ds_step2['C'] * 2)
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))
 
@@ -489,6 +490,6 @@ class TestAssignThenFilter:
         ds_result = ds_step2[ds_step2['C'] > 100]
         
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True))

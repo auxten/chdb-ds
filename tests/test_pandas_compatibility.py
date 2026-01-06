@@ -13,7 +13,12 @@ import pytest
 import pandas as pd
 import numpy as np
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas_chdb_compat
+from tests.test_utils import (
+    assert_datastore_equals_pandas_chdb_compat,
+    assert_frame_equal,
+    assert_series_equal,
+    get_series,
+)
 
 
 # =============================================================================
@@ -119,14 +124,14 @@ class TestDataSelection:
         pd_result = pd_df.loc[0:2, ['name', 'age']]
         ds_result = ds_df.loc[0:2, ['name', 'age']]
         # loc returns pandas DataFrame directly
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_select_with_iloc(self, pd_df, ds_df):
         """Select with iloc."""
         pd_result = pd_df.iloc[0:3, 0:2]
         ds_result = ds_df.iloc[0:3, 0:2]
         # iloc returns pandas DataFrame directly
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -219,7 +224,7 @@ class TestStatistics:
         pd_result = pd_df[['age', 'salary']].corr()
         ds_result = ds_df[['age', 'salary']].corr()
         # corr returns pandas DataFrame
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -847,9 +852,7 @@ class TestEdgeCases:
         assert 'salary' not in ds_copy.columns
 
         # Verify popped values match
-        pd.testing.assert_series_equal(
-            pd.Series(ds_popped).reset_index(drop=True), pd_popped.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(get_series(ds_popped).reset_index(drop=True), pd_popped.reset_index(drop=True))
 
     def test_pop_ml_workflow_pattern(self):
         """Test the typical ML workflow: X = df.copy(); y = X.pop(target)."""
@@ -907,9 +910,8 @@ class TestEdgeCases:
         pd_df.update(update_df)
         ds_df.update(update_df)
 
-        # Verify values are updated
-        pd.testing.assert_series_equal(
-            pd.Series(ds_df['b']).reset_index(drop=True),
+        # Verify values are updated - use get_series to preserve Series name
+        assert_series_equal(
+            get_series(ds_df['b']).reset_index(drop=True),
             pd_df['b'].reset_index(drop=True),
-            check_names=False,
         )

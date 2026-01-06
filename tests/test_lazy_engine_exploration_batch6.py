@@ -18,7 +18,7 @@ from io import StringIO
 
 from datastore import DataStore
 from datastore.config import get_logger
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 
 
 class TestSQLMergingVerification:
@@ -420,10 +420,9 @@ class TestWhereAndMaskOperations:
         ds_result = self.ds['value'].where(self.ds['value'] > 0, 0)
 
         # Compare as Series
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_result._execute().reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_mask_simple(self):
@@ -434,10 +433,9 @@ class TestWhereAndMaskOperations:
         # DataStore
         ds_result = self.ds['value'].mask(self.ds['value'] < 0, 0)
 
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_result._execute().reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_names=False,
             )
 
     def test_where_then_filter(self):

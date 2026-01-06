@@ -12,10 +12,9 @@ Focus areas:
 import pytest
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_frame_equal, assert_series_equal
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal
 
 
 # =============================================================================
@@ -33,7 +32,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].abs()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_abs_negative_values(self):
         """abs() on negative values should return positive"""
@@ -43,7 +42,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [-1, -2, -3, -4, -5]})
         ds_result = ds['a'].abs()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_abs_mixed_values(self):
         """abs() on mixed positive/negative values"""
@@ -53,7 +52,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [-3, -1, 0, 1, 3]})
         ds_result = ds['a'].abs()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_clip_lower_only(self):
         """clip() with only lower bound"""
@@ -63,7 +62,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].clip(lower=2)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_clip_upper_only(self):
         """clip() with only upper bound"""
@@ -73,7 +72,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].clip(upper=4)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_clip_both_bounds(self):
         """clip() with both lower and upper bounds"""
@@ -83,7 +82,7 @@ class TestColumnExprAbsClip:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].clip(lower=2, upper=4)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestColumnExprBetweenIsin:
@@ -97,7 +96,7 @@ class TestColumnExprBetweenIsin:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].between(2, 4)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_between_exclusive(self):
         """between() with exclusive bounds"""
@@ -107,7 +106,7 @@ class TestColumnExprBetweenIsin:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].between(2, 4, inclusive='neither')
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_isin_basic(self):
         """isin() with list of values"""
@@ -117,7 +116,7 @@ class TestColumnExprBetweenIsin:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].isin([2, 4])
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_isin_empty_list(self):
         """isin() with empty list should return all False"""
@@ -127,7 +126,7 @@ class TestColumnExprBetweenIsin:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].isin([])
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_isin_strings(self):
         """isin() with string values"""
@@ -137,7 +136,7 @@ class TestColumnExprBetweenIsin:
         ds = DataStore({'name': ['Alice', 'Bob', 'Charlie', 'Diana']})
         ds_result = ds['name'].isin(['Alice', 'Charlie'])
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestColumnExprMaskWhere:
@@ -165,7 +164,7 @@ class TestColumnExprMaskWhere:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].where(ds['a'] > 2, other=-1)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_series_mask_basic(self):
         """Series.mask() basic usage"""
@@ -189,7 +188,7 @@ class TestColumnExprMaskWhere:
         ds = DataStore({'a': [1, 2, 3, 4, 5]})
         ds_result = ds['a'].mask(ds['a'] > 2, other=0)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
 
 # =============================================================================
@@ -393,7 +392,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rank_ascending_false(self):
         """rank(ascending=False)"""
@@ -403,7 +402,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank(ascending=False)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rank_method_min(self):
         """rank(method='min')"""
@@ -413,7 +412,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank(method='min')
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rank_method_max(self):
         """rank(method='max')"""
@@ -423,7 +422,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank(method='max')
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rank_method_dense(self):
         """rank(method='dense')"""
@@ -433,7 +432,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank(method='dense')
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_rank_pct(self):
         """rank(pct=True)"""
@@ -443,7 +442,7 @@ class TestRankParams:
         ds = DataStore({'a': [3, 1, 4, 1, 5]})
         ds_result = ds['a'].rank(pct=True)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False, rtol=1e-5)
+        assert_series_equal(ds_result.to_pandas(), pd_result, rtol=1e-5)
 
 
 class TestNLargestNSmallest:
@@ -620,7 +619,7 @@ class TestStringColumnOps:
         ds = DataStore({'name': ['alice', 'bob', 'charlie']})
         ds_result = ds['name'].str.upper()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_str_lower(self):
         """str.lower()"""
@@ -630,7 +629,7 @@ class TestStringColumnOps:
         ds = DataStore({'name': ['ALICE', 'BOB', 'CHARLIE']})
         ds_result = ds['name'].str.lower()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_str_len(self):
         """str.len()"""
@@ -640,7 +639,7 @@ class TestStringColumnOps:
         ds = DataStore({'name': ['alice', 'bob', 'charlie']})
         ds_result = ds['name'].str.len()
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
     def test_str_contains_filter(self):
         """Filter using str.contains()"""
@@ -670,7 +669,7 @@ class TestStringColumnOps:
         ds = DataStore({'name': ['alice', 'bob', 'charlie']})
         ds_result = ds['name'].str.replace('a', 'X', regex=False)
 
-        assert_series_equal(ds_result.to_pandas(), pd_result, check_names=False)
+        assert_series_equal(ds_result.to_pandas(), pd_result)
 
 
 # =============================================================================

@@ -10,9 +10,9 @@ See: tracking/discoveries/2026-01-06_groupby_dropna_alignment_research.md
 import pytest
 import numpy as np
 import pandas as pd
-from pandas.testing import assert_frame_equal, assert_series_equal
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal, assert_series_equal
 
 
 class TestGroupByDropna:
@@ -38,7 +38,7 @@ class TestGroupByDropna:
         # Should only have A, B, C groups (no NULL group)
         assert len(pd_result) == 3
         # DataStore should match pandas
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_sum_dropna_true_explicit(self, df_with_nulls):
         """Test explicit dropna=True excludes NULL groups."""
@@ -49,7 +49,7 @@ class TestGroupByDropna:
         ds_result = ds_df.groupby('category', dropna=True)['value'].sum()
 
         assert len(pd_result) == 3
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_sum_dropna_false(self, df_with_nulls):
         """Test dropna=False includes NULL groups."""
@@ -62,7 +62,7 @@ class TestGroupByDropna:
         # Should have A, B, C, NaN groups (4 groups)
         assert len(pd_result) == 4
         # DataStore should match pandas (including NaN group)
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_mean_dropna_true(self, df_with_nulls):
         """Test dropna=True with mean aggregation."""
@@ -72,7 +72,7 @@ class TestGroupByDropna:
         pd_result = pd_df.groupby('category', dropna=True)['value'].mean()
         ds_result = ds_df.groupby('category', dropna=True)['value'].mean()
 
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_mean_dropna_false(self, df_with_nulls):
         """Test dropna=False with mean aggregation."""
@@ -82,7 +82,7 @@ class TestGroupByDropna:
         pd_result = pd_df.groupby('category', dropna=False)['value'].mean()
         ds_result = ds_df.groupby('category', dropna=False)['value'].mean()
 
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_count_dropna_true(self, df_with_nulls):
         """Test dropna=True with count aggregation."""
@@ -92,7 +92,7 @@ class TestGroupByDropna:
         pd_result = pd_df.groupby('category', dropna=True)['value'].count()
         ds_result = ds_df.groupby('category', dropna=True)['value'].count()
 
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_count_dropna_false(self, df_with_nulls):
         """Test dropna=False with count aggregation."""
@@ -102,7 +102,7 @@ class TestGroupByDropna:
         pd_result = pd_df.groupby('category', dropna=False)['value'].count()
         ds_result = ds_df.groupby('category', dropna=False)['value'].count()
 
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_agg_dict_dropna_true(self, df_with_nulls):
         """Test dropna=True with agg dict."""
@@ -179,7 +179,7 @@ class TestGroupByDropnaMultiColumn:
         # dropna=True should exclude rows where ANY groupby column is NULL
         # Only ('A', 'X') and ('B', 'X') should remain
         assert len(pd_result) == 2
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_multi_groupby_dropna_false(self, df_multi_null):
         """Test dropna=False with multiple groupby columns."""
@@ -226,7 +226,7 @@ class TestGroupByDropnaEdgeCases:
         pd_result = pd_df.groupby('category', dropna=True)['value'].sum()
         ds_result = ds_df.groupby('category', dropna=True)['value'].sum()
 
-        assert_series_equal(ds_result._execute(), pd_result, check_names=False)
+        assert_series_equal(ds_result._execute(), pd_result)
 
     def test_groupby_no_null_dropna_false(self):
         """Test when no group values are NULL with dropna=False."""
@@ -263,8 +263,8 @@ class TestGroupByDropnaEdgeCases:
 
         # dropna=True: only A group
         assert len(pd_result_true) == 1
-        assert_series_equal(ds_result_true._execute(), pd_result_true, check_names=False)
+        assert_series_equal(ds_result_true._execute(), pd_result_true)
 
         # dropna=False: A and NaN groups
         assert len(pd_result_false) == 2
-        assert_series_equal(ds_result_false._execute(), pd_result_false, check_names=False)
+        assert_series_equal(ds_result_false._execute(), pd_result_false)

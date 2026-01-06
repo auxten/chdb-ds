@@ -22,6 +22,7 @@ import pytest
 from datastore import DataStore, LazyGroupBy
 from datastore.config import config
 from datastore.lazy_ops import LazyColumnAssignment
+from tests.test_utils import assert_frame_equal, assert_series_equal
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
@@ -60,7 +61,7 @@ class TitanicPandasComparisonTest(unittest.TestCase):
         ds_result = self.ds.head(5).to_df()
         pd_result = self.pd_df.head(5)
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_tail(self):
         """Test tail() returns same result as pandas."""
@@ -116,7 +117,7 @@ class TitanicPandasComparisonTest(unittest.TestCase):
         ds_result = self.ds.to_df().describe(include="O")
         pd_result = self.pd_df.describe(include="O")
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     # ========== Missing Value Operations ==========
 
@@ -125,7 +126,7 @@ class TitanicPandasComparisonTest(unittest.TestCase):
         ds_result = self.ds.isna().sum()
         pd_result = self.pd_df.isna().sum()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_duplicated_sum(self):
         """Test duplicated().sum() returns same result as pandas."""
@@ -430,10 +431,9 @@ class TestChdbNaNHandling(unittest.TestCase):
         ds_series = ds_result.to_pandas()
 
         # Compare with index intact - no reset_index() to mask bugs
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
             rtol=1e-5,
         )
 
@@ -496,7 +496,7 @@ class TestOrderSensitiveOperationsCritical(unittest.TestCase):
         self.assertIn("FamilySize", ds_df.columns)
 
         # Compare FamilySize values
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_df["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True)
         )
 
@@ -571,9 +571,8 @@ class TitanicExecutionLogicTest(unittest.TestCase):
         ds_final = ds.to_df()
 
         # Verify FamilySize values in final DataFrame match pandas
-        pd.testing.assert_series_equal(
-            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True))
 
     def test_checkpoint_applied_after_groupby_mean(self):
         """Verify checkpoint is applied after groupby().mean() execution."""
@@ -806,7 +805,7 @@ class TitanicFullWorkflowTest(unittest.TestCase):
         self.assertEqual(ds_final.shape, pd_df.shape)
 
         # Check FamilySize values match
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True)
         )
 
@@ -844,9 +843,8 @@ class TitanicExecutionCountTest(unittest.TestCase):
 
         # Verify results match pandas
         for col in ["Col1", "Col2", "Col3"]:
-            pd.testing.assert_series_equal(
-                ds_result[col].reset_index(drop=True), pd_df[col].reset_index(drop=True), check_names=False
-            )
+            assert_series_equal(
+                ds_result[col].reset_index(drop=True), pd_df[col].reset_index(drop=True))
 
     def test_assignment_then_groupby_then_todf(self):
         """Test assignment + groupby + to_df produces correct results."""
@@ -868,9 +866,8 @@ class TitanicExecutionCountTest(unittest.TestCase):
         ds_final = ds.to_df()
 
         # Verify FamilySize column is correct
-        pd.testing.assert_series_equal(
-            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True))
 
     def test_assignment_then_multiple_groupby(self):
         """Test assignment + multiple groupby operations produce correct results."""
@@ -912,9 +909,8 @@ class TitanicExecutionCountTest(unittest.TestCase):
 
         # to_df - final result should have correct FamilySize
         ds_final = ds.to_df()
-        pd.testing.assert_series_equal(
-            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_final["FamilySize"].reset_index(drop=True), pd_df["FamilySize"].reset_index(drop=True))
 
 
 if __name__ == '__main__':

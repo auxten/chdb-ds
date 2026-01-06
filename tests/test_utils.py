@@ -7,7 +7,111 @@ principles defined in .cursor/rules/chdb-ds.mdc
 
 import numpy as np
 import pandas as pd
-from typing import Union, List, Optional
+from typing import Any
+
+
+# =============================================================================
+# Unified comparison functions - wrappers with check_names=True by default
+# =============================================================================
+
+
+def assert_frame_equal(
+    left: pd.DataFrame,
+    right: pd.DataFrame,
+    check_dtype: bool = True,
+    check_index_type: str = "equiv",
+    check_column_type: str = "equiv",
+    check_frame_type: bool = True,
+    check_names: bool = True,
+    by_blocks: bool = False,
+    check_exact: bool = False,
+    check_datetimelike_compat: bool = False,
+    check_categorical: bool = True,
+    check_like: bool = False,
+    check_freq: bool = True,
+    check_flags: bool = True,
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    obj: str = "DataFrame",
+) -> None:
+    """
+    Wrapper for pd.testing.assert_frame_equal with check_names=True by default.
+
+    This ensures column names and index names are checked by default.
+    All parameters match pd.testing.assert_frame_equal signature.
+    """
+    pd.testing.assert_frame_equal(
+        left,
+        right,
+        check_dtype=check_dtype,
+        check_index_type=check_index_type,
+        check_column_type=check_column_type,
+        check_frame_type=check_frame_type,
+        check_names=check_names,
+        by_blocks=by_blocks,
+        check_exact=check_exact,
+        check_datetimelike_compat=check_datetimelike_compat,
+        check_categorical=check_categorical,
+        check_like=check_like,
+        check_freq=check_freq,
+        check_flags=check_flags,
+        rtol=rtol,
+        atol=atol,
+        obj=obj,
+    )
+
+
+def assert_series_equal(
+    left,
+    right: pd.Series,
+    check_dtype: bool = True,
+    check_index_type: str = "equiv",
+    check_series_type: bool = True,
+    check_names: bool = True,
+    check_exact: bool = False,
+    check_datetimelike_compat: bool = False,
+    check_categorical: bool = True,
+    check_category_order: bool = True,
+    check_freq: bool = True,
+    check_flags: bool = True,
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    obj: str = "Series",
+    check_index: bool = True,
+    check_like: bool = False,
+) -> None:
+    """
+    Wrapper for pd.testing.assert_series_equal with check_names=True by default.
+
+    This ensures Series names and index names are checked by default.
+    All parameters match pd.testing.assert_series_equal signature.
+
+    Supports DataStore lazy objects (ColumnExpr, LazyCondition, etc.) as left argument.
+    These are automatically executed to get the underlying Series.
+    """
+    # Auto-convert DataStore lazy objects to Series
+    if not isinstance(left, pd.Series):
+        left = get_series(left)
+
+    pd.testing.assert_series_equal(
+        left,
+        right,
+        check_dtype=check_dtype,
+        check_index_type=check_index_type,
+        check_series_type=check_series_type,
+        check_names=check_names,
+        check_exact=check_exact,
+        check_datetimelike_compat=check_datetimelike_compat,
+        check_categorical=check_categorical,
+        check_category_order=check_category_order,
+        check_freq=check_freq,
+        check_flags=check_flags,
+        rtol=rtol,
+        atol=atol,
+        obj=obj,
+        check_index=check_index,
+        check_like=check_like,
+    )
 
 
 # =============================================================================
@@ -352,153 +456,6 @@ def _assert_array_equal(
             np.testing.assert_array_equal(ds_str, pd_str, err_msg=err_msg)
         else:
             np.testing.assert_array_equal(ds_values, pd_values, err_msg=err_msg)
-
-
-def assert_column_values_equal(
-    ds_result,
-    pd_result: pd.DataFrame,
-    column: str,
-    check_order: bool = True,
-    msg: str = "",
-) -> None:
-    """
-    Compare a single column between DataStore and pandas results.
-
-    Args:
-        ds_result: DataStore result
-        pd_result: pandas DataFrame
-        column: Column name to compare
-        check_order: If True, order must match
-        msg: Additional error message
-    """
-    prefix = f"{msg}: " if msg else ""
-
-    ds_values = np.asarray(ds_result[column].values)
-    pd_values = np.asarray(pd_result[column].values)
-
-    if not check_order:
-        ds_values = np.sort(ds_values)
-        pd_values = np.sort(pd_values)
-
-    np.testing.assert_array_equal(ds_values, pd_values, err_msg=f"{prefix}Column '{column}' values don't match")
-
-
-def assert_columns_match(
-    ds_result,
-    pd_result: pd.DataFrame,
-    check_order: bool = True,
-    msg: str = "",
-) -> None:
-    """
-    Compare only column names between DataStore and pandas results.
-
-    Args:
-        ds_result: DataStore result
-        pd_result: pandas DataFrame
-        check_order: If True, column order must match
-        msg: Additional error message
-    """
-    prefix = f"{msg}: " if msg else ""
-
-    ds_columns = list(ds_result.columns)
-    pd_columns = list(pd_result.columns)
-
-    if check_order:
-        assert ds_columns == pd_columns, (
-            f"{prefix}Column names or order don't match.\n" f"DataStore: {ds_columns}\n" f"Pandas:    {pd_columns}"
-        )
-    else:
-        assert set(ds_columns) == set(pd_columns), (
-            f"{prefix}Column names don't match.\n" f"DataStore: {set(ds_columns)}\n" f"Pandas:    {set(pd_columns)}"
-        )
-
-
-def assert_row_count_match(
-    ds_result,
-    pd_result: Union[pd.DataFrame, pd.Series],
-    msg: str = "",
-) -> None:
-    """
-    Compare row counts between DataStore and pandas results.
-
-    Args:
-        ds_result: DataStore result
-        pd_result: pandas DataFrame or Series
-        msg: Additional error message
-    """
-    prefix = f"{msg}: " if msg else ""
-
-    ds_len = len(ds_result)
-    pd_len = len(pd_result)
-
-    assert ds_len == pd_len, f"{prefix}Row count doesn't match.\n" f"DataStore: {ds_len}\n" f"Pandas:    {pd_len}"
-
-
-def assert_series_equals(
-    ds_result,
-    pd_result: pd.Series,
-    check_names: bool = False,
-    check_index: bool = False,
-    rtol: float = 1e-5,
-    atol: float = 1e-8,
-    msg: str = "",
-) -> None:
-    """
-    Compare DataStore Series-like result with pandas Series.
-
-    Uses Duck Typing principle: triggers execution implicitly via .values property.
-    NEVER uses hasattr checks or explicit _execute() calls.
-
-    Args:
-        ds_result: DataStore result (ColumnExpr, Series-like, or similar)
-        pd_result: Expected pandas Series
-        check_names: If True, verify Series names match
-        check_index: If True, verify index matches
-        rtol: Relative tolerance for float comparison
-        atol: Absolute tolerance for float comparison
-        msg: Additional message to include in assertion errors
-
-    Example:
-        # pandas operations
-        pd_series = pd.Series([1, 2, 3])
-
-        # DataStore operations (mirror of pandas)
-        ds_series = ds['col']
-
-        # Compare results - triggers execution implicitly via .values
-        assert_series_equals(ds_series, pd_series)
-    """
-    prefix = f"{msg}: " if msg else ""
-
-    # Duck Typing: access .values to implicitly trigger execution
-    # This works for both lazy and executed objects
-    ds_values = np.asarray(ds_result.values)
-    pd_values = np.asarray(pd_result.values)
-
-    # Compare length
-    assert len(ds_values) == len(pd_values), (
-        f"{prefix}Series length doesn't match.\n" f"DataStore: {len(ds_values)}\n" f"Pandas:    {len(pd_values)}"
-    )
-
-    # Compare values
-    _assert_array_equal(ds_values, pd_values, f"{prefix}Series values don't match", rtol, atol)
-
-    # Always check dtype
-    ds_dtype = ds_result.dtype
-    pd_dtype = pd_result.dtype
-    # Allow bool vs uint8 mismatch (common in chDB)
-    if ds_dtype != pd_dtype and {str(ds_dtype), str(pd_dtype)} != {'bool', 'uint8'}:
-        assert False, (
-            f"{prefix}Series dtype doesn't match.\n" f"DataStore dtype: {ds_dtype}\n" f"Pandas dtype:    {pd_dtype}"
-        )
-
-    # Optionally check names
-    if check_names:
-        ds_name = ds_result.name
-        pd_name = pd_result.name
-        assert ds_name == pd_name, (
-            f"{prefix}Series names don't match.\n" f"DataStore name: {ds_name}\n" f"Pandas name:    {pd_name}"
-        )
 
 
 def get_dataframe(ds_result) -> pd.DataFrame:

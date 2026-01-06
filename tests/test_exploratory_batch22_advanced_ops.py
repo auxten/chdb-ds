@@ -17,7 +17,13 @@ from tests.xfail_markers import pandas_deprecated_fillna_downcast
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
+from tests.test_utils import (
+    assert_datastore_equals_pandas,
+    assert_frame_equal,
+    assert_series_equal,
+    get_dataframe,
+    get_series,
+)
 
 
 class TestGroupByCumcount:
@@ -25,10 +31,7 @@ class TestGroupByCumcount:
 
     def test_cumcount_basic(self):
         """Basic cumcount - count within each group."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'A', 'B', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
         pd_result = pd_df.groupby('category').cumcount()
 
         ds_df = DataStore(pd_df)
@@ -37,18 +40,14 @@ class TestGroupByCumcount:
         # cumcount returns a Series with same index as original DataFrame
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_cumcount_ascending_false(self):
         """cumcount with ascending=False (reverse within group)."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'A', 'B', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
         pd_result = pd_df.groupby('category').cumcount(ascending=False)
 
         ds_df = DataStore(pd_df)
@@ -56,19 +55,20 @@ class TestGroupByCumcount:
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_cumcount_multiple_groups(self):
         """cumcount with multiple groupby columns."""
-        pd_df = pd.DataFrame({
-            'cat1': ['A', 'A', 'A', 'B', 'B', 'B'],
-            'cat2': ['X', 'X', 'Y', 'X', 'Y', 'Y'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame(
+            {
+                'cat1': ['A', 'A', 'A', 'B', 'B', 'B'],
+                'cat2': ['X', 'X', 'Y', 'X', 'Y', 'Y'],
+                'value': [1, 2, 3, 4, 5, 6],
+            }
+        )
         pd_result = pd_df.groupby(['cat1', 'cat2']).cumcount()
 
         ds_df = DataStore(pd_df)
@@ -76,10 +76,9 @@ class TestGroupByCumcount:
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
 
@@ -88,10 +87,7 @@ class TestGroupByPipe:
 
     def test_pipe_with_function(self):
         """Test pipe with a simple function."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [10, 20, 30, 40]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
 
         def get_summary(grp):
             return grp.agg({'value': ['mean', 'sum']})
@@ -102,10 +98,10 @@ class TestGroupByPipe:
         ds_result = ds_df.groupby('category').pipe(get_summary)
 
         # Compare results - pipe returns what the function returns
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            )
+        )
 
 
 class TestIndexOperations:
@@ -113,11 +109,7 @@ class TestIndexOperations:
 
     def test_set_index_append(self):
         """set_index with append=True."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3],
-            'B': [4, 5, 6],
-            'C': [7, 8, 9]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]})
         pd_df = pd_df.set_index('A')
         pd_result = pd_df.set_index('B', append=True)
 
@@ -125,18 +117,14 @@ class TestIndexOperations:
         ds_df = ds_df.set_index('A')
         ds_result = ds_df.set_index('B', append=True)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
 
     def test_reset_index_level(self):
         """reset_index with level parameter."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3],
-            'B': [4, 5, 6],
-            'C': [7, 8, 9]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]})
         pd_df = pd_df.set_index(['A', 'B'])
         pd_result = pd_df.reset_index(level='A')
 
@@ -144,33 +132,37 @@ class TestIndexOperations:
         ds_df = ds_df.set_index(['A', 'B'])
         ds_result = ds_df.reset_index(level='A')
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
 
     def test_set_index_drop_false(self):
         """set_index with drop=False keeps column."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3],
-            'B': [4, 5, 6],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, 2, 3],
+                'B': [4, 5, 6],
+            }
+        )
         pd_result = pd_df.set_index('A', drop=False)
 
         ds_df = DataStore({'A': [1, 2, 3], 'B': [4, 5, 6]})
         ds_result = ds_df.set_index('A', drop=False)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
 
     def test_set_index_verify_integrity(self):
         """set_index with verify_integrity=True on duplicate values."""
-        pd_df = pd.DataFrame({
-            'A': [1, 1, 3],  # Duplicates
-            'B': [4, 5, 6],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, 1, 3],  # Duplicates
+                'B': [4, 5, 6],
+            }
+        )
 
         ds_df = DataStore({'A': [1, 1, 3], 'B': [4, 5, 6]})
 
@@ -187,9 +179,11 @@ class TestReplaceFillnaEdgeCases:
 
     def test_replace_regex_pattern(self):
         """replace with regex=True."""
-        pd_df = pd.DataFrame({
-            'A': ['foo', 'bar', 'foobar', 'baz'],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': ['foo', 'bar', 'foobar', 'baz'],
+            }
+        )
         pd_result = pd_df.replace(r'^foo.*', 'replaced', regex=True)
 
         ds_df = DataStore({'A': ['foo', 'bar', 'foobar', 'baz']})
@@ -199,9 +193,11 @@ class TestReplaceFillnaEdgeCases:
 
     def test_replace_method_bfill_ffill(self):
         """replace with method parameter."""
-        pd_df = pd.DataFrame({
-            'A': [1, np.nan, 3, np.nan, 5],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, np.nan, 3, np.nan, 5],
+            }
+        )
 
         # ffill (forward fill)
         pd_result_ffill = pd_df.ffill()
@@ -217,9 +213,11 @@ class TestReplaceFillnaEdgeCases:
 
     def test_fillna_limit(self):
         """fillna with limit parameter."""
-        pd_df = pd.DataFrame({
-            'A': [1, np.nan, np.nan, np.nan, 5],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, np.nan, np.nan, np.nan, 5],
+            }
+        )
         pd_result = pd_df.ffill(limit=1)
 
         ds_df = DataStore({'A': [1, np.nan, np.nan, np.nan, 5]})
@@ -230,9 +228,11 @@ class TestReplaceFillnaEdgeCases:
     @pandas_deprecated_fillna_downcast
     def test_fillna_downcast(self):
         """fillna with downcast parameter."""
-        pd_df = pd.DataFrame({
-            'A': [1.0, np.nan, 3.0],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1.0, np.nan, 3.0],
+            }
+        )
         # downcast='infer' will convert float to int if possible
         pd_result = pd_df.fillna(2, downcast='infer')
 
@@ -244,10 +244,12 @@ class TestReplaceFillnaEdgeCases:
 
     def test_replace_dict_with_nested(self):
         """replace with nested dict per column."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3],
-            'B': ['a', 'b', 'c'],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, 2, 3],
+                'B': ['a', 'b', 'c'],
+            }
+        )
         pd_result = pd_df.replace({'A': {1: 100}, 'B': {'a': 'alpha'}})
 
         ds_df = DataStore({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
@@ -261,48 +263,29 @@ class TestAssignTransformChains:
 
     def test_assign_then_transform(self):
         """assign followed by groupby transform."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [10, 20, 30, 40]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
         pd_df = pd_df.assign(doubled=pd_df['value'] * 2)
         pd_result = pd_df.groupby('category')['doubled'].transform('mean')
 
-        ds_df = DataStore({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [10, 20, 30, 40]
-        })
+        ds_df = DataStore({'category': ['A', 'A', 'B', 'B'], 'value': [10, 20, 30, 40]})
         ds_df = ds_df.assign(doubled=ds_df['value'] * 2)
         ds_result = ds_df.groupby('category')['doubled'].transform('mean')
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_filter_assign_filter(self):
         """Filter -> assign -> filter chain."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3, 4, 5],
-            'B': [10, 20, 30, 40, 50]
-        })
-        pd_result = (
-            pd_df[pd_df['A'] > 1]
-            .assign(C=lambda x: x['A'] + x['B'])
-        )
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5], 'B': [10, 20, 30, 40, 50]})
+        pd_result = pd_df[pd_df['A'] > 1].assign(C=lambda x: x['A'] + x['B'])
         pd_result = pd_result[pd_result['C'] > 35]
 
-        ds_df = DataStore({
-            'A': [1, 2, 3, 4, 5],
-            'B': [10, 20, 30, 40, 50]
-        })
-        ds_result = (
-            ds_df[ds_df['A'] > 1]
-            .assign(C=lambda x: x['A'] + x['B'])
-        )
+        ds_df = DataStore({'A': [1, 2, 3, 4, 5], 'B': [10, 20, 30, 40, 50]})
+        ds_result = ds_df[ds_df['A'] > 1].assign(C=lambda x: x['A'] + x['B'])
         ds_result = ds_result[ds_result['C'] > 35]
 
         assert_datastore_equals_pandas(ds_result, pd_result)
@@ -310,18 +293,10 @@ class TestAssignTransformChains:
     def test_assign_multiple_columns_order(self):
         """assign multiple columns - order should be preserved."""
         pd_df = pd.DataFrame({'A': [1, 2, 3]})
-        pd_result = pd_df.assign(
-            B=lambda x: x['A'] * 2,
-            C=lambda x: x['A'] * 3,
-            D=lambda x: x['A'] * 4
-        )
+        pd_result = pd_df.assign(B=lambda x: x['A'] * 2, C=lambda x: x['A'] * 3, D=lambda x: x['A'] * 4)
 
         ds_df = DataStore({'A': [1, 2, 3]})
-        ds_result = ds_df.assign(
-            B=lambda x: x['A'] * 2,
-            C=lambda x: x['A'] * 3,
-            D=lambda x: x['A'] * 4
-        )
+        ds_result = ds_df.assign(B=lambda x: x['A'] * 2, C=lambda x: x['A'] * 3, D=lambda x: x['A'] * 4)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -331,78 +306,77 @@ class TestSeriesOperationsEdge:
 
     def test_series_drop_duplicates_keep_false(self):
         """drop_duplicates with keep=False removes all duplicates."""
-        pd_ser = pd.Series([1, 1, 2, 3, 3])
-        pd_result = pd_ser.drop_duplicates(keep=False)
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': [1, 1, 2, 3, 3]})
+        pd_result = pd_df['A'].drop_duplicates(keep=False)
 
         ds_df = DataStore({'A': [1, 1, 2, 3, 3]})
         ds_result = ds_df['A'].drop_duplicates(keep=False)
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_series_nlargest_keep(self):
         """nlargest with keep parameter."""
-        pd_ser = pd.Series([1, 3, 3, 5, 5, 2])
-        pd_result = pd_ser.nlargest(3, keep='all')
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': [1, 3, 3, 5, 5, 2]})
+        pd_result = pd_df['A'].nlargest(3, keep='all')
 
         ds_df = DataStore({'A': [1, 3, 3, 5, 5, 2]})
         ds_result = ds_df['A'].nlargest(3, keep='all')
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_series_nsmallest_keep(self):
         """nsmallest with keep parameter."""
-        pd_ser = pd.Series([1, 3, 1, 5, 2, 2])
-        pd_result = pd_ser.nsmallest(3, keep='last')
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': [1, 3, 1, 5, 2, 2]})
+        pd_result = pd_df['A'].nsmallest(3, keep='last')
 
         ds_df = DataStore({'A': [1, 3, 1, 5, 2, 2]})
         ds_result = ds_df['A'].nsmallest(3, keep='last')
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_series_between_inclusive(self):
         """between with inclusive parameter."""
-        pd_ser = pd.Series([1, 2, 3, 4, 5])
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
 
         # inclusive='both' (default)
-        pd_result_both = pd_ser.between(2, 4, inclusive='both')
+        pd_result_both = pd_df['A'].between(2, 4, inclusive='both')
         ds_df = DataStore({'A': [1, 2, 3, 4, 5]})
         ds_result_both = ds_df['A'].between(2, 4, inclusive='both')
         # between() returns LazyCondition - use _execute() to get Series
         ds_series = get_series(ds_result_both)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result_both,
-            check_names=False,
         )
 
         # inclusive='neither'
-        pd_result_neither = pd_ser.between(2, 4, inclusive='neither')
+        pd_result_neither = pd_df['A'].between(2, 4, inclusive='neither')
         ds_df2 = DataStore({'A': [1, 2, 3, 4, 5]})
         ds_result_neither = ds_df2['A'].between(2, 4, inclusive='neither')
         # between() returns LazyCondition - use _execute() to get Series
         ds_series2 = get_series(ds_result_neither)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series2,
             pd_result_neither,
-            check_names=False,
         )
 
 
@@ -411,44 +385,36 @@ class TestStackUnstackEdge:
 
     def test_stack_level(self):
         """stack with level parameter."""
-        pd_df = pd.DataFrame({
-            ('A', 'x'): [1, 2],
-            ('A', 'y'): [3, 4],
-            ('B', 'x'): [5, 6],
-            ('B', 'y'): [7, 8],
-        })
-        pd_df.columns = pd.MultiIndex.from_tuples([
-            ('A', 'x'), ('A', 'y'), ('B', 'x'), ('B', 'y')
-        ])
+        pd_df = pd.DataFrame(
+            {
+                ('A', 'x'): [1, 2],
+                ('A', 'y'): [3, 4],
+                ('B', 'x'): [5, 6],
+                ('B', 'y'): [7, 8],
+            }
+        )
+        pd_df.columns = pd.MultiIndex.from_tuples([('A', 'x'), ('A', 'y'), ('B', 'x'), ('B', 'y')])
         pd_result = pd_df.stack(level=0)
 
         ds_df = DataStore(pd_df)
         ds_result = ds_df.stack(level=0)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
 
     def test_unstack_fill_value(self):
         """unstack with fill_value."""
-        pd_df = pd.DataFrame({
-            'A': ['one', 'one', 'two'],
-            'B': ['a', 'b', 'a'],
-            'value': [1, 2, 3]
-        })
+        pd_df = pd.DataFrame({'A': ['one', 'one', 'two'], 'B': ['a', 'b', 'a'], 'value': [1, 2, 3]})
         pd_df = pd_df.set_index(['A', 'B'])
         pd_result = pd_df.unstack(fill_value=0)
 
-        ds_df = DataStore({
-            'A': ['one', 'one', 'two'],
-            'B': ['a', 'b', 'a'],
-            'value': [1, 2, 3]
-        })
+        ds_df = DataStore({'A': ['one', 'one', 'two'], 'B': ['a', 'b', 'a'], 'value': [1, 2, 3]})
         ds_df = ds_df.set_index(['A', 'B'])
         ds_result = ds_df.unstack(fill_value=0)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
@@ -490,9 +456,10 @@ class TestMergeConcatEdge:
         ds_df1 = DataStore({'A': [1, 2], 'B': [3, 4]})
         ds_df2 = DataStore({'A': [5, 6], 'B': [7, 8]})
         from datastore import concat as ds_concat
+
         ds_result = ds_concat([ds_df1, ds_df2], keys=['first', 'second'])
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
@@ -506,6 +473,7 @@ class TestMergeConcatEdge:
         ds_df1 = DataStore(pd_df1)
         ds_df2 = DataStore(pd_df2)
         from datastore import concat as ds_concat
+
         ds_result = ds_concat([ds_df1, ds_df2], ignore_index=True)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
@@ -527,9 +495,9 @@ class TestStringAccessorEdge:
 
     def test_str_cat_with_others(self):
         """str.cat concatenating with another Series."""
-        pd_ser1 = pd.Series(['a', 'b', 'c'])
-        pd_ser2 = pd.Series(['x', 'y', 'z'])
-        pd_result = pd_ser1.str.cat(pd_ser2, sep='-')
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': ['a', 'b', 'c'], 'B': ['x', 'y', 'z']})
+        pd_result = pd_df['A'].str.cat(pd_df['B'], sep='-')
 
         ds_df = DataStore({'A': ['a', 'b', 'c'], 'B': ['x', 'y', 'z']})
         # Get the Series for str.cat
@@ -538,10 +506,9 @@ class TestStringAccessorEdge:
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
     def test_str_get_dummies(self):
@@ -552,15 +519,16 @@ class TestStringAccessorEdge:
         ds_df = DataStore({'A': ['a|b', 'b|c', 'c']})
         ds_result = ds_df['A'].str.get_dummies(sep='|')
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
 
     def test_str_encode_decode(self):
         """str.encode and str.decode."""
-        pd_ser = pd.Series(['hello', 'world'])
-        pd_encoded = pd_ser.str.encode('utf-8')
+        # Mirror pattern: both use DataFrame column access to preserve Series name
+        pd_df = pd.DataFrame({'A': ['hello', 'world']})
+        pd_encoded = pd_df['A'].str.encode('utf-8')
         pd_decoded = pd_encoded.str.decode('utf-8')
 
         ds_df = DataStore({'A': ['hello', 'world']})
@@ -569,10 +537,9 @@ class TestStringAccessorEdge:
 
         # Execute ColumnExpr if needed
         ds_series = get_series(ds_decoded)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_decoded,
-            check_names=False,
         )
 
 
@@ -581,16 +548,18 @@ class TestDataFrameMethodsEdge:
 
     def test_transpose(self):
         """Test DataFrame transpose."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3],
-            'B': [4, 5, 6],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, 2, 3],
+                'B': [4, 5, 6],
+            }
+        )
         pd_result = pd_df.T
 
         ds_df = DataStore({'A': [1, 2, 3], 'B': [4, 5, 6]})
         ds_result = ds_df.T
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
@@ -605,7 +574,7 @@ class TestDataFrameMethodsEdge:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds_df1.dot(ds_df2._get_df())
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
         )
@@ -658,9 +627,11 @@ class TestSpecialValues:
 
     def test_inf_operations(self):
         """Operations with infinity values."""
-        pd_df = pd.DataFrame({
-            'A': [1, np.inf, -np.inf, 4],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, np.inf, -np.inf, 4],
+            }
+        )
 
         # replace inf with nan
         pd_result = pd_df.replace([np.inf, -np.inf], np.nan)
@@ -670,9 +641,11 @@ class TestSpecialValues:
 
     def test_clip_with_inf(self):
         """clip operations with infinity."""
-        pd_df = pd.DataFrame({
-            'A': [1, 100, -100, 50],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, 100, -100, 50],
+            }
+        )
         pd_result = pd_df.clip(lower=-np.inf, upper=60)
 
         ds_df = DataStore({'A': [1, 100, -100, 50]})
@@ -682,10 +655,12 @@ class TestSpecialValues:
 
     def test_nan_propagation_in_arithmetic(self):
         """NaN propagation in arithmetic operations."""
-        pd_df = pd.DataFrame({
-            'A': [1, np.nan, 3],
-            'B': [4, 5, np.nan],
-        })
+        pd_df = pd.DataFrame(
+            {
+                'A': [1, np.nan, 3],
+                'B': [4, 5, np.nan],
+            }
+        )
         pd_result = pd_df['A'] + pd_df['B']
 
         ds_df = DataStore({'A': [1, np.nan, 3], 'B': [4, 5, np.nan]})
@@ -693,10 +668,9 @@ class TestSpecialValues:
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series,
             pd_result,
-            check_names=False,
         )
 
 
@@ -705,60 +679,43 @@ class TestGroupByAdvanced:
 
     def test_groupby_sort_false(self):
         """groupby with sort=False preserves original order."""
-        pd_df = pd.DataFrame({
-            'category': ['B', 'A', 'B', 'A'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['B', 'A', 'B', 'A'], 'value': [1, 2, 3, 4]})
         pd_result = pd_df.groupby('category', sort=False).sum()
 
-        ds_df = DataStore({
-            'category': ['B', 'A', 'B', 'A'],
-            'value': [1, 2, 3, 4]
-        })
+        ds_df = DataStore({'category': ['B', 'A', 'B', 'A'], 'value': [1, 2, 3, 4]})
         ds_result = ds_df.groupby('category', sort=False).sum()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            )
+        )
+
     def test_groupby_dropna(self):
         """groupby with dropna parameter."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', None, 'A', None],
-            'value': [1, 2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', None, 'A', None], 'value': [1, 2, 3, 4, 5]})
 
         # dropna=True (default) - exclude NaN groups
         pd_result_true = pd_df.groupby('category', dropna=True).sum()
-        ds_df = DataStore({
-            'category': ['A', 'B', None, 'A', None],
-            'value': [1, 2, 3, 4, 5]
-        })
+        ds_df = DataStore({'category': ['A', 'B', None, 'A', None], 'value': [1, 2, 3, 4, 5]})
         ds_result_true = ds_df.groupby('category', dropna=True).sum()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result_true),
             pd_result_true,
-            )
+        )
 
     def test_groupby_agg_list_functions(self):
         """groupby agg with list of functions."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         pd_result = pd_df.groupby('category').agg(['sum', 'mean', 'count'])
 
-        ds_df = DataStore({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        ds_df = DataStore({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_result = ds_df.groupby('category').agg(['sum', 'mean', 'count'])
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            )
+        )
 
 
 class TestIOEdgeCases:
@@ -776,7 +733,7 @@ class TestIOEdgeCases:
         ds_df.to_csv(ds_csv_path, compression='gzip', index=False)
         ds_read = pd.read_csv(ds_csv_path, compression='gzip')
 
-        pd.testing.assert_frame_equal(ds_read, pd_read)
+        assert_frame_equal(ds_read, pd_read)
 
     def test_to_dict_orient_records(self):
         """to_dict with orient='records'."""

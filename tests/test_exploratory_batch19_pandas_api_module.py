@@ -20,7 +20,7 @@ sys.path.insert(0, '/Users/auxten/Codes/go/src/github.com/auxten/chdb-ds')
 
 from datastore import DataStore
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_dataframe, get_series
 
 
 class TestMergeAsof:
@@ -708,7 +708,7 @@ class TestIsNaFunctions:
             ds_result = pd.DataFrame(ds_result, columns=pd_result.columns)
         else:
             ds_result = get_dataframe(ds_result)
-        pd.testing.assert_frame_equal(ds_result.reset_index(drop=True), 
+        assert_frame_equal(ds_result.reset_index(drop=True), 
                                       pd_result.reset_index(drop=True))
 
     def test_isnull_series(self):
@@ -718,7 +718,7 @@ class TestIsNaFunctions:
         pd_result = pd.isnull(ser)
         ds_result = ds.isnull(ser)
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_notna_datastore(self):
         """notna on DataStore."""
@@ -734,7 +734,7 @@ class TestIsNaFunctions:
             ds_result = pd.DataFrame(ds_result, columns=pd_result.columns)
         else:
             ds_result = get_dataframe(ds_result)
-        pd.testing.assert_frame_equal(ds_result.reset_index(drop=True), 
+        assert_frame_equal(ds_result.reset_index(drop=True), 
                                       pd_result.reset_index(drop=True))
 
     def test_notnull_series(self):
@@ -744,7 +744,7 @@ class TestIsNaFunctions:
         pd_result = pd.notnull(ser)
         ds_result = ds.notnull(ser)
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
 
 class TestToConversionFunctions:
@@ -775,7 +775,7 @@ class TestToConversionFunctions:
         pd_result = pd.to_numeric(values)
         ds_result = ds.to_numeric(values)
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_to_numeric_errors_coerce(self):
         """to_numeric with errors='coerce'."""
@@ -784,7 +784,7 @@ class TestToConversionFunctions:
         pd_result = pd.to_numeric(values, errors='coerce')
         ds_result = ds.to_numeric(values, errors='coerce')
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_to_timedelta_basic(self):
         """to_timedelta basic usage."""

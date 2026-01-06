@@ -27,7 +27,7 @@ Design Principle:
     Avoid explicit _execute() calls - use natural triggers instead.
 """
 
-from tests.test_utils import get_series
+from tests.test_utils import assert_frame_equal, assert_series_equal, get_series
 import pytest
 import pandas as pd
 import numpy as np
@@ -144,7 +144,7 @@ class TestTextPreprocessing:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
+        assert_series_equal(pd_result, ds_result)
 
     def test_remove_punctuation_regex(self, text_df_data):
         """Test removing punctuation with str.replace() regex."""
@@ -156,7 +156,7 @@ class TestTextPreprocessing:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
+        assert_series_equal(pd_result, ds_result)
 
     def test_strip_whitespace(self):
         """Test stripping whitespace with str.strip()."""
@@ -169,7 +169,7 @@ class TestTextPreprocessing:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_series_equal(pd_result, ds_result, check_names=False)
+        assert_series_equal(pd_result, ds_result)
 
     def test_text_length(self, text_df_data):
         """Test getting text length with str.len()."""
@@ -235,7 +235,7 @@ class TestMissingValueHandling:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
+        assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
 
     def test_fillna_text(self, na_text_df_data):
         """Test filling missing text with empty string."""
@@ -248,7 +248,7 @@ class TestMissingValueHandling:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_frame_equal(pd_df_copy, ds_result)
+        assert_frame_equal(pd_df_copy, ds_result)
 
 
 # ============================================================================
@@ -314,7 +314,7 @@ class TestSubmissionCreation:
 
         ds_submission = get_series(ds_submission)
 
-        pd.testing.assert_frame_equal(pd_submission, ds_submission)
+        assert_frame_equal(pd_submission, ds_submission)
 
 
 # ============================================================================
@@ -335,7 +335,7 @@ class TestSamplingAndSplitting:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
+        assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
 
     def test_sample_frac(self, text_df_data):
         """Test sampling fraction of rows with sample(frac=0.6)."""
@@ -347,4 +347,4 @@ class TestSamplingAndSplitting:
 
         ds_result = get_series(ds_result)
 
-        pd.testing.assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))
+        assert_frame_equal(pd_result.reset_index(drop=True), ds_result.reset_index(drop=True))

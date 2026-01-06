@@ -28,6 +28,7 @@ from datastore.exceptions import UnsupportedOperationError
 
 import tempfile
 import os
+from tests.test_utils import assert_frame_equal
 
 
 # ============================================================================
@@ -251,7 +252,7 @@ class TestMergeOperations:
         assert list(ds_result.columns) == list(pd_result.columns), "Merge columns should match"
 
         # Compare values
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.to_pandas().sort_values(['user_id', 'item_id']).reset_index(drop=True),
             pd_result.sort_values(['user_id', 'item_id']).reset_index(drop=True),
             )

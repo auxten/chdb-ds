@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestPandasImmutabilityAlignment(unittest.TestCase):
@@ -605,7 +606,7 @@ class TestOriginalUnchanged(unittest.TestCase):
         df = self._get_fresh_df()
         original_df = df.copy()
         _ = df[df['value'] > 10].add_prefix('col_').sort_values('col_value', ascending=False).head(2)
-        pd.testing.assert_frame_equal(df, original_df, obj="Pandas: original should be unchanged")
+        assert_frame_equal(df, original_df, obj="Pandas: original should be unchanged")
 
         # DataStore behavior
         ds = self._get_fresh_ds()

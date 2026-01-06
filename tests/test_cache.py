@@ -11,6 +11,7 @@ import unittest
 import pandas as pd
 
 from datastore import DataStore, config
+from tests.test_utils import assert_frame_equal
 
 
 class TestCacheBasics(unittest.TestCase):
@@ -74,7 +75,7 @@ class TestCacheBasics(unittest.TestCase):
         result2 = ds.to_df()
 
         # Both should be equal
-        pd.testing.assert_frame_equal(result1, result2)
+        assert_frame_equal(result1, result2)
 
         # Result should have the correct columns
         self.assertIn('value', result1.columns)
@@ -461,7 +462,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_chained_dependency_with_intermediate_repr(self):
         """
@@ -489,7 +490,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_multi_level_dependency_chain(self):
         """
@@ -514,7 +515,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_multi_level_dependency_with_multiple_checkpoints(self):
         """
@@ -546,7 +547,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_overwrite_column_dependency(self):
         """
@@ -568,7 +569,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_overwrite_with_checkpoint_between(self):
         """
@@ -592,7 +593,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_complex_expression_dependency(self):
         """
@@ -617,7 +618,7 @@ class TestOperationDependencies(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
 
 class TestPandasEngineConfiguration(unittest.TestCase):
@@ -655,7 +656,7 @@ class TestPandasEngineConfiguration(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_pandas_engine_with_dependencies(self):
         """Test dependent operations with Pandas engine."""
@@ -674,7 +675,7 @@ class TestPandasEngineConfiguration(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_pandas_engine_with_checkpoint(self):
         """Test checkpoint behavior with Pandas engine."""
@@ -694,7 +695,7 @@ class TestPandasEngineConfiguration(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_engine_consistency_auto_vs_pandas(self):
         """Test that AUTO and PANDAS engines produce identical results."""
@@ -717,7 +718,7 @@ class TestPandasEngineConfiguration(unittest.TestCase):
         result_pandas = ds_pandas.to_df()
 
         # Results should be identical
-        pd.testing.assert_frame_equal(result_auto, result_pandas)
+        assert_frame_equal(result_auto, result_pandas)
 
 
 class TestRealWorldScenarios(unittest.TestCase):
@@ -784,7 +785,7 @@ class TestRealWorldScenarios(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_cumulative_calculations(self):
         """Test cumulative calculations with dependencies."""
@@ -842,7 +843,7 @@ class TestRealWorldScenarios(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_mixed_operations_fillna_and_arithmetic(self):
         """Test mixing fillna with arithmetic operations."""
@@ -864,7 +865,7 @@ class TestRealWorldScenarios(unittest.TestCase):
         result = ds.to_df()
 
         # Verify against Pandas
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
 
 class TestSQLTableOperations(unittest.TestCase):
@@ -954,7 +955,7 @@ class TestEdgeCases(unittest.TestCase):
         ds['c'] = ds['b'] + ds['a']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_large_number_of_columns(self):
         """Test with many columns."""
@@ -966,7 +967,7 @@ class TestEdgeCases(unittest.TestCase):
         ds['sum'] = sum(ds[f'col_{i}'] for i in range(50))
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_special_characters_in_values(self):
         """Test handling of special characters."""
@@ -977,7 +978,7 @@ class TestEdgeCases(unittest.TestCase):
         ds['upper'] = ds['text'].str.upper()
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_boolean_operations(self):
         """Test boolean operations with dependencies."""
@@ -1011,7 +1012,7 @@ class TestEdgeCases(unittest.TestCase):
         ds['c'] = ds['b'] / 3
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
 
 class TestIncrementalExecutionVerification(unittest.TestCase):
@@ -1112,7 +1113,7 @@ class TestIncrementalExecutionVerification(unittest.TestCase):
         ds['e'] = ds['d'] + ds['a']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_multiple_checkpoints_preserve_all_columns(self):
         """Ensure multiple checkpoints preserve all columns correctly."""
@@ -1136,7 +1137,7 @@ class TestIncrementalExecutionVerification(unittest.TestCase):
         ds['e'] = ds['d'] * 2
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
 
 class TestDependencyChainCorrectnessVariations(unittest.TestCase):
@@ -1171,7 +1172,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds['a'] = ds['a'] + 1
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_diamond_dependency(self):
         r"""
@@ -1195,7 +1196,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds['d'] = ds['b'] + ds['c']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_diamond_dependency_with_intermediate_checkpoint(self):
         """
@@ -1213,7 +1214,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds['d'] = ds['b'] + ds['c']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_deep_chain_dependency(self):
         """Test deep chain: a -> b -> c -> d -> e -> f -> g."""
@@ -1236,7 +1237,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds['g'] = ds['f'] + 1
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_mixed_checkpoint_and_no_checkpoint(self):
         """
@@ -1262,7 +1263,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds2['e'] = ds2['d'] - ds2['a']
         result2 = ds2.to_df()
 
-        pd.testing.assert_frame_equal(result1, result2)
+        assert_frame_equal(result1, result2)
 
     def test_column_overwrite_with_dependency(self):
         """
@@ -1288,7 +1289,7 @@ class TestDependencyChainCorrectnessVariations(unittest.TestCase):
         ds['c'] = ds['a'] + ds['b']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
 
 class TestEngineConsistency(unittest.TestCase):
@@ -1337,8 +1338,8 @@ class TestEngineConsistency(unittest.TestCase):
         result3 = ds3.to_df()
 
         # All must be identical
-        pd.testing.assert_frame_equal(result1, result2)
-        pd.testing.assert_frame_equal(result2, result3)
+        assert_frame_equal(result1, result2)
+        assert_frame_equal(result2, result3)
 
     def test_results_identical_across_engines(self):
         """
@@ -1361,7 +1362,7 @@ class TestEngineConsistency(unittest.TestCase):
         result_pandas = ds_pandas.to_df()
 
         # Compare
-        pd.testing.assert_frame_equal(result_auto, result_pandas)
+        assert_frame_equal(result_auto, result_pandas)
 
 
 class TestEngineExecutionVerification(unittest.TestCase):
@@ -1772,7 +1773,7 @@ class TestCacheCorrectnessCritical(unittest.TestCase):
         ds['c'] = ds['b'] + ds['a']
 
         result = ds.to_df()
-        pd.testing.assert_frame_equal(result, pdf)
+        assert_frame_equal(result, pdf)
 
     def test_cache_with_float_operations(self):
         """Test cache correctness with float operations."""

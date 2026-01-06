@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series
 
 
 class TestReverseArithmeticOperators:
@@ -189,7 +189,7 @@ class TestColumnExprReverseOperators:
 
         # Execute and compare
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rsub(self):
         """Test scalar - ColumnExpr."""
@@ -200,7 +200,7 @@ class TestColumnExprReverseOperators:
         ds_result = 10 - ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rmul(self):
         """Test scalar * ColumnExpr."""
@@ -211,7 +211,7 @@ class TestColumnExprReverseOperators:
         ds_result = 5 * ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rtruediv(self):
         """Test scalar / ColumnExpr."""
@@ -222,7 +222,7 @@ class TestColumnExprReverseOperators:
         ds_result = 100 / ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rfloordiv(self):
         """Test scalar // ColumnExpr."""
@@ -233,7 +233,7 @@ class TestColumnExprReverseOperators:
         ds_result = 10 // ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rmod(self):
         """Test scalar % ColumnExpr."""
@@ -244,7 +244,7 @@ class TestColumnExprReverseOperators:
         ds_result = 10 % ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_columnexpr_rpow(self):
         """Test scalar ** ColumnExpr."""
@@ -255,7 +255,7 @@ class TestColumnExprReverseOperators:
         ds_result = 2 ** ds_df['a']
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestMixedOperations:
@@ -383,7 +383,7 @@ class TestBinaryOpsWithInf:
         pd_result = pd_df['a'] / pd_df['b']
         ds_result = ds_df['a']._execute() / ds_df['b']._execute()
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestDataFrameScalarComparison:

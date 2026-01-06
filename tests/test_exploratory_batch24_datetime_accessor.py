@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, '/Users/auxten/Codes/go/src/github.com/auxten/chdb-ds')
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 from tests.xfail_markers import chdb_nat_returns_nullable_int
 
 
@@ -462,11 +462,10 @@ class TestDateTimePartsExtraction:
         pd_dates = pd_result.astype(str)
         ds_dates = ds_result._execute().astype(str)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_dates.reset_index(drop=True),
             pd_dates.reset_index(drop=True),
-            check_names=False,
-        )
+            )
     
     def test_dt_time(self, df_full):
         """Test dt.time extraction (time part only)."""
@@ -480,11 +479,10 @@ class TestDateTimePartsExtraction:
         pd_times = pd_result.astype(str)
         ds_times = ds_result._execute().astype(str)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_times.reset_index(drop=True),
             pd_times.reset_index(drop=True),
-            check_names=False,
-        )
+            )
 
 
 class TestSubSecondPrecision:
@@ -781,11 +779,10 @@ class TestTimezoneOperations:
         pd_str = pd_result.astype(str)
         ds_str = ds_result._execute().astype(str)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_str.reset_index(drop=True),
             pd_str.reset_index(drop=True),
-            check_names=False,
-        )
+            )
     
     def test_tz_convert(self, df_aware):
         """Test dt.tz_convert to different timezone."""
@@ -799,11 +796,10 @@ class TestTimezoneOperations:
         pd_hours = pd_result.dt.hour
         ds_hours = ds_result._execute().dt.hour
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_hours.reset_index(drop=True),
             pd_hours.reset_index(drop=True),
-            check_names=False,
-        )
+            )
 
 
 class TestToPeriod:
@@ -832,11 +828,10 @@ class TestToPeriod:
         pd_str = pd_result.astype(str)
         ds_str = ds_result._execute().astype(str)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_str.reset_index(drop=True),
             pd_str.reset_index(drop=True),
-            check_names=False,
-        )
+            )
     
     def test_to_period_quarter(self, df_dates):
         """Test dt.to_period with quarterly frequency."""
@@ -850,11 +845,10 @@ class TestToPeriod:
         pd_str = pd_result.astype(str)
         ds_str = ds_result._execute().astype(str)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_str.reset_index(drop=True),
             pd_str.reset_index(drop=True),
-            check_names=False,
-        )
+            )
 
 
 if __name__ == '__main__':

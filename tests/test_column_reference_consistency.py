@@ -14,6 +14,7 @@ from datastore import DataStore, col, Field
 from datastore.expressions import Expression, ArithmeticExpression, Literal
 from datastore.column_expr import ColumnExpr
 from datastore.conditions import Condition, BinaryCondition
+from tests.test_utils import assert_frame_equal
 
 
 class TestColumnReferenceTypes:
@@ -278,8 +279,8 @@ class TestComparisonOperationsMixed:
         unsafe_flights_3 = self.ds.filter(col("altitude") < col("min_safe_altitude")).to_df()
 
         # Results should be identical
-        pd.testing.assert_frame_equal(unsafe_flights_1, unsafe_flights_2, obj="ds['col'] vs ds.col filter")
-        pd.testing.assert_frame_equal(unsafe_flights_1, unsafe_flights_3, obj="ds['col'] vs col() filter")
+        assert_frame_equal(unsafe_flights_1, unsafe_flights_2, obj="ds['col'] vs ds.col filter")
+        assert_frame_equal(unsafe_flights_1, unsafe_flights_3, obj="ds['col'] vs col() filter")
 
 
 class TestAggregationMixed:
@@ -954,8 +955,8 @@ class TestRealWorldAviationScenarios:
             len(low_fuel_1) == len(low_fuel_2) == len(low_fuel_3)
         ), f"Filter results differ: {len(low_fuel_1)} vs {len(low_fuel_2)} vs {len(low_fuel_3)}"
 
-        pd.testing.assert_frame_equal(low_fuel_1, low_fuel_2)
-        pd.testing.assert_frame_equal(low_fuel_1, low_fuel_3)
+        assert_frame_equal(low_fuel_1, low_fuel_2)
+        assert_frame_equal(low_fuel_1, low_fuel_3)
 
     def test_complex_aviation_pipeline(self):
         """

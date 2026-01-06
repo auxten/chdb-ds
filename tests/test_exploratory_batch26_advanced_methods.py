@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 import datastore as ds
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_series
 
 
 class TestMatrixOperations:
@@ -33,7 +33,7 @@ class TestMatrixOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.dot(pd_series)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_dot_dataframe_with_dataframe(self):
         """Test dot product of DataFrame with DataFrame."""
@@ -214,7 +214,7 @@ class TestMemoryViewOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.memory_usage()
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_memory_usage_deep(self):
         """Test memory_usage with deep=True."""
@@ -224,7 +224,7 @@ class TestMemoryViewOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.memory_usage(deep=True)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_to_numpy_with_homogeneous_data(self):
         """Test to_numpy with homogeneous numeric data (avoids na_value issue)."""
@@ -260,7 +260,7 @@ class TestComplexAggregation:
         
         # Result may be DataFrame or may differ in column order
         if isinstance(ds_result, pd.DataFrame):
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_like=True)
+            assert_frame_equal(ds_result, pd_result, check_like=True)
         else:
             assert_datastore_equals_pandas(ds_result, pd_result)
     
@@ -272,7 +272,7 @@ class TestComplexAggregation:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.agg('sum')
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_agg_lambda_function(self):
         """Test agg with lambda function."""
@@ -282,7 +282,7 @@ class TestComplexAggregation:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.agg(lambda x: x.max() - x.min())
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_aggregate_alias(self):
         """Test aggregate (alias for agg)."""
@@ -292,7 +292,7 @@ class TestComplexAggregation:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.aggregate('sum')
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestMethodChaining:
@@ -736,7 +736,7 @@ class TestApplyMapOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.apply(sum, axis=1)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_apply_column_wise(self):
         """Test apply column-wise."""
@@ -746,7 +746,7 @@ class TestApplyMapOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.apply(sum, axis=0)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_map_with_dict(self):
         """Test map with dictionary - need to call _execute() for ColumnExpr."""
@@ -759,7 +759,7 @@ class TestApplyMapOperations:
         # ColumnExpr.map() returns ColumnExpr, need to execute
         ds_result = get_series(ds_result)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_map_with_function(self):
         """Test map with function."""
@@ -772,7 +772,7 @@ class TestApplyMapOperations:
         # ColumnExpr.map() returns ColumnExpr, need to execute
         ds_result = get_series(ds_result)
         
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestAdditionalEdgeCases:

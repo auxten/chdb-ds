@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 import datastore as ds
-from tests.test_utils import get_series, get_dataframe
+from tests.test_utils import assert_series_equal, get_dataframe, get_series
 
 
 class TestGroupByFirstLast(unittest.TestCase):
@@ -40,9 +40,8 @@ class TestGroupByFirstLast(unittest.TestCase):
         ds_series = get_series(ds_result)
 
         # Compare values (ignore index name)
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_groupby_last_single_column(self):
         """Test groupby().last() on a single column."""
@@ -51,9 +50,8 @@ class TestGroupByFirstLast(unittest.TestCase):
 
         ds_series = get_series(ds_result)
 
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_groupby_first_multiple_groups(self):
         """Test groupby().first() with multiple groups."""
@@ -110,7 +108,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         ds_agg_df = get_dataframe(ds_agg)
 
         # pandas first() and agg('first') should be equal
-        pd.testing.assert_series_equal(pd_first, pd_agg)
+        assert_series_equal(pd_first, pd_agg)
 
         # DataStore results should match pandas
         self.assertEqual(ds_first_series['A'], pd_first['A'])

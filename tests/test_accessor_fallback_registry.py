@@ -9,6 +9,7 @@ import pytest
 import pandas as pd
 from datastore import DataStore
 from datastore.function_executor import function_config, FunctionExecutorConfig
+from tests.test_utils import assert_frame_equal
 
 
 class TestAccessorFallbackRegistry:
@@ -152,7 +153,7 @@ class TestAccessorFallbackIntegration:
         if hasattr(ds_result, '_execute'):
             ds_result = ds_result._execute()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             pd.DataFrame(ds_result) if not isinstance(ds_result, pd.DataFrame) else ds_result,
             pd_result
         )
@@ -185,7 +186,7 @@ class TestAccessorFallbackIntegration:
         if hasattr(ds_result, '_execute'):
             ds_result = ds_result._execute()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             pd.DataFrame(ds_result) if not isinstance(ds_result, pd.DataFrame) else ds_result,
             pd_result
         )

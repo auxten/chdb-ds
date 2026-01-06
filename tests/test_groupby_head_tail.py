@@ -9,6 +9,7 @@ import numpy as np
 import sys
 sys.path.insert(0, '.')
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestGroupByHead:
@@ -41,7 +42,7 @@ class TestGroupByHead:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').head()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -54,7 +55,7 @@ class TestGroupByHead:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').head(2)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -67,7 +68,7 @@ class TestGroupByHead:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').head(1)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -80,7 +81,7 @@ class TestGroupByHead:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').head(10)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -115,7 +116,7 @@ class TestGroupByHead:
         ds = DataStore(df.copy())
         ds_result = ds.groupby(['g1', 'g2']).head(1)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -135,7 +136,7 @@ class TestGroupByHead:
         ds = DataStore(df.copy())
         ds_result = ds.groupby('category').head(2)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -179,7 +180,7 @@ class TestGroupByTail:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').tail()
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -192,7 +193,7 @@ class TestGroupByTail:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').tail(2)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -205,7 +206,7 @@ class TestGroupByTail:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').tail(1)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -218,7 +219,7 @@ class TestGroupByTail:
         ds = DataStore(sample_df.copy())
         ds_result = ds.groupby('category').tail(10)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -253,7 +254,7 @@ class TestGroupByTail:
         ds = DataStore(df.copy())
         ds_result = ds.groupby(['g1', 'g2']).tail(1)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -273,7 +274,7 @@ class TestGroupByTail:
         ds = DataStore(df.copy())
         ds_result = ds.groupby('category').tail(2)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result)
 
@@ -321,8 +322,8 @@ class TestGroupByHeadTailComparison:
         pd_tail = sample_df.groupby('category').tail(2)
 
         # Verify DataStore matches pandas
-        pd.testing.assert_frame_equal(ds_head, pd_head)
-        pd.testing.assert_frame_equal(ds_tail, pd_tail)
+        assert_frame_equal(ds_head, pd_head)
+        assert_frame_equal(ds_tail, pd_tail)
 
         # Verify head and tail indices don't overlap
         assert set(ds_head.index) & set(ds_tail.index) == set()
@@ -335,7 +336,7 @@ class TestGroupByHeadTailComparison:
         pd_head = sample_df.groupby('category').head(5)
 
         # All rows should be returned since each group has only 3 rows
-        pd.testing.assert_frame_equal(ds_head, pd_head)
+        assert_frame_equal(ds_head, pd_head)
         assert len(ds_head) == len(sample_df)
 
     def test_head_vs_nth(self, sample_df):

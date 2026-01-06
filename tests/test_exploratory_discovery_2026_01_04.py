@@ -11,6 +11,7 @@ import numpy as np
 import sys
 sys.path.insert(0, '.')
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal, assert_series_equal, get_series
 
 
 class TestCombineFirst:
@@ -29,7 +30,7 @@ class TestCombineFirst:
         ds_result = ds1.combine_first(ds2)
 
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True)
         )
@@ -46,7 +47,7 @@ class TestCombineFirst:
         ds_result = ds1.combine_first(df2.copy())
 
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True)
         )
@@ -64,7 +65,7 @@ class TestCombineFirst:
         ds_result = ds1.combine_first(ds2)
 
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True),
         )
@@ -82,7 +83,7 @@ class TestCombineFirst:
         ds_result = ds1.combine(ds2, lambda s1, s2: s1 + s2)
 
         # Compare
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True)
         )
@@ -160,7 +161,7 @@ class TestMask:
         ds_cond = ds['A'] > 2
         ds_result = ds.mask(ds_cond, -1)
 
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result._get_df(),
             pd_result
         )
@@ -297,11 +298,9 @@ class TestWorkingOperations:
         ds = DataStore(df.copy())
         ds_result = ds['score'].rank()
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result),
-            pd_result,
-            check_names=False
-        )
+        assert_series_equal(
+            get_series(ds_result),
+            pd_result)
 
     def test_clip(self):
         """clip should work correctly."""

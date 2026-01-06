@@ -14,7 +14,7 @@ from tests.xfail_markers import datastore_callable_index
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series, get_value
 
 
 class TestChainedOperationsEdgeCases:
@@ -196,7 +196,7 @@ class TestLocIlocEdgeCases:
         # Returns Series
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.iloc[0]
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_iloc_negative_slice(self):
         """iloc with negative slice"""
@@ -229,9 +229,8 @@ class TestLocIlocEdgeCases:
         # May return Series or DataFrame
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.iloc[:, 0]
-        pd.testing.assert_series_equal(
-            ds_result.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_loc_column_list(self):
         """loc with column list"""
@@ -476,9 +475,8 @@ class TestStringMethodEdgeCases:
         # Returns Series
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.iloc[:, 0]
-        pd.testing.assert_series_equal(
-            ds_result.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
 
 class TestWindowFunctionEdgeCases:

@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_dataframe, get_series
 
 
 class TestEvalQueryChains:
@@ -61,7 +61,7 @@ class TestEvalQueryChains:
         # Sort for comparison (groupby order not guaranteed)
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
     def test_query_then_sort_head(self, ds):
         """Query followed by sort and head."""
@@ -97,7 +97,7 @@ class TestEvalQueryChains:
         # Sort for comparison
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
     def test_chained_query_calls(self, ds):
         """Multiple chained query calls."""
@@ -146,7 +146,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].clip(lower=0, upper=20)
         ds_result = ds_df['x'].clip(lower=0, upper=20)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_clip_then_filter(self, ds):
         """Clip followed by filter."""
@@ -169,7 +169,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].between(0, 15)
         ds_result = ds_df['x'].between(0, 15)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result).astype(bool), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_between_inclusive(self, ds):
         """Between with inclusive parameter."""
@@ -178,7 +178,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].between(0, 15, inclusive='neither')
         ds_result = ds_df['x'].between(0, 15, inclusive='neither')
 
-        pd.testing.assert_series_equal(pd.Series(ds_result).astype(bool), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_between_as_filter(self, ds):
         """Use between result as filter."""
@@ -196,7 +196,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].where(pd_df['x'] > 0, 0).clip(upper=15)
         ds_result = ds_df['x'].where(ds_df['x'] > 0, 0).clip(upper=15)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_clip_where_filter_chain(self, ds):
         """Clip -> where -> filter chain."""
@@ -219,7 +219,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['z'].where(pd_df['x'].between(0, 15), 0)
         ds_result = ds_df['z'].where(ds_df['x'].between(0, 15), 0)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
 
 class TestAstypeChains:
@@ -242,7 +242,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(float)
         ds_result = ds_df['int_col'].astype(float)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_astype_float_to_int(self, ds):
         """Convert float to int (truncation)."""
@@ -251,7 +251,7 @@ class TestAstypeChains:
         pd_result = pd_df['float_col'].astype(int)
         ds_result = ds_df['float_col'].astype(int)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_astype_int_to_str(self, ds):
         """Convert int to string."""
@@ -260,7 +260,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(str)
         ds_result = ds_df['int_col'].astype(str)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_astype_bool_to_int(self, ds):
         """Convert bool to int."""
@@ -269,7 +269,7 @@ class TestAstypeChains:
         pd_result = pd_df['bool_col'].astype(int)
         ds_result = ds_df['bool_col'].astype(int)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_astype_then_filter(self, ds):
         """Astype followed by filter."""
@@ -296,9 +296,8 @@ class TestAstypeChains:
         ds_result = ds_filtered['float_col'].astype(int)
 
         # Reset index for comparison (filter changes index)
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result).reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            get_series(ds_result).reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_astype_multiple_columns_dict(self, ds):
         """Astype with dict for multiple columns."""
@@ -316,7 +315,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(float).astype(str)
         ds_result = ds_df['int_col'].astype(float).astype(str)
 
-        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
+        assert_series_equal(get_series(ds_result), pd_result)
 
 
 class TestAssignExpressions:
@@ -401,7 +400,7 @@ class TestAssignExpressions:
         # Sort for comparison
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
     def test_chained_assign(self, ds):
         """Chain multiple assign calls."""
@@ -515,7 +514,7 @@ class TestComplexChainScenarios:
         # Sort for comparison
         pd_result = pd_result.sort_values('category').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('category').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
     def test_filter_eval_sort_head_chain(self, ds):
         """Filter -> eval -> sort -> head chain."""
@@ -556,7 +555,7 @@ class TestComplexChainScenarios:
         # Sort for comparison
         pd_result = pd_result.sort_values('category').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('category').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
 
 class TestEdgeCasesEmptyAndSingleRow:
@@ -606,7 +605,7 @@ class TestEdgeCasesEmptyAndSingleRow:
         ds_result = ds_df['a'].clip(lower=0, upper=10)
 
         assert len(pd_result) == 0
-        assert len(pd.Series(ds_result)) == 0
+        assert len(get_series(ds_result)) == 0
 
     def test_between_all_false(self):
         """Between where all values are outside range."""
@@ -618,7 +617,7 @@ class TestEdgeCasesEmptyAndSingleRow:
         ds_result = ds_df['a'].between(100, 200)
 
         assert pd_result.sum() == 0
-        assert pd.Series(ds_result).astype(bool).sum() == 0
+        assert get_series(ds_result).astype(bool).sum() == 0
 
     def test_between_all_true(self):
         """Between where all values are inside range."""
@@ -630,7 +629,7 @@ class TestEdgeCasesEmptyAndSingleRow:
         ds_result = ds_df['a'].between(0, 10)
 
         assert pd_result.sum() == 5
-        assert pd.Series(ds_result).astype(bool).sum() == 5
+        assert get_series(ds_result).astype(bool).sum() == 5
 
 
 class TestNullableTypesWithOperations:

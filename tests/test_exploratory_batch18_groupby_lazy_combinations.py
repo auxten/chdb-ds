@@ -15,7 +15,7 @@ from tests.xfail_markers import datastore_where_condition, chdb_mask_dtype_nulla
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_dataframe, get_series
 
 
 class TestGroupByTransform:
@@ -31,9 +31,8 @@ class TestGroupByTransform:
 
         # Series name may differ
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_transform_with_builtin_func(self):
         """Test groupby transform with builtin function name."""
@@ -44,9 +43,8 @@ class TestGroupByTransform:
         ds_result = ds_df.groupby('category')['value'].transform('mean')
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_transform_normalize(self):
         """Test groupby transform for normalization."""
@@ -60,9 +58,8 @@ class TestGroupByTransform:
         ds_result = ds_df.groupby('group')['score'].transform(normalize)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_transform_cumulative(self):
         """Test groupby transform with cumsum."""
@@ -73,9 +70,8 @@ class TestGroupByTransform:
         ds_result = ds_df.groupby('category')['value'].transform('cumsum')
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-        )
+        assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
 
 class TestGroupByFilter:
@@ -125,7 +121,7 @@ class TestGroupByApply:
         ds_result = ds_df.groupby('category').apply(lambda x: x['value'].sum())
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_apply_returns_series(self):
         """Test groupby apply that returns Series per group."""
@@ -202,7 +198,7 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].where(ds_df['a'] > 2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_series_where_with_other(self):
         """Test Series where with replacement value."""
@@ -213,7 +209,7 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].where(ds_df['a'] > 2, -1)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     @chdb_mask_dtype_nullable
     def test_series_mask_simple(self):
@@ -240,7 +236,7 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].mask(ds_df['a'] > 2, 0)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestDataFrameComparison:
@@ -293,7 +289,7 @@ class TestArgsortMethods:
         ds_result = ds_df['a'].argsort()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_argmin(self):
         """Test argmin method."""
@@ -357,7 +353,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding().sum()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_expanding_mean(self):
         """Test expanding mean."""
@@ -368,7 +364,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding().mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_expanding_min_periods(self):
         """Test expanding with min_periods."""
@@ -379,7 +375,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding(min_periods=3).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestEwmMethods:
@@ -394,7 +390,7 @@ class TestEwmMethods:
         ds_result = ds_df['a'].ewm(span=3).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_ewm_mean_alpha(self):
         """Test ewm mean with alpha parameter."""
@@ -405,7 +401,7 @@ class TestEwmMethods:
         ds_result = ds_df['a'].ewm(alpha=0.5).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestRollingEdgeCases:
@@ -420,7 +416,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3, min_periods=1).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_rolling_center(self):
         """Test rolling with center=True."""
@@ -431,7 +427,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3, center=True).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_rolling_std(self):
         """Test rolling std."""
@@ -442,7 +438,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3).std()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestCombineOperations:
@@ -516,7 +512,7 @@ class TestComplexChains:
         ds_result = ds_df[ds_df['flag']].groupby('category')['value'].sum()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_assign_filter_sort(self):
         """Test assign -> filter -> sort chain."""
@@ -561,7 +557,7 @@ class TestModeUnique:
         ds_result = ds_df['a'].mode()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_mode_multiple_values(self):
         """Test mode with multiple equally frequent values."""
@@ -613,7 +609,7 @@ class TestMapApply:
         ds_result = ds_df['a'].map(mapping)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_map_with_function(self):
         """Test map with function."""
@@ -624,7 +620,7 @@ class TestMapApply:
         ds_result = ds_df['a'].map(lambda x: x * 2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_apply_with_function(self):
         """Test apply with function."""
@@ -635,7 +631,7 @@ class TestMapApply:
         ds_result = ds_df['a'].apply(lambda x: x**2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
 
 class TestFirstLastOffset:
@@ -729,7 +725,7 @@ class TestGetMethod:
         ds_result = ds_df.get('a')
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
+        assert_series_equal(ds_series, pd_result)
 
     def test_get_non_existing_column(self):
         """Test get with non-existing column returns default."""

@@ -14,7 +14,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series, get_value
 
 
 # =============================================================================
@@ -133,11 +133,9 @@ class TestRollingSingleColumn:
         
         # Compare as Series
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
     
     def test_rolling_single_column_sum(self, sample_df):
         """Test rolling sum on single column."""
@@ -147,11 +145,9 @@ class TestRollingSingleColumn:
         ds_result = ds['A'].rolling(window=2).sum()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 # =============================================================================
@@ -341,11 +337,9 @@ class TestShift:
         ds_result = ds['A'].shift(periods=1)
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 class TestDiff:
@@ -393,11 +387,9 @@ class TestDiff:
         ds_result = ds['A'].diff()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 class TestPctChange:
@@ -436,11 +428,9 @@ class TestPctChange:
         ds_result = ds['A'].pct_change()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 # =============================================================================
@@ -580,11 +570,9 @@ class TestSqueeze:
         ds_result = ds.squeeze()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
     
     def test_squeeze_single_row(self):
         """Test squeeze on single row DataFrame."""
@@ -595,11 +583,9 @@ class TestSqueeze:
         ds_result = ds.squeeze()
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
     
     def test_squeeze_single_value(self):
         """Test squeeze on single value DataFrame."""
@@ -710,11 +696,9 @@ class TestEval:
         ds_result = ds.eval('A + B')
         
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.reset_index(drop=True), 
-            pd_result.reset_index(drop=True),
-            check_names=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 class TestQuery:

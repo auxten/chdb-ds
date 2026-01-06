@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal, assert_series_equal
 
 
 class TestGroupByMultiIndexColumns(unittest.TestCase):
@@ -43,7 +44,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertEqual(pd_result.columns.tolist(), ds_result.columns.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_multiple_funcs_single_column_multiindex(self):
         """Multiple functions on single column should return MultiIndex."""
@@ -57,7 +58,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertEqual(pd_result.columns.tolist(), ds_result.columns.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_multiple_funcs_multiple_columns_multiindex(self):
         """Multiple functions on multiple columns should return MultiIndex."""
@@ -77,7 +78,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertEqual(pd_result.columns.tolist(), ds_result.columns.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_mixed_single_and_multiple_funcs_multiindex(self):
         """Mix of single and multiple functions should return MultiIndex."""
@@ -97,7 +98,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertEqual(pd_result.columns.tolist(), ds_result.columns.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_multiindex_column_access(self):
         """Accessing MultiIndex columns should work like pandas."""
@@ -106,13 +107,13 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         ds_result = ds.groupby('category').agg({'value': ['mean', 'sum']}).to_df()
 
         # Access via tuple
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_result[('value', 'mean')], 
             pd_result[('value', 'mean')]
         )
         
         # Access via hierarchical
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_result['value']['mean'], 
             pd_result['value']['mean']
         )
@@ -139,7 +140,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertEqual(pd_result.index.tolist(), ds_result.index.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_named_aggregation_as_index_false(self):
         """Named aggregation with as_index=False should keep groupby col as column."""
@@ -158,7 +159,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertIn('category', ds_result.columns)
         
         # Check values match
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_multiindex_with_multiple_groupby_columns(self):
         """MultiIndex columns with multiple groupby keys should work."""
@@ -180,7 +181,7 @@ class TestGroupByMultiIndexColumns(unittest.TestCase):
         self.assertTrue(isinstance(ds_result.index, pd.MultiIndex))
         
         # Check values match (sort for consistent comparison)
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.sort_index(), 
             pd_result.sort_index()
         )
@@ -228,7 +229,7 @@ class TestGroupByMultiIndexFromFile(unittest.TestCase):
         self.assertEqual(pd_result.columns.tolist(), ds_result.columns.tolist())
         
         # Check values match
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             ds_result.sort_index(), 
             pd_result.sort_index()
         )

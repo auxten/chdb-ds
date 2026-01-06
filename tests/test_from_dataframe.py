@@ -12,6 +12,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestFromDfBasics:
@@ -29,7 +30,7 @@ class TestFromDfBasics:
         ds = DataStore.from_df(df)
         result = ds.to_df()
 
-        pd.testing.assert_frame_equal(result, df)
+        assert_frame_equal(result, df)
 
     def test_from_df_with_name(self):
         """Test from_df with optional name parameter."""
@@ -79,7 +80,7 @@ class TestFromDataframeAlias:
         ds1 = DataStore.from_df(df)
         ds2 = DataStore.from_dataframe(df)
 
-        pd.testing.assert_frame_equal(ds1.to_df(), ds2.to_df())
+        assert_frame_equal(ds1.to_df(), ds2.to_df())
 
     def test_from_dataframe_with_name(self):
         """Test from_dataframe with name parameter."""
@@ -316,7 +317,7 @@ class TestFromDfDataTypes:
 
         result = ds.to_df()
 
-        pd.testing.assert_frame_equal(result, df)
+        assert_frame_equal(result, df)
 
     def test_datetime_column(self):
         """Test DataFrame with datetime column."""

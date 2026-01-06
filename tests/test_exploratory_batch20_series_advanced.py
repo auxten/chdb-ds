@@ -15,7 +15,7 @@ from tests.xfail_markers import chdb_median_in_where, datastore_str_join_array
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_dataframe
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_dataframe, get_series
 
 
 class TestSeriesMapAdvanced:
@@ -160,7 +160,7 @@ class TestDataFrameXS:
         ds_result = ds_df.xs('y')
         
         # xs returns a Series for single row
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
             pd_result
         )
@@ -432,7 +432,7 @@ class TestSeriesStringOperations:
         # Convert to DataFrame using Duck Typing
         ds_result_df = get_dataframe(ds_result)
             
-        pd.testing.assert_frame_equal(ds_result_df, pd_result)
+        assert_frame_equal(ds_result_df, pd_result)
 
     @datastore_str_join_array
     def test_str_join(self):
@@ -443,7 +443,7 @@ class TestSeriesStringOperations:
         pd_result = pd_df['letters'].str.join('-')
         ds_result = ds_df['letters'].str.join('-')
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
             pd_result
         )
@@ -456,7 +456,7 @@ class TestSeriesStringOperations:
         pd_result = pd_df['category'].str.get_dummies('|')
         ds_result = ds_df['category'].str.get_dummies('|')
         
-        pd.testing.assert_frame_equal(
+        assert_frame_equal(
             get_series(ds_result),
             pd_result
         )
@@ -473,7 +473,7 @@ class TestSeriesMethodChains:
         pd_result = pd_df['text'].str.lower().str.strip().str.replace(' ', '_', regex=False)
         ds_result = ds_df['text'].str.lower().str.strip().str.replace(' ', '_', regex=False)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
             pd_result
         )
@@ -486,7 +486,7 @@ class TestSeriesMethodChains:
         pd_result = pd_df['value'].abs().round().clip(lower=0, upper=3)
         ds_result = ds_df['value'].abs().round().clip(lower=0, upper=3)
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
             pd_result,
         )
@@ -503,11 +503,9 @@ class TestRollingEwmEdgeCases:
         pd_result = pd_df['value'].rolling(window=5, min_periods=1).mean()
         ds_result = ds_df['value'].rolling(window=5, min_periods=1).mean()
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
-            pd_result,
-            check_names=False
-        )
+            pd_result)
 
     def test_ewm_halflife(self):
         """EWM with halflife parameter."""
@@ -517,11 +515,9 @@ class TestRollingEwmEdgeCases:
         pd_result = pd_df['value'].ewm(halflife=2).mean()
         ds_result = ds_df['value'].ewm(halflife=2).mean()
         
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             get_series(ds_result),
-            pd_result,
-            check_names=False
-        )
+            pd_result)
 
 
 class TestAtIatAccessors:

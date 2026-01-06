@@ -14,9 +14,8 @@ import pytest
 from tests.xfail_markers import chdb_no_quantile_array
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_frame_equal, assert_series_equal
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_dataframe, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_dataframe, get_series
 
 
 # =============================================================================

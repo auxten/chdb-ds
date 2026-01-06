@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 import datastore as ds
+from tests.test_utils import assert_frame_equal
 
 
 class TestCumulativeOperations(unittest.TestCase):
@@ -160,13 +161,13 @@ class TestAdvancedGroupByOperations(unittest.TestCase):
         """Test groupby().filter() - filter groups by mean condition."""
         pd_result = self.group_data_pd.groupby('category').filter(lambda x: x['value'].mean() > 35)
         ds_result = self.group_data_ds.groupby('category').filter(lambda x: x['value'].mean() > 35)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_filter_by_size(self):
         """Test groupby().filter() - filter groups by size."""
         pd_result = self.group_data_pd.groupby('category').filter(lambda x: len(x) >= 3)
         ds_result = self.group_data_ds.groupby('category').filter(lambda x: len(x) >= 3)
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_filter_compound_condition(self):
         """Test groupby().filter() - compound condition."""
@@ -176,7 +177,7 @@ class TestAdvancedGroupByOperations(unittest.TestCase):
         ds_result = self.group_data_ds.groupby('category').filter(
             lambda x: x['value'].mean() > 25 and x['value'].max() < 55
         )
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestPivotAndReshaping(unittest.TestCase):
@@ -202,13 +203,13 @@ class TestPivotAndReshaping(unittest.TestCase):
         """Test pivot_table() - create pivot table."""
         pd_result = self.pivot_data_pd.pivot_table(values='sales', index='date', columns='product', aggfunc='sum')
         ds_result = self.pivot_data_ds.pivot_table(values='sales', index='date', columns='product', aggfunc='sum')
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_melt(self):
         """Test melt() - unpivot DataFrame."""
         pd_result = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}).melt()
         ds_result = ds.DataFrame({'A': [1, 2], 'B': [3, 4]}).melt()
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestConditionalLogic(unittest.TestCase):
@@ -266,13 +267,13 @@ class TestDataValidation(unittest.TestCase):
         """Test nlargest() - get n largest values."""
         pd_result = self.ts_data_pd.nlargest(3, 'value')
         ds_result = self.ts_data_ds.nlargest(3, 'value')
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
     def test_nsmallest(self):
         """Test nsmallest() - get n smallest values."""
         pd_result = self.ts_data_pd.nsmallest(2, 'value')
         ds_result = self.ts_data_ds.nsmallest(2, 'value')
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_frame_equal(ds_result.to_pandas(), pd_result)
 
 
 class TestAdvancedIndexing(unittest.TestCase):

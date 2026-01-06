@@ -14,7 +14,7 @@ from tests.xfail_markers import chdb_no_product_function
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series, get_value
 
 
 @pytest.fixture
@@ -223,9 +223,8 @@ class TestRollingWindowBoundary:
         try:
             ds_result = ds['value'].rolling(2).sum()
             ds_values = get_series(ds_result)
-            pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-            )
+            assert_series_equal(
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True))
         except AttributeError as e:
             pytest.skip(f"rolling() not implemented: {e}")
 
@@ -236,9 +235,8 @@ class TestRollingWindowBoundary:
         try:
             ds_result = ds['value'].rolling(3, center=True).mean()
             ds_values = get_series(ds_result)
-            pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-            )
+            assert_series_equal(
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True))
         except (AttributeError, TypeError) as e:
             pytest.skip(f"rolling(center=True) not implemented: {e}")
 
@@ -249,9 +247,8 @@ class TestRollingWindowBoundary:
         try:
             ds_result = ds['value'].rolling(3, min_periods=1).sum()
             ds_values = get_series(ds_result)
-            pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
-            )
+            assert_series_equal(
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True))
         except (AttributeError, TypeError) as e:
             pytest.skip(f"rolling(min_periods=) not implemented: {e}")
 

@@ -7,6 +7,7 @@ import tempfile
 import os
 
 from datastore import DataStore
+from tests.test_utils import assert_frame_equal
 
 
 class TestConvenienceMethods(unittest.TestCase):
@@ -120,7 +121,7 @@ class TestConvenienceMethods(unittest.TestCase):
         # Compare
         import pandas as pd
 
-        pd.testing.assert_frame_equal(df1, df2)
+        assert_frame_equal(df1, df2)
 
     def test_to_dict_same_as_execute_to_dict(self):
         """Test that to_dict() produces the same result as execute().to_dict()."""
@@ -210,7 +211,7 @@ class TestConvenienceMethods(unittest.TestCase):
         self.assertIsInstance(stats1, DataStore)
         self.assertIsInstance(stats2, DataStore)
         # Compare the underlying DataFrames
-        pd.testing.assert_frame_equal(stats1.to_df(), stats2.to_df())
+        assert_frame_equal(stats1.to_df(), stats2.to_df())
 
     def test_describe_with_custom_percentiles(self):
         """Test describe() with custom percentiles."""
@@ -421,7 +422,7 @@ class TestConvenienceMethods(unittest.TestCase):
 
         # stats2 is now a DataStore, convert to DataFrame to compare
         self.assertIsInstance(stats2, DataStore)
-        pd.testing.assert_frame_equal(stats1, stats2.to_df())
+        assert_frame_equal(stats1, stats2.to_df())
 
     def test_head_same_as_to_df_head(self):
         """Test that head() produces the same result as limit().to_df()."""
@@ -434,7 +435,7 @@ class TestConvenienceMethods(unittest.TestCase):
 
         # df2 is now a DataStore, convert to DataFrame to compare
         self.assertIsInstance(df2, DataStore)
-        pd.testing.assert_frame_equal(df1, df2.to_df())
+        assert_frame_equal(df1, df2.to_df())
 
 
 if __name__ == "__main__":

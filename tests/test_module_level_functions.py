@@ -5,7 +5,7 @@ These tests verify that datastore module-level functions work correctly
 and produce results compatible with pandas.
 """
 
-from tests.test_utils import get_dataframe
+from tests.test_utils import assert_frame_equal, assert_series_equal, get_dataframe
 import numpy as np
 import pandas as pd
 import pytest
@@ -217,7 +217,7 @@ class TestCategorizationFunctions:
         expected = pd.get_dummies(data)
         # Result is DataStore, convert to DataFrame for comparison
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_get_dummies_with_prefix(self):
         """get_dummies should use custom prefix."""
@@ -225,7 +225,7 @@ class TestCategorizationFunctions:
         result = ds.get_dummies(data, prefix='cat')
         expected = pd.get_dummies(data, prefix='cat')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_get_dummies_drop_first(self):
         """get_dummies should drop first category when specified."""
@@ -233,7 +233,7 @@ class TestCategorizationFunctions:
         result = ds.get_dummies(data, drop_first=True)
         expected = pd.get_dummies(data, drop_first=True)
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_get_dummies_datastore_with_columns(self):
         """get_dummies should work with DataStore input and columns parameter."""
@@ -250,7 +250,7 @@ class TestCategorizationFunctions:
 
         assert isinstance(result, ds.DataStore)
         result_df = result.to_df()
-        pd.testing.assert_frame_equal(result_df, expected)
+        assert_frame_equal(result_df, expected)
 
     def test_get_dummies_datastore_no_columns(self):
         """get_dummies should work with DataStore input without columns parameter."""
@@ -265,7 +265,7 @@ class TestCategorizationFunctions:
 
         assert isinstance(result, ds.DataStore)
         result_df = result.to_df()
-        pd.testing.assert_frame_equal(result_df, expected)
+        assert_frame_equal(result_df, expected)
 
     def test_factorize_basic(self):
         """factorize should encode values."""
@@ -295,7 +295,7 @@ class TestCategorizationFunctions:
         data = pd.Series(['a', 'b', 'a', 'a'])
         result = ds.value_counts(data)
         expected = pd.value_counts(data)
-        pd.testing.assert_series_equal(result, expected)
+        assert_series_equal(result, expected)
 
 
 class TestReshapingFunctions:
@@ -307,7 +307,7 @@ class TestReshapingFunctions:
         result = ds.melt(df, id_vars=['A'], value_vars=['B', 'C'])
         expected = pd.melt(df, id_vars=['A'], value_vars=['B', 'C'])
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_pivot_basic(self):
         """pivot should reshape DataFrame."""
@@ -315,7 +315,7 @@ class TestReshapingFunctions:
         result = ds.pivot(df, columns='bar', index='foo', values='baz')
         expected = pd.pivot(df, columns='bar', index='foo', values='baz')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_pivot_table_basic(self):
         """pivot_table should create pivot table."""
@@ -323,7 +323,7 @@ class TestReshapingFunctions:
         result = ds.pivot_table(df, values='C', index='A', columns='B', aggfunc='sum')
         expected = pd.pivot_table(df, values='C', index='A', columns='B', aggfunc='sum')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_crosstab_basic(self):
         """crosstab should compute cross tabulation."""
@@ -332,7 +332,7 @@ class TestReshapingFunctions:
         result = ds.crosstab(a, b)
         expected = pd.crosstab(a, b)
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_wide_to_long_basic(self):
         """wide_to_long should unpivot wide format."""
@@ -340,7 +340,7 @@ class TestReshapingFunctions:
         result = ds.wide_to_long(df, stubnames=['A', 'B'], i='id', j='year')
         expected = pd.wide_to_long(df, stubnames=['A', 'B'], i='id', j='year')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
 
 class TestMergeFunctions:
@@ -353,7 +353,7 @@ class TestMergeFunctions:
         result = ds.merge(left, right, on='key')
         expected = pd.merge(left, right, on='key')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_merge_asof_basic(self):
         """merge_asof should merge by nearest key."""
@@ -362,7 +362,7 @@ class TestMergeFunctions:
         result = ds.merge_asof(left, right, on='a')
         expected = pd.merge_asof(left, right, on='a')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_merge_ordered_basic(self):
         """merge_ordered should merge with ordered fills."""
@@ -371,7 +371,7 @@ class TestMergeFunctions:
         result = ds.merge_ordered(left, right, on='key')
         expected = pd.merge_ordered(left, right, on='key')
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
 
 class TestConcatFunction:
@@ -384,7 +384,7 @@ class TestConcatFunction:
         result = ds.concat([df1, df2])
         expected = pd.concat([df1, df2])
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result.reset_index(drop=True), expected.reset_index(drop=True))
+        assert_frame_equal(result.reset_index(drop=True), expected.reset_index(drop=True))
 
     def test_concat_axis1(self):
         """concat should work along axis 1."""
@@ -393,7 +393,7 @@ class TestConcatFunction:
         result = ds.concat([df1, df2], axis=1)
         expected = pd.concat([df1, df2], axis=1)
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_concat_ignore_index(self):
         """concat should ignore index when specified."""
@@ -402,7 +402,7 @@ class TestConcatFunction:
         result = ds.concat([df1, df2], ignore_index=True)
         expected = pd.concat([df1, df2], ignore_index=True)
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
 
 class TestUtilityFunctions:
@@ -431,7 +431,7 @@ class TestUtilityFunctions:
         result = ds.json_normalize(data)
         expected = pd.json_normalize(data)
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_array_basic(self):
         """array should create ExtensionArray."""
@@ -483,7 +483,7 @@ class TestIOFunctions:
         result = ds.read_fwf(file_path, widths=[10, 3])
         expected = pd.read_fwf(file_path, widths=[10, 3])
         result = get_dataframe(result)
-        pd.testing.assert_frame_equal(result, expected)
+        assert_frame_equal(result, expected)
 
     def test_read_xml(self, tmp_path):
         """read_xml should read XML file."""
@@ -499,7 +499,7 @@ class TestIOFunctions:
             result = ds.read_xml(file_path, parser='etree')
             expected = pd.read_xml(file_path, parser='etree')
             result = get_dataframe(result)
-            pd.testing.assert_frame_equal(result, expected)
+            assert_frame_equal(result, expected)
         except ImportError:
             pytest.skip("XML parser not available")
 

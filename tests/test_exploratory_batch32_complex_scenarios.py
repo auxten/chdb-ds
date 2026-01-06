@@ -15,7 +15,7 @@ from tests.xfail_markers import chdb_datetime_timezone, chdb_dt_month_type
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series
 
 
 # =============================================================================
@@ -743,7 +743,7 @@ class TestApplyTransform:
         pd_result = pd_df.apply(sum, axis=1)
         ds_result = ds_df.apply(sum, axis=1)
 
-        pd.testing.assert_series_equal(get_series(ds_result), pd_result)
+        assert_series_equal(get_series(ds_result), pd_result)
 
     def test_transform_with_function(self):
         """Test transform with function."""
@@ -757,7 +757,7 @@ class TestApplyTransform:
         ds_result = ds_df.groupby('group')['value'].transform('mean')
 
         ds_result = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
 
 # =============================================================================

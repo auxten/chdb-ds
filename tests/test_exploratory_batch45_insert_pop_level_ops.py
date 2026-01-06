@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series
 
 
 class TestInsertColumnChains:
@@ -123,7 +123,7 @@ class TestPopColumnChains:
         # After pop, DataFrame should not have column B
         assert_datastore_equals_pandas(ds_result, pd_result)
         # Popped value should be Series
-        pd.testing.assert_series_equal(ds_popped, pd_popped)
+        assert_series_equal(ds_popped, pd_popped)
 
     def test_pop_first_column(self):
         """Test popping the first column."""
@@ -138,7 +138,7 @@ class TestPopColumnChains:
         ds_result = ds_df
 
         assert_datastore_equals_pandas(ds_result, pd_result)
-        pd.testing.assert_series_equal(ds_popped, pd_popped)
+        assert_series_equal(ds_popped, pd_popped)
 
     def test_pop_last_column(self):
         """Test popping the last column."""
@@ -153,7 +153,7 @@ class TestPopColumnChains:
         ds_result = ds_df
 
         assert_datastore_equals_pandas(ds_result, pd_result)
-        pd.testing.assert_series_equal(ds_popped, pd_popped)
+        assert_series_equal(ds_popped, pd_popped)
 
 
 class TestSliceEdgeCases:
@@ -322,11 +322,9 @@ class TestDuplicateIndexHandling:
         # groupby results may have different order
         # Trigger execution via values attribute and compare
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.sort_index(),
-            pd_result.sort_index(),
-            check_names=False
-        )
+            pd_result.sort_index())
 
     def test_duplicate_index_sort(self):
         """Test sorting with duplicate index."""
@@ -588,11 +586,9 @@ class TestChainedOperationsComplex:
 
         # Trigger execution via values attribute and compare
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(
+        assert_series_equal(
             ds_series.sort_index(),
-            pd_result,
-            check_names=False
-        )
+            pd_result)
 
     def test_copy_filter_assign_sort(self):
         """Test copy -> filter -> assign -> sort chain."""

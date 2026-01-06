@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal
 
 
 # =======================
@@ -69,7 +69,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc[2]
         ds_result = ds_df.loc[2]
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_loc_label_list(self, df_basic):
         """Test loc with list of labels."""
@@ -79,7 +79,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc[[0, 2, 4]]
         ds_result = ds_df.loc[[0, 2, 4]]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_loc_label_slice(self, df_basic):
         """Test loc with slice of labels."""
@@ -89,7 +89,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc[1:3]
         ds_result = ds_df.loc[1:3]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_loc_row_col(self, df_basic):
         """Test loc with row and column selection."""
@@ -99,7 +99,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc[1:3, ['A', 'C']]
         ds_result = ds_df.loc[1:3, ['A', 'C']]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_loc_single_value(self, df_basic):
         """Test loc for single scalar value."""
@@ -120,7 +120,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc[mask]
         ds_result = ds_df.loc[mask]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_loc_custom_index(self, df_with_custom_index):
         """Test loc with string index."""
@@ -130,7 +130,7 @@ class TestLocEdgeCases:
         pd_result = pd_df.loc['y':'w']
         ds_result = ds_df.loc['y':'w']
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_loc_nonexistent_label(self, df_basic):
         """Test loc with non-existent label raises KeyError."""
@@ -160,7 +160,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[2]
         ds_result = ds_df.iloc[2]
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_iloc_int_list(self, df_basic):
         """Test iloc with list of integers."""
@@ -170,7 +170,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[[0, 2, 4]]
         ds_result = ds_df.iloc[[0, 2, 4]]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_iloc_slice(self, df_basic):
         """Test iloc with slice."""
@@ -180,7 +180,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[1:4]
         ds_result = ds_df.iloc[1:4]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_iloc_negative_index(self, df_basic):
         """Test iloc with negative index."""
@@ -190,7 +190,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[-1]
         ds_result = ds_df.iloc[-1]
 
-        pd.testing.assert_series_equal(pd_result, ds_result)
+        assert_series_equal(pd_result, ds_result)
 
     def test_iloc_negative_slice(self, df_basic):
         """Test iloc with negative slice."""
@@ -200,7 +200,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[-3:]
         ds_result = ds_df.iloc[-3:]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_iloc_step(self, df_basic):
         """Test iloc with step."""
@@ -210,7 +210,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[::2]
         ds_result = ds_df.iloc[::2]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_iloc_row_col(self, df_basic):
         """Test iloc with row and column selection."""
@@ -220,7 +220,7 @@ class TestIlocEdgeCases:
         pd_result = pd_df.iloc[1:4, [0, 2]]
         ds_result = ds_df.iloc[1:4, [0, 2]]
 
-        pd.testing.assert_frame_equal(pd_result, ds_result)
+        assert_frame_equal(pd_result, ds_result)
 
     def test_iloc_single_value(self, df_basic):
         """Test iloc for single scalar value."""
@@ -482,7 +482,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df.loc[:]
         ds_result = ds_df.loc[:]
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_empty_df_iloc(self, df_empty):
         """Test iloc on empty DataFrame."""
@@ -493,7 +493,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df.iloc[:]
         ds_result = ds_df.iloc[:]
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_single_row_loc(self, df_single_row):
         """Test loc on single row DataFrame."""
@@ -503,7 +503,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df.loc[0]
         ds_result = ds_df.loc[0]
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_single_row_iloc(self, df_single_row):
         """Test iloc on single row DataFrame."""
@@ -513,7 +513,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df.iloc[0]
         ds_result = ds_df.iloc[0]
 
-        pd.testing.assert_series_equal(ds_result, pd_result)
+        assert_series_equal(ds_result, pd_result)
 
     def test_empty_df_filter(self, df_empty):
         """Test filter on empty DataFrame."""
@@ -524,7 +524,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df[pd_df['A'] > 0]
         ds_result = ds_df[ds_df['A'] > 0]
 
-        pd.testing.assert_frame_equal(ds_result.to_df(), pd_result)
+        assert_frame_equal(ds_result.to_df(), pd_result)
 
     def test_single_row_filter_match(self, df_single_row):
         """Test filter that matches single row."""
@@ -567,7 +567,7 @@ class TestMixedOperations:
         ds_filtered = ds_df[ds_df['A'] > 2]
         ds_result = ds_filtered.loc[:, ['A', 'B']]
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_iloc_after_sort(self, df_basic):
         """Test iloc after sort operation."""
@@ -581,7 +581,7 @@ class TestMixedOperations:
         ds_sorted = ds_df.sort_values('A', ascending=False)
         ds_result = ds_sorted.iloc[0:2]
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_assign_after_rename(self, df_basic):
         """Test column assignment after rename."""
@@ -634,7 +634,7 @@ class TestIndexManipulation:
         ds_indexed = ds_df.set_index('C')
         ds_result = ds_indexed.loc['b':'d']
 
-        pd.testing.assert_frame_equal(ds_result, pd_result)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_reset_index_after_filter(self, df_basic):
         """Test reset_index after filter."""
@@ -657,7 +657,7 @@ class TestIndexManipulation:
         pd_result = pd_df.reindex(new_index)
         ds_result = ds_df.reindex(new_index)
 
-        pd.testing.assert_frame_equal(ds_result.to_df(), pd_result)
+        assert_frame_equal(ds_result.to_df(), pd_result)
 
 
 # =======================

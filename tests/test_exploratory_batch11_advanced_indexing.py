@@ -16,9 +16,8 @@ import pytest
 from tests.xfail_markers import chdb_array_nullable, chdb_no_normalize_utf8, lazy_extractall_multiindex
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_frame_equal, assert_series_equal
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, get_series, get_value
+from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_series, get_value
 
 
 class TestMultiIndexOperations:
@@ -152,7 +151,7 @@ class TestXSOperations:
         pd_result = pd_df.xs('y')
         ds_result = ds_df.xs('y')
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_xs_multiindex_level0(self):
         """xs with MultiIndex, selecting from level 0."""
@@ -188,7 +187,7 @@ class TestXSOperations:
         pd_result = pd_df.xs('A', axis=1)
         ds_result = ds_df.xs('A', axis=1)
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestDuplicatesHandling:
@@ -202,7 +201,7 @@ class TestDuplicatesHandling:
         pd_result = pd_df.duplicated()
         ds_result = ds_df.duplicated()
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_duplicated_keep_last(self):
         """duplicated with keep='last'."""
@@ -212,7 +211,7 @@ class TestDuplicatesHandling:
         pd_result = pd_df.duplicated(keep='last')
         ds_result = ds_df.duplicated(keep='last')
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_duplicated_keep_false(self):
         """duplicated with keep=False marks all duplicates."""
@@ -222,7 +221,7 @@ class TestDuplicatesHandling:
         pd_result = pd_df.duplicated(keep=False)
         ds_result = ds_df.duplicated(keep=False)
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_duplicated_subset(self):
         """duplicated with subset columns."""
@@ -232,7 +231,7 @@ class TestDuplicatesHandling:
         pd_result = pd_df.duplicated(subset=['A'])
         ds_result = ds_df.duplicated(subset=['A'])
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_drop_duplicates_keep_last(self):
         """drop_duplicates with keep='last'."""
@@ -351,7 +350,7 @@ class TestMergeEdgeCases:
 
         # Compare column by column (indicator column may have different dtype)
         for col in ['key', 'A', 'B']:
-            assert_series_equal(ds_df[col], pd_result[col], check_names=False)
+            assert_series_equal(ds_df[col], pd_result[col])
 
     def test_merge_left_on_right_on(self):
         """merge with different column names."""
@@ -413,7 +412,7 @@ class TestAdvancedStringOperations:
         pd_result = pd_df['text'].str.findall(r'\d')
         ds_result = ds_df['text'].str.findall(r'\d')
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_str_split_expand(self):
         """str.split with expand=True."""
@@ -460,7 +459,7 @@ class TestAdvancedStringOperations:
 
         # Execute lazy result if needed
         ds_result = get_series(ds_result)
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     @chdb_no_normalize_utf8
     def test_str_normalize(self):
@@ -471,7 +470,7 @@ class TestAdvancedStringOperations:
         pd_result = pd_df['text'].str.normalize('NFD')
         ds_result = ds_df['text'].str.normalize('NFD')
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestComplexApplyTransform:
@@ -511,7 +510,7 @@ class TestComplexApplyTransform:
         pd_result = pd_df.apply(lambda row: row['A'] + row['B'], axis=1)
         ds_result = ds_df.apply(lambda row: row['A'] + row['B'], axis=1)
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_apply_result_type_expand(self):
         """apply with result_type='expand'."""
@@ -694,7 +693,7 @@ class TestPopMethod:
         pd_popped = pd_df.pop('B')
         ds_popped = ds_df.pop('B')
 
-        assert_series_equal(ds_popped, pd_popped, check_names=False)
+        assert_series_equal(ds_popped, pd_popped)
 
     def test_pop_modifies_inplace(self):
         """pop modifies the DataFrame in place."""
@@ -722,7 +721,7 @@ class TestGetMethod:
         pd_result = pd_df.get('A')
         ds_result = ds_df.get('A')
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_get_nonexistent_column(self):
         """get returns default if column doesn't exist."""
@@ -788,7 +787,7 @@ class TestCorrCov:
         pd_result = pd_df1.corrwith(pd_df2)
         ds_result = ds_df1.corrwith(ds_df2)
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
 
 class TestNuniqueValueCounts:
@@ -802,7 +801,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_df.nunique()
         ds_result = ds_df.nunique()
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_nunique_dropna_false(self):
         """nunique with dropna=False counts NaN."""
@@ -816,7 +815,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_df.nunique(dropna=False)
         ds_result = ds_df.nunique(dropna=False)
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_value_counts_normalize(self):
         """value_counts with normalize=True."""
@@ -830,7 +829,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_result.sort_index()
         ds_result = ds_result.sort_index()
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
     def test_value_counts_subset(self):
         """value_counts with subset of columns."""
@@ -843,7 +842,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_result.sort_index()
         ds_result = ds_result.sort_index()
 
-        assert_series_equal(ds_result, pd_result, check_names=False)
+        assert_series_equal(ds_result, pd_result)
 
 
 if __name__ == '__main__':
