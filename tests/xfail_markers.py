@@ -424,3 +424,63 @@ def chdb_integer_column_names(func):
 #     reason="Bug: After assign() + groupby(), selecting specific columns [['a', 'b']] includes extra columns in result",
 #     strict=True,
 # )
+
+
+# =============================================================================
+# chDB limitation: datetime method not implemented
+# =============================================================================
+
+chdb_no_day_month_name = pytest.mark.xfail(
+    reason="chDB limitation: day_name/month_name methods not implemented in SQL mapping",
+    strict=True,
+)
+
+
+# =============================================================================
+# chDB limitation: strftime format codes differ from pandas
+# =============================================================================
+
+chdb_strftime_format_difference = pytest.mark.xfail(
+    reason="chDB limitation: strftime %M format returns month name instead of minutes",
+    strict=True,
+)
+
+
+# =============================================================================
+# chDB limitation: str.pad doesn't support 'side' parameter
+# =============================================================================
+
+chdb_pad_no_side_param = pytest.mark.xfail(
+    reason="chDB limitation: str.pad() only supports left padding, 'side' parameter not implemented",
+    strict=True,
+)
+
+
+# =============================================================================
+# chDB limitation: str.center implementation differs
+# =============================================================================
+
+chdb_center_implementation = pytest.mark.xfail(
+    reason="chDB limitation: str.center() implementation uses rightPad instead of proper centering",
+    strict=True,
+)
+
+
+# =============================================================================
+# chDB limitation: startswith/endswith don't support tuple argument
+# =============================================================================
+
+chdb_startswith_no_tuple = pytest.mark.xfail(
+    reason="chDB limitation: startswith/endswith don't support tuple of prefixes/suffixes",
+    strict=True,
+)
+
+
+# =============================================================================
+# DataStore limitation: index property has no setter
+# =============================================================================
+
+limit_datastore_index_setter = pytest.mark.xfail(
+    reason="DataStore limitation: index property does not have a setter",
+    strict=True,
+)
