@@ -35,7 +35,8 @@ class TestAccessorFallbackRegistry:
         """Test that datetime accessor entries are in registry."""
         registry = FunctionExecutorConfig.ACCESSOR_PARAM_PANDAS_FALLBACK
         assert 'dt.strftime' in registry
-        assert 'dt.floor' in registry
+        # dt.floor, dt.ceil, dt.round, dt.normalize now use SQL implementation
+        # so they are not in the fallback registry
         assert 'dt.tz_localize' in registry
 
 
