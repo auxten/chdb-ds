@@ -21,46 +21,46 @@ from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 
 
 class TestInsertColumnChains:
-    """Test insert column operations with lazy chains."""
+    """Test insert column operations with lazy chains (inplace like pandas)."""
 
     def test_insert_basic(self):
-        """Test basic column insertion."""
+        """Test basic column insertion (inplace)."""
         # pandas
         pd_df = pd.DataFrame({'A': [1, 2, 3], 'C': [7, 8, 9]})
         pd_df.insert(1, 'B', [4, 5, 6])
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore({'A': [1, 2, 3], 'C': [7, 8, 9]})
-        ds_result = ds_df.insert(1, 'B', [4, 5, 6])
+        ds_df.insert(1, 'B', [4, 5, 6])
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
     def test_insert_at_beginning(self):
-        """Test inserting column at position 0."""
+        """Test inserting column at position 0 (inplace)."""
         # pandas
         pd_df = pd.DataFrame({'B': [2, 3, 4], 'C': [5, 6, 7]})
         pd_df.insert(0, 'A', [1, 2, 3])
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore({'B': [2, 3, 4], 'C': [5, 6, 7]})
-        ds_result = ds_df.insert(0, 'A', [1, 2, 3])
+        ds_df.insert(0, 'A', [1, 2, 3])
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
     def test_insert_at_end(self):
-        """Test inserting column at the end."""
+        """Test inserting column at the end (inplace)."""
         # pandas
         pd_df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
         pd_df.insert(2, 'C', [7, 8, 9])
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore({'A': [1, 2, 3], 'B': [4, 5, 6]})
-        ds_result = ds_df.insert(2, 'C', [7, 8, 9])
+        ds_df.insert(2, 'C', [7, 8, 9])
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
     def test_insert_then_filter(self):
         """Test inserting column and then filtering."""
@@ -69,40 +69,40 @@ class TestInsertColumnChains:
         pd_df.insert(1, 'B', [4, 5, 6])
         pd_result = pd_df[pd_df['B'] > 4]
 
-        # DataStore
+        # DataStore (inplace, then filter)
         ds_df = DataStore({'A': [1, 2, 3], 'C': [7, 8, 9]})
-        ds_df = ds_df.insert(1, 'B', [4, 5, 6])
+        ds_df.insert(1, 'B', [4, 5, 6])
         ds_result = ds_df[ds_df['B'] > 4]
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_insert_with_scalar(self):
-        """Test inserting column with scalar value."""
+        """Test inserting column with scalar value (inplace)."""
         # pandas
         pd_df = pd.DataFrame({'A': [1, 2, 3]})
         pd_df.insert(1, 'B', 100)
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore({'A': [1, 2, 3]})
-        ds_result = ds_df.insert(1, 'B', 100)
+        ds_df.insert(1, 'B', 100)
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
     def test_insert_with_series(self):
-        """Test inserting column with Series."""
+        """Test inserting column with Series (inplace)."""
         # pandas
         pd_df = pd.DataFrame({'A': [1, 2, 3]})
         s = pd.Series([10, 20, 30])
         pd_df.insert(1, 'B', s)
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore({'A': [1, 2, 3]})
         s = pd.Series([10, 20, 30])
-        ds_result = ds_df.insert(1, 'B', s)
+        ds_df.insert(1, 'B', s)
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
 
 class TestPopColumnChains:
@@ -531,17 +531,17 @@ class TestEmptyDataFrameOperations:
     """Test operations on empty DataFrames."""
 
     def test_empty_df_insert(self):
-        """Test inserting column into empty DataFrame."""
+        """Test inserting column into empty DataFrame (inplace)."""
         # pandas
         pd_df = pd.DataFrame()
         pd_df.insert(0, 'A', [])
         pd_result = pd_df.copy()
 
-        # DataStore
+        # DataStore (inplace)
         ds_df = DataStore()
-        ds_result = ds_df.insert(0, 'A', [])
+        ds_df.insert(0, 'A', [])
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        assert_datastore_equals_pandas(ds_df, pd_result)
 
     def test_empty_df_copy(self):
         """Test copying empty DataFrame."""
@@ -578,9 +578,9 @@ class TestChainedOperationsComplex:
         pd_df.insert(1, 'B', [10, 20, 30, 40, 50])
         pd_result = pd_df[pd_df['B'] > 15].groupby('C')['A'].sum().sort_index()
 
-        # DataStore
+        # DataStore (inplace insert)
         ds_df = DataStore({'A': [1, 2, 3, 4, 5], 'C': ['x', 'y', 'x', 'y', 'x']})
-        ds_df = ds_df.insert(1, 'B', [10, 20, 30, 40, 50])
+        ds_df.insert(1, 'B', [10, 20, 30, 40, 50])
         ds_filtered = ds_df[ds_df['B'] > 15]
         ds_result = ds_filtered.groupby('C')['A'].sum()
 

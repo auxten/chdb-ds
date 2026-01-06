@@ -527,40 +527,48 @@ class TestImmutableDesign:
 
 
 class TestInsertMethod:
-    """Test insert method behavior."""
+    """Test insert method behavior (inplace like pandas)."""
     
-    def test_insert_returns_new_datastore(self):
-        """Test that insert returns new DataStore (immutable design)."""
+    def test_insert_inplace(self):
+        """Test that insert modifies DataStore in place (like pandas)."""
         pd_df = pd.DataFrame({'A': [1, 2], 'C': [5, 6]})
         ds_df = DataStore(pd_df.copy())
         
-        ds_result = ds_df.insert(1, 'B', [3, 4])
+        # pandas insert is inplace
+        pd_df.insert(1, 'B', [3, 4])
+        ds_df.insert(1, 'B', [3, 4])
         
-        # Original unchanged
-        assert list(ds_df.columns) == ['A', 'C']
-        # Result has inserted column
-        assert list(ds_result.columns) == ['A', 'B', 'C']
+        # DataStore has inserted column (inplace)
+        assert list(ds_df.columns) == ['A', 'B', 'C']
         
         expected = pd.DataFrame({'A': [1, 2], 'B': [3, 4], 'C': [5, 6]})
-        assert_datastore_equals_pandas(ds_result, expected)
+        assert_datastore_equals_pandas(ds_df, expected)
+    
+    def test_insert_returns_none(self):
+        """Test that insert returns None (like pandas)."""
+        ds_df = DataStore(pd.DataFrame({'A': [1, 2], 'C': [5, 6]}))
+        result = ds_df.insert(1, 'B', [3, 4])
+        
+        assert result is None
+        assert list(ds_df.columns) == ['A', 'B', 'C']
     
     def test_insert_at_beginning(self):
         """Test insert at position 0."""
         pd_df = pd.DataFrame({'B': [2], 'C': [3]})
         ds_df = DataStore(pd_df.copy())
         
-        ds_result = ds_df.insert(0, 'A', [1])
+        ds_df.insert(0, 'A', [1])
         
-        assert list(ds_result.columns) == ['A', 'B', 'C']
+        assert list(ds_df.columns) == ['A', 'B', 'C']
     
     def test_insert_at_end(self):
         """Test insert at end position."""
         pd_df = pd.DataFrame({'A': [1], 'B': [2]})
         ds_df = DataStore(pd_df.copy())
         
-        ds_result = ds_df.insert(2, 'C', [3])
+        ds_df.insert(2, 'C', [3])
         
-        assert list(ds_result.columns) == ['A', 'B', 'C']
+        assert list(ds_df.columns) == ['A', 'B', 'C']
 
 
 class TestEdgeCases:
