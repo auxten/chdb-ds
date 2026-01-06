@@ -929,7 +929,11 @@ class TestDateNameMethods:
         """Test day_name for all seven days of week."""
         # Week starting 2024-01-01 (Monday) through 2024-01-07 (Sunday)
         df = pd.DataFrame(
-            {'ts': pd.to_datetime(['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05', '2024-01-06', '2024-01-07'])}
+            {
+                'ts': pd.to_datetime(
+                    ['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05', '2024-01-06', '2024-01-07']
+                )
+            }
         )
         pd_df = df.copy()
         ds_df = DataStore(df.copy())
@@ -946,7 +950,20 @@ class TestDateNameMethods:
         df = pd.DataFrame(
             {
                 'ts': pd.to_datetime(
-                    ['2024-01-15', '2024-02-15', '2024-03-15', '2024-04-15', '2024-05-15', '2024-06-15', '2024-07-15', '2024-08-15', '2024-09-15', '2024-10-15', '2024-11-15', '2024-12-15']
+                    [
+                        '2024-01-15',
+                        '2024-02-15',
+                        '2024-03-15',
+                        '2024-04-15',
+                        '2024-05-15',
+                        '2024-06-15',
+                        '2024-07-15',
+                        '2024-08-15',
+                        '2024-09-15',
+                        '2024-10-15',
+                        '2024-11-15',
+                        '2024-12-15',
+                    ]
                 )
             }
         )
@@ -957,7 +974,20 @@ class TestDateNameMethods:
         ds_result = ds_df['ts'].dt.month_name()
 
         assert_datastore_equals_pandas(ds_result, pd_result)
-        expected = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        expected = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+        ]
         assert list(pd_result) == expected
 
 
