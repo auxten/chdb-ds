@@ -26,7 +26,6 @@ from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas
 from tests.xfail_markers import (
     chdb_integer_column_names,
-    bug_groupby_column_selection_extra_columns,
 )
 
 
@@ -1096,12 +1095,11 @@ class TestComplexChainOperations:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
 
-    @bug_groupby_column_selection_extra_columns
     def test_assign_multiple_then_groupby(self):
         """Assign multiple columns then groupby.
 
-        BUG: When selecting specific columns after groupby [['doubled', 'tripled']],
-        DataStore also includes other columns like 'value' in the result.
+        Tests that column selection after groupby works correctly.
+        Only selected columns should be aggregated.
         """
         pd_df = pd.DataFrame({
             'group': ['A', 'A', 'B', 'B', 'A'],

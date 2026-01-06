@@ -322,7 +322,7 @@ MARKER_REGISTRY = {
     # chDB integer column names
     "chdb_integer_column_names": ("chdb", None, "Integer column names cause errors"),
     # Bug: groupby column selection
-    "bug_groupby_column_selection_extra_columns": ("bug", None, "groupby column selection includes extra columns"),
+    # "bug_groupby_column_selection_extra_columns": ("bug", None, "FIXED - groupby column selection includes extra columns"),
 }
 
 
@@ -362,12 +362,12 @@ chdb_integer_column_names = pytest.mark.xfail(
     strict=True,
 )
 
-
 # =============================================================================
-# Bug: groupby column selection includes extra columns
+# Bug: groupby column selection includes extra columns - FIXED (2026-01-06)
 # =============================================================================
 
-bug_groupby_column_selection_extra_columns = pytest.mark.xfail(
-    reason="Bug: After assign() + groupby(), selecting specific columns [['a', 'b']] includes extra columns in result",
-    strict=True,
-)
+# FIXED: groupby column selection now correctly filters columns
+# bug_groupby_column_selection_extra_columns = pytest.mark.xfail(
+#     reason="Bug: After assign() + groupby(), selecting specific columns [['a', 'b']] includes extra columns in result",
+#     strict=True,
+# )
