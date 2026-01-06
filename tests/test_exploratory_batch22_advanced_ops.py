@@ -502,7 +502,7 @@ class TestStringAccessorEdge:
         ds_df = DataStore({'A': ['a', 'b', 'c'], 'B': ['x', 'y', 'z']})
         # Get the Series for str.cat
         # ColumnExpr needs to execute first, then use the Series
-        ds_result = ds_df['A'].str.cat(ds_df['B']._execute(), sep='-')
+        ds_result = ds_df['A'].str.cat(get_series(ds_df['B']), sep='-')
 
         # Execute ColumnExpr/LazySeries if needed
         ds_series = get_series(ds_result)

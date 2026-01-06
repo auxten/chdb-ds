@@ -321,7 +321,7 @@ class TestMixedObjectType:
         ds_result = ds_df['mixed'].astype(str)
         
         # Compare as Series
-        assert_series_equal(ds_result._execute(), pd_result)
+        assert_series_equal(ds_result, pd_result)
     
     def test_mixed_object_fillna(self, df_mixed_object):
         """Test fillna on mixed object."""

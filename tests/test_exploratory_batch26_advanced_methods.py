@@ -373,7 +373,7 @@ class TestTypeCoercion:
         ds_result = ds_df.convert_dtypes()
         
         # convert_dtypes may create nullable types, so check values only
-        assert list(ds_result._execute().columns) == list(pd_result.columns)
+        assert list(ds_result.columns) == list(pd_result.columns)
         assert len(ds_result) == len(pd_result)
     
     def test_infer_objects(self):
@@ -477,7 +477,7 @@ class TestEmptyDataFrameOperations:
         ds_result = ds_df.groupby('a')['b'].sum().reset_index()
         
         assert len(ds_result) == 0
-        assert list(ds_result._execute().columns) == list(pd_result.columns)
+        assert list(ds_result.columns) == list(pd_result.columns)
     
     def test_empty_df_concat(self):
         """Test concat with empty DataFrame."""

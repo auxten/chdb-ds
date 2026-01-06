@@ -182,7 +182,7 @@ class TestGroupByWithRolling:
         ds_result = ds_df.groupby('category')['value'].rolling(2).mean()
 
         # Rolling with groupby returns pandas Series
-        ds_series = ds_result if isinstance(ds_result, pd.Series) else ds_result._execute()
+        ds_series = ds_result if isinstance(ds_result, pd.Series) else ds_result
         assert len(ds_series) == len(pd_result)
 
 

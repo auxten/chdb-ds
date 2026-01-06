@@ -544,7 +544,7 @@ class TestCutQcut:
         pd_result = pd.cut(pd_series, bins=3)
 
         ds_df = DataStore({'values': data})
-        ds_vals = ds_df['values']._execute()
+        ds_vals = get_series(ds_df['values'])
         ds_result = pd.cut(ds_vals, bins=3)
 
         # Both are Series with categorical dtype, compare cat.codes
@@ -557,7 +557,7 @@ class TestCutQcut:
         pd_result = pd.cut(pd_series, bins=3, labels=['low', 'med', 'high'])
 
         ds_df = DataStore({'values': data})
-        ds_vals = ds_df['values']._execute()
+        ds_vals = get_series(ds_df['values'])
         ds_result = pd.cut(ds_vals, bins=3, labels=['low', 'med', 'high'])
 
         assert list(pd_result) == list(ds_result)
@@ -569,7 +569,7 @@ class TestCutQcut:
         pd_result = pd.qcut(pd_series, q=4)
 
         ds_df = DataStore({'values': data})
-        ds_vals = ds_df['values']._execute()
+        ds_vals = get_series(ds_df['values'])
         ds_result = pd.qcut(ds_vals, q=4)
 
         # Both are Series with categorical dtype, compare cat.codes
@@ -582,7 +582,7 @@ class TestCutQcut:
         pd_result = pd.qcut(pd_series, q=4, labels=['Q1', 'Q2', 'Q3', 'Q4'])
 
         ds_df = DataStore({'values': data})
-        ds_vals = ds_df['values']._execute()
+        ds_vals = get_series(ds_df['values'])
         ds_result = pd.qcut(ds_vals, q=4, labels=['Q1', 'Q2', 'Q3', 'Q4'])
 
         assert list(pd_result) == list(ds_result)
@@ -817,7 +817,7 @@ class TestMiscEdgeCases:
         pd_result = pd_df['A'].nlargest(3, keep='first')
         ds_result = ds_df['A'].nlargest(3, keep='first')
 
-        assert list(pd_result.values) == list(ds_result._execute().values)
+        assert list(pd_result.values) == list(get_series(ds_result).values)
 
     def test_nsmallest_with_keep(self):
         """nsmallest() with keep parameter."""
@@ -827,7 +827,7 @@ class TestMiscEdgeCases:
         pd_result = pd_df['A'].nsmallest(3, keep='last')
         ds_result = ds_df['A'].nsmallest(3, keep='last')
 
-        assert list(pd_result.values) == list(ds_result._execute().values)
+        assert list(pd_result.values) == list(get_series(ds_result).values)
 
 
 if __name__ == '__main__':

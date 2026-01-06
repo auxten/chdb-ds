@@ -73,7 +73,7 @@ class TestFilePathAutoDetection:
         pd_df = sample_data
         
         # Filter
-        ds_result = ds[ds['value'] > 50]._execute()
+        ds_result = ds[ds['value'] > 50]
         pd_result = pd_df[pd_df['value'] > 50]
         
         assert ds_result.shape == pd_result.shape
@@ -87,15 +87,14 @@ class TestFilePathAutoDetection:
         ds_result = ds[ds['value'] > 30]
         ds_result = ds_result.sort_values('score', ascending=False)
         ds_result = ds_result.head(10)
-        ds_df = ds_result._execute()
         
         pd_result = pd_df[pd_df['value'] > 30]
         pd_result = pd_result.sort_values('score', ascending=False)
         pd_result = pd_result.head(10)
         
-        assert ds_df.shape == pd_result.shape
+        assert ds_result.shape == pd_result.shape
         # Check values match (sorted by score descending)
-        assert list(ds_df['id']) == list(pd_result['id'])
+        assert list(ds_result['id']) == list(pd_result['id'])
     
     def test_groupby_on_parquet(self, parquet_file, sample_data):
         """Test groupby operations on auto-detected parquet file."""
@@ -183,7 +182,7 @@ class TestPerformanceWithFilePath:
         ds = DataStore(str(path))
         
         # High selectivity filter
-        result = ds[(ds['category'] == 'A') & (ds['value'] > 90)]._execute()
+        result = ds[(ds['category'] == 'A') & (ds['value'] > 90)]
         
         expected = large_data[(large_data['category'] == 'A') & (large_data['value'] > 90)]
         

@@ -87,7 +87,7 @@ chdb_median_in_where = pytest.mark.xfail(
 # See: tracking/discoveries/2026-01-06_groupby_dropna_alignment_research.md
 
 # NOTE: chdb_nan_sum_behavior REMOVED
-# Fixed in column_expr.py _execute_groupby_aggregation() by adding fillna(0) 
+# Fixed in column_expr.py _execute_groupby_aggregation() by adding fillna(0)
 # for sum aggregation results to match pandas behavior.
 # chdb_nan_sum_behavior = pytest.mark.xfail(
 #     reason="chDB returns NA for sum of all-NaN, pandas returns 0 (SQL standard behavior, may add workaround in DataStore)",
@@ -181,17 +181,19 @@ chdb_mask_dtype_nullable = pytest.mark.xfail(
 # )
 
 # FIXED (2026-01-06): Index info is now preserved through lazy SQL execution
-# The fix tracks index info in _index_info during _ensure_sql_source() and 
+# The fix tracks index info in _index_info during _ensure_sql_source() and
 # restores the index after SQL execution in _execute().
 # bug_index_not_preserved = pytest.mark.xfail(
 #     reason="Index info not preserved through lazy SQL execution",
 #     strict=True,
 # )
 
+
 # No-op decorator for import compatibility
 def bug_index_not_preserved(func):
     """FIXED: Index info is now preserved through lazy SQL execution."""
     return func
+
 
 bug_extractall_multiindex = pytest.mark.xfail(
     reason="extractall returns MultiIndex DataFrame, index info lost through lazy execution",
@@ -232,7 +234,6 @@ limit_str_join_array = pytest.mark.xfail(
     reason="str.join() requires Array type column, not string column",
     strict=True,
 )
-
 
 # =============================================================================
 # Design Differences (design_*)

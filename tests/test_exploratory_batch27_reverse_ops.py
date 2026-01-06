@@ -268,7 +268,7 @@ class TestMixedOperations:
 
         # Adding a Series to all columns
         pd_result = pd_df.add(pd_df['a'], axis=0)
-        ds_result = ds_df.add(ds_df['a']._execute(), axis=0)
+        ds_result = ds_df.add(get_series(ds_df['a']), axis=0)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -381,7 +381,7 @@ class TestBinaryOpsWithInf:
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df['a'] / pd_df['b']
-        ds_result = ds_df['a']._execute() / ds_df['b']._execute()
+        ds_result = get_series(ds_df['a']) / get_series(ds_df['b'])
 
         assert_series_equal(ds_result, pd_result)
 

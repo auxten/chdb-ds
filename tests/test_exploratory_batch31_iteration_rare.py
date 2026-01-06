@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_series, get_value
+from tests.test_utils import get_dataframe, assert_datastore_equals_pandas, assert_frame_equal, assert_series_equal, get_series, get_value
 
 
 class TestIterationProtocols:
@@ -213,7 +213,7 @@ class TestRareMethods:
         ds_result = ds_df.isetitem(0, [10, 20])
         
         # Original should be unchanged
-        assert_frame_equal(ds_df._execute(), pd_df)
+        assert_datastore_equals_pandas(ds_df, pd_df)
         
         # Result should have the new values
         expected = pd.DataFrame({'A': [10, 20], 'B': [3, 4]})
@@ -521,9 +521,9 @@ class TestImmutableDesign:
         ds_result = ds_df.fillna(0)
         
         # Original has NaN
-        assert np.isnan(ds_df._execute()['A'].iloc[1])
+        assert np.isnan(get_dataframe(ds_df)['A'].iloc[1])
         # Result has 0
-        assert ds_result._execute()['A'].iloc[1] == 0
+        assert get_dataframe(ds_result)['A'].iloc[1] == 0
 
 
 class TestInsertMethod:

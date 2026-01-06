@@ -95,7 +95,7 @@ class TestNullHandlingLimitations:
         ds = DataStore(df)
         
         pd_result = df.groupby('group', dropna=True)['val'].sum()
-        ds_result = ds.groupby('group')['val'].sum()._execute()
+        ds_result = ds.groupby('group')['val'].sum()
         
         # pandas with dropna=True has 2 groups
         # DataStore now correctly excludes NULL by default (fixed dropna support)

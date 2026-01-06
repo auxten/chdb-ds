@@ -291,9 +291,9 @@ class TestSpecialValuesBoundary:
     def test_empty_dataframe_operations(self):
         pd_df = pd.DataFrame({'a': [], 'b': []})
         ds = DataStore(pd_df)
-        assert len(ds._execute()) == 0
+        assert len(ds) == 0
         ds_filtered = ds[ds['a'] > 0]
-        assert len(ds_filtered._execute()) == 0
+        assert len(ds_filtered) == 0
 
     def test_single_row_operations(self):
         pd_df = pd.DataFrame({'a': [1], 'b': [2]})

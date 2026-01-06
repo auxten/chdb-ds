@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 from datastore import DataStore
-from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal, get_series
+from tests.test_utils import get_dataframe, assert_datastore_equals_pandas, assert_series_equal, get_series
 
 
 # ============================================================================
@@ -41,7 +41,7 @@ class TestEmptyDataFrameOperations:
         pd_result = df[df['a'] > 100]
         ds_result = ds[ds['a'] > 100]
 
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_groupby_sum(self):
@@ -49,24 +49,21 @@ class TestEmptyDataFrameOperations:
         pd_result = self.empty_df.groupby('a')['b'].sum()
         ds_result = self.empty_ds.groupby('a')['b'].sum()
 
-        ds_executed = ds_result._execute()
-        assert len(ds_executed) == 0
+        assert len(ds_result) == 0
 
     def test_empty_groupby_count(self):
         """Groupby count on empty DataFrame."""
         pd_result = self.empty_df.groupby('a')['b'].count()
         ds_result = self.empty_ds.groupby('a')['b'].count()
 
-        ds_executed = ds_result._execute()
-        assert len(ds_executed) == 0
+        assert len(ds_result) == 0
 
     def test_empty_groupby_mean(self):
         """Groupby mean on empty DataFrame."""
         pd_result = self.empty_df.groupby('a')['b'].mean()
         ds_result = self.empty_ds.groupby('a')['b'].mean()
 
-        ds_executed = ds_result._execute()
-        assert len(ds_executed) == 0
+        assert len(ds_result) == 0
 
     def test_empty_value_counts(self):
         """value_counts on empty column."""
@@ -76,8 +73,7 @@ class TestEmptyDataFrameOperations:
         pd_result = df['a'].value_counts()
         ds_result = ds['a'].value_counts()
 
-        ds_executed = ds_result._execute()
-        assert len(ds_executed) == 0
+        assert len(ds_result) == 0
 
     def test_empty_head(self):
         """head() on empty DataFrame."""
@@ -125,12 +121,9 @@ class TestEmptyDataFrameOperations:
         pd_result = pd_filtered['val'].sum()
         ds_result = ds_filtered['val'].sum()
 
-        ds_executed = ds_result._execute()
+        # Direct comparison - ColumnExpr supports __eq__
         assert pd_result == 0
-        if isinstance(ds_executed, (int, float, np.integer, np.floating)):
-            assert ds_executed == 0
-        else:
-            assert len(ds_executed) == 0 or ds_executed.iloc[0] == 0
+        assert ds_result == 0
 
     def test_empty_distinct(self):
         """distinct on empty DataFrame."""
@@ -157,11 +150,7 @@ class TestSingleRowOperations:
         """Groupby on single row."""
         pd_result = self.single_df.groupby('c')['a'].sum().reset_index()
         ds_result = self.single_ds.groupby('c')['a'].sum()
-
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index()
-        assert len(ds_executed) == 1
+        assert len(ds_result) == 1
 
     def test_single_row_head(self):
         """head(n) where n > row count."""
@@ -202,12 +191,8 @@ class TestSingleRowOperations:
         """rank on single row."""
         pd_result = self.single_df['a'].rank()
         ds_result = self.single_ds['a'].rank()
-
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-        assert len(ds_executed) == 1
-        assert ds_executed.iloc[0] == 1.0
+        assert len(ds_result) == 1
+        assert ds_result.iloc[0] == 1.0
 
 
 # ============================================================================
@@ -251,7 +236,7 @@ class TestNullHandlingEdgeCases:
         pd_result = self.df_with_nan.dropna(how='any')
         ds_result = self.ds_with_nan.dropna(how='any')
 
-        assert len(ds_result._execute()) == len(pd_result)
+        assert len(ds_result) == len(pd_result)
 
     def test_dropna_all(self):
         """dropna with how='all'."""
@@ -290,42 +275,21 @@ class TestNullHandlingEdgeCases:
         pd_result = self.df_with_nan['a'].sum()
         ds_result = self.ds_with_nan['a'].sum()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[0, 0]
-        elif isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.iloc[0]
-
-        assert pd_result == 9
-        assert ds_executed == 9
+        assert ds_result == pd_result
 
     def test_mean_with_nan(self):
         """Mean column with NaN values."""
         pd_result = self.df_with_nan['a'].mean()
         ds_result = self.ds_with_nan['a'].mean()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[0, 0]
-        elif isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.iloc[0]
-
-        assert pd_result == 3.0
-        assert abs(ds_executed - 3.0) < 0.001
+        assert ds_result == pd_result
 
     def test_count_with_nan(self):
         """Count column with NaN values (should exclude NaN)."""
         pd_result = self.df_with_nan['a'].count()
         ds_result = self.ds_with_nan['a'].count()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[0, 0]
-        elif isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.iloc[0]
-
-        assert pd_result == 3
-        assert ds_executed == 3
+        assert ds_result == pd_result
 
     def test_all_nan_column_operations(self):
         """Operations on column that is all NaN."""
@@ -333,11 +297,7 @@ class TestNullHandlingEdgeCases:
         ds = DataStore(df)
 
         pd_sum = df['a'].sum()
-        ds_sum = ds['a'].sum()._execute()
-        if isinstance(ds_sum, pd.DataFrame):
-            ds_sum = ds_sum.iloc[0, 0]
-        elif isinstance(ds_sum, pd.Series):
-            ds_sum = ds_sum.iloc[0]
+        ds_sum = ds['a'].sum()
 
         assert pd_sum == 0
         assert ds_sum == 0 or pd.isna(ds_sum)
@@ -361,7 +321,7 @@ class TestColumnSelectionEdgeCases:
         pd_result = self.df[['a']]
         ds_result = self.ds[['a']]
 
-        assert isinstance(ds_result._execute(), pd.DataFrame)
+        # DataStore is lazy, just verify results match
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_single_column_as_string(self):
@@ -369,19 +329,14 @@ class TestColumnSelectionEdgeCases:
         pd_result = self.df['a']
         ds_result = self.ds['a']
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_select_columns_in_different_order(self):
         """Select columns in different order than original."""
         pd_result = self.df[['c', 'a', 'b']]
         ds_result = self.ds[['c', 'a', 'b']]
 
-        assert list(ds_result._execute().columns) == ['c', 'a', 'b']
+        assert list(ds_result.columns) == ['c', 'a', 'b']
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_duplicate_column_rename
@@ -443,11 +398,7 @@ class TestGroupbyEdgeCases:
         pd_result = df.groupby('cat')['val'].sum().reset_index()
         ds_result = ds.groupby('cat')['val'].sum()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index()
-
-        assert len(ds_executed) == 1
+        assert len(ds_result) == 1
 
     def test_groupby_all_unique_groups(self):
         """Groupby where each row is its own group."""
@@ -457,71 +408,49 @@ class TestGroupbyEdgeCases:
         pd_result = df.groupby('cat')['val'].sum().reset_index()
         ds_result = ds.groupby('cat')['val'].sum()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index()
-
-        assert len(ds_executed) == 3
+        assert len(ds_result) == 3
 
     def test_groupby_multiple_agg_functions(self):
         """Groupby with multiple aggregation functions."""
         pd_result = self.df.groupby('cat')['val'].agg(['sum', 'mean', 'count']).reset_index()
         ds_result = self.ds.groupby('cat')['val'].agg(['sum', 'mean', 'count'])
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index()
-
-        assert 'sum' in ds_executed.columns or ('val', 'sum') in ds_executed.columns
-        assert len(ds_executed) == 3
+        assert 'sum' in ds_result.columns or ('val', 'sum') in ds_result.columns
+        assert len(ds_result) == 3
 
     def test_groupby_dict_agg(self):
         """Groupby with dict aggregation (different aggs per column)."""
         pd_result = self.df.groupby('cat').agg({'val': 'sum', 'val2': 'mean'}).reset_index()
         ds_result = self.ds.groupby('cat').agg({'val': 'sum', 'val2': 'mean'})
 
-        ds_executed = ds_result._execute()
-        assert 'val' in ds_executed.columns or ('val', 'sum') in ds_executed.columns
-        assert 'val2' in ds_executed.columns or ('val2', 'mean') in ds_executed.columns
+        assert 'val' in ds_result.columns or ('val', 'sum') in ds_result.columns
+        assert 'val2' in ds_result.columns or ('val2', 'mean') in ds_result.columns
 
     def test_groupby_size(self):
         """Groupby size (count rows per group)."""
         pd_result = self.df.groupby('cat').size().reset_index(name='size')
         ds_result = self.ds.groupby('cat').size()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index(name='size')
-
-        assert len(ds_executed) == 3
+        assert len(ds_result) == 3
 
     def test_groupby_first_last(self):
         """Groupby first and last."""
-        pd_first = self.df.groupby('cat')['val'].first().reset_index()
+        pd_first = self.df.groupby('cat')['val'].first()
         ds_first = self.ds.groupby('cat')['val'].first()
 
-        ds_first_exec = ds_first._execute()
-        if isinstance(ds_first_exec, pd.Series):
-            ds_first_exec = ds_first_exec.reset_index()
+        assert len(ds_first) == len(pd_first)
 
-        assert len(ds_first_exec) == 3
-
-        pd_last = self.df.groupby('cat')['val'].last().reset_index()
+        pd_last = self.df.groupby('cat')['val'].last()
         ds_last = self.ds.groupby('cat')['val'].last()
 
-        ds_last_exec = ds_last._execute()
-        if isinstance(ds_last_exec, pd.Series):
-            ds_last_exec = ds_last_exec.reset_index()
-
-        assert len(ds_last_exec) == 3
+        assert len(ds_last) == len(pd_last)
 
     def test_groupby_nth_positive(self):
         """Groupby nth with positive index."""
         pd_result = self.df.groupby('cat').nth(0).reset_index()
         ds_result = self.ds.groupby('cat').nth(0)
 
-        ds_executed = ds_result._execute()
-        assert len(ds_executed) == 3
+        assert len(ds_result) == 3
 
     def test_groupby_on_filtered_data(self):
         """Groupby after filter."""
@@ -531,11 +460,7 @@ class TestGroupbyEdgeCases:
         ds_filtered = self.ds[self.ds['val'] > 2]
         ds_result = ds_filtered.groupby('cat')['val'].sum()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.Series):
-            ds_executed = ds_executed.reset_index()
-
-        assert len(ds_executed) == 3
+        assert len(ds_result) == 3
 
 
 # ============================================================================
@@ -556,12 +481,8 @@ class TestArithmeticEdgeCases:
         pd_result = self.df['a'] / self.df['c']
         ds_result = self.ds['a'] / self.ds['c']
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
         assert np.isinf(pd_result.iloc[0]) or pd.isna(pd_result.iloc[0])
-        assert np.isinf(ds_executed.iloc[0]) or pd.isna(ds_executed.iloc[0])
+        assert np.isinf(ds_result.iloc[0]) or pd.isna(ds_result.iloc[0])
 
     def test_negative_number_operations(self):
         """Operations with negative numbers."""
@@ -571,12 +492,7 @@ class TestArithmeticEdgeCases:
         pd_result = df['a'] * df['b']
         ds_result = ds['a'] * ds['b']
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_float_precision(self):
         """Float precision in operations."""
@@ -586,11 +502,7 @@ class TestArithmeticEdgeCases:
         pd_result = df['a'] + df['a'] + df['a']
         ds_result = ds['a'] + ds['a'] + ds['a']
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert all(abs(ds_executed.iloc[i] - pd_result.iloc[i]) < 0.0001 for i in range(len(pd_result)))
+        assert all(abs(ds_result.iloc[i] - pd_result.iloc[i]) < 0.0001 for i in range(len(pd_result)))
 
     def test_integer_overflow(self):
         """Large integer operations."""
@@ -600,35 +512,21 @@ class TestArithmeticEdgeCases:
         pd_result = df['a'] + df['a']
         ds_result = ds['a'] + ds['a']
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert ds_executed.iloc[0] == 2 * 10**18
+        assert ds_result.iloc[0] == 2 * 10**18
 
     def test_modulo_operation(self):
         """Modulo operation."""
         pd_result = self.df['b'] % 3
         ds_result = self.ds['b'] % 3
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     def test_power_operation(self):
         """Power/exponent operation."""
         pd_result = self.df['a'] ** 2
         ds_result = self.ds['a'] ** 2
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
 
 # ============================================================================
@@ -651,50 +549,34 @@ class TestStringOperationsEdgeCases:
         pd_result = self.df['text'].str.lower()
         ds_result = self.ds['text'].str.lower()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
         for i in range(len(pd_result)):
             if pd.notna(pd_result.iloc[i]):
-                assert ds_executed.iloc[i] == pd_result.iloc[i]
+                assert ds_result.iloc[i] == pd_result.iloc[i]
 
     def test_str_upper(self):
         """String upper case."""
         pd_result = self.df['text'].str.upper()
         ds_result = self.ds['text'].str.upper()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
         for i in range(len(pd_result)):
             if pd.notna(pd_result.iloc[i]):
-                assert ds_executed.iloc[i] == pd_result.iloc[i]
+                assert ds_result.iloc[i] == pd_result.iloc[i]
 
     def test_str_strip(self):
         """String strip whitespace."""
         pd_result = self.df['text'].str.strip()
         ds_result = self.ds['text'].str.strip()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert ds_executed.iloc[4] == 'spaces'
+        assert ds_result.iloc[4] == 'spaces'
 
     def test_str_len(self):
         """String length."""
         pd_result = self.df['text'].str.len()
         ds_result = self.ds['text'].str.len()
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
         for i in range(len(pd_result)):
             if pd.notna(pd_result.iloc[i]):
-                assert ds_executed.iloc[i] == pd_result.iloc[i]
+                assert ds_result.iloc[i] == pd_result.iloc[i]
 
     def test_str_contains_simple(self):
         """String contains pattern."""
@@ -741,11 +623,7 @@ class TestTypeConversionEdgeCases:
         pd_result = df['a'].astype(float)
         ds_result = ds['a'].astype(float)
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert ds_executed.dtype == float
+        assert ds_result.dtype == float
 
     def test_float_to_int(self):
         """Convert float column to int."""
@@ -755,11 +633,7 @@ class TestTypeConversionEdgeCases:
         pd_result = df['a'].astype(int)
         ds_result = ds['a'].astype(int)
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert all(ds_executed == [1, 2, 3])
+        assert_series_equal(ds_result, pd_result, check_names=False)
 
     def test_int_to_string(self):
         """Convert int column to string."""
@@ -769,11 +643,7 @@ class TestTypeConversionEdgeCases:
         pd_result = df['a'].astype(str)
         ds_result = ds['a'].astype(str)
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert list(ds_executed) == ['1', '2', '3']
+        assert list(ds_result) == ['1', '2', '3']
 
     def test_string_to_int_valid(self):
         """Convert valid numeric strings to int."""
@@ -783,11 +653,7 @@ class TestTypeConversionEdgeCases:
         pd_result = df['a'].astype(int)
         ds_result = ds['a'].astype(int)
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert list(ds_executed) == [1, 2, 3]
+        assert list(ds_result) == [1, 2, 3]
 
     def test_bool_to_int(self):
         """Convert bool column to int."""
@@ -797,11 +663,7 @@ class TestTypeConversionEdgeCases:
         pd_result = df['a'].astype(int)
         ds_result = ds['a'].astype(int)
 
-        ds_executed = ds_result._execute()
-        if isinstance(ds_executed, pd.DataFrame):
-            ds_executed = ds_executed.iloc[:, 0]
-
-        assert list(ds_executed) == [1, 0, 1]
+        assert list(ds_result) == [1, 0, 1]
 
 
 # ============================================================================
@@ -822,7 +684,7 @@ class TestSliceEdgeCases:
         pd_result = self.df.head(0)
         ds_result = self.ds.head(0)
 
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
 
     # Negative head/tail now supported
     def test_head_negative(self):
@@ -837,7 +699,7 @@ class TestSliceEdgeCases:
         pd_result = self.df.tail(0)
         ds_result = self.ds.tail(0)
 
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
 
     def test_tail_negative(self):
         """tail with negative number (pandas returns all but first n)."""
@@ -925,8 +787,7 @@ class TestSortEdgeCases:
         pd_result = df.sort_values('a')
         ds_result = ds.sort_values('a')
 
-        ds_executed = ds_result._execute()
-        non_null = ds_executed[ds_executed['a'].notna()]['a'].tolist()
+        non_null = ds_result[ds_result['a'].notna()]['a'].tolist()
         assert non_null == sorted(non_null)
 
     def test_sort_strings(self):
@@ -966,28 +827,28 @@ class TestNegativeHeadTail:
         """head(-n) where n equals length should return empty DataFrame."""
         pd_result = self.df.head(-10)
         ds_result = self.ds.head(-10)
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert len(pd_result) == 0
 
     def test_tail_negative_equals_length(self):
         """tail(-n) where n equals length should return empty DataFrame."""
         pd_result = self.df.tail(-10)
         ds_result = self.ds.tail(-10)
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert len(pd_result) == 0
 
     def test_head_negative_exceeds_length(self):
         """head(-n) where n exceeds length should return empty DataFrame."""
         pd_result = self.df.head(-15)
         ds_result = self.ds.head(-15)
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert len(pd_result) == 0
 
     def test_tail_negative_exceeds_length(self):
         """tail(-n) where n exceeds length should return empty DataFrame."""
         pd_result = self.df.tail(-15)
         ds_result = self.ds.tail(-15)
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert len(pd_result) == 0
 
     def test_head_negative_one(self):
@@ -1018,7 +879,7 @@ class TestNegativeHeadTail:
         """head(0) should return empty DataFrame."""
         pd_result = self.df.head(0)
         ds_result = self.ds.head(0)
-        assert len(ds_result._execute()) == 0
+        assert len(ds_result) == 0
         assert len(pd_result) == 0
 
     def test_head_tail_chain(self):
@@ -1041,7 +902,7 @@ class TestNegativeHeadTail:
         ds_result = self.ds.head(-3)
         # Check that index values match
         pd_idx = pd_result.index.tolist()
-        ds_idx = ds_result._execute().index.tolist()
+        ds_idx = get_dataframe(ds_result).index.tolist()
         assert pd_idx == ds_idx, f"Index mismatch: {pd_idx} vs {ds_idx}"
 
     def test_tail_negative_preserves_index(self):
@@ -1050,5 +911,5 @@ class TestNegativeHeadTail:
         ds_result = self.ds.tail(-3)
         # Check that index values match
         pd_idx = pd_result.index.tolist()
-        ds_idx = ds_result._execute().index.tolist()
+        ds_idx = get_dataframe(ds_result).index.tolist()
         assert pd_idx == ds_idx, f"Index mismatch: {pd_idx} vs {ds_idx}"

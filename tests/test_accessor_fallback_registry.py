@@ -149,10 +149,7 @@ class TestAccessorFallbackIntegration:
         ds_result = ds['text'].str.split('-', expand=True)
         pd_result = pd_df['text'].str.split('-', expand=True)
 
-        # Execute and compare
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-
+        # Compare
         assert_frame_equal(
             pd.DataFrame(ds_result) if not isinstance(ds_result, pd.DataFrame) else ds_result,
             pd_result
@@ -167,9 +164,6 @@ class TestAccessorFallbackIntegration:
         pd_result = pd_df['text'].str.split('-', expand=False)
 
         # The result should be a series containing arrays/lists
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-
         # For DataStore, split returns Array type from chDB
         # Just verify it executes without error
         assert ds_result is not None
@@ -182,10 +176,7 @@ class TestAccessorFallbackIntegration:
         ds_result = ds['text'].str.extract(r'([a-z])(\d)')
         pd_result = pd_df['text'].str.extract(r'([a-z])(\d)')
 
-        # Execute and compare
-        if hasattr(ds_result, '_execute'):
-            ds_result = ds_result._execute()
-
+        # Compare
         assert_frame_equal(
             pd.DataFrame(ds_result) if not isinstance(ds_result, pd.DataFrame) else ds_result,
             pd_result
