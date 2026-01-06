@@ -716,9 +716,10 @@ class TestDateTimeEngineSwitch:
 
             log_text = caplog.text
 
-            # In new unified architecture, dt.year is compiled to toYear and pushed to SQL
-            # as a column assignment: SELECT *, toYear("date") AS "year" FROM ...
-            sql_pattern = r'toYear\("date"\)\s+AS\s+"year"'
+            # In new unified architecture, dt.year is compiled to toInt32(toYear(...)) and pushed to SQL
+            # as a column assignment: SELECT *, toInt32(toYear("date")) AS "year" FROM ...
+            # The toInt32 wrapper ensures the result matches pandas dtype (int32)
+            sql_pattern = r'toInt32\(toYear\("date"\)\)\s+AS\s+"year"'
             assert re.search(
                 sql_pattern, log_text
             ), f"Expected SQL pattern '{sql_pattern}' not found in debug log:\n{log_text}"
