@@ -484,3 +484,11 @@ limit_datastore_index_setter = pytest.mark.xfail(
     reason="DataStore limitation: index property does not have a setter",
     strict=True,
 )
+
+# DataStore Limitations: groupby does not support Series/ColumnExpr as parameter
+limit_groupby_series_param = pytest.mark.xfail(
+    reason="DataStore groupby does not support ColumnExpr/Series as groupby parameter. "
+           "Use column name after assigning the expression to a column instead: "
+           "ds['col'] = ds['date'].dt.year; ds.groupby('col')...",
+    strict=True,
+)
