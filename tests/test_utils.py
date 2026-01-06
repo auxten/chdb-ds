@@ -65,12 +65,73 @@ def _normalize_chdb_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def _are_dtypes_nullable_equivalent(dtype1, dtype2) -> bool:
+    """
+    Check if two dtypes are equivalent when ignoring nullable vs non-nullable distinction.
+
+    This handles the common case where chDB/SQL execution returns numpy dtypes (int64, float64, bool)
+    but pandas uses nullable dtypes (Int64, Float64, boolean).
+
+    Equivalent pairs:
+    - int64 ↔ Int64 (nullable integer)
+    - int32 ↔ Int32
+    - int16 ↔ Int16
+    - int8 ↔ Int8
+    - uint64 ↔ UInt64
+    - uint32 ↔ UInt32
+    - uint16 ↔ UInt16
+    - uint8 ↔ UInt8
+    - float64 ↔ Float64 (nullable float)
+    - float32 ↔ Float32
+    - bool ↔ boolean (nullable boolean)
+    - uint64 ↔ int64 (count operations return uint64 in chDB)
+    """
+    str1, str2 = str(dtype1).lower(), str(dtype2).lower()
+
+    # Exact match
+    if str1 == str2:
+        return True
+
+    # Nullable integer equivalents (Int64 vs int64, etc.)
+    nullable_int_pairs = {
+        ('int64', 'int64'),  # Int64 lowercase == int64
+        ('int32', 'int32'),
+        ('int16', 'int16'),
+        ('int8', 'int8'),
+        ('uint64', 'uint64'),
+        ('uint32', 'uint32'),
+        ('uint16', 'uint16'),
+        ('uint8', 'uint8'),
+    }
+
+    # Check if one is nullable (capitalized) and other is numpy dtype
+    # pandas nullable dtypes: Int64, Int32, Float64, etc. (capitalized)
+    # numpy dtypes: int64, int32, float64, etc. (lowercase)
+    dtype1_str = str(dtype1)
+    dtype2_str = str(dtype2)
+
+    # Int64 vs int64, Float64 vs float64, etc.
+    if dtype1_str.lower() == dtype2_str.lower():
+        return True
+
+    # bool vs boolean
+    if {str1, str2} == {'bool', 'boolean'}:
+        return True
+
+    # uint64 vs int64 (chDB count operations return uint64)
+    if {str1, str2} == {'uint64', 'int64'}:
+        return True
+
+    return False
+
+
 def assert_datastore_equals_pandas(
     ds_result,
     pd_result: pd.DataFrame,
     check_column_order: bool = True,
     check_row_order: bool = True,
     check_dtype: bool = True,
+    check_nullable_dtype: bool = False,
     check_index: bool = False,
     rtol: float = 1e-5,
     atol: float = 1e-8,
@@ -87,7 +148,11 @@ def assert_datastore_equals_pandas(
         check_column_order: If True, column order must match exactly
         check_row_order: If True, row order must match exactly
                         Set to False for operations with undefined order (e.g., groupby without sort)
-        check_dtype: If True, also verify dtypes match
+        check_dtype: If True, also verify dtypes match exactly
+        check_nullable_dtype: If True, treat nullable and non-nullable dtypes as different
+                             (e.g., Int64 != int64). If False, treat them as equivalent.
+                             Only applies when check_dtype=True.
+                             Common equivalents: int64↔Int64, float64↔Float64, bool↔boolean, uint64↔int64
         check_index: If True, verify index matches (DataStore typically doesn't preserve index)
         rtol: Relative tolerance for float comparison
         atol: Absolute tolerance for float comparison
@@ -107,12 +172,17 @@ def assert_datastore_equals_pandas(
 
         # Compare results
         assert_datastore_equals_pandas(ds_result, pd_result)
+
+        # Allow nullable dtype differences (Int64 vs int64, etc.)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_nullable_dtype=False)
     """
     prefix = f"{msg}: " if msg else ""
 
     # Handle Series comparison
     if isinstance(pd_result, pd.Series):
-        _assert_series_equals(ds_result, pd_result, check_row_order, check_dtype, rtol, atol, prefix)
+        _assert_series_equals(
+            ds_result, pd_result, check_row_order, check_dtype, check_nullable_dtype, rtol, atol, prefix
+        )
         return
 
     # Get DataStore columns
@@ -188,6 +258,9 @@ def assert_datastore_equals_pandas(
                         # Allow bool vs uint8 mismatch (common in chDB)
                         if {str(ds_d), str(pd_d)} == {'bool', 'uint8'}:
                             continue
+                        # Allow nullable dtype equivalents if check_nullable_dtype=False
+                        if not check_nullable_dtype and _are_dtypes_nullable_equivalent(ds_d, pd_d):
+                            continue
                         assert False, (
                             f"{prefix}Column '{col}' dtype doesn't match.\n"
                             f"DataStore dtype: {ds_dtype}\n"
@@ -197,6 +270,9 @@ def assert_datastore_equals_pandas(
                 if ds_dtype != pd_dtype:
                     # Allow bool vs uint8 mismatch (common in chDB)
                     if {str(ds_dtype), str(pd_dtype)} == {'bool', 'uint8'}:
+                        continue
+                    # Allow nullable dtype equivalents if check_nullable_dtype=False
+                    if not check_nullable_dtype and _are_dtypes_nullable_equivalent(ds_dtype, pd_dtype):
                         continue
                     assert False, (
                         f"{prefix}Column '{col}' dtype doesn't match.\n"
@@ -210,6 +286,7 @@ def _assert_series_equals(
     pd_result: pd.Series,
     check_order: bool,
     check_dtype: bool,
+    check_nullable_dtype: bool,
     rtol: float,
     atol: float,
     prefix: str,
@@ -232,9 +309,16 @@ def _assert_series_equals(
     if check_dtype:
         ds_dtype = ds_result.dtype
         pd_dtype = pd_result.dtype
-        assert ds_dtype == pd_dtype, (
-            f"{prefix}Series dtype doesn't match.\n" f"DataStore dtype: {ds_dtype}\n" f"Pandas dtype:    {pd_dtype}"
-        )
+        if ds_dtype != pd_dtype:
+            # Allow nullable dtype equivalents if check_nullable_dtype=False
+            if not check_nullable_dtype and _are_dtypes_nullable_equivalent(ds_dtype, pd_dtype):
+                pass  # Equivalent, skip assertion
+            else:
+                assert False, (
+                    f"{prefix}Series dtype doesn't match.\n"
+                    f"DataStore dtype: {ds_dtype}\n"
+                    f"Pandas dtype:    {pd_dtype}"
+                )
 
 
 def _assert_array_equal(
@@ -444,21 +528,21 @@ def get_dataframe(ds_result) -> pd.DataFrame:
     # If already a pandas DataFrame, return it directly
     if isinstance(ds_result, pd.DataFrame):
         return ds_result
-    
+
     # If pandas Series, convert to DataFrame
     if isinstance(ds_result, pd.Series):
         return ds_result.to_frame()
-    
+
     # If numpy array, wrap in DataFrame
     if isinstance(ds_result, np.ndarray):
         if ds_result.ndim == 1:
             return pd.DataFrame(ds_result)
         return pd.DataFrame(ds_result)
-    
+
     # If None, raise error
     if ds_result is None:
         raise ValueError("Cannot convert None to DataFrame")
-    
+
     # For DataStore and similar objects, try accessing _get_df() first
     try:
         df = ds_result._get_df()
@@ -470,7 +554,7 @@ def get_dataframe(ds_result) -> pd.DataFrame:
         return get_dataframe(df)
     except (AttributeError, TypeError):
         pass
-    
+
     # Fall back to building DataFrame from columns
     try:
         columns = list(ds_result.columns)
@@ -480,7 +564,7 @@ def get_dataframe(ds_result) -> pd.DataFrame:
         return pd.DataFrame(data, columns=columns)
     except (AttributeError, TypeError):
         pass
-    
+
     # Last resort: try to convert using pd.DataFrame constructor
     return pd.DataFrame(ds_result)
 
