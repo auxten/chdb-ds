@@ -87,7 +87,7 @@ chdb_median_in_where = pytest.mark.xfail(
 # See: tracking/discoveries/2026-01-06_groupby_dropna_alignment_research.md
 
 chdb_nan_sum_behavior = pytest.mark.xfail(
-    reason="chDB returns NA for sum of all-NaN, pandas returns 0",
+    reason="chDB returns NA for sum of all-NaN, pandas returns 0 (SQL standard behavior, may add workaround in DataStore)",
     strict=True,
 )
 
@@ -138,19 +138,20 @@ chdb_case_bool_conversion = pytest.mark.xfail(
     strict=True,
 )
 
-# Dtype Differences - chDB returns different types than pandas in certain scenarios
+# Dtype Differences - values are CORRECT, only dtype differs from pandas
+# These are acceptable differences where DataStore returns more semantically correct types
 chdb_nat_returns_nullable_int = pytest.mark.xfail(
-    reason="chDB datetime accessor with NaT returns nullable Int (Int32), pandas returns float64",
+    reason="chDB datetime accessor with NaT returns nullable Int (Int32), pandas returns float64 - VALUES ARE CORRECT",
     strict=True,
 )
 
 chdb_replace_none_dtype = pytest.mark.xfail(
-    reason="chDB replace with None returns nullable Int64, pandas returns object dtype",
+    reason="chDB replace with None returns nullable Int64, pandas returns object dtype - VALUES ARE CORRECT",
     strict=True,
 )
 
 chdb_mask_dtype_nullable = pytest.mark.xfail(
-    reason="chDB mask/where on int returns nullable Int64, pandas returns float64 (due to NaN)",
+    reason="chDB mask/where on int returns nullable Int64, pandas returns float64 (due to NaN) - VALUES ARE CORRECT",
     strict=True,
 )
 
@@ -212,10 +213,9 @@ limit_where_condition = pytest.mark.xfail(
     strict=True,
 )
 
-limit_unstack_column_expr = pytest.mark.xfail(
-    reason="Design limit: ColumnExpr doesn't support unstack() (requires MultiIndex). Use pivot_table() instead.",
-    strict=True,
-)
+# NOTE: limit_unstack_column_expr moved to design_* - this is an intentional design decision
+# unstack() requires MultiIndex which is only available after execution.
+# Use pivot_table() instead for the same functionality.
 
 limit_str_join_array = pytest.mark.xfail(
     reason="str.join() requires Array type column, not string column",
@@ -226,12 +226,21 @@ limit_str_join_array = pytest.mark.xfail(
 # =============================================================================
 # Design Differences (design_*)
 # Intentional behavioral differences from pandas
+# These are conscious decisions, not bugs to be fixed.
 # =============================================================================
 
 design_datetime_fillna_nat = pytest.mark.xfail(
-    reason="Design difference: Pandas replaces datetime with 0/-1, DataStore uses NaT",
+    reason="Design decision: Pandas where/mask replaces datetime with 0/-1, DataStore uses NaT (semantically clearer)",
     strict=True,
 )
+
+design_unstack_column_expr = pytest.mark.xfail(
+    reason="Design decision: ColumnExpr doesn't support unstack() (requires MultiIndex only available after execution). Use pivot_table() instead.",
+    strict=True,
+)
+
+# Alias for backward compatibility
+limit_unstack_column_expr = design_unstack_column_expr
 
 # FIXED: DataStore now restricts column access after select() to match pandas behavior
 # design_sql_select_column_access = pytest.mark.xfail(
@@ -273,7 +282,7 @@ datastore_callable_index = limit_callable_index
 datastore_query_variable_scope = limit_query_variable_scope
 datastore_loc_conditional_assignment = limit_loc_conditional_assignment
 datastore_where_condition = limit_where_condition
-datastore_unstack_column_expr = limit_unstack_column_expr
+datastore_unstack_column_expr = design_unstack_column_expr  # Reclassified as design decision
 datastore_str_join_array = limit_str_join_array
 
 # deprecated_* aliases
@@ -288,49 +297,68 @@ pandas_deprecated_fillna_downcast = deprecated_fillna_downcast
 # =============================================================================
 
 MARKER_REGISTRY = {
-    # chDB Engine Limitations
-    "chdb_category_type": ("chdb", None, "CATEGORY type not supported"),
-    "chdb_timedelta_type": ("chdb", None, "TIMEDELTA type not supported"),
-    "chdb_array_nullable": ("chdb", None, "Array cannot be inside Nullable"),
-    "chdb_array_string_conversion": ("chdb", None, "Python() converts arrays to strings"),
-    "chdb_nullable_int64_comparison": ("chdb", None, "Nullable Int64 comparison issue"),
-    "chdb_no_product_function": ("chdb", None, "product() not available"),
-    "chdb_no_normalize_utf8": ("chdb", None, "normalizeUTF8NFD not available"),
-    "chdb_no_quantile_array": ("chdb", None, "quantile with array not supported"),
+    # =========================================================================
+    # chDB Engine Limitations (cannot fix in DataStore)
+    # =========================================================================
+    # Type Support
+    "chdb_category_type": ("chdb", None, "CATEGORY type not supported by ClickHouse"),
+    "chdb_timedelta_type": ("chdb", None, "TIMEDELTA type not supported by ClickHouse"),
+    "chdb_array_nullable": ("chdb", None, "Array cannot be inside Nullable type"),
+    "chdb_array_string_conversion": ("chdb", None, "Python() table function converts arrays to strings"),
+    # Functions
+    "chdb_no_product_function": ("chdb", None, "product() aggregate not available"),
+    "chdb_no_normalize_utf8": ("chdb", None, "normalizeUTF8NFD function not available"),
+    "chdb_no_quantile_array": ("chdb", None, "quantile with array parameter not supported"),
     "chdb_median_in_where": ("chdb", None, "Aggregate in WHERE requires subquery"),
-    # FIXED: "chdb_null_in_groupby": ("chdb", None, "NULL handling differs in groupby"),
-    "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA"),
-    # NOTE: chdb_null_comparison_semantics and chdb_null_string_comparison FIXED
-    "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter issues"),
-    "chdb_strip_whitespace": ("chdb", None, "strip() whitespace handling"),
-    "chdb_datetime_timezone": ("chdb", None, "Timezone handling differs"),
-    "chdb_datetime_extraction_conflict": ("chdb", None, "Datetime extraction column conflict"),
-    "chdb_dt_month_type": ("chdb", None, "dt.month type inconsistency"),
+    # NULL/NaN
+    "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA (SQL standard)"),
+    # String/Unicode
+    "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter has encoding issues"),
+    "chdb_strip_whitespace": ("chdb", None, "strip() doesn't handle all whitespace types"),
+    # Datetime
+    "chdb_datetime_timezone": ("chdb", None, "Timezone handling differs by version"),
+    "chdb_datetime_extraction_conflict": ("chdb", None, "Multiple datetime extractions cause column name conflict"),
+    "chdb_dt_month_type": ("chdb", None, "dt.month type inconsistency between SQL and DataFrame"),
+    # SQL Behavior
     "chdb_duplicate_column_rename": ("chdb", None, "SQL auto-renames duplicate columns"),
-    "chdb_case_bool_conversion": ("chdb", None, "CASE WHEN Bool conversion"),
-    # DataStore Bugs
-    "bug_groupby_first_last": ("bug", None, "first()/last() not order-based"),
-    "bug_groupby_index": ("bug", None, "groupby doesn't preserve index"),
-    "bug_index_not_preserved": ("bug", None, "Index lost in lazy execution"),
-    "bug_extractall_multiindex": ("bug", None, "MultiIndex lost in extractall"),
-    # DataStore Limitations
-    "limit_callable_index": ("limit", None, "Callable index not implemented"),
-    "limit_query_variable_scope": ("limit", None, "@variable scope in query()"),
-    "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment"),
-    "limit_where_condition": ("limit", None, "where() with DataStore condition"),
-    "limit_unstack_column_expr": ("limit", None, "unstack not supported"),
-    "limit_str_join_array": ("limit", None, "str.join needs Array type"),
-    # Design Differences
-    "design_datetime_fillna_nat": ("design", None, "Use NaT instead of 0/-1"),
-    # Deprecated
-    "deprecated_fillna_downcast": ("deprecated", None, "fillna downcast deprecated"),
-    # Bugs discovered in exploratory batch 38
-    "bug_setitem_computed_column_groupby": ("bug", None, "setitem computed column not tracked for groupby"),
-    # FIXED: "chdb_empty_df_str_dtype": ("chdb", None, "Empty df str accessor dtype issue - FIXED 2026-01-06"),
-    # chDB integer column names
-    # FIXED: "chdb_integer_column_names": ("chdb", None, "Integer column names cause errors - FIXED 2026-01-06"),
-    # Bug: groupby column selection
-    # "bug_groupby_column_selection_extra_columns": ("bug", None, "FIXED - groupby column selection includes extra columns"),
+    "chdb_case_bool_conversion": ("chdb", None, "CASE WHEN cannot mix Bool with other types"),
+    # Dtype Differences (values correct, only dtype differs)
+    "chdb_nat_returns_nullable_int": ("chdb", None, "dt accessor with NaT returns Nullable Int (values correct)"),
+    "chdb_replace_none_dtype": ("chdb", None, "replace with None returns Nullable Int (values correct)"),
+    "chdb_mask_dtype_nullable": ("chdb", None, "mask/where returns Nullable Int64 (values correct)"),
+    # =========================================================================
+    # DataStore Bugs (should be fixed)
+    # =========================================================================
+    "bug_index_not_preserved": ("bug", None, "Index info lost through lazy SQL execution"),
+    "bug_extractall_multiindex": ("bug", None, "MultiIndex lost in extractall due to lazy execution"),
+    # =========================================================================
+    # DataStore Limitations (not yet implemented)
+    # =========================================================================
+    "limit_callable_index": ("limit", None, "Callable as index not implemented"),
+    "limit_query_variable_scope": ("limit", None, "@variable scope in query() not available after _get_df()"),
+    "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment with ColumnExpr incomplete"),
+    "limit_where_condition": ("limit", None, "where() with DataStore condition has execution bug"),
+    "limit_str_join_array": ("limit", None, "str.join() needs Array type column"),
+    # =========================================================================
+    # Design Decisions (intentional differences)
+    # =========================================================================
+    "design_datetime_fillna_nat": ("design", None, "Use NaT instead of 0/-1 for datetime where/mask"),
+    "design_unstack_column_expr": ("design", None, "unstack not supported on ColumnExpr, use pivot_table()"),
+    # =========================================================================
+    # Deprecated Features (pandas deprecated)
+    # =========================================================================
+    "deprecated_fillna_downcast": ("deprecated", None, "fillna downcast deprecated in pandas 2.x"),
+    # =========================================================================
+    # FIXED (kept for reference)
+    # =========================================================================
+    # "chdb_nullable_int64_comparison": FIXED in chDB 4.0.0b3
+    # "chdb_null_in_groupby": FIXED by dropna parameter implementation
+    # "chdb_empty_df_str_dtype": FIXED in core.py empty DataFrame handling
+    # "chdb_integer_column_names": FIXED in connection.py via string conversion
+    # "bug_groupby_first_last": FIXED - chDB any()/anyLast() now row-order based
+    # "bug_groupby_index": FIXED - groupby now preserves index correctly
+    # "bug_setitem_computed_column_groupby": FIXED - setitem updates _computed_columns
+    # "bug_groupby_column_selection_extra_columns": FIXED - column selection filters correctly
 }
 
 
@@ -345,32 +373,32 @@ def get_all_categories() -> List[str]:
 
 
 # =============================================================================
-# Bug: setitem computed column not tracked in _computed_columns
+# FIXED Bug markers - kept for import compatibility
 # =============================================================================
 
-bug_setitem_computed_column_groupby = pytest.mark.xfail(
-    reason="Bug: ds['col'] = expr does not populate _computed_columns, causing groupby on computed column to fail with SQL UNKNOWN_IDENTIFIER error",
-    strict=True,
-)
 
-# Add to MARKER_REGISTRY at the end
+# FIXED (2026-01-06): setitem now correctly updates _computed_columns
+def bug_setitem_computed_column_groupby(func):
+    """FIXED: ds['col'] = expr now correctly populates _computed_columns."""
+    return func
+
+
+# =============================================================================
+# FIXED markers - kept as no-op functions for import compatibility
+# =============================================================================
+
 
 # FIXED (2026-01-06): Empty DataFrame now executes SQL to get correct dtypes
-# Keeping as a no-op marker for import compatibility
 def chdb_empty_df_str_dtype(func):
     """FIXED: Empty DataFrame str accessor now returns correct dtype."""
     return func
 
 
-# =============================================================================
-# chDB: Integer column names (from transpose) cause errors
-# =============================================================================
-
-# FIXED (2026-01-06): Integer column names now converted to strings for SQL execution
-# Keeping as a no-op marker for import compatibility
+# FIXED (2026-01-06): Integer column names now work via string conversion in connection.py
 def chdb_integer_column_names(func):
     """FIXED: Integer column names now work via string conversion."""
     return func
+
 
 # =============================================================================
 # Bug: groupby column selection includes extra columns - FIXED (2026-01-06)
