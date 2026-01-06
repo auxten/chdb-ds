@@ -20,7 +20,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas
-from tests.xfail_markers import chdb_null_comparison_semantics, chdb_null_string_comparison
+# xfail markers removed - NULL comparison semantics fixed in conditions.py
 
 
 # =============================================================================
@@ -713,12 +713,11 @@ class TestComplexChainScenarios:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @chdb_null_comparison_semantics
     def test_rolling_then_shift_then_compare(self):
         """Test rolling mean followed by shift for comparison.
         
-        Note: pandas NaN > NaN returns False, SQL returns NULL.
-        This is expected SQL standard behavior.
+        This tests NULL-safe comparison: pandas NaN > NaN returns False.
+        DataStore now uses ifNull() wrapping to match pandas behavior.
         """
         df = pd.DataFrame({
             'value': [10, 15, 12, 18, 20, 16, 22, 25]
@@ -875,12 +874,11 @@ class TestStringColumnShift:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @chdb_null_string_comparison
     def test_shift_string_compare_with_current(self):
         """Test comparing shifted string with current.
         
-        Note: pandas 'string' != None returns True, SQL returns NULL.
-        This is expected SQL standard behavior.
+        This tests NULL-safe comparison: pandas 'string' != None returns True.
+        DataStore now uses ifNull() wrapping to match pandas behavior.
         """
         df = pd.DataFrame({
             'status': ['pending', 'pending', 'approved', 'approved', 'rejected']
