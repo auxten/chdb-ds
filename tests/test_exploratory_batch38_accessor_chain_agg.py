@@ -20,7 +20,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas
-from tests.xfail_markers import bug_setitem_computed_column_groupby, chdb_empty_df_str_dtype
+from tests.xfail_markers import chdb_empty_df_str_dtype
 
 
 # =============================================================================
@@ -106,7 +106,6 @@ class TestStringAccessorChains:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @bug_setitem_computed_column_groupby
     def test_str_lower_groupby_agg(self):
         """Test str.lower() followed by groupby aggregation."""
         df = pd.DataFrame({
@@ -224,7 +223,6 @@ class TestDatetimeAccessorChains:
         # Both should return scalar
         assert float(ds_result) == float(pd_result)
 
-    @bug_setitem_computed_column_groupby
     def test_dt_quarter_groupby_multiple_aggs(self):
         """Test dt.quarter groupby with multiple aggregations."""
         df = pd.DataFrame({
