@@ -221,10 +221,12 @@ limit_loc_conditional_assignment = pytest.mark.xfail(
     strict=True,
 )
 
-limit_where_condition = pytest.mark.xfail(
-    reason="DataFrame.where with DataStore condition has SQL execution bug",
-    strict=True,
-)
+# FIXED 2026-01-06: where() with DataStore condition now works
+# limit_where_condition was an xfail marker for a bug that has been fixed
+def limit_where_condition(func):
+    """No-op decorator - bug has been fixed."""
+    return func
+
 
 # NOTE: limit_unstack_column_expr moved to design_* - this is an intentional design decision
 # unstack() requires MultiIndex which is only available after execution.
@@ -350,7 +352,7 @@ MARKER_REGISTRY = {
     "limit_callable_index": ("limit", None, "Callable as index not implemented"),
     "limit_query_variable_scope": ("limit", None, "@variable scope in query() not available after _get_df()"),
     "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment with ColumnExpr incomplete"),
-    "limit_where_condition": ("limit", None, "where() with DataStore condition has execution bug"),
+    "limit_where_condition": ("fixed", "2026-01-06", "where() with DataStore condition - FIXED"),
     "limit_str_join_array": ("limit", None, "str.join() needs Array type column"),
     # =========================================================================
     # Design Decisions (intentional differences)

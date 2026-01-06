@@ -11,7 +11,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import datastore_where_condition, chdb_mask_dtype_nullable
+from tests.xfail_markers import chdb_mask_dtype_nullable
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -254,7 +254,6 @@ class TestDataFrameComparison:
         assert_datastore_equals_pandas(ds_result, pd_result)
 
     #
-    @datastore_where_condition
     def test_df_where(self):
         """Test DataFrame where operation."""
         pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
