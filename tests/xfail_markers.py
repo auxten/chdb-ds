@@ -319,6 +319,10 @@ MARKER_REGISTRY = {
     # Bugs discovered in exploratory batch 38
     "bug_setitem_computed_column_groupby": ("bug", None, "setitem computed column not tracked for groupby"),
     "chdb_empty_df_str_dtype": ("chdb", None, "Empty df str accessor dtype issue"),
+    # chDB integer column names
+    "chdb_integer_column_names": ("chdb", None, "Integer column names cause errors"),
+    # Bug: groupby column selection
+    "bug_groupby_column_selection_extra_columns": ("bug", None, "groupby column selection includes extra columns"),
 }
 
 
@@ -345,5 +349,25 @@ bug_setitem_computed_column_groupby = pytest.mark.xfail(
 
 chdb_empty_df_str_dtype = pytest.mark.xfail(
     reason="chDB: str accessor on empty DataFrame returns float64 instead of object dtype",
+    strict=True,
+)
+
+
+# =============================================================================
+# chDB: Integer column names (from transpose) cause errors
+# =============================================================================
+
+chdb_integer_column_names = pytest.mark.xfail(
+    reason="chDB: Python() table function cannot handle integer column names (e.g., 0, 1, 2 from transpose), causes KeyError",
+    strict=True,
+)
+
+
+# =============================================================================
+# Bug: groupby column selection includes extra columns
+# =============================================================================
+
+bug_groupby_column_selection_extra_columns = pytest.mark.xfail(
+    reason="Bug: After assign() + groupby(), selecting specific columns [['a', 'b']] includes extra columns in result",
     strict=True,
 )
