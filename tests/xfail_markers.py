@@ -492,3 +492,13 @@ limit_groupby_series_param = pytest.mark.xfail(
            "ds['col'] = ds['date'].dt.year; ds.groupby('col')...",
     strict=True,
 )
+
+# chDB alias shadowing in WHERE clause
+chdb_alias_shadows_column_in_where = pytest.mark.xfail(
+    reason="chDB: When SELECT alias has same name as original column, WHERE uses aliased value instead of original"
+)
+
+# DataStore missing __invert__ method
+limit_datastore_no_invert = pytest.mark.xfail(
+    reason="DataStore does not implement __invert__ (~) operator for boolean DataFrames"
+)
