@@ -351,7 +351,7 @@ class TestMergeEdgeCases:
 
         # Compare column by column (indicator column may have different dtype)
         for col in ['key', 'A', 'B']:
-            assert_series_equal(ds_df[col], pd_result[col], check_dtype=False, check_names=False)
+            assert_series_equal(ds_df[col], pd_result[col], check_names=False)
 
     def test_merge_left_on_right_on(self):
         """merge with different column names."""
@@ -390,7 +390,7 @@ class TestAdvancedStringOperations:
         ds_result = ds_df['text'].str.extract(r'([a-z]+)(\d+)')
 
         ds_result = get_value(ds_result)
-        assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        assert_frame_equal(ds_result, pd_result)
 
     @lazy_extractall_multiindex
     def test_str_extractall(self):
@@ -402,7 +402,7 @@ class TestAdvancedStringOperations:
         ds_result = ds_df['text'].str.extractall(r'([a-z])(\d)')
 
         ds_result = get_value(ds_result)
-        assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        assert_frame_equal(ds_result, pd_result)
 
     @chdb_array_nullable
     def test_str_findall(self):
@@ -424,7 +424,7 @@ class TestAdvancedStringOperations:
         ds_result = ds_df['text'].str.split(',', expand=True)
 
         ds_result = get_value(ds_result)
-        assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_str_get_dummies(self):
         """str.get_dummies for one-hot encoding."""
@@ -436,7 +436,7 @@ class TestAdvancedStringOperations:
 
         if isinstance(ds_result, DataStore):
             ds_result = ds_result._get_df()
-        assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_str_partition(self):
         """str.partition splits into three parts."""
@@ -448,7 +448,7 @@ class TestAdvancedStringOperations:
 
         if isinstance(ds_result, DataStore):
             ds_result = ds_result._get_df()
-        assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        assert_frame_equal(ds_result, pd_result)
 
     def test_str_wrap(self):
         """str.wrap wraps text at given width."""
@@ -534,7 +534,7 @@ class TestComplexApplyTransform:
         pd_result = pd_df.transform([np.sqrt, np.exp])
         ds_result = ds_df.transform([np.sqrt, np.exp])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transform_dict_of_functions(self):
         """transform with dict mapping columns to functions."""
@@ -544,7 +544,7 @@ class TestComplexApplyTransform:
         pd_result = pd_df.transform({'A': np.sqrt, 'B': lambda x: x * 2})
         ds_result = ds_df.transform({'A': np.sqrt, 'B': lambda x: x * 2})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestResampleOperations:
@@ -581,7 +581,7 @@ class TestResampleOperations:
         pd_result = pd_df.resample('4h').agg({'A': 'sum', 'B': 'mean'})
         ds_result = ds_df.resample('4h').agg({'A': 'sum', 'B': 'mean'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_resample_first_last(self):
         """resample with first and last."""
@@ -650,7 +650,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe()
         ds_result = ds_df.describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_percentiles(self):
         """describe with custom percentiles."""
@@ -660,7 +660,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe(percentiles=[0.1, 0.5, 0.9])
         ds_result = ds_df.describe(percentiles=[0.1, 0.5, 0.9])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_include_all(self):
         """describe with include='all'."""
@@ -670,7 +670,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe(include='all')
         ds_result = ds_df.describe(include='all')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_exclude(self):
         """describe with exclude parameter."""
@@ -680,7 +680,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe(exclude=['object'])
         ds_result = ds_df.describe(exclude=['object'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestPopMethod:
@@ -756,7 +756,7 @@ class TestCorrCov:
         pd_result = pd_df.corr()
         ds_result = ds_df.corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_corr_spearman(self):
         """corr with spearman method."""
@@ -766,7 +766,7 @@ class TestCorrCov:
         pd_result = pd_df.corr(method='spearman')
         ds_result = ds_df.corr(method='spearman')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cov_default(self):
         """cov computes covariance matrix."""
@@ -776,7 +776,7 @@ class TestCorrCov:
         pd_result = pd_df.cov()
         ds_result = ds_df.cov()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_corrwith(self):
         """corrwith computes correlation with another DataFrame."""
@@ -788,7 +788,7 @@ class TestCorrCov:
         pd_result = pd_df1.corrwith(pd_df2)
         ds_result = ds_df1.corrwith(ds_df2)
 
-        assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
+        assert_series_equal(ds_result, pd_result, check_names=False)
 
 
 class TestNuniqueValueCounts:
@@ -830,7 +830,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_result.sort_index()
         ds_result = ds_result.sort_index()
 
-        assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
+        assert_series_equal(ds_result, pd_result, check_names=False)
 
     def test_value_counts_subset(self):
         """value_counts with subset of columns."""
@@ -843,7 +843,7 @@ class TestNuniqueValueCounts:
         pd_result = pd_result.sort_index()
         ds_result = ds_result.sort_index()
 
-        assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
+        assert_series_equal(ds_result, pd_result, check_names=False)
 
 
 if __name__ == '__main__':

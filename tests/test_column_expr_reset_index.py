@@ -35,7 +35,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].sum().reset_index(name='total')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_default(self):
         """Test groupby().agg().reset_index() without args."""
@@ -47,7 +47,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].sum().reset_index()
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_drop_true(self):
         """Test reset_index(drop=True) returns Series-like object."""
@@ -73,7 +73,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].mean().reset_index(name='avg_value')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_count(self):
         """Test reset_index with count aggregation."""
@@ -85,7 +85,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].count().reset_index(name='num_items')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_multi_groupby(self):
         """Test reset_index with multi-column groupby."""
@@ -97,7 +97,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby(['category', 'subcategory'])['value'].sum().reset_index(name='total')
         
         # Compare (row order may differ for multi-column groupby)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_reset_index_preserves_series_name(self):
         """Test that reset_index() without name arg uses series name."""
@@ -113,7 +113,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         
         # Check column names match
         self.assertEqual(list(ds_result.columns), expected_columns)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_inplace_raises(self):
         """Test that inplace=True raises ValueError."""
@@ -135,7 +135,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].max().reset_index(name='max_val')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_min_aggregation(self):
         """Test reset_index with min aggregation."""
@@ -147,7 +147,7 @@ class TestColumnExprResetIndex(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].min().reset_index(name='min_val')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestColumnExprResetIndexEdgeCases(unittest.TestCase):
@@ -180,7 +180,7 @@ class TestColumnExprResetIndexEdgeCases(unittest.TestCase):
         ds_result = ds.groupby('category')['value'].sum().reset_index(name='total')
         
         # Compare
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @unittest.skip("Known limitation: chDB handles NaN in groupby differently than pandas (includes NaN groups)")
     def test_reset_index_with_nan_in_groupby(self):
@@ -203,7 +203,7 @@ class TestColumnExprResetIndexEdgeCases(unittest.TestCase):
         
         # Compare (NaN handling may differ, so just check non-NaN results)
         # Filter to only non-NaN categories for comparison
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 if __name__ == '__main__':

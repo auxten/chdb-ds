@@ -148,7 +148,7 @@ class TestChainedAccessorOperations:
         
         pd.testing.assert_series_equal(ds_result.reset_index(drop=True), 
                                        pd_result.reset_index(drop=True), 
-                                       check_names=False, check_dtype=False)
+                                       check_names=False)
 
 
 class TestGroupByNamedAggregation:
@@ -178,9 +178,7 @@ class TestGroupByNamedAggregation:
         
         pd.testing.assert_frame_equal(
             ds_result._get_df().sort_index(), 
-            pd_result.sort_index(), 
-            check_dtype=False
-        )
+            pd_result.sort_index())
 
     def test_named_agg_with_as_index_false(self):
         """Named aggregation with as_index=False."""
@@ -206,9 +204,7 @@ class TestGroupByNamedAggregation:
         
         pd.testing.assert_frame_equal(
             ds_result._get_df().sort_values('A').reset_index(drop=True),
-            pd_result.sort_values('A').reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.sort_values('A').reset_index(drop=True))
 
 
 class TestSeriesOperationsViaAssign:
@@ -225,7 +221,7 @@ class TestSeriesOperationsViaAssign:
         
         pd.testing.assert_series_equal(ds_result.reset_index(drop=True), 
                                        pd_result.reset_index(drop=True),
-                                       check_names=False, check_dtype=False)
+                                       check_names=False)
 
     def test_series_between(self):
         """Series.between operation."""
@@ -252,7 +248,7 @@ class TestSeriesOperationsViaAssign:
         
         pd.testing.assert_series_equal(ds_result.reset_index(drop=True), 
                                        pd_result.reset_index(drop=True),
-                                       check_names=False, check_dtype=False)
+                                       check_names=False)
 
 
 class TestReplaceOperations:
@@ -276,7 +272,7 @@ class TestReplaceOperations:
         pd_result = pd_df.replace([1, 3, 5], [10, 30, 50])
         ds_result = ds_df.replace([1, 3, 5], [10, 30, 50])
         
-        pd.testing.assert_frame_equal(ds_result._get_df(), pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result._get_df(), pd_result)
 
 
 class TestWindowFunctions:
@@ -293,7 +289,7 @@ class TestWindowFunctions:
         assert isinstance(ds_result, pd.Series)
         pd.testing.assert_series_equal(ds_result.reset_index(drop=True), 
                                        pd_result.reset_index(drop=True),
-                                       check_names=False, check_dtype=False)
+                                       check_names=False)
 
     def test_expanding_returns_pandas(self):
         """expanding operations return pandas Series."""
@@ -306,7 +302,7 @@ class TestWindowFunctions:
         assert isinstance(ds_result, pd.Series)
         pd.testing.assert_series_equal(ds_result.reset_index(drop=True), 
                                        pd_result.reset_index(drop=True),
-                                       check_names=False, check_dtype=False)
+                                       check_names=False)
 
 
 class TestArithmeticOperations:
@@ -356,7 +352,7 @@ class TestAdditionalEdgeCases:
         pd_result = pd_df.assign(C=lambda x: x['A'] + x['B'])
         ds_result = ds_df.assign(C=lambda x: x['A'] + x['B'])
         
-        pd.testing.assert_frame_equal(ds_result._get_df(), pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result._get_df(), pd_result)
 
     def test_column_selection_then_sum(self):
         """Multiple column selection then sum."""
@@ -367,7 +363,7 @@ class TestAdditionalEdgeCases:
         ds_result = ds_df[['A', 'B']].sum()
         
         assert isinstance(ds_result, pd.Series)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)
 
     def test_empty_dataframe_sum(self):
         """Empty DataFrame sum."""
@@ -378,4 +374,4 @@ class TestAdditionalEdgeCases:
         ds_result = ds_df.sum()
         
         assert isinstance(ds_result, pd.Series)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_result, pd_result, check_names=False)

@@ -313,7 +313,7 @@ class TestRollingExpandingCombined:
         ds_result = ds_df
 
         # check_dtype=False because chDB adds timezone to datetime columns
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_expanding_mean_with_filter(self):
         """Test expanding mean followed by filter."""
@@ -327,7 +327,7 @@ class TestRollingExpandingCombined:
         ds_df = ds_df.assign(expanding_mean=ds_df['value'].expanding().mean())
         ds_result = ds_df[ds_df['expanding_mean'] > 3]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rolling_on_multiple_columns(self):
         """Test rolling calculations on multiple columns."""
@@ -599,7 +599,7 @@ class TestEdgeCasesAndBoundaries:
         ds_df = ds_df.fillna({'B': 0})
         ds_result = ds_df
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_very_large_number_operations(self):
         """Test operations with very large numbers."""

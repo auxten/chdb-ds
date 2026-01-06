@@ -206,7 +206,7 @@ class TestLongMixedOperationChains:
         ds_result = ds_result[ds_result['value'] > 50]
         ds_result = ds_result.sort_values('weight', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_assign_dropna_fillna_chain(self):
         """Test assign -> dropna -> fillna chain."""
@@ -288,7 +288,7 @@ class TestMultiJoinOperations:
         ds_result = ds_result.groupby('name').agg({'amount': 'sum', 'product': 'count'}).reset_index()
         ds_result = ds_result.sort_values('amount', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_join_filter_assign_groupby(self):
         """Test join -> filter -> assign -> groupby chain."""
@@ -311,7 +311,7 @@ class TestMultiJoinOperations:
         ds_result = ds_result.assign(total=ds_result['val1'] + ds_result['val2'])
         ds_result = ds_result.groupby('cat').agg({'total': 'sum'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_left_join_fillna_filter(self):
         """Test left join with missing values, then fillna and filter."""
@@ -389,7 +389,7 @@ class TestConcatOperationChains:
         ds_result = ds_result[ds_result['val'] > 25]
         ds_result = ds_result.groupby('src').agg({'val': 'sum'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_concat_drop_duplicates_sort(self):
         """Test concat -> drop_duplicates -> sort chain."""
@@ -449,7 +449,7 @@ class TestComplexAggregationChains:
         ds_result = ds_result[ds_result['value_sum'] > 500]
         ds_result = ds_result.sort_values('value_mean', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nested_groupby_operations(self):
         """Test nested groupby operations (groupby result -> groupby)."""
@@ -473,7 +473,7 @@ class TestComplexAggregationChains:
         # Second groupby on the result
         ds_result = ds_result.groupby('region').agg({'sales': 'sum'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -500,7 +500,7 @@ class TestTypeCoercionChains:
         ds_result = ds_result[ds_result['ratio'] > 3.0]
         ds_result = ds_result.assign(ratio_squared=ds_result['ratio'] ** 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mixed_type_arithmetic(self):
         """Test arithmetic with mixed int and float types."""
@@ -522,7 +522,7 @@ class TestTypeCoercionChains:
         ds_result = ds_result[ds_result['sum_col'] > 5]
         ds_result = ds_result.assign(normalized=ds_result['product'] / ds_result['sum_col'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -675,7 +675,7 @@ class TestEdgeCasesInChains:
         ds_result = ds_result.groupby('cat').agg({'d': 'sum'}).reset_index()
         ds_result = ds_result.sort_values('d', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -718,7 +718,7 @@ class TestWindowFunctionChains:
         ds_result = ds_df.assign(cumsum_val=ds_df['value'].cumsum())
         ds_result = ds_result.groupby('group').agg({'cumsum_val': 'max'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_shift_diff_chain(self):
         """Test shift and diff operations in chain."""
@@ -783,7 +783,7 @@ class TestApplyTransformChains:
         )
         ds_result = ds_result[ds_result['normalized'] > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -808,7 +808,7 @@ class TestNumericPrecisionChains:
         ds_result = ds_df.assign(b=ds_df['a'] * 10, c=ds_df['a'] * 100, d=ds_df['a'] * 1000)
         ds_result = ds_result.assign(ratio=ds_result['d'] / ds_result['b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_division_by_near_zero(self):
         """Test division with values near zero."""
@@ -884,4 +884,4 @@ class TestBooleanOperationChains:
         ds_result = ds_result[ds_result['a'] > 1]
 
         # check_dtype=False because chDB returns bool as uint8
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)

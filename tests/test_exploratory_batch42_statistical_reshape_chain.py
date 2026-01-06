@@ -53,7 +53,7 @@ class TestCorrelationCovarianceChains:
         })
         ds_result = ds_df.corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_corr_after_filter(self):
         """Correlation after filtering rows."""
@@ -73,7 +73,7 @@ class TestCorrelationCovarianceChains:
         })
         ds_result = ds_df[ds_df['flag']][['A', 'B', 'C']].corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_corr_with_nan(self):
         """Correlation with NaN values."""
@@ -91,7 +91,7 @@ class TestCorrelationCovarianceChains:
         })
         ds_result = ds_df.corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cov_basic(self):
         """Basic covariance matrix."""
@@ -109,7 +109,7 @@ class TestCorrelationCovarianceChains:
         })
         ds_result = ds_df.cov()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cov_after_dropna(self):
         """Covariance after dropping NA values."""
@@ -127,7 +127,7 @@ class TestCorrelationCovarianceChains:
         })
         ds_result = ds_df.dropna().cov()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_corrwith_series(self):
         """Correlation with a Series."""
@@ -172,7 +172,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df.rank()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rank_method_min(self):
         """Rank with method='min' for ties."""
@@ -188,7 +188,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df.rank(method='min')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rank_then_filter(self):
         """Rank followed by filter based on rank."""
@@ -208,7 +208,7 @@ class TestRankSkewKurtChains:
         ds_df_ranked['rank_A'] = ds_df['A'].rank()
         ds_result = ds_df_ranked[ds_df_ranked['rank_A'] <= 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rank_pct(self):
         """Rank with pct=True (percentile rank)."""
@@ -224,7 +224,7 @@ class TestRankSkewKurtChains:
         })
         ds_result = ds_df.rank(pct=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_skew_basic(self):
         """Basic skewness calculation."""
@@ -314,7 +314,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace(2, 99)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict(self):
         """Replace with dictionary mapping."""
@@ -330,7 +330,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace({'x': 'X', 'y': 'Y'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_then_filter(self):
         """Replace followed by filter."""
@@ -346,7 +346,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace(2, 99).query('A > 10')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_then_groupby_sum(self):
         """Replace followed by groupby aggregation."""
@@ -363,7 +363,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace(-1, 0).groupby('group')['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_list_to_value(self):
         """Replace list of values with single value."""
@@ -379,7 +379,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace([1, 2, 3], 0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_na(self):
         """Replace NA values."""
@@ -395,7 +395,7 @@ class TestReplaceTransformChains:
         })
         ds_result = ds_df.replace({np.nan: 0, None: 'missing'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -422,7 +422,7 @@ class TestTransposeAxisOperations:
         })
         ds_result = ds_df.T
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transpose_method(self):
         """Transpose using method."""
@@ -438,7 +438,7 @@ class TestTransposeAxisOperations:
         })
         ds_result = ds_df.transpose()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_integer_column_names
     def test_transpose_then_filter_columns(self):
@@ -462,7 +462,7 @@ class TestTransposeAxisOperations:
         })
         ds_result = ds_df.T[[0, 1]]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transpose_mixed_types(self):
         """Transpose with mixed column types."""
@@ -480,7 +480,7 @@ class TestTransposeAxisOperations:
         })
         ds_result = ds_df.T
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -505,7 +505,7 @@ class TestModeOperations:
         })
         ds_result = ds_df.mode()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mode_multimodal(self):
         """Mode with multiple modes (multimodal data)."""
@@ -521,7 +521,7 @@ class TestModeOperations:
         })
         ds_result = ds_df.mode()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mode_with_na(self):
         """Mode with NA values."""
@@ -537,7 +537,7 @@ class TestModeOperations:
         })
         ds_result = ds_df.mode(dropna=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mode_string_column(self):
         """Mode with string column."""
@@ -553,7 +553,7 @@ class TestModeOperations:
         })
         ds_result = ds_df.mode()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -578,7 +578,7 @@ class TestInterpolateOperations:
         })
         ds_result = ds_df.interpolate(method='linear')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_interpolate_then_filter(self):
         """Interpolate followed by filter."""
@@ -594,7 +594,7 @@ class TestInterpolateOperations:
         })
         ds_result = ds_df.interpolate().query('A > 2')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_interpolate_ffill(self):
         """Forward fill interpolation."""
@@ -610,7 +610,7 @@ class TestInterpolateOperations:
         })
         ds_result = ds_df.interpolate(method='ffill')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_interpolate_limit(self):
         """Interpolation with limit parameter."""
@@ -626,7 +626,7 @@ class TestInterpolateOperations:
         })
         ds_result = ds_df.interpolate(method='linear', limit=1)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -655,7 +655,7 @@ class TestSelectDtypesOperations:
         })
         ds_result = ds_df.select_dtypes(include='number')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_dtypes_exclude_object(self):
         """Exclude object (string) columns."""
@@ -673,7 +673,7 @@ class TestSelectDtypesOperations:
         })
         ds_result = ds_df.select_dtypes(exclude='object')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_dtypes_include_list(self):
         """Select with list of types."""
@@ -693,7 +693,7 @@ class TestSelectDtypesOperations:
         })
         ds_result = ds_df.select_dtypes(include=['int64', 'float64'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_dtypes_then_operation(self):
         """Select dtypes then perform operation."""
@@ -759,7 +759,7 @@ class TestXsOperations:
         }, index=index)
         ds_result = ds_df.xs('bar')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_xs_level(self):
         """xs with specific level."""
@@ -782,7 +782,7 @@ class TestXsOperations:
         }, index=index)
         ds_result = ds_df.xs('one', level='second')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -879,7 +879,7 @@ class TestComplexNumericReductionChains:
         })
         ds_result = ds_df.describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_after_filter(self):
         """Describe after filtering."""
@@ -895,7 +895,7 @@ class TestComplexNumericReductionChains:
         })
         ds_result = ds_df[ds_df['flag']][['value']].describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_include_all(self):
         """Describe with include='all' for mixed types."""
@@ -911,7 +911,7 @@ class TestComplexNumericReductionChains:
         })
         ds_result = ds_df.describe(include='all')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -936,7 +936,7 @@ class TestEdgeCasesEmptySingleRow:
         })
         ds_result = ds_df.corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rank_empty_df(self):
         """Rank on empty DataFrame."""
@@ -946,7 +946,7 @@ class TestEdgeCasesEmptySingleRow:
         ds_df = DataStore({'A': [], 'B': []})
         ds_result = ds_df.rank()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mode_empty_df(self):
         """Mode on empty DataFrame."""
@@ -956,7 +956,7 @@ class TestEdgeCasesEmptySingleRow:
         ds_df = DataStore({'A': [], 'B': []})
         ds_result = ds_df.mode()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transpose_single_row(self):
         """Transpose single row DataFrame."""
@@ -974,7 +974,7 @@ class TestEdgeCasesEmptySingleRow:
         })
         ds_result = ds_df.T
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_interpolate_all_na(self):
         """Interpolate column with all NA values."""
@@ -990,7 +990,7 @@ class TestEdgeCasesEmptySingleRow:
         })
         ds_result = ds_df.interpolate()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_empty_df(self):
         """Describe on empty DataFrame."""
@@ -1000,7 +1000,7 @@ class TestEdgeCasesEmptySingleRow:
         ds_df = DataStore({'A': [], 'B': []})
         ds_result = ds_df.describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -1037,7 +1037,7 @@ class TestComplexChainOperations:
                      .reset_index()
                      .sort_values('value'))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_rank_filter(self):
         """Chain: replace -> rank -> filter."""
@@ -1057,7 +1057,7 @@ class TestComplexChainOperations:
         ds_df_processed['rank'] = ds_df_processed['value'].rank()
         ds_result = ds_df_processed[ds_df_processed['rank'] <= 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_dtypes_corr(self):
         """Chain: select_dtypes -> corr."""
@@ -1075,7 +1075,7 @@ class TestComplexChainOperations:
         })
         ds_result = ds_df.select_dtypes(include='number').corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_interpolate_describe(self):
         """Chain: dropna on subset -> interpolate remaining -> describe."""
@@ -1093,7 +1093,7 @@ class TestComplexChainOperations:
         })
         ds_result = ds_df.dropna(subset=['C']).interpolate().describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_assign_multiple_then_groupby(self):
         """Assign multiple columns then groupby.
@@ -1123,7 +1123,7 @@ class TestComplexChainOperations:
                      .sum()
                      .reset_index())
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -1180,7 +1180,7 @@ class TestProductOperations:
         })
         ds_result = ds_df.cumprod()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cumprod_then_filter(self):
         """Cumulative product then filter."""
@@ -1200,7 +1200,7 @@ class TestProductOperations:
         ds_df_cp['cumprod_A'] = ds_df['A'].cumprod()
         ds_result = ds_df_cp[ds_df_cp['cumprod_A'] <= 6]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

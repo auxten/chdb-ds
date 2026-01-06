@@ -695,7 +695,6 @@ def assert_datastore_equals_pandas_chdb_compat(
         pd_result,
         check_column_order=check_column_order,
         check_row_order=check_row_order,
-        check_dtype=False,
         rtol=rtol,
         atol=atol,
         msg=msg,

@@ -21,6 +21,7 @@ sys.path.insert(0, '/Users/auxten/Codes/go/src/github.com/auxten/chdb-ds')
 
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas
+from tests.xfail_markers import chdb_nat_returns_nullable_int
 
 
 class TestDateTimeBasicProperties:
@@ -47,7 +48,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.year
         ds_result = ds_df['ts'].dt.year
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_month(self, df_dates):
         """Test dt.month extraction."""
@@ -57,7 +58,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.month
         ds_result = ds_df['ts'].dt.month
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_day(self, df_dates):
         """Test dt.day extraction."""
@@ -67,7 +68,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.day
         ds_result = ds_df['ts'].dt.day
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_hour(self, df_dates):
         """Test dt.hour extraction."""
@@ -77,7 +78,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.hour
         ds_result = ds_df['ts'].dt.hour
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_minute(self, df_dates):
         """Test dt.minute extraction."""
@@ -87,7 +88,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.minute
         ds_result = ds_df['ts'].dt.minute
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_second(self, df_dates):
         """Test dt.second extraction."""
@@ -97,7 +98,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.second
         ds_result = ds_df['ts'].dt.second
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_quarter(self, df_dates):
         """Test dt.quarter extraction."""
@@ -107,7 +108,7 @@ class TestDateTimeBasicProperties:
         pd_result = pd_df['ts'].dt.quarter
         ds_result = ds_df['ts'].dt.quarter
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestDayOfWeekAlignment:
@@ -146,7 +147,7 @@ class TestDayOfWeekAlignment:
         
         # pandas: Monday=0, Tuesday=1, ..., Sunday=6
         assert list(pd_result) == [0, 1, 2, 3, 4, 5, 6]
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_weekday(self, df_weekdays):
         """Test dt.weekday (alias for dayofweek)."""
@@ -156,7 +157,7 @@ class TestDayOfWeekAlignment:
         pd_result = pd_df['date'].dt.weekday
         ds_result = ds_df['date'].dt.weekday
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_day_of_week(self, df_weekdays):
         """Test dt.day_of_week (alias for dayofweek)."""
@@ -166,7 +167,7 @@ class TestDayOfWeekAlignment:
         pd_result = pd_df['date'].dt.day_of_week
         ds_result = ds_df['date'].dt.day_of_week
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestDayOfYear:
@@ -197,7 +198,7 @@ class TestDayOfYear:
         expected = [1, 60, 366, 365, 186]
         assert list(pd_result) == expected
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_day_of_year(self, df_doy):
         """Test dt.day_of_year alias."""
@@ -207,7 +208,7 @@ class TestDayOfYear:
         pd_result = pd_df['date'].dt.day_of_year
         ds_result = ds_df['date'].dt.day_of_year
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestWeekNumber:
@@ -278,7 +279,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_month_start
         ds_result = ds_df['date'].dt.is_month_start
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_month_end(self, df_boundaries):
         """Test dt.is_month_end property."""
@@ -288,7 +289,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_month_end
         ds_result = ds_df['date'].dt.is_month_end
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_quarter_start(self, df_boundaries):
         """Test dt.is_quarter_start property."""
@@ -298,7 +299,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_quarter_start
         ds_result = ds_df['date'].dt.is_quarter_start
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_quarter_end(self, df_boundaries):
         """Test dt.is_quarter_end property."""
@@ -308,7 +309,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_quarter_end
         ds_result = ds_df['date'].dt.is_quarter_end
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_year_start(self, df_boundaries):
         """Test dt.is_year_start property."""
@@ -318,7 +319,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_year_start
         ds_result = ds_df['date'].dt.is_year_start
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_year_end(self, df_boundaries):
         """Test dt.is_year_end property."""
@@ -328,7 +329,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_year_end
         ds_result = ds_df['date'].dt.is_year_end
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_leap_year(self, df_boundaries):
         """Test dt.is_leap_year property."""
@@ -338,7 +339,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.is_leap_year
         ds_result = ds_df['date'].dt.is_leap_year
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_days_in_month(self, df_boundaries):
         """Test dt.days_in_month property."""
@@ -348,7 +349,7 @@ class TestBooleanDateProperties:
         pd_result = pd_df['date'].dt.days_in_month
         ds_result = ds_df['date'].dt.days_in_month
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestDateTimeMethods:
@@ -508,7 +509,7 @@ class TestSubSecondPrecision:
         pd_result = pd_df['ts'].dt.microsecond
         ds_result = ds_df['ts'].dt.microsecond
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_nanosecond(self, df_subsec):
         """Test dt.nanosecond extraction."""
@@ -518,7 +519,7 @@ class TestSubSecondPrecision:
         pd_result = pd_df['ts'].dt.nanosecond
         ds_result = ds_df['ts'].dt.nanosecond
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestNaTHandling:
@@ -537,6 +538,7 @@ class TestNaTHandling:
             ])
         })
     
+    @chdb_nat_returns_nullable_int
     def test_dt_year_with_nat(self, df_with_nat):
         """Test dt.year with NaT values."""
         pd_df = df_with_nat.copy()
@@ -546,8 +548,9 @@ class TestNaTHandling:
         ds_result = ds_df['ts'].dt.year
         
         # NaT should become NaN
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
+    @chdb_nat_returns_nullable_int
     def test_dt_month_with_nat(self, df_with_nat):
         """Test dt.month with NaT values."""
         pd_df = df_with_nat.copy()
@@ -556,8 +559,9 @@ class TestNaTHandling:
         pd_result = pd_df['ts'].dt.month
         ds_result = ds_df['ts'].dt.month
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
+    @chdb_nat_returns_nullable_int
     def test_dt_dayofweek_with_nat(self, df_with_nat):
         """Test dt.dayofweek with NaT values."""
         pd_df = df_with_nat.copy()
@@ -566,7 +570,7 @@ class TestNaTHandling:
         pd_result = pd_df['ts'].dt.dayofweek
         ds_result = ds_df['ts'].dt.dayofweek
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_dt_is_month_start_with_nat(self, df_with_nat):
         """Test dt.is_month_start with NaT values."""
@@ -577,7 +581,7 @@ class TestNaTHandling:
         ds_result = ds_df['ts'].dt.is_month_start
         
         # NaT should become False or NaN depending on pandas version
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestDateTimeChaining:
@@ -602,7 +606,7 @@ class TestDateTimeChaining:
         pd_result = pd_df[pd_df['sale_date'].dt.month == 2]
         ds_result = ds_df[ds_df['sale_date'].dt.month == 2]
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_filter_by_dayofweek(self, df_sales):
         """Test filtering by dt.dayofweek (weekdays only)."""
@@ -613,7 +617,7 @@ class TestDateTimeChaining:
         pd_result = pd_df[pd_df['sale_date'].dt.dayofweek < 5]
         ds_result = ds_df[ds_df['sale_date'].dt.dayofweek < 5]
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_groupby_month(self, df_sales):
         """Test groupby with dt.month."""
@@ -628,7 +632,7 @@ class TestDateTimeChaining:
         ds_result = ds_df.assign(month=ds_df['sale_date'].dt.month)
         ds_result = ds_result.groupby('month')['amount'].sum().reset_index()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_assign_multiple_dt_columns(self, df_sales):
         """Test assigning multiple datetime-derived columns."""
@@ -647,7 +651,7 @@ class TestDateTimeChaining:
             day=ds_df['sale_date'].dt.day,
         )
         
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
     
     def test_sort_by_dayofyear(self, df_sales):
         """Test sorting by dt.dayofyear."""
@@ -662,7 +666,7 @@ class TestDateTimeChaining:
         
         # Reset index for comparison
         pd_result = pd_result.reset_index(drop=True)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestDateTimeEdgeCases:
@@ -687,8 +691,9 @@ class TestDateTimeEdgeCases:
         pd_result = pd_df['ts'].dt.year
         ds_result = ds_df['ts'].dt.year
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
+    @chdb_nat_returns_nullable_int
     def test_all_nat_dt(self):
         """Test dt accessor on all-NaT column."""
         pd_df = pd.DataFrame({'ts': pd.to_datetime([pd.NaT, pd.NaT, pd.NaT])})
@@ -697,7 +702,7 @@ class TestDateTimeEdgeCases:
         pd_result = pd_df['ts'].dt.year
         ds_result = ds_df['ts'].dt.year
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_century_boundary(self):
         """Test dt accessor on century boundary dates."""
@@ -714,7 +719,7 @@ class TestDateTimeEdgeCases:
         ds_result = ds_df['ts'].dt.year
         
         assert list(pd_result) == [1999, 2000, 2000]
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_leap_year_feb29(self):
         """Test dt operations on Feb 29 (leap year)."""
@@ -730,13 +735,13 @@ class TestDateTimeEdgeCases:
         pd_day = pd_df['ts'].dt.day
         ds_day = ds_df['ts'].dt.day
         assert list(pd_day) == [29, 29]
-        assert_datastore_equals_pandas(ds_day, pd_day, check_dtype=False)
+        assert_datastore_equals_pandas(ds_day, pd_day)
         
         # Test dayofyear
         pd_doy = pd_df['ts'].dt.dayofyear
         ds_doy = ds_df['ts'].dt.dayofyear
         assert list(pd_doy) == [60, 60]  # Feb 29 is day 60
-        assert_datastore_equals_pandas(ds_doy, pd_doy, check_dtype=False)
+        assert_datastore_equals_pandas(ds_doy, pd_doy)
 
 
 class TestTimezoneOperations:

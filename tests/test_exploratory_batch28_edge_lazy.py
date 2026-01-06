@@ -270,7 +270,7 @@ class TestTypeCoercion:
         ds = DataStore({'a': [1, 2, 3], 'b': [1.5, 2.5, 3.5]})
         ds['c'] = ds['a'] + ds['b']
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_int_division_produces_float(self):
         """Integer division should produce float."""
@@ -280,7 +280,7 @@ class TestTypeCoercion:
         ds = DataStore({'a': [1, 2, 3], 'b': [2, 2, 2]})
         ds['c'] = ds['a'] / ds['b']
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_string_int_comparison(self):
         """Filter string column, arithmetic on int column."""

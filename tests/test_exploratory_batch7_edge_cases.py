@@ -61,7 +61,7 @@ class TestEmptyDataFrameOperations:
         ds_result = ds[ds['a'] > 100]
 
         assert len(ds_result._execute()) == 0
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_groupby_sum(self):
         """Groupby sum on empty DataFrame."""
@@ -103,35 +103,35 @@ class TestEmptyDataFrameOperations:
         pd_result = self.empty_df.head(5)
         ds_result = self.empty_ds.head(5)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_sort_values(self):
         """sort_values on empty DataFrame."""
         pd_result = self.empty_df.sort_values('a')
         ds_result = self.empty_ds.sort_values('a')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_dropna(self):
         """dropna on empty DataFrame."""
         pd_result = self.empty_df.dropna()
         ds_result = self.empty_ds.dropna()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_fillna(self):
         """fillna on empty DataFrame."""
         pd_result = self.empty_df.fillna(0)
         ds_result = self.empty_ds.fillna(0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_column_selection(self):
         """Column selection on empty DataFrame."""
         pd_result = self.empty_df[['a', 'b']]
         ds_result = self.empty_ds[['a', 'b']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_returns_empty_then_aggregate(self):
         """Filter that returns empty, then aggregate."""
@@ -156,7 +156,7 @@ class TestEmptyDataFrameOperations:
         pd_result = self.empty_df.drop_duplicates()
         ds_result = self.empty_ds.drop_duplicates()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # ============================================================================
@@ -187,35 +187,35 @@ class TestSingleRowOperations:
         pd_result = self.single_df.head(10)
         ds_result = self.single_ds.head(10)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_tail(self):
         """tail(n) where n > row count."""
         pd_result = self.single_df.tail(10)
         ds_result = self.single_ds.tail(10)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_nlargest(self):
         """nlargest where n > row count."""
         pd_result = self.single_df.nlargest(5, 'a')
         ds_result = self.single_ds.nlargest(5, 'a')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_nsmallest(self):
         """nsmallest where n > row count."""
         pd_result = self.single_df.nsmallest(5, 'a')
         ds_result = self.single_ds.nsmallest(5, 'a')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_sample(self):
         """sample on single row."""
         pd_result = self.single_df.sample(frac=1.0, random_state=42)
         ds_result = self.single_ds.sample(frac=1.0, random_state=42)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_rank(self):
         """rank on single row."""
@@ -249,21 +249,21 @@ class TestNullHandlingEdgeCases:
         pd_result = self.df_with_nan[self.df_with_nan['a'] > 2]
         ds_result = self.ds_with_nan[self.ds_with_nan['a'] > 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_filter(self):
         """Filter using isna()."""
         pd_result = self.df_with_nan[self.df_with_nan['a'].isna()]
         ds_result = self.ds_with_nan[self.ds_with_nan['a'].isna()]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_notna_filter(self):
         """Filter using notna()."""
         pd_result = self.df_with_nan[self.df_with_nan['a'].notna()]
         ds_result = self.ds_with_nan[self.ds_with_nan['a'].notna()]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_any(self):
         """dropna with how='any'."""
@@ -280,21 +280,21 @@ class TestNullHandlingEdgeCases:
         pd_result = df.dropna(how='all')
         ds_result = ds.dropna(how='all')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_subset(self):
         """dropna with subset parameter."""
         pd_result = self.df_with_nan.dropna(subset=['a'])
         ds_result = self.ds_with_nan.dropna(subset=['a'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_scalar(self):
         """fillna with scalar value."""
         pd_result = self.df_with_nan.fillna(0)
         ds_result = self.ds_with_nan.fillna(0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_dict(self):
         """fillna with dict values per column."""
@@ -302,7 +302,7 @@ class TestNullHandlingEdgeCases:
         pd_result = self.df_with_nan.fillna(fill_values)
         ds_result = self.ds_with_nan.fillna(fill_values)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sum_with_nan(self):
         """Sum column with NaN values."""
@@ -381,7 +381,7 @@ class TestColumnSelectionEdgeCases:
         ds_result = self.ds[['a']]
 
         assert isinstance(ds_result._execute(), pd.DataFrame)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_single_column_as_string(self):
         """Select single column using string returns Series-like."""
@@ -393,8 +393,7 @@ class TestColumnSelectionEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
-        )
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_select_columns_in_different_order(self):
         """Select columns in different order than original."""
@@ -402,7 +401,7 @@ class TestColumnSelectionEdgeCases:
         ds_result = self.ds[['c', 'a', 'b']]
 
         assert list(ds_result._execute().columns) == ['c', 'a', 'b']
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_duplicate_column_rename
     def test_select_duplicate_columns(self):
@@ -410,14 +409,14 @@ class TestColumnSelectionEdgeCases:
         pd_result = self.df[['a', 'a', 'b']]
         ds_result = self.ds[['a', 'a', 'b']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_all_columns_explicitly(self):
         """Select all columns explicitly by name."""
         pd_result = self.df[['a', 'b', 'c']]
         ds_result = self.ds[['a', 'b', 'c']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_column_with_space_in_name(self):
         """Select column with space in name."""
@@ -427,7 +426,7 @@ class TestColumnSelectionEdgeCases:
         pd_result = df[['col with space']]
         ds_result = ds[['col with space']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_column_with_special_chars(self):
         """Select column with special characters."""
@@ -437,7 +436,7 @@ class TestColumnSelectionEdgeCases:
         pd_result = df[['col-with-dash', 'col_underscore']]
         ds_result = ds[['col-with-dash', 'col_underscore']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # ============================================================================
@@ -596,8 +595,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
-        )
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_float_precision(self):
         """Float precision in operations."""
@@ -637,8 +635,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
-        )
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
     def test_power_operation(self):
         """Power/exponent operation."""
@@ -650,8 +647,7 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False, check_dtype=False
-        )
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
 
 
 # ============================================================================
@@ -724,28 +720,28 @@ class TestStringOperationsEdgeCases:
         pd_result = self.df[self.df['text'].str.contains('o', na=False)]
         ds_result = self.ds[self.ds['text'].str.contains('o', na=False)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_startswith(self):
         """String startswith."""
         pd_result = self.df[self.df['text'].str.startswith('H', na=False)]
         ds_result = self.ds[self.ds['text'].str.startswith('H', na=False)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_endswith(self):
         """String endswith."""
         pd_result = self.df[self.df['text'].str.endswith('d', na=False)]
         ds_result = self.ds[self.ds['text'].str.endswith('d', na=False)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_string_handling(self):
         """Operations on empty strings."""
         pd_result = self.df[self.df['text'] == '']
         ds_result = self.ds[self.ds['text'] == '']
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # ============================================================================
@@ -853,7 +849,7 @@ class TestSliceEdgeCases:
         pd_result = self.df.head(-2)
         ds_result = self.ds.head(-2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_tail_zero(self):
         """tail(0) should return empty DataFrame."""
@@ -867,28 +863,28 @@ class TestSliceEdgeCases:
         pd_result = self.df.tail(-2)
         ds_result = self.ds.tail(-2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_slice_beyond_length(self):
         """Slice beyond DataFrame length."""
         pd_result = self.df[5:100]
         ds_result = self.ds[5:100]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_slice_with_step(self):
         """Slice with step parameter."""
         pd_result = self.df[::2]
         ds_result = self.ds[::2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_slice_negative_start(self):
         """Slice with negative start."""
         pd_result = self.df[-3:]
         ds_result = self.ds[-3:]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     # Negative head/tail now supported
     def test_slice_negative_end(self):
@@ -896,7 +892,7 @@ class TestSliceEdgeCases:
         pd_result = self.df[:-3]
         ds_result = self.ds[:-3]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # ============================================================================
@@ -917,28 +913,28 @@ class TestSortEdgeCases:
         pd_result = self.df.sort_values('a')
         ds_result = self.ds.sort_values('a')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_descending(self):
         """Sort descending."""
         pd_result = self.df.sort_values('a', ascending=False)
         ds_result = self.ds.sort_values('a', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_multiple_columns(self):
         """Sort by multiple columns."""
         pd_result = self.df.sort_values(['a', 'b'])
         ds_result = self.ds.sort_values(['a', 'b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_mixed_ascending(self):
         """Sort with mixed ascending/descending."""
         pd_result = self.df.sort_values(['a', 'b'], ascending=[True, False])
         ds_result = self.ds.sort_values(['a', 'b'], ascending=[True, False])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_with_null(self):
         """Sort column with NULL values."""
@@ -957,7 +953,7 @@ class TestSortEdgeCases:
         pd_result = self.df.sort_values('c')
         ds_result = self.ds.sort_values('c')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':
@@ -977,13 +973,13 @@ class TestNegativeHeadTail:
         """head(-3) should return all rows except the last 3."""
         pd_result = self.df.head(-3)
         ds_result = self.ds.head(-3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_tail_negative_basic(self):
         """tail(-3) should return all rows except the first 3."""
         pd_result = self.df.tail(-3)
         ds_result = self.ds.tail(-3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_head_negative_equals_length(self):
         """head(-n) where n equals length should return empty DataFrame."""
@@ -1017,25 +1013,25 @@ class TestNegativeHeadTail:
         """head(-1) should return all rows except the last one."""
         pd_result = self.df.head(-1)
         ds_result = self.ds.head(-1)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_tail_negative_one(self):
         """tail(-1) should return all rows except the first one."""
         pd_result = self.df.tail(-1)
         ds_result = self.ds.tail(-1)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_head_positive_still_works(self):
         """Ensure positive head() still works correctly."""
         pd_result = self.df.head(3)
         ds_result = self.ds.head(3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_tail_positive_still_works(self):
         """Ensure positive tail() still works correctly."""
         pd_result = self.df.tail(3)
         ds_result = self.ds.tail(3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_head_zero(self):
         """head(0) should return empty DataFrame."""
@@ -1049,14 +1045,14 @@ class TestNegativeHeadTail:
         # pandas: first get rows 0-6 (head(-3)), then last 3 of those
         pd_result = self.df.head(-3).tail(3)
         ds_result = self.ds.head(-3).tail(3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_tail_head_chain(self):
         """Test chaining tail and head operations."""
         # pandas: first get rows 3-9 (tail(-3)), then first 3 of those
         pd_result = self.df.tail(-3).head(3)
         ds_result = self.ds.tail(-3).head(3)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_head_negative_preserves_index(self):
         """head(-n) should preserve original index values."""

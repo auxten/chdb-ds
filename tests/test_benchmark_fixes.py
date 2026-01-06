@@ -233,7 +233,7 @@ class TestWhereMaskRowOrderPreservation:
             ds_result = ds_result.reset_index(drop=True)
 
             # Should match pandas exactly
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_where_variant_column_sort_raises_error(self):
         """Sorting by Variant column raises error (same as pandas with mixed types)."""
@@ -392,9 +392,7 @@ class TestGroupBySortParameter:
             ds_result = get_dataframe(ds_result)
 
             # Should be exactly equal
-            pd.testing.assert_frame_equal(
-                ds_result.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False
-            )
+            pd.testing.assert_frame_equal(ds_result.reset_index(drop=True), pd_result.reset_index(drop=True))
 
 
 class TestSortValuesStability:
@@ -431,7 +429,7 @@ class TestSortValuesStability:
             ds_result = ds_result.reset_index(drop=True)
 
             # Should be exactly equal with stable sort
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_combined_ops_filter_sort_head_matches_pandas(self):
         """Combined ops (filter+sort+head) should match pandas (was failing in benchmark)."""
@@ -467,7 +465,7 @@ class TestSortValuesStability:
             ds_result = ds_result.reset_index(drop=True)
 
             # Should be exactly equal
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_sort_with_duplicates_preserves_original_order(self):
         """When sort keys have duplicates, original row order should be preserved."""
@@ -531,7 +529,7 @@ class TestSortValuesStability:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestBenchmarkScenarios:
@@ -575,7 +573,7 @@ class TestBenchmarkScenarios:
             ds_result = ds_result.sort_values('category').reset_index(drop=True)
 
             # Should match
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+            pd.testing.assert_frame_equal(ds_result, pd_result, rtol=1e-5)
 
     def test_complex_pipeline_benchmark_scenario(self):
         """Complex pipeline scenario from benchmark."""
@@ -613,7 +611,7 @@ class TestBenchmarkScenarios:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_filter_groupby_sort_benchmark_scenario(self):
         """Filter+GroupBy+Sort scenario from benchmark."""
@@ -648,7 +646,7 @@ class TestBenchmarkScenarios:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+            pd.testing.assert_frame_equal(ds_result, pd_result, rtol=1e-5)
 
     def test_multi_filter_benchmark_scenario(self):
         """Multi-filter (4x) scenario from benchmark - was failing due to row order."""
@@ -688,7 +686,7 @@ class TestBenchmarkScenarios:
             ds_result = ds_result.reset_index(drop=True)
 
             # Row order and values must match
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_chain_five_filters_benchmark_scenario(self):
         """Chain 5 filters scenario from benchmark - was failing due to row order."""
@@ -725,7 +723,7 @@ class TestBenchmarkScenarios:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_pandas_style_multifilter_sort_head_benchmark_scenario(self):
         """Pandas-style: MultiFilter+Sort+Head scenario from benchmark."""
@@ -758,7 +756,7 @@ class TestBenchmarkScenarios:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_where_value_replace_benchmark_scenario(self):
         """Where (value replace) scenario from benchmark."""
@@ -981,7 +979,7 @@ class TestBoolColumnBehavior:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestMultiColumnSortWithDifferentAscending:
@@ -1012,7 +1010,7 @@ class TestMultiColumnSortWithDifferentAscending:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_sort_three_columns_mixed_ascending(self):
         """Test sort_values with three columns and mixed ascending values."""
@@ -1040,7 +1038,7 @@ class TestMultiColumnSortWithDifferentAscending:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_sort_with_filter_and_different_ascending(self):
         """Test sort_values with filter and different ascending per column."""
@@ -1071,7 +1069,7 @@ class TestMultiColumnSortWithDifferentAscending:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestStableSortWithFilter:
@@ -1147,12 +1145,12 @@ class TestStableSortWithFilter:
             pd_result = pd_result.reset_index(drop=True)
             ds_result = ds_result.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestBoolColumnWhereMaskFallback:
     """Tests for bool column where/mask behavior - always falls back to Pandas.
-    
+
     DataStore falls back to Pandas execution for ALL bool columns with numeric other values
     to ensure type correctness. SQL CASE WHEN converts numeric values to bool, which changes
     both dtype and values. Pandas preserves the actual values with object dtype.
@@ -1160,7 +1158,7 @@ class TestBoolColumnWhereMaskFallback:
 
     def test_where_bool_column_with_zero_falls_back_to_pandas(self):
         """Test that where() on bool column with other=0 falls back to Pandas.
-        
+
         DataStore always falls back to Pandas for bool columns with numeric other
         to ensure type correctness. Both dtype and values must match exactly.
         """
@@ -1187,13 +1185,13 @@ class TestBoolColumnWhereMaskFallback:
             # Both should have object dtype (DataStore falls back to Pandas)
             assert pd_result['bool_col'].dtype == object
             assert ds_result['bool_col'].dtype == object
-            
+
             # Values should match exactly
             np.testing.assert_array_equal(ds_result['bool_col'].values, pd_result['bool_col'].values)
 
     def test_mask_bool_column_falls_back_to_pandas(self):
         """Test that mask() on bool column with any numeric other falls back to Pandas.
-        
+
         DataStore always falls back to Pandas for bool columns with numeric other values
         to ensure type correctness.
         """

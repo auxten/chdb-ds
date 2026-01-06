@@ -105,7 +105,7 @@ class TestExplainSegmentedExecution(unittest.TestCase):
         pd_result = pd_df[numeric_cols]
         ds_result_selected = ds_result[numeric_cols]
         
-        assert_datastore_equals_pandas(ds_result_selected, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_selected, pd_result)
         
         # Verify row count matches
         self.assertEqual(len(ds_result), 3)  # Alice, Diana, Grace

@@ -142,7 +142,7 @@ class TestUpdateMethod:
         ds_df = DataStore(pd_df)
         ds_df.update(pd_other, overwrite=False)
         
-        assert_datastore_equals_pandas(ds_df, pd_df_copy, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df_copy)
     
     def test_update_with_datastore(self):
         """Test update with DataStore as argument."""
@@ -324,7 +324,7 @@ class TestMethodChaining:
                      .sum()
                      .reset_index())
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
     
     def test_multiple_assigns_in_chain(self):
         """Test multiple assign calls in chain."""
@@ -489,7 +489,7 @@ class TestEmptyDataFrameOperations:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds.concat([ds_df1, ds_df2], ignore_index=True)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_empty_df_sort_values(self):
         """Test sort_values on empty DataFrame."""
@@ -513,7 +513,7 @@ class TestSingleRowOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.groupby('a')['b'].sum().reset_index()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_single_row_rolling(self):
         """Test rolling on single-row DataFrame."""

@@ -40,7 +40,7 @@ from datastore.conditions import BinaryCondition
 from tests.test_utils import assert_datastore_equals_pandas
 
 
-def assert_dataframe_equal(ds_result, pd_result, check_dtype=False, msg=""):
+def assert_dataframe_equal(ds_result, pd_result, msg=""):
     """
     Assert two DataFrames are equal, ignoring index.
 

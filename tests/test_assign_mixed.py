@@ -40,9 +40,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_only_lambda(self, sample_data):
         """Test assign with only lambda expressions."""
@@ -58,9 +56,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_mixed_expr_and_lambda(self, sample_data):
         """Test assign with both SQL expression and lambda."""
@@ -82,9 +78,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_mixed_multiple_of_each(self, sample_data):
         """Test assign with multiple SQL expressions and multiple lambdas."""
@@ -110,9 +104,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_with_scalar_value(self, sample_data):
         """Test assign with scalar values (treated as pandas expression)."""
@@ -128,9 +120,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_mixed_expr_lambda_scalar(self, sample_data):
         """Test assign with SQL expression, lambda, and scalar mixed together."""
@@ -154,9 +144,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_preserves_original_columns(self, sample_data):
         """Test that assign preserves all original columns."""
@@ -192,9 +180,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_lambda_references_new_sql_column(self, sample_data):
         """Test that lambda can reference columns created by SQL expressions in same assign."""
@@ -217,9 +203,7 @@ class TestAssignMixed:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 if __name__ == '__main__':
@@ -260,9 +244,7 @@ class TestAssignWithColumnExpr:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_with_transform_mixed_with_sql_expr(self, sample_data):
         """Test assign mixing transform result with SQL expression.
@@ -291,7 +273,7 @@ class TestAssignWithColumnExpr:
         
         # Reorder ds columns to match pandas for comparison
         ds_df = ds_df[pd_df.columns]
-        pd.testing.assert_frame_equal(ds_df, pd_df, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_df, pd_df)
 
     def test_assign_with_transform_mixed_with_lambda(self, sample_data):
         """Test assign mixing transform result with lambda."""
@@ -313,9 +295,7 @@ class TestAssignWithColumnExpr:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_with_multiple_transforms(self, sample_data):
         """Test assign with multiple transform results."""
@@ -339,9 +319,7 @@ class TestAssignWithColumnExpr:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_assign_transform_chain_operations(self, sample_data):
         """Test chained assign with transforms."""
@@ -364,9 +342,7 @@ class TestAssignWithColumnExpr:
         assert ds_result.columns.tolist() == pd_result.columns.tolist()
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 class TestAssignThenFilter:
@@ -409,9 +385,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
-            pd_filtered.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_filtered.reset_index(drop=True))
 
     def test_assign_lambda_then_filter_on_new_column(self, sample_data):
         """Test: assign new column with lambda, then filter on that column."""
@@ -428,9 +402,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
-            pd_filtered.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_filtered.reset_index(drop=True))
 
     def test_assign_multiple_then_filter_on_last_column(self, sample_data):
         """Test: assign multiple columns, then filter on the last one."""
@@ -447,9 +419,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
-            pd_filtered.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_filtered.reset_index(drop=True))
 
     def test_chained_assign_then_filter(self, sample_data):
         """Test: chained assign().assign() then filter on first assigned column."""
@@ -466,9 +436,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
-            pd_filtered.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_filtered.reset_index(drop=True))
 
     def test_assign_then_filter_with_compound_condition(self, sample_data):
         """Test: assign then filter with AND/OR conditions using new column."""
@@ -485,9 +453,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_filtered._get_df().reset_index(drop=True),
-            pd_filtered.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_filtered.reset_index(drop=True))
 
     def test_assign_then_filter_then_assign(self, sample_data):
         """Test: assign -> filter -> assign chain."""
@@ -506,9 +472,7 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_filter_then_assign_then_filter_on_new_column(self, sample_data):
         """Test: filter -> assign -> filter (on new column) chain."""
@@ -527,6 +491,4 @@ class TestAssignThenFilter:
         # Compare
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))

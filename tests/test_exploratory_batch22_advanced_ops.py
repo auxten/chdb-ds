@@ -105,8 +105,7 @@ class TestGroupByPipe:
         pd.testing.assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            check_dtype=False,
-        )
+            )
 
 
 class TestIndexOperations:
@@ -241,7 +240,7 @@ class TestReplaceFillnaEdgeCases:
         ds_result = ds_df.fillna(2, downcast='infer')
 
         # Just check values match, dtype might differ
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict_with_nested(self):
         """replace with nested dict per column."""
@@ -721,8 +720,7 @@ class TestGroupByAdvanced:
         pd.testing.assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            check_dtype=False,
-        )
+            )
 
     @chdb_null_in_groupby
     def test_groupby_dropna(self):
@@ -743,8 +741,7 @@ class TestGroupByAdvanced:
         pd.testing.assert_frame_equal(
             get_dataframe(ds_result_true),
             pd_result_true,
-            check_dtype=False,
-        )
+            )
 
     def test_groupby_agg_list_functions(self):
         """groupby agg with list of functions."""
@@ -763,8 +760,7 @@ class TestGroupByAdvanced:
         pd.testing.assert_frame_equal(
             get_dataframe(ds_result),
             pd_result,
-            check_dtype=False,
-        )
+            )
 
 
 class TestIOEdgeCases:

@@ -72,7 +72,7 @@ class TestCategoryAccessor:
         pd_result = pd_df[pd_df['category'] == 'low']
         ds_result = ds_df[ds_df['category'] == 'low']
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_category_type
     def test_groupby_categorical(self):
@@ -86,7 +86,7 @@ class TestCategoryAccessor:
         pd_result = pd_df.groupby('category', observed=True)['value'].sum().reset_index()
         ds_result = ds_df.groupby('category', observed=True)['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -116,7 +116,7 @@ class TestInplaceOperations:
         pd_result = pd_df.fillna(0, inplace=False)
         ds_result = ds_df.fillna(0, inplace=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rename_inplace_false(self):
         """rename() with inplace=False returns new DataFrame."""
@@ -136,7 +136,7 @@ class TestInplaceOperations:
         pd_result = pd_df.sort_values('A', inplace=False)
         ds_result = ds_df.sort_values('A', inplace=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_inplace_false(self):
         """reset_index() with inplace=False returns new DataFrame."""
@@ -146,7 +146,7 @@ class TestInplaceOperations:
         pd_result = pd_df.reset_index(inplace=False)
         ds_result = ds_df.reset_index(inplace=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_inplace_false(self):
         """dropna() with inplace=False returns new DataFrame."""
@@ -156,7 +156,7 @@ class TestInplaceOperations:
         pd_result = pd_df.dropna(inplace=False)
         ds_result = ds_df.dropna(inplace=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -267,7 +267,7 @@ class TestTypeConversion:
         pd_result = pd_df.assign(A_num=pd.to_numeric(pd_df['A']))
         ds_result = ds_df.assign(A_num=pd.to_numeric(ds_df['A'].to_pandas()))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -363,7 +363,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df + 10
         ds_result = ds_df + 10
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_subtract_scalar(self):
         """Subtract scalar from DataFrame."""
@@ -373,7 +373,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df - 1
         ds_result = ds_df - 1
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_multiply_scalar(self):
         """Multiply DataFrame by scalar."""
@@ -383,7 +383,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df * 2
         ds_result = ds_df * 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_divide_scalar(self):
         """Divide DataFrame by scalar."""
@@ -393,7 +393,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df / 10
         ds_result = ds_df / 10
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_power_scalar(self):
         """Raise DataFrame to power."""
@@ -403,7 +403,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df ** 2
         ds_result = ds_df ** 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mod_scalar(self):
         """Modulo operation on DataFrame."""
@@ -413,7 +413,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df % 3
         ds_result = ds_df % 3
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_floordiv_scalar(self):
         """Floor division on DataFrame."""
@@ -423,7 +423,7 @@ class TestDataFrameArithmetic:
         pd_result = pd_df // 3
         ds_result = ds_df // 3
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_negate_dataframe(self):
         """Negate DataFrame (unary minus)."""
@@ -433,7 +433,7 @@ class TestDataFrameArithmetic:
         pd_result = -pd_df
         ds_result = -ds_df
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_abs_dataframe(self):
         """Absolute value of DataFrame."""
@@ -443,7 +443,7 @@ class TestDataFrameArithmetic:
         pd_result = abs(pd_df)
         ds_result = abs(ds_df)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -461,7 +461,7 @@ class TestDataFrameComparison:
         pd_result = pd_df > 2
         ds_result = ds_df > 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_lt_scalar(self):
         """Less than with scalar."""
@@ -471,7 +471,7 @@ class TestDataFrameComparison:
         pd_result = pd_df < 5
         ds_result = ds_df < 5
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ge_scalar(self):
         """Greater than or equal with scalar."""
@@ -481,7 +481,7 @@ class TestDataFrameComparison:
         pd_result = pd_df >= 3
         ds_result = ds_df >= 3
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_le_scalar(self):
         """Less than or equal with scalar."""
@@ -491,7 +491,7 @@ class TestDataFrameComparison:
         pd_result = pd_df <= 4
         ds_result = ds_df <= 4
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_eq_scalar(self):
         """Equal with scalar."""
@@ -501,7 +501,7 @@ class TestDataFrameComparison:
         pd_result = pd_df == 2
         ds_result = ds_df == 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ne_scalar(self):
         """Not equal with scalar."""
@@ -511,7 +511,7 @@ class TestDataFrameComparison:
         pd_result = pd_df != 2
         ds_result = ds_df != 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -630,7 +630,7 @@ class TestSelectFilterChaining:
         pd_result = pd_df[pd_df['A'] > 2].sort_values('A').head(3)
         ds_result = ds_df[ds_df['A'] > 2].sort_values('A').head(3)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_sort_tail(self):
         """Select columns, sort, then tail."""
@@ -640,7 +640,7 @@ class TestSelectFilterChaining:
         pd_result = pd_df[['A', 'B']].sort_values('B').tail(2)
         ds_result = ds_df[['A', 'B']].sort_values('B').tail(2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -678,7 +678,7 @@ class TestDataFrameApply:
         pd_result = pd_df.apply(lambda x: x * 2)
         ds_result = ds_df.apply(lambda x: x * 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_apply_numpy_function(self):
         """Apply numpy function."""
@@ -688,7 +688,7 @@ class TestDataFrameApply:
         pd_result = pd_df.apply(np.sqrt)
         ds_result = ds_df.apply(np.sqrt)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -764,7 +764,7 @@ class TestValueSetting:
         pd_df['C'] = 10
         ds_df['C'] = 10
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_setitem_column_list(self):
         """Set column to list of values."""
@@ -774,7 +774,7 @@ class TestValueSetting:
         pd_df['B'] = [4, 5, 6]
         ds_df['B'] = [4, 5, 6]
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     @datastore_loc_conditional_assignment
     def test_setitem_conditional(self):
@@ -785,7 +785,7 @@ class TestValueSetting:
         pd_df.loc[pd_df['A'] > 3, 'A'] = 0
         ds_df.loc[ds_df['A'] > 3, 'A'] = 0
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
 
 # =============================================================================
@@ -835,7 +835,7 @@ class TestNullHandling:
         pd_result = pd_df.dropna(how='all')
         ds_result = ds_df.dropna(how='all')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_thresh(self):
         """dropna with thresh parameter."""
@@ -849,7 +849,7 @@ class TestNullHandling:
         pd_result = pd_df.dropna(thresh=2)
         ds_result = ds_df.dropna(thresh=2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_method_ffill(self):
         """fillna with method='ffill'."""
@@ -859,7 +859,7 @@ class TestNullHandling:
         pd_result = pd_df.ffill()
         ds_result = ds_df.ffill()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_method_bfill(self):
         """fillna with method='bfill'."""
@@ -869,7 +869,7 @@ class TestNullHandling:
         pd_result = pd_df.bfill()
         ds_result = ds_df.bfill()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================

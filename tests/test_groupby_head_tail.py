@@ -43,9 +43,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_head_n2(self, sample_df):
         """Test head(2) - get first 2 rows of each group."""
@@ -58,9 +56,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_head_n1(self, sample_df):
         """Test head(1) - get first row of each group."""
@@ -73,9 +69,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_head_larger_than_group(self, sample_df):
         """Test head(10) where n is larger than some groups."""
@@ -88,9 +82,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_head_preserves_original_index(self, sample_df):
         """Test that head preserves original row indices."""
@@ -125,9 +117,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     # ========== Edge cases ==========
 
@@ -147,9 +137,7 @@ class TestGroupByHead:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_head_empty_dataframe(self):
         """Test head on empty DataFrame."""
@@ -193,9 +181,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_tail_n2(self, sample_df):
         """Test tail(2) - get last 2 rows of each group."""
@@ -208,9 +194,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_tail_n1(self, sample_df):
         """Test tail(1) - get last row of each group."""
@@ -223,9 +207,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_tail_larger_than_group(self, sample_df):
         """Test tail(10) where n is larger than some groups."""
@@ -238,9 +220,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_tail_preserves_original_index(self, sample_df):
         """Test that tail preserves original row indices."""
@@ -275,9 +255,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     # ========== Edge cases ==========
 
@@ -297,9 +275,7 @@ class TestGroupByTail:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_tail_empty_dataframe(self):
         """Test tail on empty DataFrame."""
@@ -345,8 +321,8 @@ class TestGroupByHeadTailComparison:
         pd_tail = sample_df.groupby('category').tail(2)
 
         # Verify DataStore matches pandas
-        pd.testing.assert_frame_equal(ds_head, pd_head, check_dtype=False)
-        pd.testing.assert_frame_equal(ds_tail, pd_tail, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_head, pd_head)
+        pd.testing.assert_frame_equal(ds_tail, pd_tail)
 
         # Verify head and tail indices don't overlap
         assert set(ds_head.index) & set(ds_tail.index) == set()
@@ -359,7 +335,7 @@ class TestGroupByHeadTailComparison:
         pd_head = sample_df.groupby('category').head(5)
 
         # All rows should be returned since each group has only 3 rows
-        pd.testing.assert_frame_equal(ds_head, pd_head, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_head, pd_head)
         assert len(ds_head) == len(sample_df)
 
     def test_head_vs_nth(self, sample_df):

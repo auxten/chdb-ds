@@ -37,7 +37,7 @@ class TestDataFrameUpdate:
         ds_df2 = DataStore({'A': [100, 200, 300]})
         ds_df1.update(ds_df2)
 
-        assert_datastore_equals_pandas(ds_df1, pd_df1, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df1, pd_df1)
 
     def test_update_with_nan_no_overwrite(self):
         """Update should not overwrite with NaN by default."""
@@ -49,7 +49,7 @@ class TestDataFrameUpdate:
         ds_df2 = DataStore({'A': [np.nan, 200, np.nan]})
         ds_df1.update(ds_df2)
 
-        assert_datastore_equals_pandas(ds_df1, pd_df1, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df1, pd_df1)
 
     def test_update_partial_columns(self):
         """Update only specific columns."""
@@ -61,7 +61,7 @@ class TestDataFrameUpdate:
         ds_df2 = DataStore({'B': [40, 50, 60]})
         ds_df1.update(ds_df2)
 
-        assert_datastore_equals_pandas(ds_df1, pd_df1, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df1, pd_df1)
 
     def test_update_with_overwrite_false(self):
         """Update with overwrite=False - only update NaN values."""
@@ -73,7 +73,7 @@ class TestDataFrameUpdate:
         ds_df2 = DataStore({'A': [100, 200, 300]})
         ds_df1.update(ds_df2, overwrite=False)
 
-        assert_datastore_equals_pandas(ds_df1, pd_df1, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df1, pd_df1)
 
 
 # =============================================================================
@@ -100,8 +100,7 @@ class TestBitwiseOperations:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_bitwise_or(self):
         """Test | (bitwise OR) on boolean Series."""
@@ -121,8 +120,7 @@ class TestBitwiseOperations:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_bitwise_xor(self):
         """Test ^ (bitwise XOR) on boolean Series."""
@@ -142,8 +140,7 @@ class TestBitwiseOperations:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_bitwise_not(self):
         """Test ~ (bitwise NOT) on boolean Series."""
@@ -160,8 +157,7 @@ class TestBitwiseOperations:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_combined_boolean_filter(self):
         """Test combined boolean filter using & and |."""
@@ -174,7 +170,7 @@ class TestBitwiseOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df[(ds_df['A'] > 2) & (ds_df['B'] < 40)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_negated_filter(self):
         """Test negated filter using ~."""
@@ -187,7 +183,7 @@ class TestBitwiseOperations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df[~(ds_df['A'] > 3)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -207,7 +203,7 @@ class TestDataFrameExplode:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.explode('A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_explode_with_empty_list(self):
         """Explode with empty lists."""
@@ -220,7 +216,7 @@ class TestDataFrameExplode:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.explode('A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_explode_ignore_index(self):
         """Explode with ignore_index=True."""
@@ -233,7 +229,7 @@ class TestDataFrameExplode:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.explode('A', ignore_index=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_explode_multiple_columns(self):
         """Explode multiple columns at once (pandas 1.3+)."""
@@ -247,7 +243,7 @@ class TestDataFrameExplode:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.explode(['A', 'B'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -300,7 +296,7 @@ class TestTypeConversion:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.astype({'A': float, 'B': float})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -317,7 +313,7 @@ class TestTransform:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.transform(lambda x: x * 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transform_with_string_func(self):
         """Transform with string function name."""
@@ -327,7 +323,7 @@ class TestTransform:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.transform('sqrt')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transform_multiple_functions(self):
         """Transform with multiple functions."""
@@ -349,7 +345,7 @@ class TestTransform:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.transform({'A': 'sqrt', 'B': 'square'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-4)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-4)
 
 
 # =============================================================================
@@ -366,7 +362,7 @@ class TestEvalQuery:
         ds_df = DataStore({'A': [1, 2, 3], 'B': [4, 5, 6]})
         ds_df = ds_df.eval('C = A + B')
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_eval_with_multiplication(self):
         """Eval with multiplication."""
@@ -376,7 +372,7 @@ class TestEvalQuery:
         ds_df = DataStore({'A': [1, 2, 3], 'B': [4, 5, 6]})
         ds_df = ds_df.eval('C = A * B')
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_query_simple(self):
         """Simple query filtering."""
@@ -386,7 +382,7 @@ class TestEvalQuery:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.query('A > 2')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_query_combined_conditions(self):
         """Query with combined conditions."""
@@ -396,7 +392,7 @@ class TestEvalQuery:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.query('A > 2 and B < 45')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_query_with_not(self):
         """Query with NOT condition."""
@@ -406,7 +402,7 @@ class TestEvalQuery:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.query('not A > 3')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -431,7 +427,7 @@ class TestApplyMap:
         else:
             ds_result = ds_df.applymap(lambda x: x * 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_map_string_format(self):
         """Map with string formatting."""
@@ -447,7 +443,7 @@ class TestApplyMap:
         else:
             ds_result = ds_df.applymap(lambda x: f"val_{x}")
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_series_map_with_dict(self):
         """Series.map with dictionary."""
@@ -464,8 +460,7 @@ class TestApplyMap:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
 
 # =============================================================================
@@ -481,7 +476,7 @@ class TestConstructionEdgeCases:
 
         ds_df = DataStore.from_dict(data, orient='index')
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_construct_with_index(self):
         """Construct with custom index."""
@@ -500,7 +495,7 @@ class TestConstructionEdgeCases:
 
         ds_df = DataStore.from_records(records)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_construct_empty_with_columns(self):
         """Construct empty DataFrame with columns."""
@@ -529,7 +524,7 @@ class TestIndexOperations:
         ds_df = ds_df.set_index('A')
         ds_result = ds_df[ds_df['B'] > 1]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reset_index_drop(self):
         """Reset index with drop=True."""
@@ -539,7 +534,7 @@ class TestIndexOperations:
         ds_df = DataStore({'A': [1, 2, 3]}, index=['x', 'y', 'z'])
         ds_result = ds_df.reset_index(drop=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reindex_with_fill(self):
         """Reindex with fill_value."""
@@ -549,7 +544,7 @@ class TestIndexOperations:
         ds_df = DataStore({'A': [1, 2, 3]}, index=[0, 1, 2])
         ds_result = ds_df.reindex([0, 1, 2, 3, 4], fill_value=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -570,7 +565,7 @@ class TestMeltVariations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.melt(id_vars=['id'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_melt_with_var_name(self):
         """Melt with custom var_name."""
@@ -584,7 +579,7 @@ class TestMeltVariations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.melt(id_vars=['id'], var_name='measure')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_melt_with_value_name(self):
         """Melt with custom value_name."""
@@ -598,7 +593,7 @@ class TestMeltVariations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.melt(id_vars=['id'], value_name='measurement')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_melt_value_vars(self):
         """Melt with specific value_vars."""
@@ -613,7 +608,7 @@ class TestMeltVariations:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.melt(id_vars=['id'], value_vars=['val1', 'val2'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -792,8 +787,7 @@ class TestStringColumnOps:
             ds_series.reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
 
 # =============================================================================
@@ -846,7 +840,7 @@ class TestCombineOps:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds_df1.combine(ds_df2, lambda s1, s2: s1 + s2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_combine_first_basic(self):
         """Combine_first to fill NaN values."""
@@ -858,7 +852,7 @@ class TestCombineOps:
         ds_df2 = DataStore(pd_df2)
         ds_result = ds_df1.combine_first(ds_df2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -911,7 +905,7 @@ class TestSpecialValues:
         ds_df = DataStore(pd_df)
         ds_result = ds_df.replace([np.inf, -np.inf], np.nan)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nan_propagation(self):
         """NaN should propagate through arithmetic."""
@@ -952,7 +946,7 @@ class TestMethodChaining:
                      .sort_values('C', ascending=False)
                      .head(2))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_agg_reset_sort(self):
         """Chain: groupby -> agg -> reset_index -> sort."""
@@ -971,7 +965,7 @@ class TestMethodChaining:
                      .reset_index()
                      .sort_values('value', ascending=False))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_columns_filter_dropna(self):
         """Chain: column select -> filter -> dropna."""
@@ -985,7 +979,7 @@ class TestMethodChaining:
         ds_df = DataStore(pd_df)
         ds_result = ds_df[['A', 'B']][ds_df['C'] > 20].dropna()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

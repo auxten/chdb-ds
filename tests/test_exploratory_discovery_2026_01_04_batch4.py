@@ -63,7 +63,7 @@ class TestGroupByMissingMethods:
         pd_result = pd_df.groupby('category')['value'].median()
         try:
             ds_result = ds.groupby('category')['value'].median()
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except AttributeError as e:
             pytest.skip(f"groupby().median() not implemented: {e}")
 
@@ -89,7 +89,7 @@ class TestGroupByMissingMethods:
         ds = DataStore(sample_df)
         pd_result = pd_df.groupby('category')['value'].prod()
         ds_result = ds.groupby('category')['value'].prod()
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_rank(self, large_groups_df):
         pd_df = large_groups_df
@@ -97,7 +97,7 @@ class TestGroupByMissingMethods:
         pd_result = pd_df.groupby('category')['value'].rank()
         try:
             ds_result = ds.groupby('category')['value'].rank()
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except AttributeError as e:
             pytest.skip(f"groupby().rank() not implemented: {e}")
 
@@ -107,7 +107,7 @@ class TestGroupByMissingMethods:
         pd_result = pd_df.groupby('category')['value'].cumsum()
         try:
             ds_result = ds.groupby('category')['value'].cumsum()
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except AttributeError as e:
             pytest.skip(f"groupby().cumsum() not implemented: {e}")
 
@@ -121,7 +121,7 @@ class TestGroupByParameters:
         ds = DataStore(df_with_nan)
         pd_result = pd_df.groupby('category', dropna=True)['value'].sum()
         ds_result = ds.groupby('category', dropna=True)['value'].sum()
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_dropna_false(self, df_with_nan):
         pd_df = df_with_nan
@@ -129,7 +129,7 @@ class TestGroupByParameters:
         pd_result = pd_df.groupby('category', dropna=False)['value'].sum()
         try:
             ds_result = ds.groupby('category', dropna=False)['value'].sum()
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except TypeError as e:
             if "dropna" in str(e):
                 pytest.skip(f"groupby(dropna=) not implemented: {e}")
@@ -185,7 +185,7 @@ class TestChainedOperationsBoundary:
         try:
             ds_with_flag = ds.assign(flag=1)
             ds_result = ds_with_flag[ds_with_flag['flag'] == 1]
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except Exception as e:
             pytest.fail(f"assign(scalar) -> filter failed: {e}")
 
@@ -226,7 +226,7 @@ class TestRollingWindowBoundary:
             ds_result = ds['value'].rolling(2).sum()
             ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
             )
         except AttributeError as e:
             pytest.skip(f"rolling() not implemented: {e}")
@@ -239,7 +239,7 @@ class TestRollingWindowBoundary:
             ds_result = ds['value'].rolling(3, center=True).mean()
             ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
             )
         except (AttributeError, TypeError) as e:
             pytest.skip(f"rolling(center=True) not implemented: {e}")
@@ -252,7 +252,7 @@ class TestRollingWindowBoundary:
             ds_result = ds['value'].rolling(3, min_periods=1).sum()
             ds_values = get_series(ds_result)
             pd.testing.assert_series_equal(
-                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_dtype=False, check_names=False
+                ds_values.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
             )
         except (AttributeError, TypeError) as e:
             pytest.skip(f"rolling(min_periods=) not implemented: {e}")
@@ -274,7 +274,7 @@ class TestMultiColumnOperations:
         pd_result = pd_df.fillna({'category': 'Unknown', 'value': 0})
         try:
             ds_result = ds.fillna({'category': 'Unknown', 'value': 0})
-            assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+            assert_datastore_equals_pandas(ds_result, pd_result)
         except Exception as e:
             pytest.skip(f"fillna(dict) not fully implemented: {e}")
 
@@ -335,7 +335,7 @@ class TestComplexExpressions:
         pd_df = pd_df.copy()
         pd_df['computed'] = (pd_df['value'] * 2 + pd_df['score']) / 3
         ds_result = ds.assign(computed=(ds['value'] * 2 + ds['score']) / 3)
-        assert_datastore_equals_pandas(ds_result, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_df)
 
     def test_comparison_chain(self, sample_df):
         pd_df = sample_df

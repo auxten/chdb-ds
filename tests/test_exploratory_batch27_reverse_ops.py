@@ -295,7 +295,7 @@ class TestMixedOperations:
         # Abs
         pd_abs = abs(pd_df)
         ds_abs = abs(ds_df)
-        assert_datastore_equals_pandas(ds_abs, pd_abs, check_dtype=False)  # abs may return uint64
+        assert_datastore_equals_pandas(ds_abs, pd_abs)  # abs may return uint64
 
     def test_positive_operator(self):
         """Test unary positive operator."""

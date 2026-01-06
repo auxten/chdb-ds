@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from tests.test_utils import assert_datastore_equals_pandas
+from tests.xfail_markers import chdb_replace_none_dtype
 
 
 class TestSeriesReplaceSingleValue:
@@ -23,7 +24,7 @@ class TestSeriesReplaceSingleValue:
         pd_result = pd_df['a'].replace(1, 100)
         ds_result = ds_df['a'].replace(1, 100)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_single_string(self):
         """Replace single string value."""
@@ -35,7 +36,7 @@ class TestSeriesReplaceSingleValue:
         pd_result = pd_df['a'].replace('hello', 'hi')
         ds_result = ds_df['a'].replace('hello', 'hi')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_single_no_match(self):
         """Replace with no matching values."""
@@ -47,7 +48,7 @@ class TestSeriesReplaceSingleValue:
         pd_result = pd_df['a'].replace(100, 999)
         ds_result = ds_df['a'].replace(100, 999)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_single_float(self):
         """Replace single float value."""
@@ -59,7 +60,7 @@ class TestSeriesReplaceSingleValue:
         pd_result = pd_df['a'].replace(2.0, 200.0)
         ds_result = ds_df['a'].replace(2.0, 200.0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestSeriesReplaceDict:
@@ -75,7 +76,7 @@ class TestSeriesReplaceDict:
         pd_result = pd_df['a'].replace({1: 100, 2: 200})
         ds_result = ds_df['a'].replace({1: 100, 2: 200})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict_string(self):
         """Replace multiple values using dict - string."""
@@ -87,7 +88,7 @@ class TestSeriesReplaceDict:
         pd_result = pd_df['a'].replace({'hello': 'hi', 'world': 'earth'})
         ds_result = ds_df['a'].replace({'hello': 'hi', 'world': 'earth'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict_empty(self):
         """Replace with empty dict - should return unchanged."""
@@ -99,7 +100,7 @@ class TestSeriesReplaceDict:
         pd_result = pd_df['a'].replace({})
         ds_result = ds_df['a'].replace({})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict_many_values(self):
         """Replace many values using dict."""
@@ -112,7 +113,7 @@ class TestSeriesReplaceDict:
         pd_result = pd_df['a'].replace(replace_dict)
         ds_result = ds_df['a'].replace(replace_dict)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_dict_partial_match(self):
         """Replace dict where not all keys are present."""
@@ -124,7 +125,7 @@ class TestSeriesReplaceDict:
         pd_result = pd_df['a'].replace({1: 100, 99: 999})  # 99 doesn't exist
         ds_result = ds_df['a'].replace({1: 100, 99: 999})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestSeriesReplaceList:
@@ -140,7 +141,7 @@ class TestSeriesReplaceList:
         pd_result = pd_df['a'].replace([1, 2], [100, 200])
         ds_result = ds_df['a'].replace([1, 2], [100, 200])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_list_string(self):
         """Replace multiple values using lists - string."""
@@ -152,7 +153,7 @@ class TestSeriesReplaceList:
         pd_result = pd_df['a'].replace(['hello', 'world'], ['hi', 'earth'])
         ds_result = ds_df['a'].replace(['hello', 'world'], ['hi', 'earth'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_list_empty(self):
         """Replace with empty lists - should return unchanged."""
@@ -164,12 +165,13 @@ class TestSeriesReplaceList:
         pd_result = pd_df['a'].replace([], [])
         ds_result = ds_df['a'].replace([], [])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestSeriesReplaceEdgeCases:
     """Test edge cases for Series.replace."""
 
+    @chdb_replace_none_dtype
     def test_replace_with_none_value(self):
         """Replace value with None/null."""
         from datastore import DataStore
@@ -180,7 +182,7 @@ class TestSeriesReplaceEdgeCases:
         pd_result = pd_df['a'].replace(1, None)
         ds_result = ds_df['a'].replace(1, None)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_all_values(self):
         """Replace all values in series."""
@@ -192,7 +194,7 @@ class TestSeriesReplaceEdgeCases:
         pd_result = pd_df['a'].replace(1, 100)
         ds_result = ds_df['a'].replace(1, 100)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_replace_preserves_unchanged(self):
         """Values not in replace should be unchanged."""
@@ -205,7 +207,7 @@ class TestSeriesReplaceEdgeCases:
         ds_result = ds_df['a'].replace({1: 100})
 
         # Check that 2, 3, 4, 5 are unchanged
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestStrReplaceSubstring:
@@ -221,7 +223,7 @@ class TestStrReplaceSubstring:
         pd_result = pd_df['s'].str.replace('world', 'earth')
         ds_result = ds_df['s'].str.replace('world', 'earth')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_replace_no_match(self):
         """Substring replacement with no matches."""
@@ -233,7 +235,7 @@ class TestStrReplaceSubstring:
         pd_result = pd_df['s'].str.replace('xyz', 'abc')
         ds_result = ds_df['s'].str.replace('xyz', 'abc')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_replace_multiple_occurrences(self):
         """Replace multiple occurrences of substring."""
@@ -245,7 +247,7 @@ class TestStrReplaceSubstring:
         pd_result = pd_df['s'].str.replace('a', 'X')
         ds_result = ds_df['s'].str.replace('a', 'X')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_replace_with_regex(self):
         """Substring replacement with regex."""
@@ -257,7 +259,7 @@ class TestStrReplaceSubstring:
         pd_result = pd_df['s'].str.replace('w.*d', 'X', regex=True)
         ds_result = ds_df['s'].str.replace('w.*d', 'X', regex=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_replace_regex_groups(self):
         """Substring replacement with regex groups."""
@@ -270,7 +272,7 @@ class TestStrReplaceSubstring:
         pd_result = pd_df['s'].str.replace('[0-9]+', 'X', regex=True)
         ds_result = ds_df['s'].str.replace('[0-9]+', 'X', regex=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestReplaceMirrorPattern:
@@ -288,7 +290,7 @@ class TestReplaceMirrorPattern:
         pd_result = pd_df['col'].replace({1: 100, 3: 300})
         ds_result = ds_df['col'].replace({1: 100, 3: 300})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_series_replace_dict_mirror(self):
         """Mirror test: string series with dict replace."""
@@ -302,7 +304,7 @@ class TestReplaceMirrorPattern:
         pd_result = pd_df['col'].replace({'a': 'A', 'b': 'B'})
         ds_result = ds_df['col'].replace({'a': 'A', 'b': 'B'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_float_series_replace_dict_mirror(self):
         """Mirror test: float series with dict replace."""
@@ -316,4 +318,4 @@ class TestReplaceMirrorPattern:
         pd_result = pd_df['col'].replace({1.0: 10.0, 2.0: 20.0})
         ds_result = ds_df['col'].replace({1.0: 10.0, 2.0: 20.0})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)

@@ -36,7 +36,7 @@ class TestComplexFilterNaN:
         pd_result = pd_df[(pd_df['a'] > 2) | (pd_df['a'].isna())]
         ds_result = ds_df[(ds_df['a'] > 2) | (ds_df['a'].isna())]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_nan_with_and(self):
         """Test filter with AND condition involving NaN."""
@@ -50,7 +50,7 @@ class TestComplexFilterNaN:
         pd_result = pd_df[pd_df['a'].notna() & (pd_df['b'] > 20)]
         ds_result = ds_df[ds_df['a'].notna() & (ds_df['b'] > 20)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_then_filter(self):
         """Test fillna followed by filter."""
@@ -66,7 +66,7 @@ class TestComplexFilterNaN:
         ds_result = ds_df.fillna({'a': 0})
         ds_result = ds_result[ds_result['a'] > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_subset_then_filter(self):
         """Test dropna with subset followed by filter."""
@@ -83,7 +83,7 @@ class TestComplexFilterNaN:
         ds_result = ds_df.dropna(subset=['a'])
         ds_result = ds_result[ds_result['c'] > 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -104,7 +104,7 @@ class TestMultiColumnOperations:
         pd_result = pd_df.assign(sum_abc=pd_df['a'] + pd_df['b'] + pd_df['c'])
         ds_result = ds_df.assign(sum_abc=ds_df['a'] + ds_df['b'] + ds_df['c'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_multi_column_comparison(self):
         """Test comparison operations across multiple columns."""
@@ -119,7 +119,7 @@ class TestMultiColumnOperations:
         pd_result = pd_df[(pd_df['a'] < pd_df['b']) & (pd_df['b'] <= pd_df['c'])]
         ds_result = ds_df[(ds_df['a'] < ds_df['b']) & (ds_df['b'] <= ds_df['c'])]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_computed_columns(self):
         """Test selecting computed columns with different operations."""
@@ -141,7 +141,7 @@ class TestMultiColumnOperations:
             diff=ds_df['b'] - ds_df['a']
         )[['product', 'ratio', 'diff']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_multi_column_agg(self):
         """Test groupby with aggregation on multiple columns."""
@@ -156,7 +156,7 @@ class TestMultiColumnOperations:
         pd_result = pd_df.groupby('group').agg({'a': 'sum', 'b': 'mean', 'c': 'max'}).reset_index()
         ds_result = ds_df.groupby('group').agg({'a': 'sum', 'b': 'mean', 'c': 'max'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -179,7 +179,7 @@ class TestChainedMethodsTypes:
         ds_result = ds_df[ds_df['num'] > 2]
         ds_result = ds_result[ds_result['text'].str.len() > 4]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chain_filter_assign_filter(self):
         """Test filter -> assign -> filter chain."""
@@ -197,7 +197,7 @@ class TestChainedMethodsTypes:
         ds_result = ds_result.assign(c=ds_result['a'] * 2)
         ds_result = ds_result[ds_result['c'] < 16]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chain_sort_head_filter(self):
         """Test sort -> head -> filter chain."""
@@ -213,7 +213,7 @@ class TestChainedMethodsTypes:
         ds_result = ds_df.sort_values('a', ascending=False).head(7)
         ds_result = ds_result[ds_result['a'] > 4]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chain_groupby_filter_sort(self):
         """Test groupby -> agg -> filter -> sort chain."""
@@ -231,7 +231,7 @@ class TestChainedMethodsTypes:
         ds_result = ds_result[ds_result['value'] > 20]
         ds_result = ds_result.sort_values('value', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -253,7 +253,7 @@ class TestDateTimeEdgeCases:
         pd_result = pd_df[pd_df['date'] >= boundary]
         ds_result = ds_df[ds_df['date'] >= boundary]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_datetime_timezone
     def test_date_between_filter(self):
@@ -270,7 +270,7 @@ class TestDateTimeEdgeCases:
         pd_result = pd_df[(pd_df['date'] >= start) & (pd_df['date'] <= end)]
         ds_result = ds_df[(ds_df['date'] >= start) & (ds_df['date'] <= end)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     @chdb_dt_month_type
     def test_datetime_groupby_date_part(self):
@@ -288,7 +288,7 @@ class TestDateTimeEdgeCases:
         ds_df = ds_df.assign(month=ds_df['date'].dt.month)
         ds_result = ds_df.groupby('month')['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -317,7 +317,7 @@ class TestComplexAggregation:
             count=('value', 'count')
         ).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_agg_multiple_columns_same_func(self):
         """Test aggregation with same function on multiple columns."""
@@ -332,7 +332,7 @@ class TestComplexAggregation:
         pd_result = pd_df.groupby('group')[['a', 'b', 'c']].sum().reset_index()
         ds_result = ds_df.groupby('group')[['a', 'b', 'c']].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_agg_with_filter_after(self):
         """Test aggregation followed by filter on aggregated result."""
@@ -348,7 +348,7 @@ class TestComplexAggregation:
         ds_result = ds_df.groupby('group')['value'].sum().reset_index()
         ds_result = ds_result[ds_result['value'] > 25]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_window_function_with_groupby(self):
         """Test window function with groupby."""
@@ -364,7 +364,7 @@ class TestComplexAggregation:
         ds_result = ds_df.copy()
         ds_result = ds_result.assign(cumsum=ds_df.groupby('group')['value'].cumsum())
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -384,7 +384,7 @@ class TestSpecialValuesEdgeCases:
         pd_result = pd_df.assign(sum_ab=pd_df['a'] + pd_df['b'])
         ds_result = ds_df.assign(sum_ab=ds_df['a'] + ds_df['b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_inf_filter(self):
         """Test filtering infinite values."""
@@ -398,7 +398,7 @@ class TestSpecialValuesEdgeCases:
         pd_result = pd_df[~np.isinf(pd_df['a'])]
         ds_result = ds_df[~np.isinf(ds_df['a'].to_pandas())]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_very_large_numbers(self):
         """Test operations with very large numbers."""
@@ -411,7 +411,7 @@ class TestSpecialValuesEdgeCases:
         pd_result = pd_df.assign(product=pd_df['a'] * pd_df['b'])
         ds_result = ds_df.assign(product=ds_df['a'] * ds_df['b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_very_small_numbers(self):
         """Test operations with very small numbers."""
@@ -424,7 +424,7 @@ class TestSpecialValuesEdgeCases:
         pd_result = pd_df.assign(ratio=pd_df['a'] / pd_df['b'])
         ds_result = ds_df.assign(ratio=ds_df['a'] / ds_df['b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -443,7 +443,7 @@ class TestStringEdgeCases:
         pd_result = pd_df.assign(length=pd_df['text'].str.len())
         ds_result = ds_df.assign(length=ds_df['text'].str.len())
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_empty_values(self):
         """Test string operations with empty strings."""
@@ -455,7 +455,7 @@ class TestStringEdgeCases:
         pd_result = pd_df[pd_df['text'].str.len() > 0]
         ds_result = ds_df[ds_df['text'].str.len() > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_case_insensitive_filter(self):
         """Test case-insensitive string filtering."""
@@ -467,7 +467,7 @@ class TestStringEdgeCases:
         pd_result = pd_df[pd_df['text'].str.lower().str.contains('o')]
         ds_result = ds_df[ds_df['text'].str.lower().str.contains('o')]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_replace_chain(self):
         """Test chained string replace operations."""
@@ -483,7 +483,7 @@ class TestStringEdgeCases:
             modified=ds_df['text'].str.replace('-', '_').str.upper()
         )
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -504,7 +504,7 @@ class TestIndexOperations:
         pd_result = pd_df.set_index('a').reset_index()
         ds_result = ds_df.set_index('a').reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reindex_with_fill(self):
         """Test reindex with fill_value."""
@@ -518,7 +518,7 @@ class TestIndexOperations:
         pd_result = pd_df.reindex(new_index, fill_value=0)
         ds_result = ds_df.reindex(new_index, fill_value=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_index_descending(self):
         """Test sort_index with descending order."""
@@ -531,7 +531,7 @@ class TestIndexOperations:
         pd_result = pd_df.sort_index(ascending=False)
         ds_result = ds_df.sort_index(ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -568,7 +568,7 @@ class TestCopyModification:
         pd_result = pd_df.copy(deep=True)
         ds_result = ds_copy
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -606,7 +606,7 @@ class TestMemoryLargeData:
         ds_result = ds_df[ds_df['a'] > 50]
 
         assert len(ds_result) == len(pd_result)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_large_dataframe_groupby(self):
         """Test groupby on larger DataFrame."""
@@ -620,7 +620,7 @@ class TestMemoryLargeData:
         pd_result = pd_df.groupby('group')['value'].sum().reset_index().sort_values('group').reset_index(drop=True)
         ds_result = ds_df.groupby('group')['value'].sum().reset_index().sort_values('group').reset_index(drop=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -638,7 +638,7 @@ class TestConstructionEdgeCases:
         pd_df = pd.DataFrame(data)
         ds_df = DataStore(data)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_construct_from_list_of_dicts(self):
         """Test construction from list of dictionaries."""
@@ -650,7 +650,7 @@ class TestConstructionEdgeCases:
         pd_df = pd.DataFrame(data)
         ds_df = DataStore(data)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_construct_with_index(self):
         """Test construction with custom index."""
@@ -659,7 +659,7 @@ class TestConstructionEdgeCases:
         pd_df = pd.DataFrame(data, index=index)
         ds_df = DataStore(data, index=index)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_construct_with_dtype(self):
         """Test construction with explicit dtype."""
@@ -667,7 +667,7 @@ class TestConstructionEdgeCases:
         pd_df = pd.DataFrame(data, dtype=float)
         ds_df = DataStore(data, dtype=float)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
 
 # =============================================================================
@@ -730,7 +730,7 @@ class TestApplyTransform:
         pd_result = pd_df.apply(lambda x: x * 2)
         ds_result = ds_df.apply(lambda x: x * 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_apply_axis_1(self):
         """Test apply along axis=1."""
@@ -743,7 +743,7 @@ class TestApplyTransform:
         pd_result = pd_df.apply(sum, axis=1)
         ds_result = ds_df.apply(sum, axis=1)
 
-        pd.testing.assert_series_equal(get_series(ds_result), pd_result, check_dtype=False)
+        pd.testing.assert_series_equal(get_series(ds_result), pd_result)
 
     def test_transform_with_function(self):
         """Test transform with function."""
@@ -757,7 +757,7 @@ class TestApplyTransform:
         ds_result = ds_df.groupby('group')['value'].transform('mean')
 
         ds_result = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_series_equal(ds_result, pd_result)
 
 
 # =============================================================================
@@ -776,7 +776,7 @@ class TestConcatMergeEdgeCases:
         pd_result = pd.concat([pd_df1, pd_df2], ignore_index=True)
         ds_result = ds_df1.concat([ds_df1, ds_df2], ignore_index=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_with_indicator(self):
         """Test merge with indicator column."""
@@ -788,7 +788,7 @@ class TestConcatMergeEdgeCases:
         pd_result = pd_df1.merge(pd_df2, on='key', how='outer', indicator=True)
         ds_result = ds_df1.merge(ds_df2, on='key', how='outer', indicator=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_merge_suffixes(self):
         """Test merge with custom suffixes."""
@@ -800,7 +800,7 @@ class TestConcatMergeEdgeCases:
         pd_result = pd_df1.merge(pd_df2, on='key', suffixes=('_left', '_right'))
         ds_result = ds_df1.merge(ds_df2, on='key', suffixes=('_left', '_right'))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

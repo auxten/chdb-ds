@@ -48,7 +48,7 @@ class TestBasicOperations(unittest.TestCase):
         result = store.select('*').to_df()
 
         # Strict comparison: values, columns, and index
-        pd.testing.assert_frame_equal(result, pdf, check_dtype=False)
+        pd.testing.assert_frame_equal(result, pdf)
 
     def test_select_columns(self):
         """select() should return exact same columns as pandas column selection."""
@@ -65,7 +65,7 @@ class TestBasicOperations(unittest.TestCase):
         pd_result = pdf[['a', 'c']]
         ds_result = store.select('a', 'c').to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_limit_equals_head(self):
         """limit(n) should produce same result as pandas head(n)."""
@@ -81,7 +81,7 @@ class TestBasicOperations(unittest.TestCase):
         pd_result = pdf.head(5)
         ds_result = store.limit(5).to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestFilterOperations(unittest.TestCase):
@@ -104,7 +104,7 @@ class TestFilterOperations(unittest.TestCase):
 
         # Verify index is preserved (not reset)
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_multiple_conditions_or(self):
         """OR conditions should match pandas | operator."""
@@ -122,7 +122,7 @@ class TestFilterOperations(unittest.TestCase):
         ds_result = store.filter((store['category'] == 'A') | (store['value'] > 20)).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_multiple_conditions_and(self):
         """AND conditions should match pandas & operator."""
@@ -139,7 +139,7 @@ class TestFilterOperations(unittest.TestCase):
         ds_result = store.filter((store['category'] == 'A') & (store['value'] > 15)).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_isin_filter(self):
         """isin() should match pandas isin()."""
@@ -156,7 +156,7 @@ class TestFilterOperations(unittest.TestCase):
         ds_result = store.filter(store['category'].isin(['A', 'C', 'E'])).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_between_filter(self):
         """between() should match pandas between()."""
@@ -172,7 +172,7 @@ class TestFilterOperations(unittest.TestCase):
         ds_result = store.filter(store['value'].between(10, 25)).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestGroupByOperations(unittest.TestCase):
@@ -222,7 +222,7 @@ class TestGroupByOperations(unittest.TestCase):
 
         # DataStore now returns MultiIndex columns matching pandas
         # GroupBy order is not guaranteed - sort both by index for comparison
-        pd.testing.assert_frame_equal(ds_result.sort_index(), pd_result.sort_index(), check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result.sort_index(), pd_result.sort_index())
 
     def test_groupby_mean(self):
         """groupby().agg({'col': 'mean'}) should match pandas groupby mean."""
@@ -262,7 +262,7 @@ class TestSortingOperations(unittest.TestCase):
 
         # Verify order (index should reflect original row positions)
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_order_by_ascending(self):
         """order_by(ascending=True) should match pandas sort_values."""
@@ -279,7 +279,7 @@ class TestSortingOperations(unittest.TestCase):
         ds_result = store.order_by('score', ascending=True).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestColumnOperations(unittest.TestCase):
@@ -301,7 +301,7 @@ class TestColumnOperations(unittest.TestCase):
 
         ds_result = store.with_column('total', store['price'] * store['quantity']).to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_assign_column(self):
         """ds['col'] = expr should match pandas df['col'] = expr."""
@@ -320,7 +320,7 @@ class TestColumnOperations(unittest.TestCase):
         store['c'] = store['a'] + store['b']
         ds_result = store.to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestJoinOperations(unittest.TestCase):
@@ -349,7 +349,7 @@ class TestJoinOperations(unittest.TestCase):
         pd_result = pd.merge(users, orders, on='user_id', how='inner')
         ds_result = users_store.join(orders_store, on='user_id', how='inner').to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestUnionOperations(unittest.TestCase):
@@ -376,7 +376,7 @@ class TestUnionOperations(unittest.TestCase):
         pd_result = pd.concat([pdf1, pdf2], ignore_index=True)
         ds_result = store1.union(store2).to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestDistinctOperations(unittest.TestCase):
@@ -398,7 +398,7 @@ class TestDistinctOperations(unittest.TestCase):
 
         # Verify index is preserved
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestNullHandling(unittest.TestCase):
@@ -421,7 +421,7 @@ class TestNullHandling(unittest.TestCase):
         self.assertEqual(list(pd_result.index), list(ds_result.index))
         # Normalize chDB dtypes (Float64 with <NA> → float64 with nan) before comparison
         ds_result_normalized = _normalize_chdb_dtypes(ds_result)
-        pd.testing.assert_frame_equal(ds_result_normalized, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_normalized, pd_result)
 
     def test_filter_is_null(self):
         """is_null() should match pandas isna()."""
@@ -440,7 +440,7 @@ class TestNullHandling(unittest.TestCase):
         self.assertEqual(list(pd_result.index), list(ds_result.index))
         # Normalize chDB dtypes (Float64 with <NA> → float64 with nan) before comparison
         ds_result_normalized = _normalize_chdb_dtypes(ds_result)
-        pd.testing.assert_frame_equal(ds_result_normalized, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_normalized, pd_result)
 
 
 class TestStringOperations(unittest.TestCase):
@@ -461,7 +461,7 @@ class TestStringOperations(unittest.TestCase):
         ds_result = store.filter(store['city'].str.contains('New')).to_df()
 
         self.assertEqual(list(pd_result.index), list(ds_result.index))
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestCaseWhen(unittest.TestCase):
@@ -496,7 +496,7 @@ class TestCaseWhen(unittest.TestCase):
         )
         ds_result = store.to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_case_when_binary_matches_np_where(self):
         """Simple ds.when().otherwise() should match np.where()."""
@@ -514,7 +514,7 @@ class TestCaseWhen(unittest.TestCase):
         store['status'] = store.when(store['value'] >= 100, 'high').otherwise('low')
         ds_result = store.to_df()
 
-        pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result, pd_result)
 
 
 class TestChainedOperations(unittest.TestCase):
@@ -608,8 +608,7 @@ class TestSQLExecution(unittest.TestCase):
         pd.testing.assert_frame_equal(
             ds_result.reset_index(drop=True),
             pd_data,
-            check_dtype=False,
-        )
+            )
 
 
 class TestIndexPreservation(unittest.TestCase):

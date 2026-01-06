@@ -93,7 +93,7 @@ class TestConcatWithLazyChains:
         ds_df2 = ds.DataStore({'a': [1, 2], 'b': ['x', 'y']})
         ds_result = ds.concat([ds_df1, ds_df2], ignore_index=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_concat_single_dataframe(self):
         """Concat with single DataFrame."""
@@ -946,7 +946,7 @@ class TestEmptyDataFrameEdgeCases:
         ds_df2 = ds.DataStore({'a': [], 'b': []})
         ds_result = ds.concat([ds_df1, ds_df2], ignore_index=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_empty_after_filter(self):
         """Empty DataFrame after filter."""
@@ -969,7 +969,7 @@ class TestEmptyDataFrameEdgeCases:
         ds_df = ds.DataStore({'a': []})
         ds_result = ds_df.pipe(double_df)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_add_prefix_empty(self):
         """Add_prefix on empty DataFrame."""
@@ -979,7 +979,7 @@ class TestEmptyDataFrameEdgeCases:
         ds_df = ds.DataStore({'a': [], 'b': []})
         ds_result = ds_df.add_prefix('col_')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_transform_empty(self):
         """Transform on empty DataFrame."""
@@ -989,7 +989,7 @@ class TestEmptyDataFrameEdgeCases:
         ds_df = ds.DataStore({'a': [], 'b': []})
         ds_result = ds_df.transform(lambda x: x * 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_squeeze_empty(self):
         """Squeeze empty DataFrame."""
@@ -1000,7 +1000,7 @@ class TestEmptyDataFrameEdgeCases:
         ds_result = ds_df.squeeze()
 
         # Empty squeeze returns empty Series
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

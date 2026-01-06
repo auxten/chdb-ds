@@ -318,7 +318,7 @@ class TestDeepLazyChains:
         ds_df['F'] = ds_df['D'] + ds_df['E']
         ds_result = ds_df.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_then_assign(self, df_basic):
         """Test filter followed by column assignment."""
@@ -335,7 +335,7 @@ class TestDeepLazyChains:
         ds_filtered['D'] = ds_filtered['A'] * 10
         ds_result = ds_filtered.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_assign_then_select(self, df_basic):
         """Test assign followed by column selection."""
@@ -350,7 +350,7 @@ class TestDeepLazyChains:
         ds_df['D'] = ds_df['A'] * 2
         ds_result = ds_df[['A', 'D']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_multiple_filters(self, df_basic):
         """Test multiple filters in sequence."""
@@ -367,7 +367,7 @@ class TestDeepLazyChains:
         ds_result = ds_result[ds_result['A'] < 5]
         ds_result = ds_result[ds_result['B'] > 15]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rename_then_select(self, df_basic):
         """Test rename followed by column selection."""
@@ -380,7 +380,7 @@ class TestDeepLazyChains:
         # DataStore
         ds_result = ds_df.rename(columns={'A': 'X', 'B': 'Y'})[['X', 'Y']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_then_head(self, df_basic):
         """Test sort followed by head."""
@@ -393,7 +393,7 @@ class TestDeepLazyChains:
         # DataStore
         ds_result = ds_df.sort_values('A', ascending=False).head(3)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_then_dropna(self, df_multitype):
         """Test fillna followed by dropna on different column."""
@@ -410,7 +410,7 @@ class TestDeepLazyChains:
         # DataStore
         ds_result = ds_df.fillna({'float_col': 0}).dropna(subset=['extra'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =======================
@@ -534,7 +534,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df[pd_df['A'] == 42]
         ds_result = ds_df[ds_df['A'] == 42]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_single_row_filter_no_match(self, df_single_row):
         """Test filter that doesn't match single row."""
@@ -544,7 +544,7 @@ class TestEmptyAndSingleRow:
         pd_result = pd_df[pd_df['A'] == 999]
         ds_result = ds_df[ds_df['A'] == 999]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =======================
@@ -597,7 +597,7 @@ class TestMixedOperations:
         ds_renamed['Y'] = ds_renamed['X'] * 2
         ds_result = ds_renamed.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_then_filter(self, df_basic):
         """Test groupby aggregation then filter result."""
@@ -611,7 +611,7 @@ class TestMixedOperations:
         ds_grouped = ds_df.groupby('group')['value'].sum().reset_index()
         ds_result = ds_grouped[ds_grouped['value'] > 25]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =======================
@@ -645,7 +645,7 @@ class TestIndexManipulation:
         pd_result = pd_df[pd_df['A'] > 2].reset_index(drop=True)
         ds_result = ds_df[ds_df['A'] > 2].reset_index(drop=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reindex(self, df_basic):
         """Test reindex operation."""
@@ -657,7 +657,7 @@ class TestIndexManipulation:
         pd_result = pd_df.reindex(new_index)
         ds_result = ds_df.reindex(new_index)
 
-        pd.testing.assert_frame_equal(ds_result.to_df(), pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result.to_df(), pd_result)
 
 
 # =======================
@@ -680,7 +680,7 @@ class TestTypeCoercion:
         ds_df['result'] = ds_df['int_col'] + ds_df['float_col']
         ds_result = ds_df.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_concatenation_via_add(self):
         """Test string 'addition' behavior.
@@ -697,7 +697,7 @@ class TestTypeCoercion:
         ds_df['C'] = ds_df['A'] + ds_df['B']
         ds_result = ds_df.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_bool_to_int_arithmetic(self):
         """Test boolean treated as int in arithmetic."""
@@ -711,7 +711,7 @@ class TestTypeCoercion:
         ds_df['C'] = ds_df['A'] + ds_df['B']
         ds_result = ds_df.to_df()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =======================
@@ -733,7 +733,7 @@ class TestStressConditions:
         pd_result = pd_df[cols]
         ds_result = ds_df[cols]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_many_rows_filter(self):
         """Test filtering DataFrame with many rows."""
@@ -744,7 +744,7 @@ class TestStressConditions:
         pd_result = pd_df[pd_df['A'] > 9000]
         ds_result = ds_df[ds_df['A'] > 9000]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chain_of_10_operations(self):
         """Test chain of 10 operations."""
@@ -768,7 +768,7 @@ class TestStressConditions:
             .reset_index(drop=True)
         )
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

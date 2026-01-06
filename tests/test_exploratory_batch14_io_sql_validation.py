@@ -36,7 +36,7 @@ class TestIOOperationsRoundTrip:
             try:
                 ds.to_csv(f.name, index=False)
                 pd_read = pd.read_csv(f.name)
-                assert_datastore_equals_pandas(ds, pd_read, check_dtype=False)
+                assert_datastore_equals_pandas(ds, pd_read)
             finally:
                 os.unlink(f.name)
     
@@ -52,7 +52,7 @@ class TestIOOperationsRoundTrip:
             try:
                 ds_filtered.to_csv(f.name, index=False)
                 pd_read = pd.read_csv(f.name)
-                assert_datastore_equals_pandas(ds_filtered, pd_read, check_dtype=False)
+                assert_datastore_equals_pandas(ds_filtered, pd_read)
             finally:
                 os.unlink(f.name)
     
@@ -65,7 +65,7 @@ class TestIOOperationsRoundTrip:
             try:
                 ds.to_parquet(f.name)
                 pd_read = pd.read_parquet(f.name)
-                assert_datastore_equals_pandas(ds, pd_read, check_dtype=False)
+                assert_datastore_equals_pandas(ds, pd_read)
             finally:
                 os.unlink(f.name)
     
@@ -151,7 +151,7 @@ class TestSQLGenerationValidation:
         ds_result = ds.sort_values('a').head(3)
         pd_result = pd_df.sort_values('a').head(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_groupby_agg_then_filter_sql(self):
         """Verify groupby agg then filter uses HAVING or subquery."""
@@ -182,7 +182,7 @@ class TestSQLGenerationValidation:
         pd_temp = pd_df.assign(b=pd_df['a'] * 2)
         pd_result = pd_temp[pd_temp['b'] > 4]
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMultiSourceMerge:
@@ -238,7 +238,7 @@ class TestMultiSourceMerge:
         ds_result = ds_left.merge(ds_right, on='key', how='outer')
         pd_result = pd_left.merge(pd_right, on='key', how='outer')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
     
     def test_merge_then_filter(self):
         """Test filter after merge."""
@@ -380,7 +380,7 @@ class TestMemoryAndPerformance:
         ds_result = ds[selected_cols]
         pd_result = pd_df[selected_cols]
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_deeply_nested_operations(self):
         """Test deeply nested operation chain."""
@@ -400,7 +400,7 @@ class TestMemoryAndPerformance:
                      [['a', 'c']]
                      .head(20))
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestErrorHandling:
@@ -441,7 +441,7 @@ class TestErrorHandling:
         ds_result = ds.assign(c=ds['a'] + ds['b'])
         pd_result = pd_df.assign(c=pd_df['a'] + pd_df['b'])
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_nan_handling_in_filter(self):
         """Test NaN handling in filter conditions."""
@@ -483,7 +483,7 @@ class TestComplexScenarios:
         ds_clean = ds[ds['age'] > 0][ds['age'] < 100]
         pd_clean = pd_df[pd_df['age'] > 0][pd_df['age'] < 100]
         
-        assert_datastore_equals_pandas(ds_clean, pd_clean, check_dtype=False)
+        assert_datastore_equals_pandas(ds_clean, pd_clean)
     
     def test_aggregation_with_multiple_functions(self):
         """Test groupby with multiple aggregation functions."""
@@ -616,7 +616,7 @@ class TestIndexOperations:
         ds_result = ds.set_index('a').reset_index()
         pd_result = pd_df.set_index('a').reset_index()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_reindex_with_new_index(self):
         """Test reindex with new index values."""

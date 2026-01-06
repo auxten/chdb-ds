@@ -43,7 +43,7 @@ class TestNullableBooleanSQLPushdown(unittest.TestCase):
         pd_result = df.where(df['bool_col'] == False, True)
         ds_result = ds.where(ds['bool_col'] == False, True)
         # dtype may differ: chDB returns bool, pandas returns boolean
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_where_nullable_bool_other_false(self):
         """Test where with nullable bool column, other=False uses SQL pushdown."""
@@ -61,7 +61,7 @@ class TestNullableBooleanSQLPushdown(unittest.TestCase):
         pd_result = df.where(df['bool_col'] == True, False)
         ds_result = ds.where(ds['bool_col'] == True, False)
         # dtype may differ: chDB returns bool, pandas returns boolean
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mask_nullable_bool_other_true(self):
         """Test mask with nullable bool column, other=True uses SQL pushdown."""
@@ -79,7 +79,7 @@ class TestNullableBooleanSQLPushdown(unittest.TestCase):
         pd_result = df.mask(df['bool_col'] == True, True)
         ds_result = ds.mask(ds['bool_col'] == True, True)
         # dtype may differ: chDB returns bool, pandas returns boolean
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_nullable_bool(self):
         """Test filter on nullable boolean column."""
@@ -93,7 +93,7 @@ class TestNullableBooleanSQLPushdown(unittest.TestCase):
         pd_result = df[df['bool_col'] == True]
         ds_result = ds[ds['bool_col'] == True]
         # dtype may differ: filtering removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_nullable_bool_with_na(self):
         """Test that NA values in bool column don't match True or False."""
@@ -131,7 +131,7 @@ class TestNullableInt64SQLPushdown(unittest.TestCase):
         pd_result = df.where(df['int_col'] > 2, 0)
         ds_result = ds.where(ds['int_col'] > 2, 0)
         # dtype may differ: chDB returns int64, pandas returns Int64
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_where_nullable_int64_other_none(self):
         """Test where with nullable Int64 column, other=None uses SQL pushdown."""
@@ -162,7 +162,7 @@ class TestNullableInt64SQLPushdown(unittest.TestCase):
         pd_result = df[df['int_col'] > 2]
         ds_result = ds[ds['int_col'] > 2]
         # dtype may differ: filtering removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_nullable_int64_na_excluded(self):
         """Test that NA values in Int64 column are excluded from comparisons."""
@@ -187,7 +187,7 @@ class TestNullableInt64SQLPushdown(unittest.TestCase):
         ds_result = ds.groupby('group')['int_col'].sum()
 
         # Both should correctly ignore NA: A=1, B=7
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_mean_nullable_int64(self):
         """Test groupby mean correctly handles NA values in nullable Int64."""
@@ -201,7 +201,7 @@ class TestNullableInt64SQLPushdown(unittest.TestCase):
         ds_result = ds.groupby('group')['int_col'].mean()
 
         # Both should correctly ignore NA: A=1.0 (only 1 value), B=3.5
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_count_nullable_int64(self):
         """Test groupby count correctly handles NA values in nullable Int64."""
@@ -215,7 +215,7 @@ class TestNullableInt64SQLPushdown(unittest.TestCase):
         ds_result = ds.groupby('group')['int_col'].count()
 
         # Both should exclude NA: A=1, B=2
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestIsNullIsNotNullConditions(unittest.TestCase):
@@ -244,7 +244,7 @@ class TestIsNullIsNotNullConditions(unittest.TestCase):
         pd_result = df[df['int_col'].notnull()]
         ds_result = ds[ds['int_col'].notnull()]
         # dtype may differ: filtering for notnull removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_alias(self):
         """Test isna() is alias for isnull()."""
@@ -267,7 +267,7 @@ class TestIsNullIsNotNullConditions(unittest.TestCase):
         pd_result = df[df['int_col'].notna()]
         ds_result = ds[ds['int_col'].notna()]
         # dtype may differ: filtering for notna removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isnull_and_comparison(self):
         """Test isnull() combined with comparison filter."""
@@ -281,7 +281,7 @@ class TestIsNullIsNotNullConditions(unittest.TestCase):
         pd_result = df[df['int_col'].notnull() & (df['int_col'] > 2)]
         ds_result = ds[ds['int_col'].notnull() & (ds['int_col'] > 2)]
         # dtype may differ: filtering removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isnull_or_condition(self):
         """Test isnull() combined with OR condition."""
@@ -311,7 +311,7 @@ class TestNullableFloat64SQLPushdown(unittest.TestCase):
         pd_result = df.where(df['float_col'] > 2.0, 0.0)
         ds_result = ds.where(ds['float_col'] > 2.0, 0.0)
         # dtype may differ: chDB returns float64, pandas returns Float64
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_nullable_float64(self):
         """Test filter on nullable Float64 column."""
@@ -324,7 +324,7 @@ class TestNullableFloat64SQLPushdown(unittest.TestCase):
         pd_result = df[df['float_col'] > 2.0]
         ds_result = ds[ds['float_col'] > 2.0]
         # dtype may differ: filtering removes NA, chDB returns non-nullable
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestNullableChainedOperations(unittest.TestCase):
@@ -341,7 +341,7 @@ class TestNullableChainedOperations(unittest.TestCase):
         # Filter out NA values, then groupby sum
         pd_result = df[df['int_col'].notnull()].groupby('group')['int_col'].sum()
         ds_result = ds[ds['int_col'].notnull()].groupby('group')['int_col'].sum()
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_by_comparison_then_isnull_check(self):
         """Test filter by comparison then check for nulls."""
@@ -359,7 +359,7 @@ class TestNullableChainedOperations(unittest.TestCase):
         pd_result = pd_filtered[pd_filtered['other_col'].isnull()]
         ds_result = ds_filtered[ds_filtered['other_col'].isnull()]
         # dtype may differ: filtering removes NA from int_col
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestNullableEdgeCases(unittest.TestCase):

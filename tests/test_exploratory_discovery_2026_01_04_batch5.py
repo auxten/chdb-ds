@@ -138,7 +138,7 @@ class TestDataFrameMethodVariants:
         pd_result = df.sort_values('a', na_position='first')
         ds_result = ds.sort_values('a', na_position='first')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_values_multiple_columns_mixed_order(self):
         """sort_values with multiple columns and mixed ascending"""
@@ -169,7 +169,7 @@ class TestDataFrameMethodVariants:
         pd_result = df['a'].rank(method='dense')
         ds_result = ds['a'].rank(method='dense')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rank_method_first(self):
         """rank with method='first'"""
@@ -179,7 +179,7 @@ class TestDataFrameMethodVariants:
         pd_result = df['a'].rank(method='first')
         ds_result = ds['a'].rank(method='first')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestLocIlocEdgeCases:
@@ -255,7 +255,7 @@ class TestDataTypeBoundaries:
         pd_result = df[df['a'] > 10**15]
         ds_result = ds[ds['a'] > 10**15]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_float_precision(self):
         """Float precision"""
@@ -265,7 +265,7 @@ class TestDataTypeBoundaries:
         pd_result = df.round(10)
         ds_result = ds.round(10)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mixed_int_float_column(self):
         """Column with mixed integers and floats"""
@@ -307,7 +307,7 @@ class TestDataTypeBoundaries:
         pd_result = df[df['flag']]
         ds_result = ds[ds['flag']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMergeJoinEdgeCases:
@@ -335,7 +335,7 @@ class TestMergeJoinEdgeCases:
         pd_result = pd.merge(df1, df2, on='key', how='outer')
         ds_result = ds1.merge(ds2, on='key', how='outer')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_merge_on_multiple_columns(self):
         """merge on multiple columns"""
@@ -360,7 +360,7 @@ class TestMergeJoinEdgeCases:
         ds_result = ds1.merge(ds2, on='key', how='outer', indicator=True)
 
         # indicator column may be category type
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 class TestAggregationEdgeCases:
@@ -380,7 +380,7 @@ class TestAggregationEdgeCases:
         if hasattr(ds_result, 'reset_index'):
             ds_result = ds_result.reset_index(drop=True) if 'category' in ds_result.columns else ds_result.reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_multiple_agg_same_column(self):
         """Apply multiple aggregation functions to the same column"""
@@ -396,7 +396,7 @@ class TestAggregationEdgeCases:
         if isinstance(ds_result, pd.DataFrame):
             ds_result = ds_result.reset_index(drop=True) if 'category' in ds_result.columns else ds_result.reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_agg_as_index_false(self):
         """groupby with as_index=False"""
@@ -406,7 +406,7 @@ class TestAggregationEdgeCases:
         pd_result = df.groupby('category', as_index=False)['value'].sum()
         ds_result = ds.groupby('category', as_index=False)['value'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     @chdb_nan_sum_behavior
     def test_agg_with_all_nan(self):
@@ -418,7 +418,7 @@ class TestAggregationEdgeCases:
         ds_result = ds.groupby('category')['value'].sum()
 
         # Sum of all NaN should return 0 or NaN (depends on skipna)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 class TestStringMethodEdgeCases:
@@ -493,7 +493,7 @@ class TestWindowFunctionEdgeCases:
         pd_result = df['value'].rolling(window=3, min_periods=1).sum()
         ds_result = ds['value'].rolling(window=3, min_periods=1).sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rolling_center(self):
         """rolling with center=True"""
@@ -503,7 +503,7 @@ class TestWindowFunctionEdgeCases:
         pd_result = df['value'].rolling(window=3, center=True).mean()
         ds_result = ds['value'].rolling(window=3, center=True).mean()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_expanding_sum(self):
         """expanding sum"""
@@ -513,7 +513,7 @@ class TestWindowFunctionEdgeCases:
         pd_result = df['value'].expanding().sum()
         ds_result = ds['value'].expanding().sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_shift_with_fill_value(self):
         """shift with fill_value"""
@@ -523,7 +523,7 @@ class TestWindowFunctionEdgeCases:
         pd_result = df['value'].shift(2, fill_value=0)
         ds_result = ds['value'].shift(2, fill_value=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMiscellaneousEdgeCases:
@@ -540,7 +540,7 @@ class TestMiscellaneousEdgeCases:
         # pivot_table result is usually a DataFrame
         ds_result = get_value(ds_result)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_melt_basic(self):
         """melt operation"""

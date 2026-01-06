@@ -251,7 +251,7 @@ class TestGroupByEdgeCases:
         ds_result = self.ds.groupby('category')['value'].agg(['sum', 'mean', 'count']).reset_index()
 
         # groupby order undefined
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_dict_agg(self):
         """groupby with dict specifying different functions per column."""
@@ -261,7 +261,7 @@ class TestGroupByEdgeCases:
         # DataStore
         ds_result = self.ds.groupby('category').agg({'value': 'sum', 'count': 'mean'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_filter_on_agg(self):
         """Filter on aggregated values (HAVING equivalent)."""
@@ -273,7 +273,7 @@ class TestGroupByEdgeCases:
         ds_agg = self.ds.groupby('category')['value'].sum().reset_index()
         ds_result = ds_agg[ds_agg['value'] > 30]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_multiple_columns(self):
         """groupby on multiple columns."""
@@ -283,7 +283,7 @@ class TestGroupByEdgeCases:
         # DataStore
         ds_result = self.ds.groupby(['category', 'subcategory'])['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_then_sort(self):
         """groupby then sort on aggregated values."""
@@ -293,7 +293,7 @@ class TestGroupByEdgeCases:
         # DataStore
         ds_result = self.ds.groupby('category')['value'].sum().reset_index().sort_values('value')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestArithmeticExpressionChaining:
@@ -314,7 +314,7 @@ class TestArithmeticExpressionChaining:
         # DataStore
         ds_result = self.ds.assign(sum=self.ds['a'] + self.ds['b'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_complex_arithmetic(self):
         """Complex arithmetic chain."""
@@ -326,7 +326,7 @@ class TestArithmeticExpressionChaining:
         # DataStore
         ds_result = self.ds.assign(expr=(self.ds['a'] * 2 + self.ds['b']) / self.ds['c'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_on_arithmetic(self):
         """Filter based on arithmetic expression."""
@@ -349,7 +349,7 @@ class TestArithmeticExpressionChaining:
         ds_temp = self.ds.assign(total=self.ds['a'] + self.ds['b'])
         ds_result = ds_temp[ds_temp['total'] > 30]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestStringOperationChaining:
@@ -424,8 +424,7 @@ class TestWhereAndMaskOperations:
             ds_result._execute().reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_mask_simple(self):
         """Simple mask operation."""
@@ -439,8 +438,7 @@ class TestWhereAndMaskOperations:
             ds_result._execute().reset_index(drop=True),
             pd_result.reset_index(drop=True),
             check_names=False,
-            check_dtype=False,
-        )
+            )
 
     def test_where_then_filter(self):
         """where then filter: chained operations."""
@@ -453,7 +451,7 @@ class TestWhereAndMaskOperations:
         ds_temp = self.ds.assign(clean_value=self.ds['value'].where(self.ds['value'] > 0, 0))
         ds_result = ds_temp[ds_temp['clean_value'] > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestComplexRealWorldChains:
@@ -497,7 +495,7 @@ class TestComplexRealWorldChains:
             .head(3)
         )
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_feature_engineering_pipeline_simple(self):
         """Feature engineering: single assign + filter + column select."""
@@ -510,7 +508,7 @@ class TestComplexRealWorldChains:
         ds_temp = self.ds.assign(purchase_per_age=self.ds['purchase_amount'] / self.ds['age'])
         ds_result = ds_temp[ds_temp['purchase_per_age'] > 10][['name', 'city', 'purchase_per_age']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_feature_engineering_pipeline_chained_assigns(self):
         """Feature engineering: chained assigns where one depends on another.
@@ -534,7 +532,7 @@ class TestComplexRealWorldChains:
         ds_temp = ds_temp.assign(purchase_per_year=ds_temp['purchase_amount'] / ds_temp['years_since_signup'])
         ds_result = ds_temp[ds_temp['purchase_per_year'] > 100][['name', 'city', 'purchase_per_year']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_three_level_chained_dependency(self):
         """Three levels of chained computed columns: step1 -> step2 -> step3."""
@@ -555,7 +553,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(step3=ds['step2'] + ds['base'])
         ds_result = ds[ds['step3'] > 200][['base', 'step3']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mixed_arithmetic_chained_assigns(self):
         """Chained assigns with mixed arithmetic operations (add, sub, mul, div)."""
@@ -575,7 +573,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(final=ds['ratio'] * ds['a'])
         ds_result = ds[ds['final'] > 150][['a', 'b', 'c', 'final']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_one_column_depends_on_multiple_computed(self):
         """One computed column depends on multiple other computed columns."""
@@ -601,7 +599,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(final_price=ds['subtotal'] - ds['discount'])
         ds_result = ds[ds['final_price'] > 850][['price', 'quantity', 'final_price']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_diamond_dependency_pattern(self):
         """Diamond dependency: root -> branch1, branch2 -> merged."""
@@ -621,7 +619,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(merged=ds['branch1'] + ds['branch2'])
         ds_result = ds[ds['merged'] > 60][['x', 'merged']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_string_functions_chained(self):
         """String functions with chained assigns."""
@@ -645,7 +643,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(last_upper=ds['last_name'].str.upper())
         ds_result = ds[ds['score'] > 80][['first_upper', 'last_upper', 'score']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_complex_data_analysis_pipeline(self):
         """Complex analytics: multiple chained assigns + filter + column select."""
@@ -661,7 +659,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(avg_annual_purchase=ds['purchase_amount'] / ds['years_active'])
         ds_result = ds[ds['avg_annual_purchase'] > 150][['name', 'city', 'avg_annual_purchase']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_filter_simple(self):
         """Filter using a boolean computed column: ds[ds['is_high']]."""
@@ -679,7 +677,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_high=ds['ratio'] > 50)
         ds_result = ds[ds['is_high']][['x', 'y', 'ratio']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_filter_complex(self):
         """Complex analytics with boolean computed column filter."""
@@ -697,7 +695,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_valuable=ds['avg_annual_purchase'] > 150)
         ds_result = ds[ds['is_valuable']][['name', 'city', 'avg_annual_purchase']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_chained_filter(self):
         """Chain boolean computed column filter with additional condition."""
@@ -719,7 +717,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_high_sales=ds['sales'] > 700)
         ds_result = ds[ds['is_high_sales']][ds['region'] == 'East'][['product', 'sales']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_multi_layer_dependency(self):
         """Boolean computed column depending on multiple layers of computed columns."""
@@ -747,7 +745,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_expensive=ds['final_price'] > 200)
         ds_result = ds[ds['is_expensive']][['base_price', 'final_price']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_string_equality(self):
         """Boolean computed column using string equality."""
@@ -763,7 +761,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_category_a=ds['category'] == 'A')
         ds_result = ds[ds['is_category_a']][['value', 'category']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_string_inequality(self):
         """Boolean computed column using string inequality (!=)."""
@@ -779,7 +777,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_not_category_a=ds['category'] != 'A')
         ds_result = ds[ds['is_not_category_a']][['value', 'category']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_boolean_computed_column_gte_lte(self):
         """Boolean computed column using >= and <=."""
@@ -795,7 +793,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_gte_30=ds['value'] >= 30)
         ds_result_gte = ds[ds['is_gte_30']][['value']]
 
-        assert_datastore_equals_pandas(ds_result_gte, pd_result_gte, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_gte, pd_result_gte)
 
         # pandas - test <=
         pd_df = df.copy()
@@ -807,7 +805,7 @@ class TestComplexRealWorldChains:
         ds = ds.assign(is_lte_30=ds['value'] <= 30)
         ds_result_lte = ds[ds['is_lte_30']][['value']]
 
-        assert_datastore_equals_pandas(ds_result_lte, pd_result_lte, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_lte, pd_result_lte)
 
     def test_cohort_analysis_pipeline(self):
         """Cohort analysis: groupby multiple columns -> agg -> filter."""
@@ -824,7 +822,7 @@ class TestComplexRealWorldChains:
         ds_result = ds_agg[ds_agg['user_id'] >= 3]
 
         # groupby order undefined
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 class TestEdgeCasesForSQLGeneration:
@@ -932,7 +930,7 @@ class TestNullHandlingInChains:
         # DataStore
         ds_result = self.ds[self.ds['a'] > 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dropna_then_filter(self):
         """dropna then filter."""
@@ -943,7 +941,7 @@ class TestNullHandlingInChains:
         ds_clean = self.ds.dropna(subset=['a'])
         ds_result = ds_clean[ds_clean['a'] > 2]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_then_filter(self):
         """fillna then filter."""
@@ -955,7 +953,7 @@ class TestNullHandlingInChains:
         ds_filled = self.ds.fillna({'a': 0})
         ds_result = ds_filled[ds_filled['a'] > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ class TestMergeAsof:
         ds_right = DataStore(right)
         ds_result = ds.merge_asof(ds_left, ds_right, on='time')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_asof_direction_backward(self):
         """merge_asof with backward direction (default)."""
@@ -57,7 +57,7 @@ class TestMergeAsof:
         ds_right = DataStore(right)
         ds_result = ds.merge_asof(ds_left, ds_right, on='a', direction='backward')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_asof_direction_forward(self):
         """merge_asof with forward direction."""
@@ -70,7 +70,7 @@ class TestMergeAsof:
         ds_right = DataStore(right)
         ds_result = ds.merge_asof(ds_left, ds_right, on='a', direction='forward')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_asof_direction_nearest(self):
         """merge_asof with nearest direction."""
@@ -83,7 +83,7 @@ class TestMergeAsof:
         ds_right = DataStore(right)
         ds_result = ds.merge_asof(ds_left, ds_right, on='a', direction='nearest')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_asof_with_tolerance(self):
         """merge_asof with tolerance parameter."""
@@ -102,7 +102,7 @@ class TestMergeAsof:
         ds_right = DataStore(right)
         ds_result = ds.merge_asof(ds_left, ds_right, on='time', tolerance=pd.Timedelta('3min'))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMergeOrdered:
@@ -119,7 +119,7 @@ class TestMergeOrdered:
         ds_right = DataStore(right)
         ds_result = ds.merge_ordered(ds_left, ds_right, on='key')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_ordered_ffill(self):
         """merge_ordered with forward fill."""
@@ -132,7 +132,7 @@ class TestMergeOrdered:
         ds_right = DataStore(right)
         ds_result = ds.merge_ordered(ds_left, ds_right, on='key', fill_method='ffill')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_merge_ordered_left_on_right_on(self):
         """merge_ordered with different column names."""
@@ -145,7 +145,7 @@ class TestMergeOrdered:
         ds_right = DataStore(right)
         ds_result = ds.merge_ordered(ds_left, ds_right, left_on='left_key', right_on='right_key')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestCrosstab:
@@ -159,7 +159,7 @@ class TestCrosstab:
         pd_result = pd.crosstab(a, b)
         ds_result = ds.crosstab(a, b)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_crosstab_with_values(self):
         """crosstab with values and aggfunc."""
@@ -170,7 +170,7 @@ class TestCrosstab:
         pd_result = pd.crosstab(a, b, values=c, aggfunc='sum')
         ds_result = ds.crosstab(a, b, values=c, aggfunc='sum')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_crosstab_normalize(self):
         """crosstab with normalization."""
@@ -180,7 +180,7 @@ class TestCrosstab:
         pd_result = pd.crosstab(a, b, normalize=True)
         ds_result = ds.crosstab(a, b, normalize=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_crosstab_margins(self):
         """crosstab with margins (totals)."""
@@ -190,7 +190,7 @@ class TestCrosstab:
         pd_result = pd.crosstab(a, b, margins=True)
         ds_result = ds.crosstab(a, b, margins=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestWideToLong:
@@ -211,7 +211,7 @@ class TestWideToLong:
         ds_df = DataStore(df)
         ds_result = ds.wide_to_long(ds_df, stubnames=['A', 'B'], i='id', j='year')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_wide_to_long_with_sep(self):
         """wide_to_long with separator."""
@@ -226,7 +226,7 @@ class TestWideToLong:
         ds_df = DataStore(df)
         ds_result = ds.wide_to_long(ds_df, stubnames=['A'], i='id', j='year', sep='_')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 class TestFactorize:
@@ -273,7 +273,7 @@ class TestJsonNormalize:
         pd_result = pd.json_normalize(data)
         ds_result = ds.json_normalize(data)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_json_normalize_nested(self):
         """json_normalize with nested records."""
@@ -285,7 +285,7 @@ class TestJsonNormalize:
         pd_result = pd.json_normalize(data, record_path='cities', meta='state')
         ds_result = ds.json_normalize(data, record_path='cities', meta='state')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_json_normalize_max_level(self):
         """json_normalize with max_level."""
@@ -297,7 +297,7 @@ class TestJsonNormalize:
         pd_result = pd.json_normalize(data, max_level=1)
         ds_result = ds.json_normalize(data, max_level=1)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMeltAdvanced:
@@ -316,7 +316,7 @@ class TestMeltAdvanced:
         ds_df = DataStore(df)
         ds_result = ds.melt(ds_df, id_vars=['A'], value_vars=['B', 'C'], ignore_index=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_melt_var_name_value_name(self):
         """melt with custom var_name and value_name."""
@@ -331,7 +331,7 @@ class TestMeltAdvanced:
         ds_df = DataStore(df)
         ds_result = ds.melt(ds_df, id_vars=['id'], var_name='variable_type', value_name='measurement')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestPivotTableAdvanced:
@@ -356,7 +356,7 @@ class TestPivotTableAdvanced:
         if hasattr(ds_result_df.columns, 'to_flat_index'):
             ds_result_df.columns = ['_'.join(map(str, col)).strip() for col in ds_result_df.columns.to_flat_index()]
 
-        assert_datastore_equals_pandas(ds_result_df, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_df, pd_result)
 
     def test_pivot_table_fill_value(self):
         """pivot_table with fill_value."""
@@ -371,7 +371,7 @@ class TestPivotTableAdvanced:
         ds_df = DataStore(df)
         ds_result = ds.pivot_table(ds_df, values='values', index='A', columns='B', fill_value=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_pivot_table_margins(self):
         """pivot_table with margins."""
@@ -386,7 +386,7 @@ class TestPivotTableAdvanced:
         ds_df = DataStore(df)
         ds_result = ds.pivot_table(ds_df, values='values', index='A', columns='B', margins=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestConstructorEdgeCases:
@@ -399,7 +399,7 @@ class TestConstructorEdgeCases:
         ds_df = DataStore(ser)
         pd_df = ser.to_frame()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_constructor_from_list_of_lists(self):
         """DataStore from list of lists."""
@@ -408,7 +408,7 @@ class TestConstructorEdgeCases:
         pd_df = pd.DataFrame(data, columns=['A', 'B'])
         ds_df = DataStore(data, columns=['A', 'B'])
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_constructor_from_dict_with_different_lengths(self):
         """DataStore from dict with scalar values."""
@@ -417,7 +417,7 @@ class TestConstructorEdgeCases:
         pd_df = pd.DataFrame(data, index=[0])
         ds_df = DataStore(data, index=[0])
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_constructor_with_index(self):
         """DataStore with custom index."""
@@ -426,7 +426,7 @@ class TestConstructorEdgeCases:
         pd_df = pd.DataFrame(data, index=['x', 'y', 'z'])
         ds_df = DataStore(data, index=['x', 'y', 'z'])
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_constructor_empty_df(self):
         """DataStore from empty DataFrame."""
@@ -457,7 +457,7 @@ class TestDeepColumnExprChaining:
         pd_result = pd_df['text'].str.strip().str.lower().str.replace(' ', '_')
         ds_result = ds_df['text'].str.strip().str.lower().str.replace(' ', '_')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_arithmetic_chain(self):
         """Chain multiple arithmetic operations."""
@@ -468,7 +468,7 @@ class TestDeepColumnExprChaining:
         pd_result = ((pd_df['value'] + 5) * 2 - 10) / 2
         ds_result = ((ds_df['value'] + 5) * 2 - 10) / 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mixed_chain_str_arithmetic(self):
         """Mix string and length operations."""
@@ -479,7 +479,7 @@ class TestDeepColumnExprChaining:
         pd_result = pd_df['text'].str.upper().str.len() * 2
         ds_result = ds_df['text'].str.upper().str.len() * 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_after_assign_chain(self):
         """Filter after multiple assigns."""
@@ -495,7 +495,7 @@ class TestDeepColumnExprChaining:
         ds_df = ds_df.assign(C=ds_df['B'] + 10)
         ds_result = ds_df[ds_df['C'] > 15]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_agg_then_filter(self):
         """GroupBy aggregation then filter result."""
@@ -509,7 +509,7 @@ class TestDeepColumnExprChaining:
         ds_agg = ds_df.groupby('group')['value'].sum().reset_index()
         ds_result = ds_agg[ds_agg['value'] > 25]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 class TestComplexLazyOpCombinations:
@@ -524,7 +524,7 @@ class TestComplexLazyOpCombinations:
         pd_result = pd_df[pd_df['A'] > 1].sort_values('B').head(3)[['A', 'C']]
         ds_result = ds_df[ds_df['A'] > 1].sort_values('B').head(3)[['A', 'C']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_multiple_filters_and_sorts(self):
         """Multiple filters and sorts."""
@@ -535,7 +535,7 @@ class TestComplexLazyOpCombinations:
         pd_result = pd_df[pd_df['A'] > 1][pd_df['B'] == 'x'].sort_values('C', ascending=False)
         ds_result = ds_df[ds_df['A'] > 1][ds_df['B'] == 'x'].sort_values('C', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_assign_drop_rename_chain(self):
         """Assign -> drop -> rename chain."""
@@ -546,7 +546,7 @@ class TestComplexLazyOpCombinations:
         pd_result = pd_df.assign(D=pd_df['A'] + pd_df['B']).drop(columns=['C']).rename(columns={'D': 'sum_AB'})
         ds_result = ds_df.assign(D=ds_df['A'] + ds_df['B']).drop(columns=['C']).rename(columns={'D': 'sum_AB'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_concat_then_groupby(self):
         """Concat then groupby."""
@@ -559,7 +559,7 @@ class TestComplexLazyOpCombinations:
         ds2 = DataStore(df2)
         ds_result = ds.concat([ds1, ds2]).groupby('group')['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_merge_then_filter_then_agg(self):
         """Merge -> filter -> aggregate."""
@@ -640,7 +640,7 @@ class TestUniqueAndValueCounts:
         pd_result = pd.value_counts(values)
         ds_result = ds.value_counts(values)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_value_counts_normalize(self):
         """value_counts with normalize."""
@@ -649,7 +649,7 @@ class TestUniqueAndValueCounts:
         pd_result = pd.value_counts(values, normalize=True)
         ds_result = ds.value_counts(values, normalize=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestArrayFunction:
@@ -678,7 +678,7 @@ class TestDataFrameSeriesConstructors:
         pd_result = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
         ds_result = ds.DataFrame({'A': [1, 2], 'B': [3, 4]})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_series_factory(self):
         """ds.Series() factory function."""
@@ -688,7 +688,7 @@ class TestDataFrameSeriesConstructors:
         # ds.Series should return a ColumnExpr or pandas Series
         ds_result = get_series(ds_result)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestIsNaFunctions:

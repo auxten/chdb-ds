@@ -303,7 +303,7 @@ class TestBoundaryValues:
         ds_result = ds_df['a']
 
         # Compare values with tolerance
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_inf_values(self):
         """Infinity values"""

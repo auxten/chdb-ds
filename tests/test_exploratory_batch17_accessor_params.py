@@ -236,9 +236,7 @@ class TestFillnaParameters:
         ds_df = ds_result._execute()
         pd.testing.assert_frame_equal(
             ds_df.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_fillna_dict_value(self, ds_with_nulls):
         """Test fillna with dict specifying values per column."""
@@ -253,9 +251,7 @@ class TestFillnaParameters:
         ds_df = ds_result._execute()
         pd.testing.assert_frame_equal(
             ds_df.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_fillna_column_specific(self, ds_with_nulls):
         """Test fillna on a specific column."""
@@ -592,9 +588,7 @@ class TestSortValuesEdgeCases:
 
         pd.testing.assert_frame_equal(
             ds_df.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
     def test_sort_values_mixed_ascending(self):
         """Test sorting with mixed ascending per column."""
@@ -614,9 +608,7 @@ class TestSortValuesEdgeCases:
 
         pd.testing.assert_frame_equal(
             ds_df.reset_index(drop=True),
-            pd_result.reset_index(drop=True),
-            check_dtype=False
-        )
+            pd_result.reset_index(drop=True))
 
 
 # =============================================================================

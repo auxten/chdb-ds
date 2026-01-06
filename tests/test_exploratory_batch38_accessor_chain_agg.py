@@ -85,7 +85,7 @@ class TestStringAccessorChains:
         ds_df['name_len'] = ds_df['name'].str.len()
         ds_result = ds_df.groupby('category')['name_len'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_str_slice_then_filter_then_sort(self):
         """Test str slicing followed by filter and sort."""
@@ -123,7 +123,7 @@ class TestStringAccessorChains:
         ds_df['product_lower'] = ds_df['Product'].str.lower()
         ds_result = ds_df.groupby('product_lower')['Sales'].agg(['sum', 'mean'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_multiple_str_ops_in_chain(self):
         """Test multiple string operations in sequence."""
@@ -170,7 +170,7 @@ class TestDatetimeAccessorChains:
         ds_df['year'] = ds_df['date'].dt.year
         ds_result = ds_df.groupby('year')['sales'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_dt_month_year_multi_groupby(self):
         """Test dt.year and dt.month as multi-level groupby keys."""
@@ -194,7 +194,7 @@ class TestDatetimeAccessorChains:
         ds_df['month'] = ds_df['date'].dt.month
         ds_result = ds_df.groupby(['year', 'month'])['revenue'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_dt_dayofweek_filter_then_agg(self):
         """Test dt.dayofweek filter followed by aggregation."""
@@ -243,7 +243,7 @@ class TestDatetimeAccessorChains:
         ds_df['quarter'] = ds_df['date'].dt.quarter
         ds_result = ds_df.groupby('quarter')['amount'].agg(['sum', 'mean', 'count'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_dt_hour_groupby_for_hourly_analysis(self):
         """Test dt.hour for hourly pattern analysis."""
@@ -268,7 +268,7 @@ class TestDatetimeAccessorChains:
         ds_df['hour'] = ds_df['timestamp'].dt.hour
         ds_result = ds_df.groupby('hour')['requests'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -293,7 +293,7 @@ class TestCumulativeOperations:
         ds_df = DataStore(df.copy())
         ds_df['cumsum'] = ds_df['value'].cumsum()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_cumsum_with_filter(self):
         """Test cumsum after filter."""
@@ -312,7 +312,7 @@ class TestCumulativeOperations:
         ds_filtered = ds_df[ds_df['category'] == 'A']
         ds_filtered['cumsum'] = ds_filtered['value'].cumsum()
 
-        assert_datastore_equals_pandas(ds_filtered, pd_filtered, check_dtype=False)
+        assert_datastore_equals_pandas(ds_filtered, pd_filtered)
 
     def test_cummax_simple(self):
         """Test simple cumulative max."""
@@ -328,7 +328,7 @@ class TestCumulativeOperations:
         ds_df = DataStore(df.copy())
         ds_df['cummax'] = ds_df['value'].cummax()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_cummin_simple(self):
         """Test simple cumulative min."""
@@ -344,7 +344,7 @@ class TestCumulativeOperations:
         ds_df = DataStore(df.copy())
         ds_df['cummin'] = ds_df['value'].cummin()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_cumprod_simple(self):
         """Test simple cumulative product."""
@@ -360,7 +360,7 @@ class TestCumulativeOperations:
         ds_df = DataStore(df.copy())
         ds_df['cumprod'] = ds_df['value'].cumprod()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
 
 # =============================================================================
@@ -392,7 +392,7 @@ class TestMultiColumnAggregation:
             'value2': 'mean'
         })
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_agg_dict_multiple_funcs(self):
         """Test groupby agg with dict specifying multiple functions per column."""
@@ -412,7 +412,7 @@ class TestMultiColumnAggregation:
             'amount': ['sum', 'mean', 'max', 'min']
         })
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_groupby_agg_named_aggregation(self):
         """Test groupby with named aggregation syntax."""
@@ -434,7 +434,7 @@ class TestMultiColumnAggregation:
             average=('value', 'mean')
         )
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_agg_without_groupby(self):
         """Test DataFrame.agg() without groupby."""
@@ -456,7 +456,7 @@ class TestMultiColumnAggregation:
             'b': 'mean'
         })
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -484,7 +484,7 @@ class TestCombinedAccessorAggChains:
         ds_df['category'] = ds_df['product_code'].str.split('-').str[0]
         ds_result = ds_df.groupby('category')['quantity'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_dt_accessor_then_str_accessor(self):
         """Test datetime accessor followed by string operations on another column."""
@@ -506,7 +506,7 @@ class TestCombinedAccessorAggChains:
         ds_df['name_upper'] = ds_df['name'].str.upper()
         ds_result = ds_df[['month', 'name_upper', 'value']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_str_groupby_dt_agg(self):
         """Test filter by string, then groupby datetime field and aggregate."""
@@ -532,7 +532,7 @@ class TestCombinedAccessorAggChains:
         ds_filtered['month'] = ds_filtered['date'].dt.month
         ds_result = ds_filtered.groupby('month')['sales'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -575,7 +575,7 @@ class TestEdgeCases:
         ds_df = DataStore(df.copy())
         ds_df['cumsum'] = ds_df['value'].cumsum()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_str_accessor_with_na_values(self):
         """Test string accessor with NA values."""
@@ -616,7 +616,7 @@ class TestEdgeCases:
         ds_df['month'] = ds_df['timestamp'].dt.month
         ds_result = ds_df[ds_df['month'] <= 6]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_multiple_groupby_agg_chains(self):
         """Test multiple groupby-agg operations in sequence."""
@@ -636,7 +636,7 @@ class TestEdgeCases:
         ds_grouped = ds_df.groupby('region')['sales'].sum().reset_index()
         ds_result = ds_grouped.sort_values('sales', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -661,7 +661,7 @@ class TestRankOperations:
         ds_df = DataStore(df.copy())
         ds_df['rank'] = ds_df['value'].rank()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_rank_method_min(self):
         """Test rank with method='min' for ties."""
@@ -677,7 +677,7 @@ class TestRankOperations:
         ds_df = DataStore(df.copy())
         ds_df['rank'] = ds_df['score'].rank(method='min')
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_rank_ascending_false(self):
         """Test rank with ascending=False."""
@@ -693,7 +693,7 @@ class TestRankOperations:
         ds_df = DataStore(df.copy())
         ds_df['rank'] = ds_df['value'].rank(ascending=False)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_rank_with_filter(self):
         """Test rank after filtering."""
@@ -712,7 +712,7 @@ class TestRankOperations:
         ds_filtered = ds_df[ds_df['category'] == 'A']
         ds_filtered['rank'] = ds_filtered['score'].rank()
 
-        assert_datastore_equals_pandas(ds_filtered, pd_filtered, check_dtype=False)
+        assert_datastore_equals_pandas(ds_filtered, pd_filtered)
 
 
 # =============================================================================
@@ -763,7 +763,7 @@ class TestComplexChainScenarios:
             .head(2)
         )
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cumsum_rank_in_same_df(self):
         """Test adding both cumsum and rank columns."""
@@ -781,7 +781,7 @@ class TestComplexChainScenarios:
         ds_df['cumsum'] = ds_df['value'].cumsum()
         ds_df['rank'] = ds_df['value'].rank()
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_accessor_result_in_computation(self):
         """Test using accessor result in arithmetic computation."""
@@ -798,7 +798,7 @@ class TestComplexChainScenarios:
         ds_df = DataStore(df.copy())
         ds_df['score'] = ds_df['text'].str.len() * ds_df['multiplier']
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_dt_accessor_in_filter_expression(self):
         """Test datetime accessor directly in filter expression."""

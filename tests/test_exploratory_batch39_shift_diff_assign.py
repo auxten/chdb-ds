@@ -122,7 +122,7 @@ class TestShiftChains:
         ds_df['prev_value'] = ds_df['value'].shift(1)
         ds_result = ds_df.groupby('group')['prev_value'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_multiple_shift_operations(self):
         """Test multiple shift operations in one DataFrame."""
@@ -244,7 +244,7 @@ class TestDiffChains:
         ds_df['reconstructed'] = ds_df['value'].diff().cumsum() + df['value'].iloc[0]
         ds_result = ds_df.iloc[1:]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -603,7 +603,7 @@ class TestNullableTypeOperations:
         ds_df['shifted'] = ds_df['value'].shift(1)
         ds_result = ds_df
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_diff_with_na_values(self):
         """Test diff on column with NA values."""
@@ -621,7 +621,7 @@ class TestNullableTypeOperations:
         ds_df['diff'] = ds_df['value'].diff()
         ds_result = ds_df
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_cumsum_with_na_values(self):
         """Test cumsum with NA values - pandas skipna behavior."""
@@ -688,7 +688,7 @@ class TestComplexChainScenarios:
         ds_df['running_total'] = ds_df['value'].cumsum()
         ds_result = ds_df.groupby('category')['running_total'].max()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_multiple_computed_columns_filter(self):
         """Test multiple computed columns with filter on any."""
@@ -825,7 +825,7 @@ class TestComputedColumnSQLPushdown:
         ds_df['bucket'] = (ds_df['value'] // 20).astype(int)
         ds_result = ds_df.groupby('bucket')['amount'].sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_computed_column_sort_key(self):
         """Test computed column as sort key."""

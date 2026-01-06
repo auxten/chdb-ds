@@ -54,14 +54,14 @@ class TestEvalQueryChains:
 
         pd_queried = pd_df.query('a > 2')
         pd_result = pd_queried.groupby('a')['b'].sum().reset_index()
-        
+
         ds_queried = ds_df.query('a > 2')
         ds_result = ds_queried.groupby('a')['b'].sum().reset_index()
 
         # Sort for comparison (groupby order not guaranteed)
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
     def test_query_then_sort_head(self, ds):
         """Query followed by sort and head."""
@@ -97,7 +97,7 @@ class TestEvalQueryChains:
         # Sort for comparison
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
     def test_chained_query_calls(self, ds):
         """Multiple chained query calls."""
@@ -146,9 +146,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].clip(lower=0, upper=20)
         ds_result = ds_df['x'].clip(lower=0, upper=20)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_clip_then_filter(self, ds):
         """Clip followed by filter."""
@@ -171,9 +169,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].between(0, 15)
         ds_result = ds_df['x'].between(0, 15)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result).astype(bool), pd_result, check_names=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result).astype(bool), pd_result, check_names=False)
 
     def test_between_inclusive(self, ds):
         """Between with inclusive parameter."""
@@ -182,9 +178,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].between(0, 15, inclusive='neither')
         ds_result = ds_df['x'].between(0, 15, inclusive='neither')
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result).astype(bool), pd_result, check_names=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result).astype(bool), pd_result, check_names=False)
 
     def test_between_as_filter(self, ds):
         """Use between result as filter."""
@@ -202,9 +196,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['x'].where(pd_df['x'] > 0, 0).clip(upper=15)
         ds_result = ds_df['x'].where(ds_df['x'] > 0, 0).clip(upper=15)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_clip_where_filter_chain(self, ds):
         """Clip -> where -> filter chain."""
@@ -227,9 +219,7 @@ class TestClipBetweenWhereChains:
         pd_result = pd_df['z'].where(pd_df['x'].between(0, 15), 0)
         ds_result = ds_df['z'].where(ds_df['x'].between(0, 15), 0)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
 
 class TestAstypeChains:
@@ -252,9 +242,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(float)
         ds_result = ds_df['int_col'].astype(float)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_astype_float_to_int(self, ds):
         """Convert float to int (truncation)."""
@@ -263,9 +251,7 @@ class TestAstypeChains:
         pd_result = pd_df['float_col'].astype(int)
         ds_result = ds_df['float_col'].astype(int)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_astype_int_to_str(self, ds):
         """Convert int to string."""
@@ -274,9 +260,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(str)
         ds_result = ds_df['int_col'].astype(str)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_astype_bool_to_int(self, ds):
         """Convert bool to int."""
@@ -285,9 +269,7 @@ class TestAstypeChains:
         pd_result = pd_df['bool_col'].astype(int)
         ds_result = ds_df['bool_col'].astype(int)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False, check_dtype=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
     def test_astype_then_filter(self, ds):
         """Astype followed by filter."""
@@ -315,10 +297,7 @@ class TestAstypeChains:
 
         # Reset index for comparison (filter changes index)
         pd.testing.assert_series_equal(
-            pd.Series(ds_result).reset_index(drop=True), 
-            pd_result.reset_index(drop=True), 
-            check_names=False, 
-            check_dtype=False
+            pd.Series(ds_result).reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
         )
 
     def test_astype_multiple_columns_dict(self, ds):
@@ -328,7 +307,7 @@ class TestAstypeChains:
         pd_result = pd_df.astype({'int_col': float, 'float_col': int})
         ds_result = ds_df.astype({'int_col': float, 'float_col': int})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_astype_chain_conversion(self, ds):
         """Chain multiple astype conversions."""
@@ -337,9 +316,7 @@ class TestAstypeChains:
         pd_result = pd_df['int_col'].astype(float).astype(str)
         ds_result = ds_df['int_col'].astype(float).astype(str)
 
-        pd.testing.assert_series_equal(
-            pd.Series(ds_result), pd_result, check_names=False
-        )
+        pd.testing.assert_series_equal(pd.Series(ds_result), pd_result, check_names=False)
 
 
 class TestAssignExpressions:
@@ -367,14 +344,8 @@ class TestAssignExpressions:
         """Assign multiple new columns."""
         ds_df, pd_df = ds
 
-        pd_result = pd_df.assign(
-            d=lambda x: x['a'] + x['b'],
-            e=lambda x: x['b'] * 2
-        )
-        ds_result = ds_df.assign(
-            d=lambda x: x['a'] + x['b'],
-            e=lambda x: x['b'] * 2
-        )
+        pd_result = pd_df.assign(d=lambda x: x['a'] + x['b'], e=lambda x: x['b'] * 2)
+        ds_result = ds_df.assign(d=lambda x: x['a'] + x['b'], e=lambda x: x['b'] * 2)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -422,7 +393,7 @@ class TestAssignExpressions:
         # First assign a new column
         pd_assigned = pd_df.assign(d=lambda x: x['a'] * 10)
         ds_assigned = ds_df.assign(d=lambda x: x['a'] * 10)
-        
+
         # Then groupby on original column 'a' and aggregate new column 'd'
         pd_result = pd_assigned.groupby('a')['d'].sum().reset_index()
         ds_result = ds_assigned.groupby('a')['d'].sum().reset_index()
@@ -430,7 +401,7 @@ class TestAssignExpressions:
         # Sort for comparison
         pd_result = pd_result.sort_values('a').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('a').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
     def test_chained_assign(self, ds):
         """Chain multiple assign calls."""
@@ -446,14 +417,8 @@ class TestAssignExpressions:
         ds_df, pd_df = ds
 
         # In pandas, columns are evaluated in order, but each lambda sees original df
-        pd_result = pd_df.assign(
-            d=lambda x: x['a'] * 2,
-            e=lambda x: x['a'] * 3  # Uses original a, not modified
-        )
-        ds_result = ds_df.assign(
-            d=lambda x: x['a'] * 2,
-            e=lambda x: x['a'] * 3
-        )
+        pd_result = pd_df.assign(d=lambda x: x['a'] * 2, e=lambda x: x['a'] * 3)  # Uses original a, not modified
+        ds_result = ds_df.assign(d=lambda x: x['a'] * 2, e=lambda x: x['a'] * 3)
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -534,18 +499,14 @@ class TestComplexChainScenarios:
         ds_df, pd_df = ds
 
         pd_result = (
-            pd_df
-            .query('value > 20')
-            [pd_df.query('value > 20')['score'] > 30]
+            pd_df.query('value > 20')[pd_df.query('value > 20')['score'] > 30]
             .groupby('category')['value']
             .mean()
             .reset_index()
         )
 
         ds_result = (
-            ds_df
-            .query('value > 20')
-            [ds_df.query('value > 20')['score'] > 30]
+            ds_df.query('value > 20')[ds_df.query('value > 20')['score'] > 30]
             .groupby('category')['value']
             .mean()
             .reset_index()
@@ -554,24 +515,18 @@ class TestComplexChainScenarios:
         # Sort for comparison
         pd_result = pd_result.sort_values('category').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('category').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
     def test_filter_eval_sort_head_chain(self, ds):
         """Filter -> eval -> sort -> head chain."""
         ds_df, pd_df = ds
 
         pd_result = (
-            pd_df[pd_df['value'] > 30]
-            .eval('combined = value + score')
-            .sort_values('combined', ascending=False)
-            .head(5)
+            pd_df[pd_df['value'] > 30].eval('combined = value + score').sort_values('combined', ascending=False).head(5)
         )
 
         ds_result = (
-            ds_df[ds_df['value'] > 30]
-            .eval('combined = value + score')
-            .sort_values('combined', ascending=False)
-            .head(5)
+            ds_df[ds_df['value'] > 30].eval('combined = value + score').sort_values('combined', ascending=False).head(5)
         )
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=True)
@@ -580,19 +535,9 @@ class TestComplexChainScenarios:
         """Chain of column selection, rename, drop operations."""
         ds_df, pd_df = ds
 
-        pd_result = (
-            pd_df
-            [['id', 'category', 'value']]
-            .rename(columns={'value': 'val'})
-            .query('val > 40')
-        )
+        pd_result = pd_df[['id', 'category', 'value']].rename(columns={'value': 'val'}).query('val > 40')
 
-        ds_result = (
-            ds_df
-            [['id', 'category', 'value']]
-            .rename(columns={'value': 'val'})
-            .query('val > 40')
-        )
+        ds_result = ds_df[['id', 'category', 'value']].rename(columns={'value': 'val'}).query('val > 40')
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
@@ -611,7 +556,7 @@ class TestComplexChainScenarios:
         # Sort for comparison
         pd_result = pd_result.sort_values('category').reset_index(drop=True)
         ds_result_df = get_dataframe(ds_result).sort_values('category').reset_index(drop=True)
-        pd.testing.assert_frame_equal(ds_result_df, pd_result, check_dtype=False)
+        pd.testing.assert_frame_equal(ds_result_df, pd_result)
 
 
 class TestEdgeCasesEmptyAndSingleRow:
@@ -708,7 +653,7 @@ class TestNullableTypesWithOperations:
         pd_result = pd_df.query('a > 2')
         ds_result = ds_df.query('a > 2')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_assign_with_nullable_input(self, ds_nullable):
         """Assign using nullable column in expression."""
@@ -717,22 +662,14 @@ class TestNullableTypesWithOperations:
         pd_result = pd_df.assign(c=lambda x: x['a'].fillna(0) + x['b'].fillna(0))
         ds_result = ds_df.assign(c=lambda x: x['a'].fillna(0) + x['b'].fillna(0))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_clip_on_nullable(self, ds_nullable):
-        """Clip on nullable column (NAs should remain)."""
+        """Clip on nullable column (NAs should remain, dtype preserved)."""
         ds_df, pd_df = ds_nullable
 
         pd_result = pd_df['a'].clip(lower=2, upper=4)
         ds_result = ds_df['a'].clip(lower=2, upper=4)
 
-        # Check non-null values match
-        pd_nonull = pd_result.dropna()
-        ds_nonull = pd.Series(ds_result).dropna()
-
-        pd.testing.assert_series_equal(
-            ds_nonull.reset_index(drop=True),
-            pd_nonull.reset_index(drop=True),
-            check_names=False,
-            check_dtype=False
-        )
+        # Full comparison including dtype (fixed via dtype_correction)
+        assert_datastore_equals_pandas(ds_result, pd_result)

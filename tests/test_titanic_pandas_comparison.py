@@ -439,7 +439,6 @@ class TestChdbNaNHandling(unittest.TestCase):
             ds_series,
             pd_result,
             check_names=False,
-            check_dtype=False,
             rtol=1e-5,
         )
 

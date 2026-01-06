@@ -11,7 +11,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import datastore_where_condition
+from tests.xfail_markers import datastore_where_condition, chdb_mask_dtype_nullable
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -23,10 +23,7 @@ class TestGroupByTransform:
 
     def test_transform_with_lambda(self):
         """Test groupby transform with lambda function."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B', 'A'],
-            'value': [1, 2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category')['value'].transform(lambda x: x - x.mean())
@@ -34,28 +31,26 @@ class TestGroupByTransform:
 
         # Series name may differ
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+        pd.testing.assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_transform_with_builtin_func(self):
         """Test groupby transform with builtin function name."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category')['value'].transform('mean')
         ds_result = ds_df.groupby('category')['value'].transform('mean')
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+        pd.testing.assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_transform_normalize(self):
         """Test groupby transform for normalization."""
-        pd_df = pd.DataFrame({
-            'group': ['X', 'X', 'Y', 'Y'],
-            'score': [10.0, 20.0, 30.0, 40.0]
-        })
+        pd_df = pd.DataFrame({'group': ['X', 'X', 'Y', 'Y'], 'score': [10.0, 20.0, 30.0, 40.0]})
         ds_df = DataStore(pd_df.copy())
 
         def normalize(x):
@@ -65,21 +60,22 @@ class TestGroupByTransform:
         ds_result = ds_df.groupby('group')['score'].transform(normalize)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+        pd.testing.assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_transform_cumulative(self):
         """Test groupby transform with cumsum."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B', 'A'],
-            'value': [1, 2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category')['value'].transform('cumsum')
         ds_result = ds_df.groupby('category')['value'].transform('cumsum')
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+        pd.testing.assert_series_equal(
+            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
 
 class TestGroupByFilter:
@@ -87,10 +83,7 @@ class TestGroupByFilter:
 
     def test_filter_by_size(self):
         """Test groupby filter by group size."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').filter(lambda x: len(x) >= 3)
@@ -100,10 +93,7 @@ class TestGroupByFilter:
 
     def test_filter_by_sum(self):
         """Test groupby filter by group sum."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 10, 20]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 10, 20]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').filter(lambda x: x['value'].sum() > 5)
@@ -113,10 +103,7 @@ class TestGroupByFilter:
 
     def test_filter_all_filtered(self):
         """Test groupby filter when all groups are filtered out."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B'],
-            'value': [1, 2]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B'], 'value': [1, 2]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').filter(lambda x: len(x) > 10)
@@ -130,10 +117,7 @@ class TestGroupByApply:
 
     def test_apply_returns_scalar(self):
         """Test groupby apply that returns scalar per group."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
         # DataStore groupby.apply doesn't support include_groups parameter currently
@@ -145,10 +129,7 @@ class TestGroupByApply:
 
     def test_apply_returns_series(self):
         """Test groupby apply that returns Series per group."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').apply(lambda x: x['value'].head(1), include_groups=False)
@@ -164,49 +145,33 @@ class TestGroupByMultipleAggs:
 
     def test_agg_multiple_funcs_list(self):
         """Test agg with list of functions on single column."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
         ds_result = ds_df.groupby('category')['value'].agg(['sum', 'mean', 'count'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_agg_dict_multiple_cols(self):
         """Test agg with dict specifying different funcs per column."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value1': [1, 2, 3, 4],
-            'value2': [10, 20, 30, 40]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value1': [1, 2, 3, 4], 'value2': [10, 20, 30, 40]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').agg({'value1': 'sum', 'value2': 'mean'})
         ds_result = ds_df.groupby('category').agg({'value1': 'sum', 'value2': 'mean'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_agg_named_tuple_syntax(self):
         """Test agg with named aggregation tuple syntax."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
-        pd_result = pd_df.groupby('category').agg(
-            total=('value', 'sum'),
-            average=('value', 'mean')
-        )
-        ds_result = ds_df.groupby('category').agg(
-            total=('value', 'sum'),
-            average=('value', 'mean')
-        )
+        pd_result = pd_df.groupby('category').agg(total=('value', 'sum'), average=('value', 'mean'))
+        ds_result = ds_df.groupby('category').agg(total=('value', 'sum'), average=('value', 'mean'))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestGroupByWithRolling:
@@ -214,10 +179,7 @@ class TestGroupByWithRolling:
 
     def test_groupby_rolling_mean(self):
         """Test groupby with rolling mean."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'A', 'B', 'B', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'A', 'B', 'B', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category')['value'].rolling(2).mean().reset_index(level=0, drop=True)
@@ -240,7 +202,7 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].where(ds_df['a'] > 2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_series_where_with_other(self):
         """Test Series where with replacement value."""
@@ -251,18 +213,23 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].where(ds_df['a'] > 2, -1)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
+    @chdb_mask_dtype_nullable
     def test_series_mask_simple(self):
-        """Test simple Series mask operation."""
+        """Test simple Series mask operation.
+
+        Note: DataStore returns nullable Int64 (better semantics, preserves integer type),
+        while pandas returns float64 (because numpy int64 can't represent NaN).
+        This is a design difference, not a bug.
+        """
         pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df['a'].mask(pd_df['a'] > 2)
         ds_result = ds_df['a'].mask(ds_df['a'] > 2)
 
-        ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_series_mask_with_other(self):
         """Test Series mask with replacement value."""
@@ -273,7 +240,7 @@ class TestSeriesWhere:
         ds_result = ds_df['a'].mask(ds_df['a'] > 2, 0)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 
 class TestDataFrameComparison:
@@ -282,45 +249,36 @@ class TestDataFrameComparison:
     #
     def test_df_gt_scalar(self):
         """Test DataFrame > scalar comparison."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3],
-            'b': [4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df > 2
         ds_result = ds_df > 2
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     #
     @datastore_where_condition
     def test_df_where(self):
         """Test DataFrame where operation."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3],
-            'b': [4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.where(pd_df > 2)
         ds_result = ds_df.where(ds_df > 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     #
     def test_df_mask(self):
         """Test DataFrame mask operation."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3],
-            'b': [4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.mask(pd_df > 2)
         ds_result = ds_df.mask(ds_df > 2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestArgsortMethods:
@@ -335,7 +293,7 @@ class TestArgsortMethods:
         ds_result = ds_df['a'].argsort()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_argmin(self):
         """Test argmin method."""
@@ -399,7 +357,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding().sum()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_expanding_mean(self):
         """Test expanding mean."""
@@ -410,7 +368,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding().mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_expanding_min_periods(self):
         """Test expanding with min_periods."""
@@ -421,7 +379,7 @@ class TestExpandingMethods:
         ds_result = ds_df['a'].expanding(min_periods=3).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 
 class TestEwmMethods:
@@ -436,7 +394,7 @@ class TestEwmMethods:
         ds_result = ds_df['a'].ewm(span=3).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_ewm_mean_alpha(self):
         """Test ewm mean with alpha parameter."""
@@ -447,7 +405,7 @@ class TestEwmMethods:
         ds_result = ds_df['a'].ewm(alpha=0.5).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 
 class TestRollingEdgeCases:
@@ -462,7 +420,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3, min_periods=1).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_rolling_center(self):
         """Test rolling with center=True."""
@@ -473,7 +431,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3, center=True).mean()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_rolling_std(self):
         """Test rolling std."""
@@ -484,7 +442,7 @@ class TestRollingEdgeCases:
         ds_result = ds_df['a'].rolling(3).std()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 
 class TestCombineOperations:
@@ -500,7 +458,7 @@ class TestCombineOperations:
         pd_result = pd_df1.combine_first(pd_df2)
         ds_result = ds_df1.combine_first(ds_df2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_combine_first_with_pandas_df(self):
         """Test combine_first with pandas DataFrame."""
@@ -511,7 +469,7 @@ class TestCombineOperations:
         pd_result = pd_df1.combine_first(pd_df2)
         ds_result = ds_df1.combine_first(pd_df2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestAlignOperations:
@@ -527,8 +485,8 @@ class TestAlignOperations:
         pd_left, pd_right = pd_df1.align(pd_df2, join='inner')
         ds_left, ds_right = ds_df1.align(ds_df2, join='inner')
 
-        assert_datastore_equals_pandas(ds_left, pd_left, check_dtype=False)
-        assert_datastore_equals_pandas(ds_right, pd_right, check_dtype=False)
+        assert_datastore_equals_pandas(ds_left, pd_left)
+        assert_datastore_equals_pandas(ds_right, pd_right)
 
     def test_align_outer(self):
         """Test align with outer join."""
@@ -540,8 +498,8 @@ class TestAlignOperations:
         pd_left, pd_right = pd_df1.align(pd_df2, join='outer')
         ds_left, ds_right = ds_df1.align(ds_df2, join='outer')
 
-        assert_datastore_equals_pandas(ds_left, pd_left, check_dtype=False)
-        assert_datastore_equals_pandas(ds_right, pd_right, check_dtype=False)
+        assert_datastore_equals_pandas(ds_left, pd_left)
+        assert_datastore_equals_pandas(ds_right, pd_right)
 
 
 class TestComplexChains:
@@ -549,38 +507,30 @@ class TestComplexChains:
 
     def test_filter_groupby_agg(self):
         """Test filter -> groupby -> agg chain."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'B', 'B', 'A'],
-            'value': [1, 2, 3, 4, 5],
-            'flag': [True, False, True, True, True]
-        })
+        pd_df = pd.DataFrame(
+            {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5], 'flag': [True, False, True, True, True]}
+        )
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df[pd_df['flag']].groupby('category')['value'].sum()
         ds_result = ds_df[ds_df['flag']].groupby('category')['value'].sum()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_assign_filter_sort(self):
         """Test assign -> filter -> sort chain."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5],
-            'b': [10, 20, 30, 40, 50]
-        })
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.assign(c=pd_df['a'] + pd_df['b']).query('c > 20').sort_values('c')
         ds_result = ds_df.assign(c=ds_df['a'] + ds_df['b']).query('c > 20').sort_values('c')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_groupby_head_sort(self):
         """Test groupby -> head -> sort chain."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'A', 'B', 'B', 'B'],
-            'value': [3, 1, 2, 6, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'A', 'B', 'B', 'B'], 'value': [3, 1, 2, 6, 4, 5]})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.groupby('category').head(2).sort_values(['category', 'value'])
@@ -590,11 +540,7 @@ class TestComplexChains:
 
     def test_multiple_filters(self):
         """Test multiple filter operations."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5],
-            'b': [5, 4, 3, 2, 1],
-            'c': ['x', 'y', 'x', 'y', 'x']
-        })
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1], 'c': ['x', 'y', 'x', 'y', 'x']})
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df[(pd_df['a'] > 1) & (pd_df['b'] < 5) & (pd_df['c'] == 'x')]
@@ -615,7 +561,7 @@ class TestModeUnique:
         ds_result = ds_df['a'].mode()
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_mode_multiple_values(self):
         """Test mode with multiple equally frequent values."""
@@ -667,7 +613,7 @@ class TestMapApply:
         ds_result = ds_df['a'].map(mapping)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_map_with_function(self):
         """Test map with function."""
@@ -678,18 +624,18 @@ class TestMapApply:
         ds_result = ds_df['a'].map(lambda x: x * 2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
     def test_apply_with_function(self):
         """Test apply with function."""
         pd_df = pd.DataFrame({'a': [1, 2, 3]})
         ds_df = DataStore(pd_df.copy())
 
-        pd_result = pd_df['a'].apply(lambda x: x ** 2)
-        ds_result = ds_df['a'].apply(lambda x: x ** 2)
+        pd_result = pd_df['a'].apply(lambda x: x**2)
+        ds_result = ds_df['a'].apply(lambda x: x**2)
 
         ds_series = get_series(ds_result)
-        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(ds_series, pd_result, check_names=False)
 
 
 class TestFirstLastOffset:
@@ -697,9 +643,7 @@ class TestFirstLastOffset:
 
     def test_first_with_offset(self):
         """Test first with DateOffset."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5]
-        }, index=pd.date_range('2023-01-01', periods=5, freq='D'))
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=pd.date_range('2023-01-01', periods=5, freq='D'))
         ds_df = DataStore(pd_df.copy())
 
         with pytest.warns(FutureWarning):
@@ -711,9 +655,7 @@ class TestFirstLastOffset:
 
     def test_last_with_offset(self):
         """Test last with DateOffset."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5]
-        }, index=pd.date_range('2023-01-01', periods=5, freq='D'))
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=pd.date_range('2023-01-01', periods=5, freq='D'))
         ds_df = DataStore(pd_df.copy())
 
         with pytest.warns(FutureWarning):
@@ -755,9 +697,7 @@ class TestTruncate:
 
     def test_truncate_before_after(self):
         """Test truncate with before and after."""
-        pd_df = pd.DataFrame({
-            'a': [1, 2, 3, 4, 5]
-        }, index=[0, 1, 2, 3, 4])
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=[0, 1, 2, 3, 4])
         ds_df = DataStore(pd_df.copy())
 
         pd_result = pd_df.truncate(before=1, after=3)

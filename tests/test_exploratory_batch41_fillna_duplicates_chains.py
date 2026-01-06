@@ -45,7 +45,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.fillna(0).query('A > 0')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_then_groupby_sum(self):
         """fillna followed by groupby aggregation."""
@@ -61,7 +61,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.fillna(0).groupby('group')['value'].sum().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_then_sort_head(self):
         """fillna followed by sort and head."""
@@ -77,7 +77,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.fillna(0).sort_values('A').head(3)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_dict_multicolumn(self):
         """fillna with dictionary for different columns."""
@@ -95,7 +95,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.fillna({'A': 0, 'B': -1, 'C': 'missing'})
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_then_fillna(self):
         """Filter followed by fillna."""
@@ -111,7 +111,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df[ds_df['B'] > 15].fillna(99)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_bfill_basic(self):
         """Basic backward fill operation."""
@@ -125,7 +125,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.bfill()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ffill_basic(self):
         """Basic forward fill operation."""
@@ -139,7 +139,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.ffill()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ffill_then_filter(self):
         """Forward fill followed by filter."""
@@ -155,7 +155,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.ffill().query('A > 1')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_empty_dataframe(self):
         """fillna on empty DataFrame."""
@@ -165,7 +165,7 @@ class TestFillnaChains:
         ds_df = DataStore({'A': pd.Series([], dtype='float64')})
         ds_result = ds_df.fillna(0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_fillna_all_na_column(self):
         """fillna on column with all NA values."""
@@ -181,7 +181,7 @@ class TestFillnaChains:
         })
         ds_result = ds_df.fillna(-999)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -319,7 +319,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df.drop_duplicates().query('A > 1')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_subset_then_groupby(self):
         """drop_duplicates with subset then groupby."""
@@ -335,7 +335,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df.drop_duplicates(subset=['group', 'value']).groupby('group').size().reset_index(name='count')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_then_drop_duplicates(self):
         """Filter followed by drop_duplicates."""
@@ -351,7 +351,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df[ds_df['A'] > 1].drop_duplicates()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_keep_last(self):
         """drop_duplicates with keep='last'."""
@@ -367,7 +367,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df.drop_duplicates(subset=['A'], keep='last')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_keep_false(self):
         """drop_duplicates with keep=False (drop all duplicates)."""
@@ -383,7 +383,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df.drop_duplicates(subset=['A'], keep=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_ignore_index(self):
         """drop_duplicates with ignore_index=True."""
@@ -399,7 +399,7 @@ class TestDropDuplicatesChains:
         })
         ds_result = ds_df.drop_duplicates(ignore_index=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_duplicated_then_filter(self):
         """duplicated() to identify duplicates then filter."""
@@ -418,7 +418,7 @@ class TestDropDuplicatesChains:
         # For DataStore, we need to handle the mask appropriately
         ds_result = ds_df[~ds_dup_mask]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_empty_df(self):
         """drop_duplicates on empty DataFrame."""
@@ -428,7 +428,7 @@ class TestDropDuplicatesChains:
         ds_df = DataStore({'A': pd.Series([], dtype='int64'), 'B': pd.Series([], dtype='int64')})
         ds_result = ds_df.drop_duplicates()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -453,7 +453,7 @@ class TestValueCountsChains:
         pd_result = pd_result.sort_values('A').reset_index(drop=True)
         ds_result_df = ds_result.sort_values('A')
 
-        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False)
 
     def test_value_counts_normalize(self):
         """value_counts with normalize=True."""
@@ -469,7 +469,7 @@ class TestValueCountsChains:
         pd_result = pd_result.sort_values('A').reset_index(drop=True)
         ds_result_df = ds_result.sort_values('A')
 
-        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False)
 
     def test_filter_then_value_counts(self):
         """Filter followed by value_counts."""
@@ -490,7 +490,7 @@ class TestValueCountsChains:
         pd_result = pd_result.sort_values('A').reset_index(drop=True)
         ds_result_df = ds_result.sort_values('A')
 
-        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False)
 
     def test_value_counts_dropna_false(self):
         """value_counts with dropna=False to include NA."""
@@ -537,7 +537,7 @@ class TestValueCountsChains:
         pd_result = pd_result.sort_values('A').reset_index(drop=True)
         ds_result_df = ds_result.sort_values('A')
 
-        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result_df, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -633,7 +633,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df.nlargest(3, 'A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nsmallest_basic(self):
         """Basic nsmallest operation."""
@@ -649,7 +649,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df.nsmallest(3, 'A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nlargest_then_filter(self):
         """nlargest followed by filter."""
@@ -665,7 +665,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df.nlargest(4, 'A').query('B > 25')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_then_nlargest(self):
         """Filter followed by nlargest."""
@@ -681,7 +681,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df[ds_df['B'] > 20].nlargest(2, 'A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nlargest_multiple_columns(self):
         """nlargest with multiple columns for tie-breaking."""
@@ -697,7 +697,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df.nlargest(3, ['A', 'B'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nsmallest_with_na(self):
         """nsmallest with NA values."""
@@ -713,7 +713,7 @@ class TestNlargestNsmallestChains:
         })
         ds_result = ds_df.nsmallest(2, 'A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_series_nlargest(self):
         """Series nlargest operation."""
@@ -789,7 +789,7 @@ class TestNuniqueChains:
         })
         ds_result = ds_df.groupby('group')['value'].nunique().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_then_nunique(self):
         """Filter followed by nunique."""
@@ -824,7 +824,7 @@ class TestEdgeCases:
         ds_df = DataStore({'A': [np.nan], 'B': [1]})
         ds_result = ds_df.fillna(0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_single_row(self):
         """drop_duplicates on single row DataFrame."""
@@ -834,7 +834,7 @@ class TestEdgeCases:
         ds_df = DataStore({'A': [1], 'B': [2]})
         ds_result = ds_df.drop_duplicates()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_all_same(self):
         """drop_duplicates when all rows are identical."""
@@ -850,7 +850,7 @@ class TestEdgeCases:
         })
         ds_result = ds_df.drop_duplicates()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nlargest_n_greater_than_rows(self):
         """nlargest with n > number of rows."""
@@ -860,7 +860,7 @@ class TestEdgeCases:
         ds_df = DataStore({'A': [1, 2, 3]})
         ds_result = ds_df.nlargest(10, 'A')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_value_counts_single_value(self):
         """value_counts with only one unique value."""
@@ -872,7 +872,7 @@ class TestEdgeCases:
         ds_result = ds_df['A'].value_counts().reset_index()
         ds_result.columns = ['A', 'count']
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_quantile_single_value(self):
         """quantile on single value."""
@@ -947,7 +947,7 @@ class TestComplexChains:
                      .reset_index()
                      .nlargest(1, 'value'))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_drop_duplicates_sort_head(self):
         """Complex chain: drop_duplicates -> sort -> head."""
@@ -963,7 +963,7 @@ class TestComplexChains:
         })
         ds_result = ds_df.drop_duplicates(subset=['A']).sort_values('B', ascending=False).head(2)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_value_counts_nlargest(self):
         """Complex chain: filter -> value_counts -> head."""
@@ -1003,4 +1003,4 @@ class TestComplexChains:
         ds_result = ds_df.groupby('group')['value'].nunique().reset_index()
         ds_result = ds_result[ds_result['value'] > 1]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)

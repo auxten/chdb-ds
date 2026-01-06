@@ -80,7 +80,7 @@ class TestFillnaOperations:
         ds['GARAGE'] = ds['GARAGE'].fillna('UNKNOWN')
 
         # Compare - note dtype may differ due to mixed types
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_fillna_with_mode(self, perth_sample_df):
         """fillna(column.mode()[0]) as used in notebook for BUILD_YEAR."""
@@ -93,7 +93,7 @@ class TestFillnaOperations:
         ds = DataStore(perth_sample_df.copy())
         ds['BUILD_YEAR'] = ds['BUILD_YEAR'].fillna(mode_val)
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_fillna_numeric_value(self, perth_sample_df):
         """fillna with a numeric value."""
@@ -105,7 +105,7 @@ class TestFillnaOperations:
         ds = DataStore(perth_sample_df.copy())
         ds['GARAGE'] = ds['GARAGE'].fillna(0)
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
 
 class TestDropOperations:
@@ -120,7 +120,7 @@ class TestDropOperations:
         ds = DataStore(perth_sample_df)
         ds_result = ds.drop(columns=['NEAREST_SCH_RANK'])
 
-        assert_datastore_equals_pandas(ds_result, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_df)
 
     def test_drop_multiple_columns(self, perth_sample_df):
         """Drop multiple columns at once."""
@@ -131,7 +131,7 @@ class TestDropOperations:
         ds = DataStore(perth_sample_df)
         ds_result = ds.drop(columns=['NEAREST_SCH_RANK', 'ADDRESS'])
 
-        assert_datastore_equals_pandas(ds_result, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_df)
 
 
 class TestColumnArithmetic:
@@ -147,7 +147,7 @@ class TestColumnArithmetic:
         ds = DataStore(perth_sample_df.copy())
         ds['TotalRooms'] = ds['BEDROOMS'] + ds['BATHROOMS']
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_column_subtraction(self, perth_sample_df):
         """Test column subtraction."""
@@ -159,7 +159,7 @@ class TestColumnArithmetic:
         ds = DataStore(perth_sample_df.copy())
         ds['room_diff'] = ds['BEDROOMS'] - ds['BATHROOMS']
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_column_multiplication(self, perth_sample_df):
         """Test column multiplication with scalar."""
@@ -171,7 +171,7 @@ class TestColumnArithmetic:
         ds = DataStore(perth_sample_df.copy())
         ds['price_per_sqm'] = ds['PRICE'] / ds['FLOOR_AREA']
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
 
 class TestIsnaSum:
@@ -198,7 +198,7 @@ class TestIsnaSum:
         ds_result = ds.isna().sum()
 
         # Compare values
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestCorrelation:
@@ -215,7 +215,7 @@ class TestCorrelation:
 
         # Correlation values should match within tolerance
         # Note: correlation is always between -1 and 1
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
     def test_corr_subset_columns(self, perth_sample_df):
         """Test corr() on subset of columns."""
@@ -227,7 +227,7 @@ class TestCorrelation:
         ds = DataStore(perth_sample_df)
         ds_result = ds[cols].corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
 
 class TestDescribe:
@@ -243,7 +243,7 @@ class TestDescribe:
         ds_result = ds.describe()
 
         # Note: describe() returns statistics - compare with tolerance
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
 
 class TestInfoStructure:
@@ -286,7 +286,7 @@ class TestCombinedOperations:
         ds['BUILD_YEAR'] = ds['BUILD_YEAR'].fillna(ds['BUILD_YEAR'].mode()[0])
         ds = ds.drop(columns=['NEAREST_SCH_RANK'])
 
-        assert_datastore_equals_pandas(ds, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds, pd_df)
 
     def test_add_column_then_filter(self, perth_sample_df):
         """Add computed column then filter."""
@@ -300,7 +300,7 @@ class TestCombinedOperations:
         ds['TotalRooms'] = ds['BEDROOMS'] + ds['BATHROOMS']
         ds_result = ds[ds['TotalRooms'] >= 5]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':

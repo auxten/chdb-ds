@@ -560,7 +560,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe(percentiles=[0.1, 0.5, 0.9])
         ds_result = ds_df.describe(percentiles=[0.1, 0.5, 0.9])
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_describe_include_all(self):
         """Describe with include='all'."""
@@ -573,7 +573,7 @@ class TestDescribeVariations:
         pd_result = pd_df.describe(include='all')
         ds_result = ds_df.describe(include='all')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestMemoryUsage:

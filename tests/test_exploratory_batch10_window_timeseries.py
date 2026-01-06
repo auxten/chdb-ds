@@ -39,7 +39,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_sum(self, sample_df):
         """Test rolling sum."""
@@ -48,7 +48,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).sum()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_std(self, sample_df):
         """Test rolling standard deviation."""
@@ -57,7 +57,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).std()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_min(self, sample_df):
         """Test rolling minimum."""
@@ -66,7 +66,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).min()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_max(self, sample_df):
         """Test rolling maximum."""
@@ -75,7 +75,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).max()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_count(self, sample_df):
         """Test rolling count (handles NaN)."""
@@ -84,7 +84,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).count()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_var(self, sample_df):
         """Test rolling variance."""
@@ -93,7 +93,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3).var()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_min_periods(self, sample_df):
         """Test rolling with min_periods parameter."""
@@ -102,7 +102,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3, min_periods=1).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rolling_center(self, sample_df):
         """Test rolling with center=True."""
@@ -111,7 +111,7 @@ class TestRollingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.rolling(window=3, center=True).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestRollingSingleColumn:
@@ -136,7 +136,6 @@ class TestRollingSingleColumn:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
     
@@ -151,7 +150,6 @@ class TestRollingSingleColumn:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
 
@@ -177,7 +175,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding().mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_expanding_sum(self, sample_df):
         """Test expanding sum (cumulative sum)."""
@@ -186,7 +184,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding().sum()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_expanding_min(self, sample_df):
         """Test expanding min (cumulative min)."""
@@ -195,7 +193,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding().min()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_expanding_max(self, sample_df):
         """Test expanding max (cumulative max)."""
@@ -204,7 +202,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding().max()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_expanding_std(self, sample_df):
         """Test expanding standard deviation."""
@@ -213,7 +211,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding().std()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_expanding_min_periods(self, sample_df):
         """Test expanding with min_periods."""
@@ -222,7 +220,7 @@ class TestExpandingBasic:
         ds = DataStore(sample_df)
         ds_result = ds.expanding(min_periods=2).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -246,7 +244,7 @@ class TestEWMBasic:
         ds = DataStore(sample_df)
         ds_result = ds.ewm(span=3).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ewm_mean_alpha(self, sample_df):
         """Test EWM mean with alpha parameter."""
@@ -255,7 +253,7 @@ class TestEWMBasic:
         ds = DataStore(sample_df)
         ds_result = ds.ewm(alpha=0.5).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ewm_mean_com(self, sample_df):
         """Test EWM mean with com (center of mass) parameter."""
@@ -264,7 +262,7 @@ class TestEWMBasic:
         ds = DataStore(sample_df)
         ds_result = ds.ewm(com=2).mean()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ewm_std(self, sample_df):
         """Test EWM standard deviation."""
@@ -273,7 +271,7 @@ class TestEWMBasic:
         ds = DataStore(sample_df)
         ds_result = ds.ewm(span=3).std()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ewm_var(self, sample_df):
         """Test EWM variance."""
@@ -282,7 +280,7 @@ class TestEWMBasic:
         ds = DataStore(sample_df)
         ds_result = ds.ewm(span=3).var()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -306,7 +304,7 @@ class TestShift:
         ds = DataStore(sample_df)
         ds_result = ds.shift(periods=1)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_shift_negative(self, sample_df):
         """Test shift with negative periods (shift backward)."""
@@ -315,7 +313,7 @@ class TestShift:
         ds = DataStore(sample_df)
         ds_result = ds.shift(periods=-1)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_shift_multiple(self, sample_df):
         """Test shift with multiple periods."""
@@ -324,7 +322,7 @@ class TestShift:
         ds = DataStore(sample_df)
         ds_result = ds.shift(periods=2)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_shift_fill_value(self, sample_df):
         """Test shift with fill_value."""
@@ -333,7 +331,7 @@ class TestShift:
         ds = DataStore(sample_df)
         ds_result = ds.shift(periods=1, fill_value=0)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_shift_single_column(self, sample_df):
         """Test shift on single column."""
@@ -346,7 +344,6 @@ class TestShift:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
 
@@ -368,7 +365,7 @@ class TestDiff:
         ds = DataStore(sample_df)
         ds_result = ds.diff()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_diff_periods_2(self, sample_df):
         """Test diff with periods=2."""
@@ -377,7 +374,7 @@ class TestDiff:
         ds = DataStore(sample_df)
         ds_result = ds.diff(periods=2)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_diff_negative(self, sample_df):
         """Test diff with negative periods."""
@@ -386,7 +383,7 @@ class TestDiff:
         ds = DataStore(sample_df)
         ds_result = ds.diff(periods=-1)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_diff_single_column(self, sample_df):
         """Test diff on single column."""
@@ -399,7 +396,6 @@ class TestDiff:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
 
@@ -421,7 +417,7 @@ class TestPctChange:
         ds = DataStore(sample_df)
         ds_result = ds.pct_change()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_pct_change_periods_2(self, sample_df):
         """Test pct_change with periods=2."""
@@ -430,7 +426,7 @@ class TestPctChange:
         ds = DataStore(sample_df)
         ds_result = ds.pct_change(periods=2)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_pct_change_single_column(self, sample_df):
         """Test pct_change on single column."""
@@ -443,7 +439,6 @@ class TestPctChange:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
 
@@ -469,7 +464,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.eq(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ne_scalar(self, sample_df):
         """Test ne with scalar."""
@@ -478,7 +473,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.ne(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_gt_scalar(self, sample_df):
         """Test gt with scalar."""
@@ -487,7 +482,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.gt(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_lt_scalar(self, sample_df):
         """Test lt with scalar."""
@@ -496,7 +491,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.lt(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ge_scalar(self, sample_df):
         """Test ge with scalar."""
@@ -505,7 +500,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.ge(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_le_scalar(self, sample_df):
         """Test le with scalar."""
@@ -514,7 +509,7 @@ class TestComparisonMethods:
         ds = DataStore(sample_df)
         ds_result = ds.le(3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_eq_dataframe(self, sample_df):
         """Test eq with another DataFrame."""
@@ -528,7 +523,7 @@ class TestComparisonMethods:
         ds_other = DataStore(other)
         ds_result = ds.eq(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -552,7 +547,7 @@ class TestTake:
         ds = DataStore(sample_df)
         ds_result = ds.take([0, 2, 4])
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_take_negative_indices(self, sample_df):
         """Test take with negative indices."""
@@ -561,7 +556,7 @@ class TestTake:
         ds = DataStore(sample_df)
         ds_result = ds.take([-1, -2, -3])
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_take_mixed_indices(self, sample_df):
         """Test take with mixed positive/negative indices."""
@@ -570,7 +565,7 @@ class TestTake:
         ds = DataStore(sample_df)
         ds_result = ds.take([0, -1, 2])
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestSqueeze:
@@ -588,7 +583,6 @@ class TestSqueeze:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
     
@@ -604,7 +598,6 @@ class TestSqueeze:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
     
@@ -628,7 +621,7 @@ class TestSqueeze:
         ds = DataStore(pd_df)
         ds_result = ds.squeeze()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestPipe:
@@ -651,7 +644,7 @@ class TestPipe:
         ds = DataStore(sample_df)
         ds_result = ds.pipe(double_values)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_pipe_with_args(self, sample_df):
         """Test pipe with function that takes additional args."""
@@ -663,7 +656,7 @@ class TestPipe:
         ds = DataStore(sample_df)
         ds_result = ds.pipe(multiply_by, 3)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_pipe_chain(self, sample_df):
         """Test chained pipe operations."""
@@ -678,7 +671,7 @@ class TestPipe:
         ds = DataStore(sample_df)
         ds_result = ds.pipe(add_one).pipe(multiply_two)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestEval:
@@ -698,7 +691,7 @@ class TestEval:
         ds = DataStore(sample_df)
         ds_result = ds.eval('C = A + B')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_eval_complex_expression(self, sample_df):
         """Test eval with complex expression."""
@@ -707,7 +700,7 @@ class TestEval:
         ds = DataStore(sample_df)
         ds_result = ds.eval('C = A * 2 + B / 10')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_eval_returns_series(self, sample_df):
         """Test eval that returns a Series."""
@@ -720,7 +713,6 @@ class TestEval:
         pd.testing.assert_series_equal(
             ds_series.reset_index(drop=True), 
             pd_result.reset_index(drop=True),
-            check_dtype=False,
             check_names=False
         )
 
@@ -743,7 +735,7 @@ class TestQuery:
         ds = DataStore(sample_df)
         ds_result = ds.query('A > 2')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_query_compound(self, sample_df):
         """Test query with compound condition."""
@@ -752,7 +744,7 @@ class TestQuery:
         ds = DataStore(sample_df)
         ds_result = ds.query('A > 2 and B < 50')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_query_string_column(self, sample_df):
         """Test query with string column."""
@@ -761,7 +753,7 @@ class TestQuery:
         ds = DataStore(sample_df)
         ds_result = ds.query('C == "x"')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -785,7 +777,7 @@ class TestCumulativeOps:
         ds = DataStore(sample_df)
         ds_result = ds.cumsum()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_cumprod(self, sample_df):
         """Test cumulative product."""
@@ -794,7 +786,7 @@ class TestCumulativeOps:
         ds = DataStore(sample_df)
         ds_result = ds.cumprod()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_cummin(self, sample_df):
         """Test cumulative minimum."""
@@ -805,7 +797,7 @@ class TestCumulativeOps:
         ds = DataStore(df)
         ds_result = ds.cummin()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_cummax(self, sample_df):
         """Test cumulative maximum."""
@@ -816,7 +808,7 @@ class TestCumulativeOps:
         ds = DataStore(df)
         ds_result = ds.cummax()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -840,7 +832,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_method_min(self, sample_df):
         """Test rank with method='min'."""
@@ -849,7 +841,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(method='min')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_method_max(self, sample_df):
         """Test rank with method='max'."""
@@ -858,7 +850,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(method='max')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_method_first(self, sample_df):
         """Test rank with method='first'."""
@@ -867,7 +859,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(method='first')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_method_dense(self, sample_df):
         """Test rank with method='dense'."""
@@ -876,7 +868,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(method='dense')
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_ascending_false(self, sample_df):
         """Test rank with ascending=False."""
@@ -885,7 +877,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(ascending=False)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_rank_pct(self, sample_df):
         """Test rank with pct=True (percentile rank)."""
@@ -894,7 +886,7 @@ class TestRank:
         ds = DataStore(sample_df)
         ds_result = ds.rank(pct=True)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 if __name__ == '__main__':
@@ -926,7 +918,7 @@ class TestComparisonMethodsDataStore:
         ds_other = DataStore(other_df)
         ds_result = ds.ne(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_gt_dataframe(self, sample_df, other_df):
         """Test gt with another DataStore."""
@@ -936,7 +928,7 @@ class TestComparisonMethodsDataStore:
         ds_other = DataStore(other_df)
         ds_result = ds.gt(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_lt_dataframe(self, sample_df, other_df):
         """Test lt with another DataStore."""
@@ -946,7 +938,7 @@ class TestComparisonMethodsDataStore:
         ds_other = DataStore(other_df)
         ds_result = ds.lt(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_ge_dataframe(self, sample_df, other_df):
         """Test ge with another DataStore."""
@@ -956,7 +948,7 @@ class TestComparisonMethodsDataStore:
         ds_other = DataStore(other_df)
         ds_result = ds.ge(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_le_dataframe(self, sample_df, other_df):
         """Test le with another DataStore."""
@@ -966,4 +958,4 @@ class TestComparisonMethodsDataStore:
         ds_other = DataStore(other_df)
         ds_result = ds.le(ds_other)
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)

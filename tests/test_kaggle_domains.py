@@ -254,8 +254,7 @@ class TestMergeOperations:
         pd.testing.assert_frame_equal(
             ds_result.to_pandas().sort_values(['user_id', 'item_id']).reset_index(drop=True),
             pd_result.sort_values(['user_id', 'item_id']).reset_index(drop=True),
-            check_dtype=False,
-        )
+            )
 
     def test_left_merge_from_csv(self, users_activities_csv):
         """Test left merge from CSV files - includes unmatched rows."""

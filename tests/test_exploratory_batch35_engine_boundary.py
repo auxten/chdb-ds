@@ -103,7 +103,7 @@ class TestMultipleEngineSwitches:
         ds_result = ds_result.apply(lambda row: row, axis=1)
         ds_result = ds_result[ds_result['int_col'] < 5]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -130,7 +130,7 @@ class TestNullableTypesInChains:
         ds_result = ds_result[ds_df['b'] < 7]
         ds_result = ds_result[ds_result['a'].notna()]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nullable_bool_in_where_chain(self):
         """Test nullable boolean in filter operation chain."""
@@ -149,7 +149,7 @@ class TestNullableTypesInChains:
         ds_result = ds_df[ds_df['val'] > 1]
         ds_result = ds_result[ds_result['flag'].fillna(False)]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nullable_in_groupby_agg_chain(self):
         """Test nullable types through groupby -> aggregation -> filter chain."""
@@ -168,7 +168,7 @@ class TestNullableTypesInChains:
         ds_result = ds_df.groupby('group')['value'].sum().reset_index()
         ds_result = ds_result[ds_result['value'] > 3]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_nullable_float_arithmetic_chain(self):
         """Test nullable Float64 through arithmetic operations."""
@@ -187,7 +187,7 @@ class TestNullableTypesInChains:
         ds_df['sum'] = ds_df['a'] + ds_df['b']
         ds_result = ds_df[ds_df['sum'].notna()]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -263,7 +263,7 @@ class TestGroupByResultOperations:
         ds_df = DataStore(data)
         ds_result = ds_df.groupby('group')['value'].count().reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
@@ -424,7 +424,7 @@ class TestTypeCoercionChains:
         ds_df = DataStore(data)
         ds_result = ds_df.groupby('group').agg({'int_val': 'sum', 'float_val': 'mean'}).reset_index()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     def test_string_numeric_column_interaction(self):
         """Test operations involving both string and numeric columns."""
@@ -527,7 +527,7 @@ class TestWhereMaskComplexConditions:
         ds_df['sum'] = ds_df['a'] + ds_df['b']
         ds_result = ds_df.where(ds_df['sum'] > 5, 0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mask_then_filter(self):
         """Test mask followed by filter."""
@@ -543,7 +543,7 @@ class TestWhereMaskComplexConditions:
         ds_result = ds_df.mask(ds_df['x'] < 3, 0)
         ds_result = ds_result[ds_result['x'] > 0]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chained_where_mask(self):
         """Test chained where and mask operations."""
@@ -559,7 +559,7 @@ class TestWhereMaskComplexConditions:
         ds_result = ds_df.where(ds_df['val'] > 3, 0)
         ds_result = ds_result.mask(ds_result['val'] > 7, -1)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================

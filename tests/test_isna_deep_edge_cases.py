@@ -229,7 +229,7 @@ class TestIsnaInFilterChains(unittest.TestCase):
 
         # Note: chDB returns Float64Dtype for nullable float columns
         # This is a known dtype difference, values should still match
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_filter_isna_and_other_condition(self):
         """Filter by isna combined with another condition."""
@@ -247,7 +247,7 @@ class TestIsnaInFilterChains(unittest.TestCase):
         )
 
         # Note: chDB returns Float64Dtype for nullable float columns
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_chained_filter_with_isna(self):
         """Test chained filters including isna."""
@@ -642,7 +642,7 @@ class TestIsnaWithSelectAndProject(unittest.TestCase):
         ds_result = ds.select('name', 'is_null')
 
         # Note: chDB may return uint8 for boolean columns, use check_dtype=False
-        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pdf_result)
 
 
 class TestIsnaWithSpecialFloatValues(unittest.TestCase):
@@ -771,7 +771,7 @@ class TestIsnaInSelectVsFilter(unittest.TestCase):
         ds_result = ds.select('name', 'value', 'is_null')
 
         # Note: chDB may return Float64Dtype for nullable float and uint8 for boolean
-        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pdf_result)
 
     def test_isna_in_filter_condition(self):
         """Use isna in filter condition."""
@@ -780,7 +780,7 @@ class TestIsnaInSelectVsFilter(unittest.TestCase):
 
         # Should return only the row with null value
         # Note: chDB may return Float64Dtype for nullable float columns
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_select_and_filter_combined(self):
         """Combine isna in both SELECT and WHERE."""
@@ -796,7 +796,7 @@ class TestIsnaInSelectVsFilter(unittest.TestCase):
 
         # Should have 2 rows (rows where value is not null)
         # Note: chDB may return uint8 for boolean columns
-        assert_datastore_equals_pandas(ds_result, pdf_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pdf_result)
 
 
 class TestIsnaComparisonOperations(unittest.TestCase):

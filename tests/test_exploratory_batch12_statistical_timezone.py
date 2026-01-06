@@ -120,7 +120,7 @@ class TestStatisticalEdgeCases:
         pd_result = pd_df.std()
         ds_result = ds_df.std()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dataframe_var_with_mixed_nan(self):
         """DataFrame var() with mixed NaN in columns."""
@@ -130,7 +130,7 @@ class TestStatisticalEdgeCases:
         pd_result = pd_df.var()
         ds_result = ds_df.var()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mean_with_empty_after_filter(self):
         """mean() on empty result after filter."""
@@ -166,7 +166,7 @@ class TestStatisticalEdgeCases:
         pd_result = pd_df['A'].quantile([0.25, 0.5, 0.75])
         ds_result = ds_df['A'].quantile([0.25, 0.5, 0.75])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -263,7 +263,7 @@ class TestIndexManipulation:
         pd_result = pd_df.reindex(['a', 'b', 'c', 'd', 'e'])
         ds_result = ds_df.reindex(['a', 'b', 'c', 'd', 'e'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reindex_with_fill_value(self):
         """reindex() with fill_value for missing."""
@@ -273,7 +273,7 @@ class TestIndexManipulation:
         pd_result = pd_df.reindex(['a', 'b', 'c', 'd'], fill_value=0)
         ds_result = ds_df.reindex(['a', 'b', 'c', 'd'], fill_value=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_reindex_columns(self):
         """reindex() on columns."""
@@ -283,7 +283,7 @@ class TestIndexManipulation:
         pd_result = pd_df.reindex(columns=['B', 'A', 'C'])
         ds_result = ds_df.reindex(columns=['B', 'A', 'C'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_set_axis_index(self):
         """set_axis() on index."""
@@ -293,7 +293,7 @@ class TestIndexManipulation:
         pd_result = pd_df.set_axis(['x', 'y', 'z'], axis=0)
         ds_result = ds_df.set_axis(['x', 'y', 'z'], axis=0)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_set_axis_columns(self):
         """set_axis() on columns."""
@@ -303,7 +303,7 @@ class TestIndexManipulation:
         pd_result = pd_df.set_axis(['X', 'Y'], axis=1)
         ds_result = ds_df.set_axis(['X', 'Y'], axis=1)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_swaplevel_multiindex(self):
         """swaplevel() with MultiIndex."""
@@ -461,8 +461,8 @@ class TestAlignmentMethods:
         pd_aligned1, pd_aligned2 = pd_df1.align(pd_df2, join='outer')
         ds_aligned1, ds_aligned2 = ds_df1.align(ds_df2, join='outer')
 
-        assert_datastore_equals_pandas(ds_aligned1, pd_aligned1, check_dtype=False)
-        assert_datastore_equals_pandas(ds_aligned2, pd_aligned2, check_dtype=False)
+        assert_datastore_equals_pandas(ds_aligned1, pd_aligned1)
+        assert_datastore_equals_pandas(ds_aligned2, pd_aligned2)
 
     def test_align_inner_join(self):
         """align() with inner join."""
@@ -474,8 +474,8 @@ class TestAlignmentMethods:
         pd_aligned1, pd_aligned2 = pd_df1.align(pd_df2, join='inner')
         ds_aligned1, ds_aligned2 = ds_df1.align(ds_df2, join='inner')
 
-        assert_datastore_equals_pandas(ds_aligned1, pd_aligned1, check_dtype=False)
-        assert_datastore_equals_pandas(ds_aligned2, pd_aligned2, check_dtype=False)
+        assert_datastore_equals_pandas(ds_aligned1, pd_aligned1)
+        assert_datastore_equals_pandas(ds_aligned2, pd_aligned2)
 
     def test_compare_basic(self):
         """compare() basic usage."""
@@ -502,7 +502,7 @@ class TestAlignmentMethods:
         pd_result = pd_df1.compare(pd_df2, keep_shape=True)
         ds_result = ds_df1.compare(ds_df2, keep_shape=True)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_combine_with_func(self):
         """combine() with custom function."""
@@ -514,7 +514,7 @@ class TestAlignmentMethods:
         pd_result = pd_df1.combine(pd_df2, lambda s1, s2: s1.where(s1 > s2, s2))
         ds_result = ds_df1.combine(ds_df2, lambda s1, s2: s1.where(s1 > s2, s2))
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_update_inplace(self):
         """update() modifies DataFrame in place."""
@@ -527,7 +527,7 @@ class TestAlignmentMethods:
         pd_df.update(pd_other)
         ds_df.update(ds_other)
 
-        assert_datastore_equals_pandas(ds_df, pd_df, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df, pd_df)
 
 
 # =============================================================================
@@ -655,7 +655,7 @@ class TestWindowEdgeCases:
         pd_result = pd_df['A'].rolling(3, closed='left').sum()
         ds_result = ds_df['A'].rolling(3, closed='left').sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rolling_closed_right(self):
         """rolling() with closed='right'."""
@@ -665,7 +665,7 @@ class TestWindowEdgeCases:
         pd_result = pd_df['A'].rolling(3, closed='right').sum()
         ds_result = ds_df['A'].rolling(3, closed='right').sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_rolling_center(self):
         """rolling() with center=True."""
@@ -675,7 +675,7 @@ class TestWindowEdgeCases:
         pd_result = pd_df['A'].rolling(3, center=True).mean()
         ds_result = ds_df['A'].rolling(3, center=True).mean()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ewm_adjust_false(self):
         """ewm() with adjust=False."""
@@ -685,7 +685,7 @@ class TestWindowEdgeCases:
         pd_result = pd_df['A'].ewm(span=3, adjust=False).mean()
         ds_result = ds_df['A'].ewm(span=3, adjust=False).mean()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_expanding_min_periods(self):
         """expanding() with min_periods."""
@@ -695,7 +695,7 @@ class TestWindowEdgeCases:
         pd_result = pd_df['A'].expanding(min_periods=3).sum()
         ds_result = ds_df['A'].expanding(min_periods=3).sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================
@@ -767,7 +767,7 @@ class TestMiscEdgeCases:
         pd_result = pd_df.sum()
         ds_result = ds_df.sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_mixed_dtype_describe(self):
         """describe() with mixed dtypes."""

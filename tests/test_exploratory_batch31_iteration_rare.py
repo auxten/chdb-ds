@@ -621,7 +621,7 @@ class TestEdgeCases:
         pd_result = pd_df.abs()
         ds_result = ds_df.abs()
         
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
     
     def test_round_method(self):
         """Test round method."""

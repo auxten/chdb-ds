@@ -105,7 +105,7 @@ class TestIsnaOperations:
         ds = DataStore(climate_df)
         ds_result = ds.isna().sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_sum_with_nulls(self, climate_with_nulls):
         """isna().sum() when null values exist."""
@@ -116,7 +116,7 @@ class TestIsnaOperations:
         ds = DataStore(climate_with_nulls)
         ds_result = ds.isna().sum()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_isna_single_column(self, climate_with_nulls):
         """Test isna() on single column."""
@@ -180,7 +180,7 @@ class TestDescribeOperations:
         ds = DataStore(climate_df)
         ds_result = ds[numeric_cols].describe()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
 
 class TestSortOperations:
@@ -195,7 +195,7 @@ class TestSortOperations:
         ds = DataStore(climate_df)
         ds_result = ds.sort_values('date')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_by_numeric_column(self, climate_df):
         """Sort by numeric column."""
@@ -206,7 +206,7 @@ class TestSortOperations:
         ds = DataStore(climate_df)
         ds_result = ds.sort_values('meantemp')
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_sort_descending(self, climate_df):
         """Sort in descending order."""
@@ -217,7 +217,7 @@ class TestSortOperations:
         ds = DataStore(climate_df)
         ds_result = ds.sort_values('humidity', ascending=False)
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestCorrelationOperations:
@@ -233,7 +233,7 @@ class TestCorrelationOperations:
         ds = DataStore(climate_df)
         ds_result = ds[numeric_cols].corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
 
 class TestColumnSelection:
@@ -248,7 +248,7 @@ class TestColumnSelection:
         ds = DataStore(climate_df)
         ds_result = ds['meantemp']
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_multiple_columns(self, climate_df):
         """Select multiple columns as in notebook: df[['meantemp', 'humidity', ...]]"""
@@ -260,7 +260,7 @@ class TestColumnSelection:
         ds = DataStore(climate_df)
         ds_result = ds[cols]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestCombinedOperations:
@@ -275,7 +275,7 @@ class TestCombinedOperations:
         ds = DataStore(climate_df)
         ds_result = ds.sort_values('date')[['date', 'meantemp']]
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_select_then_corr(self, climate_df):
         """Select columns then compute correlation."""
@@ -287,7 +287,7 @@ class TestCombinedOperations:
         ds = DataStore(climate_df)
         ds_result = ds[cols].corr()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False, rtol=1e-5)
+        assert_datastore_equals_pandas(ds_result, pd_result, rtol=1e-5)
 
 
 if __name__ == '__main__':

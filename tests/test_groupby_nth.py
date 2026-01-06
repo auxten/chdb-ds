@@ -44,9 +44,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_nth_second_row(self, sample_df):
         """Test nth(1) - get second row of each group."""
@@ -59,9 +57,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_nth_last_row_negative_index(self, sample_df):
         """Test nth(-1) - get last row of each group using negative index."""
@@ -74,9 +70,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_nth_second_last_row(self, sample_df):
         """Test nth(-2) - get second last row of each group."""
@@ -89,9 +83,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_nth_multiple_indices(self, sample_df):
         """Test nth([0, 2]) - get first and third rows of each group."""
@@ -104,9 +96,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     def test_nth_out_of_bounds(self, sample_df):
         """Test nth with index beyond group size - should return empty for that group."""
@@ -180,9 +170,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
     # ========== Edge cases ==========
 
@@ -202,9 +190,7 @@ class TestGroupByNth:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
 
         # nth(1) should return empty (no second row in any group)
         pd_result_1 = df.groupby('g1').nth(1)
@@ -249,6 +235,4 @@ class TestGroupByNthWithNA:
 
         pd.testing.assert_frame_equal(
             ds_result._get_df(),
-            pd_result,
-            check_dtype=False
-        )
+            pd_result)
