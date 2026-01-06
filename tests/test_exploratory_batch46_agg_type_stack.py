@@ -189,14 +189,8 @@ class TestTypeCoercionChains:
 
     def test_astype_groupby_agg(self):
         """Test astype then groupby aggregation."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A'],
-            'value': ['1', '2', '3', '4', '5']
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B', 'A'],
-            'value': ['1', '2', '3', '4', '5']
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'A', 'B', 'A'], 'value': ['1', '2', '3', '4', '5']})
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B', 'A'], 'value': ['1', '2', '3', '4', '5']})
 
         pd_df['value'] = pd_df['value'].astype(int)
         pd_result = pd_df.groupby('category')['value'].sum().reset_index()
@@ -328,16 +322,10 @@ class TestIndexManipulationChains:
 
     def test_set_index_groupby_chain(self):
         """Test set_index then groupby aggregation."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A'],
-            'id': [1, 2, 3, 4, 5],
-            'value': [10, 20, 30, 40, 50]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B', 'A'],
-            'id': [1, 2, 3, 4, 5],
-            'value': [10, 20, 30, 40, 50]
-        })
+        pd_df = pd.DataFrame(
+            {'category': ['A', 'B', 'A', 'B', 'A'], 'id': [1, 2, 3, 4, 5], 'value': [10, 20, 30, 40, 50]}
+        )
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B', 'A'], 'id': [1, 2, 3, 4, 5], 'value': [10, 20, 30, 40, 50]})
 
         pd_result = pd_df.set_index('id').groupby('category')['value'].sum().reset_index()
         ds_result = ds_df.set_index('id').groupby('category')['value'].sum().reset_index()
@@ -358,16 +346,8 @@ class TestIndexManipulationChains:
 
     def test_set_index_multicolumn(self):
         """Test set_index with multiple columns."""
-        pd_df = pd.DataFrame({
-            'A': ['x', 'x', 'y', 'y'],
-            'B': [1, 2, 1, 2],
-            'C': [10, 20, 30, 40]
-        })
-        ds_df = DataStore({
-            'A': ['x', 'x', 'y', 'y'],
-            'B': [1, 2, 1, 2],
-            'C': [10, 20, 30, 40]
-        })
+        pd_df = pd.DataFrame({'A': ['x', 'x', 'y', 'y'], 'B': [1, 2, 1, 2], 'C': [10, 20, 30, 40]})
+        ds_df = DataStore({'A': ['x', 'x', 'y', 'y'], 'B': [1, 2, 1, 2], 'C': [10, 20, 30, 40]})
 
         pd_result = pd_df.set_index(['A', 'B'])
         ds_result = ds_df.set_index(['A', 'B'])
@@ -538,7 +518,7 @@ class TestStringAccessorAdvanced:
         pd_result = pd_df['text'].str.len()
         ds_result = ds_df['text'].str.len()
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_str_contains_case_insensitive(self):
         """Test string contains with case insensitivity."""
@@ -562,8 +542,8 @@ class TestStringAccessorAdvanced:
         ds_end = ds_df['text'].str.endswith('hello')
 
         # chDB returns uint8 for boolean results
-        assert_datastore_equals_pandas(ds_start, pd_start, check_dtype=False)
-        assert_datastore_equals_pandas(ds_end, pd_end, check_dtype=False)
+        assert_datastore_equals_pandas(ds_start, pd_start, check_nullable_dtype=False)
+        assert_datastore_equals_pandas(ds_end, pd_end, check_nullable_dtype=False)
 
     def test_str_slice_basic(self):
         """Test string slicing."""
@@ -595,9 +575,9 @@ class TestDatetimeAccessorEdgeCases:
         pd_df = pd.DataFrame({'date': dates})
         ds_df = DataStore({'date': dates})
 
-        assert_datastore_equals_pandas(ds_df['date'].dt.year, pd_df['date'].dt.year, check_dtype=False)
-        assert_datastore_equals_pandas(ds_df['date'].dt.month, pd_df['date'].dt.month, check_dtype=False)
-        assert_datastore_equals_pandas(ds_df['date'].dt.day, pd_df['date'].dt.day, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df['date'].dt.year, pd_df['date'].dt.year)
+        assert_datastore_equals_pandas(ds_df['date'].dt.month, pd_df['date'].dt.month)
+        assert_datastore_equals_pandas(ds_df['date'].dt.day, pd_df['date'].dt.day)
 
     def test_dt_hour_minute_second(self):
         """Test extracting hour, minute, second."""
@@ -605,9 +585,9 @@ class TestDatetimeAccessorEdgeCases:
         pd_df = pd.DataFrame({'date': dates})
         ds_df = DataStore({'date': dates})
 
-        assert_datastore_equals_pandas(ds_df['date'].dt.hour, pd_df['date'].dt.hour, check_dtype=False)
-        assert_datastore_equals_pandas(ds_df['date'].dt.minute, pd_df['date'].dt.minute, check_dtype=False)
-        assert_datastore_equals_pandas(ds_df['date'].dt.second, pd_df['date'].dt.second, check_dtype=False)
+        assert_datastore_equals_pandas(ds_df['date'].dt.hour, pd_df['date'].dt.hour)
+        assert_datastore_equals_pandas(ds_df['date'].dt.minute, pd_df['date'].dt.minute)
+        assert_datastore_equals_pandas(ds_df['date'].dt.second, pd_df['date'].dt.second)
 
     def test_dt_dayofweek(self):
         """Test day of week extraction."""
@@ -619,7 +599,7 @@ class TestDatetimeAccessorEdgeCases:
         pd_result = pd_df['date'].dt.dayofweek
         ds_result = ds_df['date'].dt.dayofweek
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dt_quarter(self):
         """Test quarter extraction."""
@@ -630,7 +610,7 @@ class TestDatetimeAccessorEdgeCases:
         pd_result = pd_df['date'].dt.quarter
         ds_result = ds_df['date'].dt.quarter
 
-        assert_datastore_equals_pandas(ds_result, pd_result, check_dtype=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_dt_is_month_start_end(self):
         """Test is_month_start and is_month_end."""
@@ -716,16 +696,8 @@ class TestCorrelationCovarianceEdgeCases:
 
     def test_corr_basic(self):
         """Test basic correlation."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10],
-            'C': [5, 4, 3, 2, 1]
-        })
-        ds_df = DataStore({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10],
-            'C': [5, 4, 3, 2, 1]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10], 'C': [5, 4, 3, 2, 1]})
+        ds_df = DataStore({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10], 'C': [5, 4, 3, 2, 1]})
 
         pd_result = pd_df.corr()
         ds_result = ds_df.corr()
@@ -734,16 +706,8 @@ class TestCorrelationCovarianceEdgeCases:
 
     def test_corr_after_filter(self):
         """Test correlation after filtering."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3, 4, 5, 6],
-            'B': [2, 4, 6, 8, 10, 12],
-            'C': [6, 5, 4, 3, 2, 1]
-        })
-        ds_df = DataStore({
-            'A': [1, 2, 3, 4, 5, 6],
-            'B': [2, 4, 6, 8, 10, 12],
-            'C': [6, 5, 4, 3, 2, 1]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5, 6], 'B': [2, 4, 6, 8, 10, 12], 'C': [6, 5, 4, 3, 2, 1]})
+        ds_df = DataStore({'A': [1, 2, 3, 4, 5, 6], 'B': [2, 4, 6, 8, 10, 12], 'C': [6, 5, 4, 3, 2, 1]})
 
         pd_result = pd_df[pd_df['A'] > 2].corr()
         ds_result = ds_df[ds_df['A'] > 2].corr()
@@ -752,16 +716,8 @@ class TestCorrelationCovarianceEdgeCases:
 
     def test_cov_basic(self):
         """Test basic covariance."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10],
-            'C': [5, 4, 3, 2, 1]
-        })
-        ds_df = DataStore({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10],
-            'C': [5, 4, 3, 2, 1]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10], 'C': [5, 4, 3, 2, 1]})
+        ds_df = DataStore({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10], 'C': [5, 4, 3, 2, 1]})
 
         pd_result = pd_df.cov()
         ds_result = ds_df.cov()
@@ -770,14 +726,8 @@ class TestCorrelationCovarianceEdgeCases:
 
     def test_cov_ddof(self):
         """Test covariance with ddof parameter."""
-        pd_df = pd.DataFrame({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10]
-        })
-        ds_df = DataStore({
-            'A': [1, 2, 3, 4, 5],
-            'B': [2, 4, 6, 8, 10]
-        })
+        pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10]})
+        ds_df = DataStore({'A': [1, 2, 3, 4, 5], 'B': [2, 4, 6, 8, 10]})
 
         pd_result = pd_df.cov(ddof=0)
         ds_result = ds_df.cov(ddof=0)
@@ -790,14 +740,8 @@ class TestComplexChains:
 
     def test_filter_astype_groupby_agg_sort(self):
         """Test filter -> astype -> groupby -> agg -> sort chain."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': ['1', '2', '3', '4', '5', '6']
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': ['1', '2', '3', '4', '5', '6']
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': ['1', '2', '3', '4', '5', '6']})
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': ['1', '2', '3', '4', '5', '6']})
 
         # Filter to category A or values > 2
         pd_df['value'] = pd_df['value'].astype(int)
@@ -810,14 +754,8 @@ class TestComplexChains:
 
     def test_clip_round_filter_sort(self):
         """Test clip -> round -> filter -> sort chain."""
-        pd_df = pd.DataFrame({
-            'A': [1.234, 5.678, 9.012, 3.456, 7.890],
-            'B': [10, 20, 30, 40, 50]
-        })
-        ds_df = DataStore({
-            'A': [1.234, 5.678, 9.012, 3.456, 7.890],
-            'B': [10, 20, 30, 40, 50]
-        })
+        pd_df = pd.DataFrame({'A': [1.234, 5.678, 9.012, 3.456, 7.890], 'B': [10, 20, 30, 40, 50]})
+        ds_df = DataStore({'A': [1.234, 5.678, 9.012, 3.456, 7.890], 'B': [10, 20, 30, 40, 50]})
 
         pd_result = pd_df.clip(lower=2.0, upper=8.0).round(1)
         pd_result = pd_result[pd_result['A'] > 3.0].sort_values('A')
@@ -829,14 +767,8 @@ class TestComplexChains:
 
     def test_set_index_filter_assign_reset(self):
         """Test set_index -> filter -> assign -> reset_index chain."""
-        pd_df = pd.DataFrame({
-            'id': [1, 2, 3, 4, 5],
-            'value': [10, 20, 30, 40, 50]
-        })
-        ds_df = DataStore({
-            'id': [1, 2, 3, 4, 5],
-            'value': [10, 20, 30, 40, 50]
-        })
+        pd_df = pd.DataFrame({'id': [1, 2, 3, 4, 5], 'value': [10, 20, 30, 40, 50]})
+        ds_df = DataStore({'id': [1, 2, 3, 4, 5], 'value': [10, 20, 30, 40, 50]})
 
         pd_result = pd_df.set_index('id')
         pd_result = pd_result[pd_result['value'] > 20]
@@ -852,14 +784,12 @@ class TestComplexChains:
 
     def test_str_filter_groupby_count(self):
         """Test string operation -> filter -> groupby -> count chain."""
-        pd_df = pd.DataFrame({
-            'text': ['hello', 'WORLD', 'Hello', 'world', 'HELLO'],
-            'category': ['A', 'B', 'A', 'B', 'A']
-        })
-        ds_df = DataStore({
-            'text': ['hello', 'WORLD', 'Hello', 'world', 'HELLO'],
-            'category': ['A', 'B', 'A', 'B', 'A']
-        })
+        pd_df = pd.DataFrame(
+            {'text': ['hello', 'WORLD', 'Hello', 'world', 'HELLO'], 'category': ['A', 'B', 'A', 'B', 'A']}
+        )
+        ds_df = DataStore(
+            {'text': ['hello', 'WORLD', 'Hello', 'world', 'HELLO'], 'category': ['A', 'B', 'A', 'B', 'A']}
+        )
 
         pd_df['text_lower'] = pd_df['text'].str.lower()
         pd_result = pd_df[pd_df['text_lower'] == 'hello'].groupby('category').size().reset_index(name='count')
@@ -920,14 +850,8 @@ class TestGroupByAggEdgeCases:
     @chdb_no_product_function
     def test_groupby_prod(self):
         """Test groupby product - chDB doesn't have prodIf function."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B'],
-            'value': [2, 3, 4, 5]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B'],
-            'value': [2, 3, 4, 5]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'A', 'B'], 'value': [2, 3, 4, 5]})
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B'], 'value': [2, 3, 4, 5]})
 
         pd_result = pd_df.groupby('category')['value'].prod().reset_index()
         ds_result = ds_df.groupby('category')['value'].prod().reset_index()
@@ -936,14 +860,8 @@ class TestGroupByAggEdgeCases:
 
     def test_groupby_var(self):
         """Test groupby variance."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
 
         pd_result = pd_df.groupby('category')['value'].var().reset_index()
         ds_result = ds_df.groupby('category')['value'].var().reset_index()
@@ -952,14 +870,8 @@ class TestGroupByAggEdgeCases:
 
     def test_groupby_std(self):
         """Test groupby standard deviation."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'A', 'B', 'A', 'B'],
-            'value': [1, 2, 3, 4, 5, 6]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
+        ds_df = DataStore({'category': ['A', 'B', 'A', 'B', 'A', 'B'], 'value': [1, 2, 3, 4, 5, 6]})
 
         pd_result = pd_df.groupby('category')['value'].std().reset_index()
         ds_result = ds_df.groupby('category')['value'].std().reset_index()
@@ -968,14 +880,8 @@ class TestGroupByAggEdgeCases:
 
     def test_groupby_single_group(self):
         """Test groupby with only one group."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'A', 'A'],
-            'value': [1, 2, 3]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'A', 'A'],
-            'value': [1, 2, 3]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'A', 'A'], 'value': [1, 2, 3]})
+        ds_df = DataStore({'category': ['A', 'A', 'A'], 'value': [1, 2, 3]})
 
         pd_result = pd_df.groupby('category')['value'].sum().reset_index()
         ds_result = ds_df.groupby('category')['value'].sum().reset_index()
@@ -984,14 +890,8 @@ class TestGroupByAggEdgeCases:
 
     def test_groupby_all_different(self):
         """Test groupby where each row is its own group."""
-        pd_df = pd.DataFrame({
-            'category': ['A', 'B', 'C', 'D'],
-            'value': [1, 2, 3, 4]
-        })
-        ds_df = DataStore({
-            'category': ['A', 'B', 'C', 'D'],
-            'value': [1, 2, 3, 4]
-        })
+        pd_df = pd.DataFrame({'category': ['A', 'B', 'C', 'D'], 'value': [1, 2, 3, 4]})
+        ds_df = DataStore({'category': ['A', 'B', 'C', 'D'], 'value': [1, 2, 3, 4]})
 
         pd_result = pd_df.groupby('category')['value'].mean().reset_index()
         ds_result = ds_df.groupby('category')['value'].mean().reset_index()

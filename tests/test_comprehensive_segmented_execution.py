@@ -40,31 +40,6 @@ from datastore.conditions import BinaryCondition
 from tests.test_utils import assert_datastore_equals_pandas
 
 
-def assert_dataframe_equal(ds_result, pd_result, msg=""):
-    """
-    Assert two DataFrames are equal, ignoring index.
-
-    Args:
-        ds_result: DataStore result DataFrame
-        pd_result: Pandas reference DataFrame
-        check_dtype: Whether to check dtypes strictly
-        msg: Additional message for assertion errors
-    """
-    # Reset index for comparison
-    ds_df = ds_result.reset_index(drop=True)
-    pd_df = pd_result.reset_index(drop=True)
-
-    # Sort columns to ensure same order
-    common_cols = sorted(set(ds_df.columns) & set(pd_df.columns))
-    ds_df = ds_df[common_cols].sort_values(by=common_cols[0] if common_cols else []).reset_index(drop=True)
-    pd_df = pd_df[common_cols].sort_values(by=common_cols[0] if common_cols else []).reset_index(drop=True)
-
-    try:
-        pd.testing.assert_frame_equal(ds_df, pd_df, check_dtype=check_dtype, check_exact=False, rtol=1e-5, atol=1e-8)
-    except AssertionError as e:
-        raise AssertionError(f"{msg}\n{e}")
-
-
 def verify_segment_engines(lazy_ops, has_sql_source, expected_segments):
     """
     Verify that the execution plan matches expected segment types.
@@ -796,8 +771,7 @@ class TestSegmentEngineVerification(unittest.TestCase):
 
         ds_result = ds.to_df()
         np.testing.assert_array_equal(
-            ds_result['computed'].values, pdf['computed'].values,
-            err_msg="computed values don't match"
+            ds_result['computed'].values, pdf['computed'].values, err_msg="computed values don't match"
         )
 
         # Verify segment counts
@@ -1121,7 +1095,7 @@ class TestWhereMaskKnownLimitations(unittest.TestCase):
         """
         When DataFrame has bool_col and 'other' is numeric (including 0 or 1),
         where() always falls back to Pandas to ensure type correctness.
-        
+
         SQL CASE WHEN converts 0 to false, which changes both dtype and value.
         Pandas preserves the actual int value with object dtype.
         """

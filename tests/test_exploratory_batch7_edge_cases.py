@@ -20,25 +20,6 @@ from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas, get_series
 
 
-def assert_series_equals(ds_result, pd_result, check_dtype=True, check_names=False, msg=""):
-    """Compare Series results."""
-    ds_series = get_series(ds_result)
-
-    if isinstance(ds_series, pd.DataFrame) and len(ds_series.columns) == 1:
-        ds_series = ds_series.iloc[:, 0]
-
-    ds_series = ds_series.reset_index(drop=True)
-    pd_result = pd_result.reset_index(drop=True)
-
-    pd.testing.assert_series_equal(
-        ds_series,
-        pd_result,
-        check_dtype=check_dtype,
-        check_names=check_names,
-        obj=msg or "DataStore Series vs Pandas Series",
-    )
-
-
 # ============================================================================
 # Section 1: Empty DataFrame Operations
 # ============================================================================
@@ -393,7 +374,8 @@ class TestColumnSelectionEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_select_columns_in_different_order(self):
         """Select columns in different order than original."""
@@ -595,7 +577,8 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_float_precision(self):
         """Float precision in operations."""
@@ -635,7 +618,8 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
     def test_power_operation(self):
         """Power/exponent operation."""
@@ -647,7 +631,8 @@ class TestArithmeticEdgeCases:
             ds_executed = ds_executed.iloc[:, 0]
 
         pd.testing.assert_series_equal(
-            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False)
+            ds_executed.reset_index(drop=True), pd_result.reset_index(drop=True), check_names=False
+        )
 
 
 # ============================================================================

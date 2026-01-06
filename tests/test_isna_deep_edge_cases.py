@@ -641,7 +641,6 @@ class TestIsnaWithSelectAndProject(unittest.TestCase):
         ds['is_null'] = ds['value'].isna()
         ds_result = ds.select('name', 'is_null')
 
-        # Note: chDB may return uint8 for boolean columns, use check_dtype=False
         assert_datastore_equals_pandas(ds_result, pdf_result)
 
 

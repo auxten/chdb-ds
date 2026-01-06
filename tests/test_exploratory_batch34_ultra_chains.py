@@ -883,5 +883,4 @@ class TestBooleanOperationChains:
         ds_result = ds_df[~ds_df['b']]
         ds_result = ds_result[ds_result['a'] > 1]
 
-        # check_dtype=False because chDB returns bool as uint8
         assert_datastore_equals_pandas(ds_result, pd_result)

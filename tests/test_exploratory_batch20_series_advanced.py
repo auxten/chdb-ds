@@ -489,7 +489,6 @@ class TestSeriesMethodChains:
         pd.testing.assert_series_equal(
             get_series(ds_result),
             pd_result,
-            check_dtype=False  # May have dtype differences
         )
 
 

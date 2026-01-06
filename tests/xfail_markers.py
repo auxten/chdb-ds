@@ -86,10 +86,13 @@ chdb_median_in_where = pytest.mark.xfail(
 # and includes them when dropna=False, matching pandas behavior.
 # See: tracking/discoveries/2026-01-06_groupby_dropna_alignment_research.md
 
-chdb_nan_sum_behavior = pytest.mark.xfail(
-    reason="chDB returns NA for sum of all-NaN, pandas returns 0 (SQL standard behavior, may add workaround in DataStore)",
-    strict=True,
-)
+# NOTE: chdb_nan_sum_behavior REMOVED
+# Fixed in column_expr.py _execute_groupby_aggregation() by adding fillna(0) 
+# for sum aggregation results to match pandas behavior.
+# chdb_nan_sum_behavior = pytest.mark.xfail(
+#     reason="chDB returns NA for sum of all-NaN, pandas returns 0 (SQL standard behavior, may add workaround in DataStore)",
+#     strict=True,
+# )
 
 # NOTE: chdb_null_comparison_semantics and chdb_null_string_comparison REMOVED
 # Fixed in conditions.py using ifNull() wrapping for pandas NULL semantics
@@ -311,7 +314,7 @@ MARKER_REGISTRY = {
     "chdb_no_quantile_array": ("chdb", None, "quantile with array parameter not supported"),
     "chdb_median_in_where": ("chdb", None, "Aggregate in WHERE requires subquery"),
     # NULL/NaN
-    "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA (SQL standard)"),
+    # "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA (SQL standard)"),  # FIXED
     # String/Unicode
     "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter has encoding issues"),
     "chdb_strip_whitespace": ("chdb", None, "strip() doesn't handle all whitespace types"),

@@ -10,7 +10,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import chdb_nan_sum_behavior, datastore_callable_index
+from tests.xfail_markers import datastore_callable_index
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -408,7 +408,6 @@ class TestAggregationEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-    @chdb_nan_sum_behavior
     def test_agg_with_all_nan(self):
         """Aggregate all-NaN column"""
         df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [np.nan, np.nan, np.nan, np.nan]})

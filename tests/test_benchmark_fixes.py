@@ -1219,7 +1219,7 @@ class TestBoolColumnWhereMaskFallback:
             assert pd_result['bool_col'].dtype == object
             assert ds_result['bool_col'].dtype == object
 
-            pd.testing.assert_frame_equal(ds_result, pd_result, check_dtype=True)
+            pd.testing.assert_frame_equal(ds_result, pd_result)
 
     def test_where_no_bool_column_uses_sql(self):
         """Test that where() without bool column can still use SQL pushdown."""

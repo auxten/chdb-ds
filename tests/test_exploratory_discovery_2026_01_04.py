@@ -67,7 +67,6 @@ class TestCombineFirst:
         pd.testing.assert_frame_equal(
             ds_result._get_df().reset_index(drop=True),
             pd_result.reset_index(drop=True),
-            check_dtype=False  # dtype may differ due to chDB
         )
 
     def test_combine_with_datastore(self):
