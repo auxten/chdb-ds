@@ -138,6 +138,22 @@ chdb_case_bool_conversion = pytest.mark.xfail(
     strict=True,
 )
 
+# Dtype Differences - chDB returns different types than pandas in certain scenarios
+chdb_nat_returns_nullable_int = pytest.mark.xfail(
+    reason="chDB datetime accessor with NaT returns nullable Int (Int32), pandas returns float64",
+    strict=True,
+)
+
+chdb_replace_none_dtype = pytest.mark.xfail(
+    reason="chDB replace with None returns nullable Int64, pandas returns object dtype",
+    strict=True,
+)
+
+chdb_mask_dtype_nullable = pytest.mark.xfail(
+    reason="chDB mask/where on int returns nullable Int64, pandas returns float64 (due to NaN)",
+    strict=True,
+)
+
 
 # =============================================================================
 # DataStore Bugs (bug_*)
