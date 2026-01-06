@@ -13,7 +13,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import chdb_null_in_groupby, pandas_deprecated_fillna_downcast
+from tests.xfail_markers import pandas_deprecated_fillna_downcast
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -721,8 +721,6 @@ class TestGroupByAdvanced:
             get_dataframe(ds_result),
             pd_result,
             )
-
-    @chdb_null_in_groupby
     def test_groupby_dropna(self):
         """groupby with dropna parameter."""
         pd_df = pd.DataFrame({

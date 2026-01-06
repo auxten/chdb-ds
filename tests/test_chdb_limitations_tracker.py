@@ -18,7 +18,6 @@ import pytest
 
 from tests.xfail_markers import (
     chdb_array_nullable,
-    chdb_null_in_groupby,
     chdb_no_normalize_utf8,
     chdb_no_quantile_array,
     chdb_strip_whitespace,
@@ -90,18 +89,16 @@ class TestNullHandlingResolved:
 
 class TestNullHandlingLimitations:
     """Tests for remaining NULL handling limitations."""
-
-    @chdb_null_in_groupby
     def test_groupby_null_handling(self):
-        """Check if chDB excludes NULL from groupby like pandas (dropna=True)."""
+        """Check if DataStore excludes NULL from groupby like pandas (dropna=True default)."""
         df = pd.DataFrame({'group': ['A', 'B', None, 'A'], 'val': [1, 2, 3, 4]})
         ds = DataStore(df)
         
         pd_result = df.groupby('group', dropna=True)['val'].sum()
-        ds_result = ds.groupby('group')['val'].sum()._get_df()
+        ds_result = ds.groupby('group')['val'].sum()._execute()
         
         # pandas with dropna=True has 2 groups
-        # chDB includes NULL as separate group (3 groups)
+        # DataStore now correctly excludes NULL by default (fixed dropna support)
         assert len(ds_result) == len(pd_result)
 
 

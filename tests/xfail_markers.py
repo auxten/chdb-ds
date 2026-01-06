@@ -81,10 +81,10 @@ chdb_median_in_where = pytest.mark.xfail(
 )
 
 # NULL/NaN Handling
-chdb_null_in_groupby = pytest.mark.xfail(
-    reason="chDB treats None/NaN as empty string in groupby - pandas excludes NULL by default",
-    strict=True,
-)
+# NOTE: chdb_null_in_groupby REMOVED - Fixed by implementing dropna parameter support
+# in groupby operations. DataStore now properly excludes NULL groups by default (dropna=True)
+# and includes them when dropna=False, matching pandas behavior.
+# See: tracking/discoveries/2026-01-06_groupby_dropna_alignment_research.md
 
 chdb_nan_sum_behavior = pytest.mark.xfail(
     reason="chDB returns NA for sum of all-NaN, pandas returns 0",
@@ -298,7 +298,7 @@ MARKER_REGISTRY = {
     "chdb_no_normalize_utf8": ("chdb", None, "normalizeUTF8NFD not available"),
     "chdb_no_quantile_array": ("chdb", None, "quantile with array not supported"),
     "chdb_median_in_where": ("chdb", None, "Aggregate in WHERE requires subquery"),
-    "chdb_null_in_groupby": ("chdb", None, "NULL handling differs in groupby"),
+    # FIXED: "chdb_null_in_groupby": ("chdb", None, "NULL handling differs in groupby"),
     "chdb_nan_sum_behavior": ("chdb", None, "Sum of all-NaN returns NA"),
     # NOTE: chdb_null_comparison_semantics and chdb_null_string_comparison FIXED
     "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter issues"),

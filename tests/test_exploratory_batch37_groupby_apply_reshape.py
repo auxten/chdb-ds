@@ -21,7 +21,6 @@ from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas, get_series
 from tests.xfail_markers import (
     limit_unstack_column_expr,
-    chdb_null_in_groupby,
 )
 
 
@@ -725,8 +724,6 @@ class TestComplexChains:
 
 class TestNAValueHandling:
     """Test NA value handling in various chain operations."""
-
-    @chdb_null_in_groupby
     def test_groupby_with_na_in_key_dropna_true(self):
         """Test groupby with NA values in grouping key (dropna=True).
         

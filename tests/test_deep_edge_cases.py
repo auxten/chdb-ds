@@ -16,7 +16,6 @@ Bug patterns explored:
 import numpy as np
 import pandas as pd
 import pytest
-from tests.xfail_markers import chdb_null_in_groupby
 import tempfile
 import os
 
@@ -130,8 +129,6 @@ class TestGroupByWithNullAndEdgeCases:
                 'count_col': [10, 20, 30, 40, 50, 60, 70],
             }
         )
-
-    @chdb_null_in_groupby
     def test_groupby_count_null_category_pandas_default(self, df_with_nulls):
         """Test that pandas default excludes NULL while DataStore includes it.
 
@@ -151,13 +148,13 @@ class TestGroupByWithNullAndEdgeCases:
         assert set(pd_result.index) == set(ds_result.index)
 
     def test_groupby_count_with_null_category_dropna_false(self, df_with_nulls):
-        """Test count() with NULL values - using dropna=False for pandas compatibility."""
+        """Test count() with NULL values - using dropna=False to include NULL groups."""
         pdf = df_with_nulls.copy()
-        # Use dropna=False to match SQL/DataStore behavior
+        # Use dropna=False on both to include NULL groups
         pd_result = pdf.groupby('category', dropna=False).count()
 
         ds = DataStore.from_df(df_with_nulls)
-        ds_result = ds.groupby('category').count().to_df()
+        ds_result = ds.groupby('category', dropna=False).count().to_df()
 
         # Both should now include NULL category
         pd_categories = set(pd_result.index.tolist())
@@ -189,8 +186,6 @@ class TestGroupByWithNullAndEdgeCases:
                 assert pd.isna(ds_val)
             else:
                 assert abs(pd_val - ds_val) < 0.001
-
-    @chdb_null_in_groupby
     def test_groupby_multiple_agg_null_pandas_default(self, df_with_nulls):
         """Test that pandas default excludes NULL in multiple aggregations."""
         pdf = df_with_nulls.copy()
@@ -207,14 +202,14 @@ class TestGroupByWithNullAndEdgeCases:
     def test_groupby_multiple_agg_with_nulls_dropna_false(self, df_with_nulls):
         """Test multiple aggregations with NULL/NaN values - using dropna=False."""
         pdf = df_with_nulls.copy()
-        # Use dropna=False to match SQL behavior (includes NULL keys)
+        # Use dropna=False on both to include NULL keys
         pd_result = pdf.groupby('category', dropna=False).agg(
             {'value': ['sum', 'mean', 'count'], 'count_col': ['sum', 'count']}
         )
 
         ds = DataStore.from_df(df_with_nulls)
         ds_result = (
-            ds.groupby('category').agg({'value': ['sum', 'mean', 'count'], 'count_col': ['sum', 'count']}).to_df()
+            ds.groupby('category', dropna=False).agg({'value': ['sum', 'mean', 'count'], 'count_col': ['sum', 'count']}).to_df()
         )
 
         # Verify structure - both should have 3 groups (A, B, None)

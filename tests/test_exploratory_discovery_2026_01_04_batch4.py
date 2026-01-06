@@ -10,7 +10,7 @@ Based on architecture analysis, test the following edge cases:
 """
 
 import pytest
-from tests.xfail_markers import chdb_no_product_function, chdb_null_in_groupby
+from tests.xfail_markers import chdb_no_product_function
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -114,8 +114,6 @@ class TestGroupByMissingMethods:
 
 class TestGroupByParameters:
     """Test groupby parameter support."""
-
-    @chdb_null_in_groupby
     def test_groupby_dropna_true(self, df_with_nan):
         pd_df = df_with_nan
         ds = DataStore(df_with_nan)

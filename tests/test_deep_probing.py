@@ -619,11 +619,11 @@ class TestGroupByComplexScenarios:
 
         df = pd.DataFrame({'group': ['A', 'A', None, 'B', None], 'value': [1, 2, 3, 4, 5]})
 
-        # Use dropna=False to include NULL group
+        # Use dropna=False to include NULL group on both sides
         pd_result = df.groupby('group', dropna=False)['value'].sum()
 
         ds = DataStore.from_df(df)
-        ds_result = ds.groupby('group')['value'].sum()
+        ds_result = ds.groupby('group', dropna=False)['value'].sum()
 
         # Both should have group None with sum 8 (3+5)
         assert ds_result.get(None, ds_result.get(np.nan, 0)) == 8
