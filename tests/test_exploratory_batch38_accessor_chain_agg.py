@@ -543,7 +543,7 @@ class TestCombinedAccessorAggChains:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    @chdb_empty_df_str_dtype
+    # FIXED: Empty DataFrame str accessor now returns correct dtype
     def test_empty_df_str_accessor(self):
         """Test string accessor on empty DataFrame."""
         df = pd.DataFrame({

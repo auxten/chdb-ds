@@ -213,7 +213,7 @@ limit_where_condition = pytest.mark.xfail(
 )
 
 limit_unstack_column_expr = pytest.mark.xfail(
-    reason="ColumnExpr doesn't support unstack - Series method on MultiIndex",
+    reason="Design limit: ColumnExpr doesn't support unstack() (requires MultiIndex). Use pivot_table() instead.",
     strict=True,
 )
 
@@ -326,9 +326,9 @@ MARKER_REGISTRY = {
     "deprecated_fillna_downcast": ("deprecated", None, "fillna downcast deprecated"),
     # Bugs discovered in exploratory batch 38
     "bug_setitem_computed_column_groupby": ("bug", None, "setitem computed column not tracked for groupby"),
-    "chdb_empty_df_str_dtype": ("chdb", None, "Empty df str accessor dtype issue"),
+    # FIXED: "chdb_empty_df_str_dtype": ("chdb", None, "Empty df str accessor dtype issue - FIXED 2026-01-06"),
     # chDB integer column names
-    "chdb_integer_column_names": ("chdb", None, "Integer column names cause errors"),
+    # FIXED: "chdb_integer_column_names": ("chdb", None, "Integer column names cause errors - FIXED 2026-01-06"),
     # Bug: groupby column selection
     # "bug_groupby_column_selection_extra_columns": ("bug", None, "FIXED - groupby column selection includes extra columns"),
 }
@@ -355,20 +355,22 @@ bug_setitem_computed_column_groupby = pytest.mark.xfail(
 
 # Add to MARKER_REGISTRY at the end
 
-chdb_empty_df_str_dtype = pytest.mark.xfail(
-    reason="chDB: str accessor on empty DataFrame returns float64 instead of object dtype",
-    strict=True,
-)
+# FIXED (2026-01-06): Empty DataFrame now executes SQL to get correct dtypes
+# Keeping as a no-op marker for import compatibility
+def chdb_empty_df_str_dtype(func):
+    """FIXED: Empty DataFrame str accessor now returns correct dtype."""
+    return func
 
 
 # =============================================================================
 # chDB: Integer column names (from transpose) cause errors
 # =============================================================================
 
-chdb_integer_column_names = pytest.mark.xfail(
-    reason="chDB: Python() table function cannot handle integer column names (e.g., 0, 1, 2 from transpose), causes KeyError",
-    strict=True,
-)
+# FIXED (2026-01-06): Integer column names now converted to strings for SQL execution
+# Keeping as a no-op marker for import compatibility
+def chdb_integer_column_names(func):
+    """FIXED: Integer column names now work via string conversion."""
+    return func
 
 # =============================================================================
 # Bug: groupby column selection includes extra columns - FIXED (2026-01-06)

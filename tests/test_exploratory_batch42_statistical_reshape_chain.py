@@ -440,7 +440,7 @@ class TestTransposeAxisOperations:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @chdb_integer_column_names
+    # FIXED: Integer column names now work via string conversion
     def test_transpose_then_filter_columns(self):
         """Transpose then select columns.
 
