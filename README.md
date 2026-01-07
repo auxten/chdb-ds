@@ -123,9 +123,13 @@ result = (ds
 
 ### Installation
 
+chdb-ds is rapidly evolving with frequent updates. To get the latest features and fixes, install directly from the repository:
+
 ```bash
-pip install chdb-ds
+pip install -U git+https://github.com/auxten/chdb-ds.git --break-system-packages
 ```
+
+> **Note**: `--break-system-packages` is required on some systems (e.g., macOS with Homebrew Python, Debian/Ubuntu with system Python). Alternatively, use a virtual environment to avoid this flag.
 
 ### Your First Query (30 seconds)
 
