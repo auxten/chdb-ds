@@ -22,29 +22,34 @@ pip install -U git+https://github.com/auxten/chdb-ds.git --break-system-packages
 
 ### Your First Query (30 seconds)
 
-Start with generated data to learn the basics:
+Just change your import - use the pandas API you already know:
 
 ```python
-from datastore import DataStore
+import datastore as pd  # That's it! Use pandas API as usual
 
-# Generate test data (numbers 0-99)
-ds = DataStore.from_numbers(100)
+# Create a DataFrame
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Charlie', 'Diana'],
+    'age': [25, 30, 35, 28],
+    'city': ['NYC', 'LA', 'NYC', 'LA']
+})
 
-# Query with pandas-like syntax
-result = (ds
-    .select('*')
-    .filter(ds.number > 50)
-    .limit(5)
-    .to_df())  # Returns pandas DataFrame
-
+# Filter with familiar pandas syntax
+result = df[df['age'] > 26]
 print(result)
-#    number
-# 0      51
-# 1      52
-# 2      53
-# 3      54
-# 4      55
+#       name  age city
+# 1      Bob   30   LA
+# 2  Charlie   35  NYC
+# 3    Diana   28   LA
+
+# GroupBy works too
+print(df.groupby('city')['age'].mean())
+# city
+# LA     29.0
+# NYC    30.0
 ```
+
+**✨ Zero code changes required.** All operations are automatically lazy - they're recorded and compiled into optimized SQL, executed only when results are needed (like `print()`). Your existing pandas code just runs faster.
 
 ### Working with Real Data (1 minute)
 
