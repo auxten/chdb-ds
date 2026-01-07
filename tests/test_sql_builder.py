@@ -597,6 +597,135 @@ class TestSQLBuilderEdgeCases(unittest.TestCase):
         self.assertLess(b_pos, c_pos, "Column 'b' should come before 'c'")
 
 
+class TestSQLBuilderWhereAliasConflict(unittest.TestCase):
+    """
+    Test handling of ClickHouse WHERE alias conflict.
+
+    ClickHouse has a quirk: when SELECT has an alias that shadows an original
+    column name, the WHERE clause may incorrectly use the aliased value instead
+    of the original column value.
+
+    Example (buggy):
+        SELECT value*2 AS value FROM table WHERE value > 15
+        # ClickHouse uses value*2 in WHERE instead of original value
+
+    Fix: wrap to apply WHERE first, then compute in outer query.
+    """
+
+    def test_filter_before_same_name_assign_wraps_subquery(self):
+        """
+        Filter on original column, then assign same-name computed column.
+
+        When the computed column name matches a column referenced in WHERE,
+        we need to wrap to ensure WHERE uses the original column value.
+
+        Expected SQL structure:
+            SELECT * EXCEPT("value"), ("value"*2) AS "value"
+            FROM (
+                SELECT * FROM source WHERE "value" > 15
+            ) AS __subq__
+        """
+        builder = SQLBuilder("file('data.csv', 'CSVWithNames')", known_columns=['name', 'value'])
+
+        # First add filter on 'value' (original column)
+        condition = BinaryCondition('>', Field('value'), Literal(15))
+        builder.add_filter(condition)
+
+        # Then add computed column with same name 'value'
+        expr = ArithmeticExpression('*', Field('value'), Literal(2))
+        builder.add_computed_column('value', expr)
+
+        sql = builder.build()
+
+        # Should wrap: WHERE in inner subquery, computed column in outer SELECT
+        self.assertIn('FROM (', sql, "Should have a subquery")
+        self.assertIn('WHERE "value" > 15', sql, "WHERE should be present")
+        self.assertIn('AS "value"', sql, "Computed column should be present")
+
+        # Verify structure: WHERE is inside subquery (after FROM ()
+        from_subq_pos = sql.find('FROM (')
+        where_pos = sql.find('WHERE')
+        self.assertGreater(where_pos, from_subq_pos, "WHERE should be inside subquery (after FROM ()")
+
+        # Verify computed column is in outer SELECT (before FROM ()
+        as_value_pos = sql.find('AS "value"')
+        self.assertLess(as_value_pos, from_subq_pos, "AS value should be in outer SELECT (before FROM ()")
+
+    def test_filter_before_different_name_assign_no_wrap(self):
+        """
+        Filter on one column, assign different-name computed column.
+
+        No conflict - no wrapping needed.
+        """
+        builder = SQLBuilder("file('data.csv', 'CSVWithNames')", known_columns=['name', 'value'])
+
+        # Filter on 'value'
+        condition = BinaryCondition('>', Field('value'), Literal(15))
+        builder.add_filter(condition)
+
+        # Computed column with different name 'doubled'
+        expr = ArithmeticExpression('*', Field('value'), Literal(2))
+        builder.add_computed_column('doubled', expr)
+
+        sql = builder.build()
+
+        # Should NOT have subquery wrapper (no FROM (...))
+        # Note: The SQL structure should be: SELECT *, expr AS doubled ... WHERE
+        self.assertNotIn('FROM (', sql, "Should not have a subquery wrapper")
+        self.assertIn('WHERE', sql)
+        self.assertIn('AS "doubled"', sql)
+
+    def test_assign_before_filter_same_name_wraps_for_computed_ref(self):
+        """
+        Assign computed column, then filter on same name.
+
+        Filter should use the computed value (not original), so we wrap to
+        ensure the computed column is materialized before WHERE.
+        """
+        builder = SQLBuilder("file('data.csv', 'CSVWithNames')", known_columns=['name', 'value'])
+
+        # First add computed column 'value'
+        expr = ArithmeticExpression('*', Field('value'), Literal(2))
+        builder.add_computed_column('value', expr)
+
+        # Then filter on 'value' (should use computed value)
+        condition = BinaryCondition('>', Field('value'), Literal(15))
+        builder.add_filter(condition)
+
+        sql = builder.build()
+
+        # Should wrap: computed in inner, WHERE in outer (uses computed value)
+        self.assertIn('FROM (', sql, "Should have a subquery")
+        self.assertIn('AS "value"', sql, "Computed column should be in inner query")
+        self.assertIn('WHERE "value" > 15', sql, "WHERE should be in outer query")
+
+    def test_multiple_filters_then_same_name_assign(self):
+        """
+        Multiple filters on same column, then assign same-name computed column.
+
+        All filters should use original value.
+        """
+        builder = SQLBuilder("file('data.csv', 'CSVWithNames')", known_columns=['name', 'value'])
+
+        # Multiple filters on 'value'
+        cond1 = BinaryCondition('>', Field('value'), Literal(10))
+        cond2 = BinaryCondition('<', Field('value'), Literal(100))
+        builder.add_filter(cond1)
+        builder.add_filter(cond2)
+
+        # Computed column same name
+        expr = ArithmeticExpression('*', Field('value'), Literal(2))
+        builder.add_computed_column('value', expr)
+
+        sql = builder.build()
+
+        # Both WHERE conditions should be in inner query
+        self.assertIn('FROM (', sql, "Should have a subquery")
+        self.assertIn('"value" > 10', sql)
+        self.assertIn('"value" < 100', sql)
+        self.assertIn('AS "value"', sql)
+
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -294,5 +294,109 @@ class TestChdbSqlGeneration(unittest.TestCase):
         self.assertIn("LIMIT", sql)
 
 
+class TestWhereAliasConflictIntegration(unittest.TestCase):
+    """
+    Integration tests for ClickHouse WHERE alias conflict fix.
+
+    This tests the bug where ClickHouse incorrectly uses a SELECT alias
+    value in WHERE clause when the alias shadows an original column name.
+
+    Example (buggy behavior):
+        SELECT value*2 AS value FROM table WHERE value > 15
+        # ClickHouse uses value*2 in WHERE instead of original value
+
+    Fix: wrap to apply WHERE first in inner subquery, then compute in outer.
+    """
+
+    def test_filter_before_same_name_assign_from_file(self):
+        """
+        Integration test: filter -> assign(same name) from file source.
+
+        Verifies that filter uses original column value, not computed alias.
+        """
+        import pandas as pd
+        import tempfile
+        import os
+
+        # Create test data
+        pd_df = pd.DataFrame({
+            'name': ['Alice', 'Alice', 'Bob', 'Bob', 'Charlie'],
+            'value': [10, 20, 30, 40, 50]
+        })
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+            pd_df.to_csv(f, index=False)
+            csv_path = f.name
+
+        try:
+            # Expected pandas result
+            pd_result = pd_df[pd_df['value'] > 15].copy()  # [20, 30, 40, 50]
+            pd_result['value'] = pd_result['value'] * 2    # [40, 60, 80, 100]
+
+            # DataStore
+            ds = DataStore.from_file(csv_path)
+            ds = ds[ds['value'] > 15]  # filter on ORIGINAL value
+            ds['value'] = ds['value'] * 2  # then compute
+
+            # Execute and compare
+            ds_result = repr(ds)  # Triggers execution
+
+            # Verify row count (should be 4, not 5)
+            self.assertEqual(len(ds), len(pd_result),
+                             f"Row count mismatch: ds={len(ds)}, pd={len(pd_result)}")
+
+            # Verify values match pandas
+            ds_values = ds['value']._execute().tolist()
+            pd_values = pd_result['value'].tolist()
+            self.assertEqual(ds_values, pd_values,
+                             f"Values mismatch: ds={ds_values}, pd={pd_values}")
+
+        finally:
+            os.unlink(csv_path)
+
+    def test_filter_assign_groupby_chain_from_file(self):
+        """
+        Integration test: filter -> assign(same name) -> groupby from file.
+
+        This was the original bug scenario reported by the user.
+        """
+        import pandas as pd
+        import tempfile
+        import os
+
+        pd_df = pd.DataFrame({
+            'name': ['Alice', 'Alice', 'Bob', 'Bob', 'Charlie'],
+            'value': [10, 20, 30, 40, 50]
+        })
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+            pd_df.to_csv(f, index=False)
+            csv_path = f.name
+
+        try:
+            # Expected pandas result
+            pd_filtered = pd_df[pd_df['value'] > 15].copy()
+            pd_filtered['value'] = pd_filtered['value'] * 2
+            pd_grouped = pd_filtered.groupby('name')['value'].sum()
+
+            # DataStore
+            ds = DataStore.from_file(csv_path)
+            ds = ds[ds['value'] > 15]
+            ds['value'] = ds['value'] * 2
+            ds_grouped = ds.groupby('name')['value'].sum()
+
+            # Compare results
+            ds_executed = ds_grouped._execute()
+            self.assertEqual(ds_executed['Alice'], pd_grouped['Alice'],
+                             f"Alice mismatch: ds={ds_executed['Alice']}, pd={pd_grouped['Alice']}")
+            self.assertEqual(ds_executed['Bob'], pd_grouped['Bob'],
+                             f"Bob mismatch: ds={ds_executed['Bob']}, pd={pd_grouped['Bob']}")
+            self.assertEqual(ds_executed['Charlie'], pd_grouped['Charlie'],
+                             f"Charlie mismatch: ds={ds_executed['Charlie']}, pd={pd_grouped['Charlie']}")
+
+        finally:
+            os.unlink(csv_path)
+
+
 if __name__ == '__main__':
     unittest.main()
