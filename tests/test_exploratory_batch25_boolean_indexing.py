@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from datastore import DataStore
-from tests.test_utils import assert_frame_equal, assert_series_equal, get_series
+from tests.test_utils import assert_frame_equal, assert_series_equal, get_series, assert_datastore_equals_pandas
 
 
 class TestBooleanListIndexing:
@@ -354,7 +354,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] > 2]
         ds_result = ds_df[lambda x: x['a'] > 2]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_compound_condition(self):
         """Callable with compound conditions."""
@@ -364,7 +364,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: (x['a'] > 2) & (x['b'] < 4)]
         ds_result = ds_df[lambda x: (x['a'] > 2) & (x['b'] < 4)]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_or_condition(self):
         """Callable with OR condition."""
@@ -374,7 +374,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: (x['a'] < 2) | (x['a'] > 4)]
         ds_result = ds_df[lambda x: (x['a'] < 2) | (x['a'] > 4)]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_with_multiple_columns(self):
         """Callable that references multiple columns."""
@@ -384,7 +384,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda df: df['x'] + df['y'] > 6]
         ds_result = ds_df[lambda df: df['x'] + df['y'] > 6]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_empty_result(self):
         """Callable that results in empty DataFrame."""
@@ -394,7 +394,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] > 100]
         ds_result = ds_df[lambda x: x['a'] > 100]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_all_rows(self):
         """Callable that matches all rows."""
@@ -404,7 +404,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] > 0]
         ds_result = ds_df[lambda x: x['a'] > 0]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_preserves_index(self):
         """Callable indexing should preserve original indices."""
@@ -414,7 +414,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] > 2]
         ds_result = ds_df[lambda x: x['a'] > 2]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_with_string_column(self):
         """Callable with string column operations."""
@@ -425,7 +425,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['age'] >= 30]
         ds_result = ds_df[lambda x: x['age'] >= 30]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_equality_filter(self):
         """Callable with equality condition."""
@@ -435,7 +435,7 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] == 2]
         ds_result = ds_df[lambda x: x['a'] == 2]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_callable_chained_operations(self):
         """Callable indexing followed by other operations."""
@@ -445,4 +445,4 @@ class TestCallableIndexing:
         pd_result = pd_df[lambda x: x['a'] > 2][['b']]
         ds_result = ds_df[lambda x: x['a'] > 2][['b']]
 
-        assert_frame_equal(ds_result._get_df(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result)
