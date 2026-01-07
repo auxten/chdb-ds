@@ -33,13 +33,14 @@ import pytest
 # =============================================================================
 
 # Type Support
+# NOTE: Categorical/Timedelta work for read-only access but fail during SQL execution
 chdb_category_type = pytest.mark.xfail(
-    reason="chDB does not support CATEGORY numpy type",
+    reason="chDB does not support CATEGORY numpy type in SQL operations",
     strict=True,
 )
 
 chdb_timedelta_type = pytest.mark.xfail(
-    reason="chDB does not support TIMEDELTA numpy type",
+    reason="chDB does not support TIMEDELTA numpy type in SQL operations",
     strict=True,
 )
 
@@ -48,6 +49,7 @@ chdb_array_nullable = pytest.mark.xfail(
     strict=True,
 )
 
+# NOTE: numpy arrays work for read-only access but may have issues in SQL operations
 chdb_array_string_conversion = pytest.mark.xfail(
     reason="chDB converts numpy arrays to strings via Python() table function",
     strict=True,
@@ -221,6 +223,7 @@ limit_loc_conditional_assignment = pytest.mark.xfail(
     strict=True,
 )
 
+
 # FIXED 2026-01-06: where() with DataStore condition now works
 # limit_where_condition was an xfail marker for a bug that has been fixed
 def limit_where_condition(func):
@@ -316,10 +319,11 @@ MARKER_REGISTRY = {
     # chDB Engine Limitations (cannot fix in DataStore)
     # =========================================================================
     # Type Support
-    "chdb_category_type": ("chdb", None, "CATEGORY type not supported by ClickHouse"),
-    "chdb_timedelta_type": ("chdb", None, "TIMEDELTA type not supported by ClickHouse"),
+    # NOTE: These types work for read-only access but fail during SQL execution
+    "chdb_category_type": ("chdb", None, "CATEGORY type fails in SQL operations (read-only works)"),
+    "chdb_timedelta_type": ("chdb", None, "TIMEDELTA type fails in SQL operations (read-only works)"),
     "chdb_array_nullable": ("chdb", None, "Array cannot be inside Nullable type"),
-    "chdb_array_string_conversion": ("chdb", None, "Python() table function converts arrays to strings"),
+    "chdb_array_string_conversion": ("chdb", None, "numpy arrays may be converted to strings in SQL operations"),
     # Functions
     "chdb_no_product_function": ("chdb", None, "product() aggregate not available"),
     "chdb_no_normalize_utf8": ("chdb", None, "normalizeUTF8NFD function not available"),
@@ -374,6 +378,11 @@ MARKER_REGISTRY = {
     # "bug_groupby_index": FIXED - groupby now preserves index correctly
     # "bug_setitem_computed_column_groupby": FIXED - setitem updates _computed_columns
     # "bug_groupby_column_selection_extra_columns": FIXED - column selection filters correctly
+    # =========================================================================
+    # FIXED 2026-01-07
+    # =========================================================================
+    "chdb_alias_shadows_column_in_where": ("fixed", "2026-01-07", "Alias no longer shadows column in WHERE - FIXED"),
+    "limit_datastore_no_invert": ("fixed", "2026-01-07", "__invert__ (~) operator - FIXED"),
 }
 
 
@@ -488,17 +497,17 @@ limit_datastore_index_setter = pytest.mark.xfail(
 # DataStore Limitations: groupby does not support Series/ColumnExpr as parameter
 limit_groupby_series_param = pytest.mark.xfail(
     reason="DataStore groupby does not support ColumnExpr/Series as groupby parameter. "
-           "Use column name after assigning the expression to a column instead: "
-           "ds['col'] = ds['date'].dt.year; ds.groupby('col')...",
+    "Use column name after assigning the expression to a column instead: "
+    "ds['col'] = ds['date'].dt.year; ds.groupby('col')...",
     strict=True,
 )
 
-# chDB alias shadowing in WHERE clause
+# NOTE: Simple alias cases work but complex chains with groupby still have issues
 chdb_alias_shadows_column_in_where = pytest.mark.xfail(
-    reason="chDB: When SELECT alias has same name as original column, WHERE uses aliased value instead of original"
+    reason="chDB: In complex chains with groupby, SELECT alias may still shadow original column"
 )
 
-# DataStore missing __invert__ method
+# NOTE: ~column works but ~DataStore (entire DataFrame invert) does not
 limit_datastore_no_invert = pytest.mark.xfail(
-    reason="DataStore does not implement __invert__ (~) operator for boolean DataFrames"
+    reason="DataStore does not implement __invert__ (~) operator for entire DataFrame (column invert ~ds['col'] works)"
 )
