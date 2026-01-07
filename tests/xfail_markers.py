@@ -218,11 +218,6 @@ bug_extractall_multiindex = pytest.mark.xfail(
 # Use a no-op decorator since the bug is fixed
 bug_where_computed_column = lambda f: f
 
-bug_groupby_apply_method_call = pytest.mark.xfail(
-    reason="BUG: groupby.apply(lambda x: x.sum()) fails. " "Fix: ensure apply passes Series not scalar to lambda",
-    strict=True,
-)
-
 
 # =============================================================================
 # DataStore Limitations (limit_*)

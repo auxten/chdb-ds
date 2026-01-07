@@ -30,7 +30,6 @@ from tests.xfail_markers import (
     # DataStore bugs
     bug_extractall_multiindex,
     bug_where_computed_column,
-    bug_groupby_apply_method_call,
     # DataStore limitations
     limit_callable_index,
     limit_query_variable_scope,
@@ -254,9 +253,8 @@ class TestP1Bugs:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @bug_groupby_apply_method_call
-    def test_groupby_apply_method_call_bug(self):
-        """BUG: groupby.apply() with lambda calling methods fails."""
+    def test_groupby_apply_method_call_fixed(self):
+        """FIXED: groupby.apply() with lambda calling methods now works."""
         df = pd.DataFrame({'group': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds = DataStore(df)
 

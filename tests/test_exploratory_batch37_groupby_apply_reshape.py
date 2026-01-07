@@ -124,10 +124,6 @@ class TestGroupByTransformChains:
 class TestGroupByApply:
     """Test groupby.apply() with various scenarios."""
 
-    @pytest.mark.xfail(
-        reason="groupby.apply with lambda returning scalar - ColumnExpr doesn't properly expose values attribute",
-        strict=True
-    )
     def test_apply_lambda_returning_scalar(self):
         """Test apply with lambda that returns scalar."""
         df = pd.DataFrame({
@@ -144,10 +140,6 @@ class TestGroupByApply:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-    @pytest.mark.xfail(
-        reason="groupby.apply with custom function - ColumnExpr doesn't properly expose values attribute",
-        strict=True
-    )
     def test_apply_with_custom_function(self):
         """Test apply with a custom aggregation function."""
         df = pd.DataFrame({
