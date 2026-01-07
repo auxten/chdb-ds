@@ -271,7 +271,6 @@ class TestP1Bugs:
 class TestP2Bugs:
     """P2 bugs to be fixed."""
 
-    @bug_extractall_multiindex
     def test_extractall_multiindex_bug(self):
         """BUG: extractall MultiIndex is lost."""
         df = pd.DataFrame({'text': ['a1b2', 'c3d4']})

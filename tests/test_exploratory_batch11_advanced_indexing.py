@@ -391,7 +391,6 @@ class TestAdvancedStringOperations:
         ds_result = get_value(ds_result)
         assert_frame_equal(ds_result, pd_result)
 
-    @lazy_extractall_multiindex
     def test_str_extractall(self):
         """str.extractall for multiple matches."""
         pd_df = pd.DataFrame({'text': ['a1b2', 'c3', 'd4e5f6']})

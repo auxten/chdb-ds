@@ -252,12 +252,16 @@ class TestStrAccessorLazy:
         assert 'Jane' in df.columns
 
     def test_extractall_correct_result(self, ds):
-        """Test that .str.extractall() produces correct result."""
+        """Test that .str.extractall() produces correct result with MultiIndex."""
         result = ds['numbers'].str.extractall(r'(\d+)')
         df = result.to_df()
 
+        # extractall returns MultiIndex (original_index, match)
+        assert isinstance(df.index, pd.MultiIndex)
+        assert df.index.names == [None, 'match']
+
         # First row 'abc123def456' should have matches '123', '456'
-        first_row_matches = df[df['level_0'] == 0][0].tolist()
+        first_row_matches = df.xs(0, level=0)[0].tolist()
         assert '123' in first_row_matches
         assert '456' in first_row_matches
 
