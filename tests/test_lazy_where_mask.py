@@ -1234,7 +1234,7 @@ class TestWhereWithComputedColumns:
         ds_result = ds_filtered.where(ds_filtered['b'] > 10)
 
         # Compare with check_index=False since filter changes indices
-        assert_datastore_equals_pandas(ds_result, pd_result.reset_index(drop=True), check_index=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
 
     def test_where_with_multiple_computed_columns(self):
         """where() with multiple computed columns in the condition."""
@@ -1273,4 +1273,4 @@ class TestWhereWithComputedColumns:
         ds_result = ds.where(ds['b'] > 13).dropna()
 
         # Compare with check_index=False since dropna changes indices
-        assert_datastore_equals_pandas(ds_result, pd_result.reset_index(drop=True), check_index=False)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
