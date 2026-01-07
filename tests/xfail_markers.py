@@ -228,10 +228,11 @@ bug_where_computed_column = lambda f: f
 # Features not yet implemented
 # =============================================================================
 
-limit_callable_index = pytest.mark.xfail(
-    reason="DataStore does not support callable as index",
-    strict=True,
-)
+# FIXED 2026-01-07: Callable as index now supported via __getitem__ callable handling
+# limit_callable_index was an xfail marker for a limitation that has been fixed
+def limit_callable_index(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
 
 # FIXED 2026-01-07: query() @variable scope now works via level parameter
 # limit_query_variable_scope was an xfail marker for a bug that has been fixed
@@ -374,7 +375,7 @@ MARKER_REGISTRY = {
     # =========================================================================
     # DataStore Limitations (not yet implemented)
     # =========================================================================
-    "limit_callable_index": ("limit", None, "Callable as index not implemented"),
+    "limit_callable_index": ("fixed", "2026-01-07", "Callable as index - FIXED"),
     "limit_query_variable_scope": ("fixed", "2026-01-07", "query() @variable scope - FIXED via level parameter"),
     "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment with ColumnExpr incomplete"),
     "limit_where_condition": ("fixed", "2026-01-06", "where() with DataStore condition - FIXED"),

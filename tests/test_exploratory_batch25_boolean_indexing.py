@@ -341,3 +341,108 @@ class TestAdditionalEdgeCases:
 
         assert isinstance(ds_result, pd.Series)
         assert_series_equal(ds_result, pd_result)
+
+
+class TestCallableIndexing:
+    """Test callable (lambda function) indexing."""
+
+    def test_callable_basic_filter(self):
+        """Basic callable indexing with simple condition."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+        ds_df = DataStore({'a': [1, 2, 3, 4, 5]})
+
+        pd_result = pd_df[lambda x: x['a'] > 2]
+        ds_result = ds_df[lambda x: x['a'] > 2]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_compound_condition(self):
+        """Callable with compound conditions."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]})
+        ds_df = DataStore({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]})
+
+        pd_result = pd_df[lambda x: (x['a'] > 2) & (x['b'] < 4)]
+        ds_result = ds_df[lambda x: (x['a'] > 2) & (x['b'] < 4)]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_or_condition(self):
+        """Callable with OR condition."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+        ds_df = DataStore({'a': [1, 2, 3, 4, 5]})
+
+        pd_result = pd_df[lambda x: (x['a'] < 2) | (x['a'] > 4)]
+        ds_result = ds_df[lambda x: (x['a'] < 2) | (x['a'] > 4)]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_with_multiple_columns(self):
+        """Callable that references multiple columns."""
+        pd_df = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6], 'z': [7, 8, 9]})
+        ds_df = DataStore({'x': [1, 2, 3], 'y': [4, 5, 6], 'z': [7, 8, 9]})
+
+        pd_result = pd_df[lambda df: df['x'] + df['y'] > 6]
+        ds_result = ds_df[lambda df: df['x'] + df['y'] > 6]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_empty_result(self):
+        """Callable that results in empty DataFrame."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3]})
+        ds_df = DataStore({'a': [1, 2, 3]})
+
+        pd_result = pd_df[lambda x: x['a'] > 100]
+        ds_result = ds_df[lambda x: x['a'] > 100]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_all_rows(self):
+        """Callable that matches all rows."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3]})
+        ds_df = DataStore({'a': [1, 2, 3]})
+
+        pd_result = pd_df[lambda x: x['a'] > 0]
+        ds_result = ds_df[lambda x: x['a'] > 0]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_preserves_index(self):
+        """Callable indexing should preserve original indices."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=[10, 20, 30, 40, 50])
+        ds_df = DataStore(pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=[10, 20, 30, 40, 50]))
+
+        pd_result = pd_df[lambda x: x['a'] > 2]
+        ds_result = ds_df[lambda x: x['a'] > 2]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_with_string_column(self):
+        """Callable with string column operations."""
+        pd_df = pd.DataFrame({'name': ['Alice', 'Bob', 'Charlie'], 'age': [25, 30, 35]})
+        ds_df = DataStore({'name': ['Alice', 'Bob', 'Charlie'], 'age': [25, 30, 35]})
+
+        # Filter by age
+        pd_result = pd_df[lambda x: x['age'] >= 30]
+        ds_result = ds_df[lambda x: x['age'] >= 30]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_equality_filter(self):
+        """Callable with equality condition."""
+        pd_df = pd.DataFrame({'a': [1, 2, 2, 3, 2]})
+        ds_df = DataStore({'a': [1, 2, 2, 3, 2]})
+
+        pd_result = pd_df[lambda x: x['a'] == 2]
+        ds_result = ds_df[lambda x: x['a'] == 2]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
+
+    def test_callable_chained_operations(self):
+        """Callable indexing followed by other operations."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})
+        ds_df = DataStore({'a': [1, 2, 3, 4, 5], 'b': [10, 20, 30, 40, 50]})
+
+        pd_result = pd_df[lambda x: x['a'] > 2][['b']]
+        ds_result = ds_df[lambda x: x['a'] > 2][['b']]
+
+        assert_frame_equal(ds_result._get_df(), pd_result)
