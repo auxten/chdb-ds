@@ -1,6 +1,5 @@
 # DataStore
 
-[![codecov](https://codecov.io/gh/auxten/chdb-ds/branch/main/graph/badge.svg)](https://codecov.io/gh/auxten/chdb-ds)
 [![PyPI version](https://badge.fury.io/py/chdb-ds.svg)](https://badge.fury.io/py/chdb-ds)
 [![Python versions](https://img.shields.io/pypi/pyversions/chdb-ds.svg)](https://pypi.org/project/chdb-ds/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -877,7 +876,7 @@ DataStore is inspired by pypika's excellent query builder design but focuses on:
 1. **High-level API**: Pandas-like interface for data scientists
 2. **Query Execution**: Built-in execution capabilities (not just SQL generation)
 3. **Data Source Abstraction**: Unified interface across different backends
-4. **Modern Python**: Type hints, dataclasses, and Python 3.7+ features
+4. **Modern Python**: Type hints, dataclasses, and Python 3.8+ features
 
 
 ### Key Design Patterns
