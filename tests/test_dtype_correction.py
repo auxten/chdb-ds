@@ -681,7 +681,9 @@ class TestDtypeCorrectionIntegration:
 
     def test_abs_with_sorting(self):
         """abs() should work correctly with sorting."""
-        pd_df = pd.DataFrame({'a': [-5, -3, -1, 1, 3, 5]})
+        # Use unique abs values to avoid non-deterministic ordering
+        # when sort keys are equal (chDB sort is not guaranteed stable)
+        pd_df = pd.DataFrame({'a': [-5, -4, -3, -2, -1, 6]})
         ds_df = DataStore(pd_df.copy())
 
         pd_df['abs_a'] = pd_df['a'].abs()
@@ -812,7 +814,7 @@ class TestDtypeCorrectionEdgeCases:
         assert_series_equal(
             ds_result['abs_a'].astype('Int64'),
             pd_df['abs_a'],
-            )
+        )
 
     def test_abs_empty_dataframe(self):
         """abs() on empty DataFrame should work.

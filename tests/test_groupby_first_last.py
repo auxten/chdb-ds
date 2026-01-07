@@ -4,8 +4,10 @@ Test groupby().first() and groupby().last() methods.
 These tests verify that ColumnExpr.first() and ColumnExpr.last()
 work correctly with groupby operations.
 
-NOTE: As of 2026-01-06, chDB's any()/anyLast() correctly returns
-row-order based first/last values, matching pandas behavior.
+NOTE: chDB's any()/anyLast() behavior is NON-DETERMINISTIC across environments.
+While it may work correctly locally, CI environments may return arbitrary values.
+ClickHouse documentation explicitly states any() returns an "arbitrary" value.
+See: https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/any
 """
 
 import unittest
@@ -15,6 +17,7 @@ import pytest
 
 import datastore as ds
 from tests.test_utils import assert_series_equal, get_dataframe, get_series
+from tests.xfail_markers import chdb_any_anylast_nondeterministic
 
 
 class TestGroupByFirstLast(unittest.TestCase):
@@ -31,6 +34,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         )
         self.ds = ds.DataFrame(self.df.copy())
 
+    @chdb_any_anylast_nondeterministic
     def test_groupby_first_single_column(self):
         """Test groupby().first() on a single column."""
         pd_result = self.df.groupby('category')['value'].first()
@@ -43,6 +47,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         assert_series_equal(
             ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
+    @chdb_any_anylast_nondeterministic
     def test_groupby_last_single_column(self):
         """Test groupby().last() on a single column."""
         pd_result = self.df.groupby('category')['value'].last()
@@ -53,6 +58,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         assert_series_equal(
             ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
+    @chdb_any_anylast_nondeterministic
     def test_groupby_first_multiple_groups(self):
         """Test groupby().first() with multiple groups."""
         df = pd.DataFrame(
@@ -70,6 +76,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         for idx in pd_result.index:
             self.assertEqual(ds_series.loc[idx], pd_result.loc[idx])
 
+    @chdb_any_anylast_nondeterministic
     def test_groupby_first_with_nan(self):
         """Test groupby().first() with NaN values."""
         df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [np.nan, 20, 30, np.nan]})
@@ -95,6 +102,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         series = result.to_pandas()
         self.assertIsInstance(series, pd.Series)
 
+    @chdb_any_anylast_nondeterministic
     def test_groupby_agg_first_equivalent(self):
         """Test that .first() is equivalent to .agg('first')."""
         pd_first = self.df.groupby('category')['value'].first()
