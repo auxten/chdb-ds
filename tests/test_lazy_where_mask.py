@@ -18,6 +18,7 @@ import pytest
 
 from datastore import DataStore
 from datastore.lazy_ops import LazyWhere, LazyMask
+from tests.test_utils import assert_datastore_equals_pandas
 
 
 DATASET_DIR = os.path.join(os.path.dirname(__file__), "dataset")
@@ -1206,7 +1207,7 @@ class TestWhereWithComputedColumns:
         ds['b'] = ds['a'] * 2
         ds_result = ds.where(ds['b'] > 5)
 
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
 
     def test_mask_with_computed_column_condition(self):
         """mask() condition referencing a lazy assigned column."""
@@ -1218,7 +1219,7 @@ class TestWhereWithComputedColumns:
         ds['b'] = ds['a'] * 2
         ds_result = ds.mask(ds['b'] > 5, -1)
 
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
 
     def test_where_with_computed_column_and_filter(self):
         """Filter followed by where with computed column."""
@@ -1232,10 +1233,8 @@ class TestWhereWithComputedColumns:
         ds_filtered = ds[ds['a'] > 2]
         ds_result = ds_filtered.where(ds_filtered['b'] > 10)
 
-        # Compare with reset index since filter changes row order
-        pd.testing.assert_frame_equal(
-            ds_result.to_pandas().reset_index(drop=True), pd_result.reset_index(drop=True)
-        )
+        # Compare with check_index=False since filter changes indices
+        assert_datastore_equals_pandas(ds_result, pd_result.reset_index(drop=True), check_index=False)
 
     def test_where_with_multiple_computed_columns(self):
         """where() with multiple computed columns in the condition."""
@@ -1249,7 +1248,7 @@ class TestWhereWithComputedColumns:
         ds['z'] = ds['x'] * ds['y']
         ds_result = ds.where(ds['z'] > 6)
 
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
 
     def test_where_computed_column_with_other_value(self):
         """where() with computed column and explicit other value."""
@@ -1261,7 +1260,7 @@ class TestWhereWithComputedColumns:
         ds['doubled'] = ds['val'] * 2
         ds_result = ds.where(ds['doubled'] > 50, 0)
 
-        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=False)
 
     def test_where_chain_with_computed_column(self):
         """where() chained with other operations after computed column."""
@@ -1273,7 +1272,5 @@ class TestWhereWithComputedColumns:
         ds['b'] = ds['a'] + 10
         ds_result = ds.where(ds['b'] > 13).dropna()
 
-        # Compare values with reset index
-        pd.testing.assert_frame_equal(
-            ds_result.to_pandas().reset_index(drop=True), pd_result.reset_index(drop=True)
-        )
+        # Compare with check_index=False since dropna changes indices
+        assert_datastore_equals_pandas(ds_result, pd_result.reset_index(drop=True), check_index=False)
