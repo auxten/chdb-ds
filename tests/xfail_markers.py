@@ -234,10 +234,11 @@ limit_callable_index = pytest.mark.xfail(
     strict=True,
 )
 
-limit_query_variable_scope = pytest.mark.xfail(
-    reason="query() with @variable requires local variable scope, not available after _get_df()",
-    strict=True,
-)
+# FIXED 2026-01-07: query() @variable scope now works via level parameter
+# limit_query_variable_scope was an xfail marker for a bug that has been fixed
+def limit_query_variable_scope(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
 
 limit_loc_conditional_assignment = pytest.mark.xfail(
     reason="loc conditional assignment with ColumnExpr not fully supported",
@@ -375,7 +376,7 @@ MARKER_REGISTRY = {
     # DataStore Limitations (not yet implemented)
     # =========================================================================
     "limit_callable_index": ("limit", None, "Callable as index not implemented"),
-    "limit_query_variable_scope": ("limit", None, "@variable scope in query() not available after _get_df()"),
+    "limit_query_variable_scope": ("fixed", "2026-01-07", "query() @variable scope - FIXED via level parameter"),
     "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment with ColumnExpr incomplete"),
     "limit_where_condition": ("fixed", "2026-01-06", "where() with DataStore condition - FIXED"),
     "limit_str_join_array": ("limit", None, "str.join() needs Array type column"),
