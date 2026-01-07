@@ -44,8 +44,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         ds_series = get_series(ds_result)
 
         # Compare values (ignore index name)
-        assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     @chdb_any_anylast_nondeterministic
     def test_groupby_last_single_column(self):
@@ -55,8 +54,7 @@ class TestGroupByFirstLast(unittest.TestCase):
 
         ds_series = get_series(ds_result)
 
-        assert_series_equal(
-            ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
+        assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
     @chdb_any_anylast_nondeterministic
     def test_groupby_first_multiple_groups(self):
