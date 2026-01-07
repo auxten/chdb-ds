@@ -175,12 +175,8 @@ class TestGroupByApply:
 
         try:
             ds_result = ds_df.groupby('group')['value'].apply(custom_agg)
-            # Compare values
-            pd_values = pd_result.reset_index(drop=True)
-            ds_values = get_series(ds_result)
-            if hasattr(ds_values, 'reset_index'):
-                ds_values = ds_values.reset_index(drop=True)
-            assert list(ds_values) == list(pd_values)
+            # Use proper comparison with index preserved
+            assert_series_equal(get_series(ds_result), pd_result, check_names=False)
         except AttributeError:
             pytest.skip("apply not implemented in DataStore groupby")
 
