@@ -26,12 +26,14 @@ from tests.xfail_markers import (
     chdb_center_implementation,
     chdb_startswith_no_tuple,
     limit_datastore_index_setter,
+    chdb_python_table_rownumber_nondeterministic,
 )
 
 
 # ============================================================================
 # Module-level Functions
 # ============================================================================
+
 
 class TestCrosstab:
     """Test crosstab function."""
@@ -90,22 +92,14 @@ class TestWideToLong:
     def test_wide_to_long_basic(self):
         """Test basic wide_to_long transformation."""
         # Create wide format data
-        pd_df = pd.DataFrame({
-            'id': [1, 2],
-            'A1999': [10, 20],
-            'A2000': [11, 21],
-            'B1999': [100, 200],
-            'B2000': [110, 210]
-        })
+        pd_df = pd.DataFrame(
+            {'id': [1, 2], 'A1999': [10, 20], 'A2000': [11, 21], 'B1999': [100, 200], 'B2000': [110, 210]}
+        )
         pd_result = pd.wide_to_long(pd_df, stubnames=['A', 'B'], i='id', j='year')
 
-        ds_df = DataStore({
-            'id': [1, 2],
-            'A1999': [10, 20],
-            'A2000': [11, 21],
-            'B1999': [100, 200],
-            'B2000': [110, 210]
-        })
+        ds_df = DataStore(
+            {'id': [1, 2], 'A1999': [10, 20], 'A2000': [11, 21], 'B1999': [100, 200], 'B2000': [110, 210]}
+        )
         ds_result = ds_module.wide_to_long(ds_df, stubnames=['A', 'B'], i='id', j='year')
 
         # Compare values (index structure may differ)
@@ -114,11 +108,11 @@ class TestWideToLong:
         if hasattr(ds_df_result, '_execute'):
             ds_df_result = ds_df_result._execute()
         pd_df_result = pd_result.reset_index()
-        
+
         # Compare sorted by id and year
         ds_sorted = ds_df_result.sort_values(by=['id', 'year']).reset_index(drop=True)
         pd_sorted = pd_df_result.sort_values(by=['id', 'year']).reset_index(drop=True)
-        
+
         pd.testing.assert_frame_equal(ds_sorted, pd_sorted, check_names=False)
 
 
@@ -165,10 +159,7 @@ class TestJsonNormalize:
 
     def test_json_normalize_basic(self):
         """Test basic json_normalize functionality."""
-        data = [
-            {'id': 1, 'name': 'Alice'},
-            {'id': 2, 'name': 'Bob'}
-        ]
+        data = [{'id': 1, 'name': 'Alice'}, {'id': 2, 'name': 'Bob'}]
         pd_result = pd.json_normalize(data)
         ds_result = ds_module.json_normalize(data)
 
@@ -176,10 +167,7 @@ class TestJsonNormalize:
 
     def test_json_normalize_nested(self):
         """Test json_normalize with nested data."""
-        data = [
-            {'id': 1, 'info': {'name': 'Alice', 'age': 30}},
-            {'id': 2, 'info': {'name': 'Bob', 'age': 25}}
-        ]
+        data = [{'id': 1, 'info': {'name': 'Alice', 'age': 30}}, {'id': 2, 'info': {'name': 'Bob', 'age': 25}}]
         pd_result = pd.json_normalize(data)
         ds_result = ds_module.json_normalize(data)
 
@@ -187,10 +175,7 @@ class TestJsonNormalize:
 
     def test_json_normalize_with_record_path(self):
         """Test json_normalize with record_path."""
-        data = [
-            {'id': 1, 'items': [{'name': 'a'}, {'name': 'b'}]},
-            {'id': 2, 'items': [{'name': 'c'}]}
-        ]
+        data = [{'id': 1, 'items': [{'name': 'a'}, {'name': 'b'}]}, {'id': 2, 'items': [{'name': 'c'}]}]
         pd_result = pd.json_normalize(data, record_path='items', meta='id')
         ds_result = ds_module.json_normalize(data, record_path='items', meta='id')
 
@@ -255,6 +240,7 @@ class TestValueCounts:
 # CaseWhen Advanced
 # ============================================================================
 
+
 class TestCaseWhenAdvanced:
     """Test advanced CaseWhen scenarios."""
 
@@ -264,7 +250,7 @@ class TestCaseWhenAdvanced:
         pd_df['grade'] = np.select(
             [pd_df['score'] >= 90, pd_df['score'] >= 80, pd_df['score'] >= 70, pd_df['score'] >= 60],
             ['A', 'B', 'C', 'D'],
-            default='F'
+            default='F',
         )
 
         ds_df = DataStore({'score': [95, 85, 75, 65, 55]})
@@ -281,17 +267,11 @@ class TestCaseWhenAdvanced:
     def test_case_when_with_null(self):
         """Test CaseWhen with NULL values in condition column."""
         pd_df = pd.DataFrame({'value': [10, None, 30, None, 50]})
-        pd_df['category'] = np.select(
-            [pd_df['value'].isna(), pd_df['value'] >= 30],
-            ['missing', 'high'],
-            default='low'
-        )
+        pd_df['category'] = np.select([pd_df['value'].isna(), pd_df['value'] >= 30], ['missing', 'high'], default='low')
 
         ds_df = DataStore({'value': [10, None, 30, None, 50]})
         ds_df['category'] = (
-            ds_df.when(ds_df['value'].isna(), 'missing')
-            .when(ds_df['value'] >= 30, 'high')
-            .otherwise('low')
+            ds_df.when(ds_df['value'].isna(), 'missing').when(ds_df['value'] >= 30, 'high').otherwise('low')
         )
 
         assert_datastore_equals_pandas(ds_df, pd_df)
@@ -302,45 +282,27 @@ class TestCaseWhenAdvanced:
         pd_df['result'] = np.where(pd_df['a'] > 15, pd_df['a'] + pd_df['b'], pd_df['a'] - pd_df['b'])
 
         ds_df = DataStore({'a': [10, 20, 30], 'b': [1, 2, 3]})
-        ds_df['result'] = (
-            ds_df.when(ds_df['a'] > 15, ds_df['a'] + ds_df['b'])
-            .otherwise(ds_df['a'] - ds_df['b'])
-        )
+        ds_df['result'] = ds_df.when(ds_df['a'] > 15, ds_df['a'] + ds_df['b']).otherwise(ds_df['a'] - ds_df['b'])
 
         assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_case_when_boolean_result(self):
         """Test CaseWhen with boolean result values."""
         pd_df = pd.DataFrame({'value': [1, 2, 3, 4, 5]})
-        pd_df['is_even'] = np.select(
-            [pd_df['value'] % 2 == 0],
-            [True],
-            default=False
-        )
+        pd_df['is_even'] = np.select([pd_df['value'] % 2 == 0], [True], default=False)
 
         ds_df = DataStore({'value': [1, 2, 3, 4, 5]})
-        ds_df['is_even'] = (
-            ds_df.when(ds_df['value'] % 2 == 0, True)
-            .otherwise(False)
-        )
+        ds_df['is_even'] = ds_df.when(ds_df['value'] % 2 == 0, True).otherwise(False)
 
         assert_datastore_equals_pandas(ds_df, pd_df)
 
     def test_case_when_numeric_result(self):
         """Test CaseWhen with numeric result values."""
         pd_df = pd.DataFrame({'category': ['A', 'B', 'C', 'A', 'B']})
-        pd_df['weight'] = np.select(
-            [pd_df['category'] == 'A', pd_df['category'] == 'B'],
-            [1.0, 2.0],
-            default=3.0
-        )
+        pd_df['weight'] = np.select([pd_df['category'] == 'A', pd_df['category'] == 'B'], [1.0, 2.0], default=3.0)
 
         ds_df = DataStore({'category': ['A', 'B', 'C', 'A', 'B']})
-        ds_df['weight'] = (
-            ds_df.when(ds_df['category'] == 'A', 1.0)
-            .when(ds_df['category'] == 'B', 2.0)
-            .otherwise(3.0)
-        )
+        ds_df['weight'] = ds_df.when(ds_df['category'] == 'A', 1.0).when(ds_df['category'] == 'B', 2.0).otherwise(3.0)
 
         assert_datastore_equals_pandas(ds_df, pd_df)
 
@@ -350,7 +312,7 @@ class TestCaseWhenAdvanced:
         pd_df['result'] = np.select(
             [(pd_df['a'] > 2) & (pd_df['b'] > 2), (pd_df['a'] <= 2) | (pd_df['b'] <= 2)],
             ['both_high', 'one_low'],
-            default='other'
+            default='other',
         )
 
         ds_df = DataStore({'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]})
@@ -365,19 +327,11 @@ class TestCaseWhenAdvanced:
     def test_case_when_chain_with_filter(self):
         """Test CaseWhen result used in subsequent filter."""
         pd_df = pd.DataFrame({'score': [95, 85, 75, 65, 55]})
-        pd_df['grade'] = np.select(
-            [pd_df['score'] >= 90, pd_df['score'] >= 80],
-            ['A', 'B'],
-            default='C'
-        )
+        pd_df['grade'] = np.select([pd_df['score'] >= 90, pd_df['score'] >= 80], ['A', 'B'], default='C')
         pd_result = pd_df[pd_df['grade'].isin(['A', 'B'])]
 
         ds_df = DataStore({'score': [95, 85, 75, 65, 55]})
-        ds_df['grade'] = (
-            ds_df.when(ds_df['score'] >= 90, 'A')
-            .when(ds_df['score'] >= 80, 'B')
-            .otherwise('C')
-        )
+        ds_df['grade'] = ds_df.when(ds_df['score'] >= 90, 'A').when(ds_df['score'] >= 80, 'B').otherwise('C')
         ds_result = ds_df[ds_df['grade'].isin(['A', 'B'])]
 
         assert_datastore_equals_pandas(ds_result, pd_result)
@@ -386,6 +340,7 @@ class TestCaseWhenAdvanced:
 # ============================================================================
 # Deep Operation Chains
 # ============================================================================
+
 
 class TestDeepOperationChains:
     """Test deep operation chains (10+ operations)."""
@@ -433,21 +388,14 @@ class TestDeepOperationChains:
             .assign(c=lambda x: x['a'] * 2)
             .sort_values('c', ascending=False)
             .head(50)
-            .assign(d=lambda x: x['c'] + 10)
-            [lambda x: x['d'] > 50]
+            .assign(d=lambda x: x['c'] + 10)[lambda x: x['d'] > 50]
             .assign(e=lambda x: x['a'] + x['d'])
             .sort_values('e')
             .head(20)
-            .assign(f=lambda x: x['e'] - x['a'])
-            [lambda x: x['f'] > 40]
+            .assign(f=lambda x: x['e'] - x['a'])[lambda x: x['f'] > 40]
         )
 
-        ds_result = (
-            ds_df[ds_df['a'] > 10]
-            .assign(c=ds_df['a'] * 2)
-            .sort_values('c', ascending=False)
-            .head(50)
-        )
+        ds_result = ds_df[ds_df['a'] > 10].assign(c=ds_df['a'] * 2).sort_values('c', ascending=False).head(50)
         ds_result = ds_result.assign(d=ds_result['c'] + 10)
         ds_result = ds_result[ds_result['d'] > 50]
         ds_result = ds_result.assign(e=ds_result['a'] + ds_result['d'])
@@ -463,29 +411,24 @@ class TestDeepOperationChains:
         pd_df = pd.DataFrame(data)
         ds_df = DataStore(data)
 
-        pd_result = (
-            pd_df
-            .groupby('category')
-            .agg({'value': ['sum', 'mean', 'min', 'max']})
-        )
+        pd_result = pd_df.groupby('category').agg({'value': ['sum', 'mean', 'min', 'max']})
         pd_result.columns = ['_'.join(col).strip() for col in pd_result.columns.values]
         pd_result = pd_result.reset_index()
 
-        ds_result = (
-            ds_df
-            .groupby('category')
-            .agg({'value': ['sum', 'mean', 'min', 'max']})
-        )
+        ds_result = ds_df.groupby('category').agg({'value': ['sum', 'mean', 'min', 'max']})
         ds_result.columns = ['_'.join(col).strip() for col in ds_result.columns.values]
         ds_result = ds_result.reset_index()
 
-        assert_datastore_equals_pandas(ds_result.sort_values('category').reset_index(drop=True),
-                                       pd_result.sort_values('category').reset_index(drop=True))
+        assert_datastore_equals_pandas(
+            ds_result.sort_values('category').reset_index(drop=True),
+            pd_result.sort_values('category').reset_index(drop=True),
+        )
 
 
 # ============================================================================
 # Unicode and Special Characters
 # ============================================================================
+
 
 class TestUnicodeHandling:
     """Test Unicode and special character handling."""
@@ -540,6 +483,7 @@ class TestUnicodeHandling:
 # ============================================================================
 # DateTime Advanced
 # ============================================================================
+
 
 class TestDateTimeAdvanced:
     """Test advanced datetime functionality."""
@@ -617,6 +561,7 @@ class TestDateTimeAdvanced:
 # ============================================================================
 # String Accessor Advanced
 # ============================================================================
+
 
 class TestStringAccessorAdvanced:
     """Test advanced string accessor functionality."""
@@ -710,6 +655,7 @@ class TestStringAccessorAdvanced:
 # Numeric Edge Cases
 # ============================================================================
 
+
 class TestNumericEdgeCases:
     """Test numeric edge cases."""
 
@@ -770,6 +716,7 @@ class TestNumericEdgeCases:
 # ============================================================================
 # Complex Filter Conditions
 # ============================================================================
+
 
 class TestComplexFilterConditions:
     """Test complex filter condition combinations."""
@@ -836,6 +783,7 @@ class TestComplexFilterConditions:
 # Aggregation with NULL handling
 # ============================================================================
 
+
 class TestAggregationNullHandling:
     """Test aggregation operations with NULL handling."""
 
@@ -853,12 +801,15 @@ class TestAggregationNullHandling:
         ds_size = ds_df.groupby('category').size()
 
         # Execute ColumnExpr to get Series
-        ds_count_series = pd.Series(list(ds_count), index=ds_count.index, name=ds_count.name if hasattr(ds_count, 'name') else None)
+        ds_count_series = pd.Series(
+            list(ds_count), index=ds_count.index, name=ds_count.name if hasattr(ds_count, 'name') else None
+        )
         ds_size_series = pd.Series(list(ds_size), index=ds_size.index)
 
         pd.testing.assert_series_equal(ds_count_series.sort_index(), pd_count.sort_index(), check_names=False)
         pd.testing.assert_series_equal(ds_size_series.sort_index(), pd_size.sort_index(), check_names=False)
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_first_last_with_null(self):
         """Test first() and last() with NULL values."""
         data = {'category': ['A', 'A', 'A', 'B', 'B'], 'value': [None, 2, 3, 4, None]}
@@ -903,6 +854,7 @@ class TestAggregationNullHandling:
 # Column Selection Edge Cases
 # ============================================================================
 
+
 class TestColumnSelectionEdgeCases:
     """Test column selection edge cases."""
 
@@ -944,6 +896,7 @@ class TestColumnSelectionEdgeCases:
 # ============================================================================
 # Index Operations
 # ============================================================================
+
 
 class TestIndexOperations:
     """Test index-related operations."""
@@ -992,6 +945,7 @@ class TestIndexOperations:
 # ============================================================================
 # Empty DataFrame Operations
 # ============================================================================
+
 
 class TestEmptyDataFrameOperations:
     """Test operations on empty DataFrames."""

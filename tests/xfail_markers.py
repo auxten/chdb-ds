@@ -530,9 +530,13 @@ limit_datastore_no_invert = pytest.mark.xfail(
 )
 
 # =============================================================================
-# FIXED: chDB first/last now uses argMin/argMax with rowNumberInAllBlocks()
+# chDB Bug: rowNumberInAllBlocks() non-deterministic with Python() table function
+# See: https://github.com/chdb-io/chdb/issues/469
 # =============================================================================
-# chdb_any_anylast_nondeterministic - FIXED in column_expr.py (2026-01-07)
-# first() now uses argMin(value, rowNumberInAllBlocks()) instead of any()
-# last() now uses argMax(value, rowNumberInAllBlocks()) instead of anyLast()
-# This ensures pandas row-order semantics are preserved in SQL execution.
+
+chdb_python_table_rownumber_nondeterministic = pytest.mark.xfail(
+    reason="chDB Bug: rowNumberInAllBlocks() is non-deterministic with Python() table function. "
+    "Row numbers depend on parallel block distribution, causing first()/last() to return wrong values. "
+    "Stable with file-based sources (Parquet, CSV). See: https://github.com/chdb-io/chdb/issues/469",
+    strict=False,  # May pass sometimes due to non-deterministic nature
+)

@@ -7,7 +7,10 @@ work correctly with groupby operations.
 Implementation Note:
 - first() uses argMin(value, rowNumberInAllBlocks()) to get the first value by row order
 - last() uses argMax(value, rowNumberInAllBlocks()) to get the last value by row order
-- This ensures pandas semantics (row-order based first/last) are preserved in SQL execution
+
+KNOWN ISSUE: rowNumberInAllBlocks() is non-deterministic with Python() table function
+See: https://github.com/chdb-io/chdb/issues/469
+These tests are marked xfail until the chDB bug is fixed.
 """
 
 import unittest
@@ -17,6 +20,7 @@ import pytest
 
 import datastore as ds
 from tests.test_utils import assert_series_equal, get_dataframe, get_series
+from tests.xfail_markers import chdb_python_table_rownumber_nondeterministic
 
 
 class TestGroupByFirstLast(unittest.TestCase):
@@ -33,6 +37,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         )
         self.ds = ds.DataFrame(self.df.copy())
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_groupby_first_single_column(self):
         """Test groupby().first() on a single column."""
         pd_result = self.df.groupby('category')['value'].first()
@@ -44,6 +49,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         # Compare values (ignore index name)
         assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_groupby_last_single_column(self):
         """Test groupby().last() on a single column."""
         pd_result = self.df.groupby('category')['value'].last()
@@ -53,6 +59,7 @@ class TestGroupByFirstLast(unittest.TestCase):
 
         assert_series_equal(ds_series.reset_index(drop=True), pd_result.reset_index(drop=True))
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_groupby_first_multiple_groups(self):
         """Test groupby().first() with multiple groups."""
         df = pd.DataFrame(
@@ -70,6 +77,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         for idx in pd_result.index:
             self.assertEqual(ds_series.loc[idx], pd_result.loc[idx])
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_groupby_first_with_nan(self):
         """Test groupby().first() with NaN values."""
         df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [np.nan, 20, 30, np.nan]})
@@ -95,6 +103,7 @@ class TestGroupByFirstLast(unittest.TestCase):
         series = result.to_pandas()
         self.assertIsInstance(series, pd.Series)
 
+    @chdb_python_table_rownumber_nondeterministic
     def test_groupby_agg_first_equivalent(self):
         """Test that .first() is equivalent to .agg('first')."""
         pd_first = self.df.groupby('category')['value'].first()
@@ -113,6 +122,73 @@ class TestGroupByFirstLast(unittest.TestCase):
         # DataStore results should match pandas
         self.assertEqual(ds_first_series['A'], pd_first['A'])
         self.assertEqual(ds_first_series['B'], pd_first['B'])
+
+
+class TestRowNumberInAllBlocksBug(unittest.TestCase):
+    """
+    Test case to reproduce chDB bug #469:
+    rowNumberInAllBlocks() is non-deterministic with Python() table function.
+
+    See: https://github.com/chdb-io/chdb/issues/469
+
+    This test uses large data to increase probability of triggering the bug.
+    The bug occurs when data is distributed across multiple blocks in parallel,
+    causing rowNumberInAllBlocks() to assign different row numbers to the same
+    logical rows across executions.
+    """
+
+    @chdb_python_table_rownumber_nondeterministic
+    def test_large_data_first_last_stability(self):
+        """
+        Test first()/last() with large dataset - should reproduce bug reliably.
+
+        With 10000+ rows, the probability of triggering the non-deterministic
+        block distribution is high, causing this test to fail frequently.
+        """
+        # Large dataset to trigger parallel block processing
+        n = 10000
+        categories = ['A', 'B', 'C', 'D', 'E'] * (n // 5)
+        values = list(range(n))
+
+        df = pd.DataFrame(
+            {
+                'category': categories,
+                'value': values,
+            }
+        )
+        ds_df = ds.DataFrame(df.copy())
+
+        # Expected: first values are 0, 1, 2, 3, 4 for categories A, B, C, D, E
+        pd_first = df.groupby('category')['value'].first().sort_index()
+        ds_first = ds_df.groupby('category')['value'].first()
+
+        ds_series = get_series(ds_first).sort_index()
+
+        # This assertion will fail when rowNumberInAllBlocks() bug is triggered
+        assert_series_equal(ds_series, pd_first, check_names=False)
+
+    @chdb_python_table_rownumber_nondeterministic
+    def test_large_data_last_stability(self):
+        """Test last() with large dataset."""
+        n = 10000
+        categories = ['A', 'B', 'C', 'D', 'E'] * (n // 5)
+        values = list(range(n))
+
+        df = pd.DataFrame(
+            {
+                'category': categories,
+                'value': values,
+            }
+        )
+        ds_df = ds.DataFrame(df.copy())
+
+        # Expected: last values are 9995, 9996, 9997, 9998, 9999 for A, B, C, D, E
+        pd_last = df.groupby('category')['value'].last().sort_index()
+        ds_last = ds_df.groupby('category')['value'].last()
+
+        ds_series = get_series(ds_last).sort_index()
+
+        assert_series_equal(ds_series, pd_last, check_names=False)
 
 
 if __name__ == '__main__':
