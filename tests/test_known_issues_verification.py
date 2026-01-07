@@ -29,7 +29,6 @@ from tests.xfail_markers import (
     chdb_nat_returns_nullable_int,
     # DataStore bugs
     bug_extractall_multiindex,
-    bug_null_string_comparison,
     bug_where_computed_column,
     bug_groupby_apply_method_call,
     # DataStore limitations
@@ -202,18 +201,27 @@ class TestFixedIssues:
 class TestP1Bugs:
     """P1 bugs that should be fixed soon."""
 
-    @bug_null_string_comparison
-    def test_null_string_comparison_bug(self):
-        """BUG: != None returns 0 rows, should return non-None rows."""
+    def test_null_string_comparison_fixed(self):
+        """FIXED: != None now returns correct rows matching pandas behavior.
+
+        In pandas, element-wise comparison with None:
+        - col != None returns True for ALL rows (every element differs from singleton None)
+        - col == None returns False for ALL rows
+
+        This is different from .notna()/.isna() which check for NA values.
+        """
         df = pd.DataFrame({'s': ['abc', 'def', None]})
         ds = DataStore(df)
 
+        # != None returns all 3 rows (matches pandas)
         pd_result = df[df['s'] != None]  # noqa: E711
         ds_result = ds[ds['s'] != None]  # noqa: E711
+        assert len(ds_result) == len(pd_result)  # Both return 3
 
-        # pandas returns 3 rows, DataStore should match
-        # Currently DataStore returns 0 rows (BUG)
-        assert len(ds_result) == len(pd_result)
+        # == None returns 0 rows (matches pandas)
+        pd_eq_result = df[df['s'] == None]  # noqa: E711
+        ds_eq_result = ds[ds['s'] == None]  # noqa: E711
+        assert len(ds_eq_result) == len(pd_eq_result)  # Both return 0
 
     @bug_where_computed_column
     def test_where_computed_column_bug(self):

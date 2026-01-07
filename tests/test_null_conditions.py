@@ -198,3 +198,154 @@ class NullExecutionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# ========== None Comparison Tests (pandas semantics) ==========
+
+
+class NoneComparisonTests(unittest.TestCase):
+    """
+    Test == None and != None comparison operators.
+
+    In pandas, element-wise comparison with Python's None singleton:
+    - col == None returns False for ALL rows (no element equals None singleton)
+    - col != None returns True for ALL rows (every element differs from None singleton)
+
+    This is DIFFERENT from .isna()/.notna() which check for NA/NaN/None values.
+
+    DataStore must match this pandas behavior for compatibility.
+    """
+
+    def test_ne_none_returns_all_rows(self):
+        """ds['col'] != None should return ALL rows (like pandas)."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None, 'xyz']})
+        ds = DataStore(df)
+
+        pd_result = df[df['s'] != None]  # noqa: E711
+        ds_result = ds[ds['s'] != None]  # noqa: E711
+
+        # pandas returns all 4 rows (including the None row)
+        self.assertEqual(len(pd_result), 4)
+        self.assertEqual(len(ds_result), 4)
+        self.assertEqual(len(ds_result), len(pd_result))
+
+    def test_eq_none_returns_no_rows(self):
+        """ds['col'] == None should return NO rows (like pandas)."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None, 'xyz']})
+        ds = DataStore(df)
+
+        pd_result = df[df['s'] == None]  # noqa: E711
+        ds_result = ds[ds['s'] == None]  # noqa: E711
+
+        # pandas returns 0 rows
+        self.assertEqual(len(pd_result), 0)
+        self.assertEqual(len(ds_result), 0)
+        self.assertEqual(len(ds_result), len(pd_result))
+
+    def test_ne_none_mask_values(self):
+        """ds['col'] != None should produce all True values."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None]})
+        ds = DataStore(df)
+
+        pd_mask = df['s'] != None  # noqa: E711
+        ds_mask = ds['s'] != None  # noqa: E711
+
+        # Force execution and check values
+        ds_mask_result = ds_mask._execute() if hasattr(ds_mask, '_execute') else ds_mask
+
+        # All should be True
+        self.assertTrue(all(pd_mask))
+        # DataStore returns scalar True when all values are True
+        if isinstance(ds_mask_result, bool):
+            self.assertTrue(ds_mask_result)
+        else:
+            self.assertTrue(all(ds_mask_result))
+
+    def test_eq_none_mask_values(self):
+        """ds['col'] == None should produce all False values."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None]})
+        ds = DataStore(df)
+
+        pd_mask = df['s'] == None  # noqa: E711
+        ds_mask = ds['s'] == None  # noqa: E711
+
+        # Force execution and check values
+        ds_mask_result = ds_mask._execute() if hasattr(ds_mask, '_execute') else ds_mask
+
+        # All should be False
+        self.assertFalse(any(pd_mask))
+        # DataStore returns scalar False when all values are False
+        if isinstance(ds_mask_result, bool):
+            self.assertFalse(ds_mask_result)
+        else:
+            self.assertFalse(any(ds_mask_result))
+
+    def test_none_comparison_vs_isna(self):
+        """Verify that == None is different from .isna()."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None, 'xyz']})
+        ds = DataStore(df)
+
+        # == None returns all False (no row equals None singleton)
+        eq_none_count = len(df[df['s'] == None])  # noqa: E711
+        ds_eq_none_count = len(ds[ds['s'] == None])  # noqa: E711
+        self.assertEqual(eq_none_count, 0)
+        self.assertEqual(ds_eq_none_count, 0)
+
+        # .isna() returns True for actual NA values
+        isna_count = len(df[df['s'].isna()])
+        ds_isna_count = len(ds[ds['s'].isna()])
+        self.assertEqual(isna_count, 1)  # Only the None row
+        self.assertEqual(ds_isna_count, 1)
+
+    def test_none_comparison_vs_notna(self):
+        """Verify that != None is different from .notna()."""
+        import pandas as pd
+
+        df = pd.DataFrame({'s': ['abc', 'def', None, 'xyz']})
+        ds = DataStore(df)
+
+        # != None returns all True (every row differs from None singleton)
+        ne_none_count = len(df[df['s'] != None])  # noqa: E711
+        ds_ne_none_count = len(ds[ds['s'] != None])  # noqa: E711
+        self.assertEqual(ne_none_count, 4)
+        self.assertEqual(ds_ne_none_count, 4)
+
+        # .notna() returns True only for non-NA values
+        notna_count = len(df[df['s'].notna()])
+        ds_notna_count = len(ds[ds['s'].notna()])
+        self.assertEqual(notna_count, 3)  # Excludes the None row
+        self.assertEqual(ds_notna_count, 3)
+
+    def test_none_comparison_with_numeric_column(self):
+        """Test None comparison with numeric columns containing NaN."""
+        import pandas as pd
+        import numpy as np
+
+        df = pd.DataFrame({'x': [1.0, 2.0, np.nan, 4.0]})
+        ds = DataStore(df)
+
+        # != None returns all True
+        pd_ne = df[df['x'] != None]  # noqa: E711
+        ds_ne = ds[ds['x'] != None]  # noqa: E711
+        self.assertEqual(len(pd_ne), 4)
+        self.assertEqual(len(ds_ne), 4)
+
+        # == None returns all False
+        pd_eq = df[df['x'] == None]  # noqa: E711
+        ds_eq = ds[ds['x'] == None]  # noqa: E711
+        self.assertEqual(len(pd_eq), 0)
+        self.assertEqual(len(ds_eq), 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
