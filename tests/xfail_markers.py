@@ -253,9 +253,8 @@ def limit_where_condition(func):
     return func
 
 
-# NOTE: limit_unstack_column_expr moved to design_* - this is an intentional design decision
-# unstack() requires MultiIndex which is only available after execution.
-# Use pivot_table() instead for the same functionality.
+# NOTE: unstack() has been implemented on ColumnExpr
+# These decorators are now no-op for backward compatibility
 
 limit_str_join_array = pytest.mark.xfail(
     reason="str.join() requires Array type column, not string column",
@@ -273,10 +272,11 @@ design_datetime_fillna_nat = pytest.mark.xfail(
     strict=True,
 )
 
-design_unstack_column_expr = pytest.mark.xfail(
-    reason="Design decision: ColumnExpr doesn't support unstack() (requires MultiIndex only available after execution). Use pivot_table() instead.",
-    strict=True,
-)
+# FIXED: unstack() is now implemented on ColumnExpr
+def design_unstack_column_expr(func):
+    """No-op decorator - unstack() has been implemented."""
+    return func
+
 
 # Alias for backward compatibility
 limit_unstack_column_expr = design_unstack_column_expr
@@ -322,7 +322,7 @@ datastore_callable_index = limit_callable_index
 datastore_query_variable_scope = limit_query_variable_scope
 datastore_loc_conditional_assignment = limit_loc_conditional_assignment
 datastore_where_condition = limit_where_condition
-datastore_unstack_column_expr = design_unstack_column_expr  # Reclassified as design decision
+datastore_unstack_column_expr = design_unstack_column_expr  # FIXED: unstack() now implemented
 datastore_str_join_array = limit_str_join_array
 
 # deprecated_* aliases
@@ -384,7 +384,7 @@ MARKER_REGISTRY = {
     # Design Decisions (intentional differences)
     # =========================================================================
     "design_datetime_fillna_nat": ("design", None, "Use NaT instead of 0/-1 for datetime where/mask"),
-    "design_unstack_column_expr": ("design", None, "unstack not supported on ColumnExpr, use pivot_table()"),
+    "design_unstack_column_expr": ("fixed", None, "unstack() now implemented on ColumnExpr"),
     # =========================================================================
     # Deprecated Features (pandas deprecated)
     # =========================================================================

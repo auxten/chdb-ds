@@ -34,7 +34,6 @@ from tests.xfail_markers import (
     limit_callable_index,
     limit_query_variable_scope,
     limit_datastore_no_invert,
-    design_unstack_column_expr,
 )
 
 
@@ -302,9 +301,8 @@ class TestP3Issues:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @design_unstack_column_expr
-    def test_unstack_not_available(self):
-        """unstack() not available on ColumnExpr (use pivot_table)."""
+    def test_unstack_now_available(self):
+        """unstack() now available on ColumnExpr."""
         df = pd.DataFrame({
             'cat1': ['A', 'A', 'B', 'B'],
             'cat2': ['X', 'Y', 'X', 'Y'],
@@ -312,9 +310,15 @@ class TestP3Issues:
         })
         ds = DataStore(df)
 
-        grouped = ds.groupby(['cat1', 'cat2'])['value'].sum()
-        result = grouped.unstack()
-        len(result)
+        # pandas
+        pd_grouped = df.groupby(['cat1', 'cat2'])['value'].sum()
+        pd_result = pd_grouped.unstack()
+
+        # DataStore
+        ds_grouped = ds.groupby(['cat1', 'cat2'])['value'].sum()
+        ds_result = ds_grouped.unstack()
+
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
     @limit_datastore_no_invert
     def test_dataframe_invert_not_supported(self):

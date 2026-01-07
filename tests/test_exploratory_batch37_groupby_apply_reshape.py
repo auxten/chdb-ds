@@ -19,10 +19,6 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas, get_series
-from tests.xfail_markers import (
-    limit_unstack_column_expr,
-)
-
 
 # =============================================================================
 # Test Group 1: GroupBy Transform Chains
@@ -417,12 +413,8 @@ class TestMeltEdgeCases:
 class TestStackUnstackEdgeCases:
     """Test stack/unstack edge cases."""
 
-    @limit_unstack_column_expr
     def test_unstack_after_groupby(self):
-        """Test unstack after groupby aggregation.
-        
-        Note: ColumnExpr doesn't support unstack - need to materialize first.
-        """
+        """Test unstack after groupby aggregation."""
         df = pd.DataFrame({
             'cat1': ['A', 'A', 'B', 'B'],
             'cat2': ['X', 'Y', 'X', 'Y'],
@@ -440,12 +432,8 @@ class TestStackUnstackEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-    @limit_unstack_column_expr
     def test_unstack_with_fill_value(self):
-        """Test unstack with fill_value for missing combinations.
-        
-        Note: ColumnExpr doesn't support unstack.
-        """
+        """Test unstack with fill_value for missing combinations."""
         df = pd.DataFrame({
             'cat1': ['A', 'A', 'B'],
             'cat2': ['X', 'Y', 'X'],

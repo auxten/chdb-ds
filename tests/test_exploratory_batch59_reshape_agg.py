@@ -26,7 +26,6 @@ from tests.test_utils import (
 )
 from tests.xfail_markers import (
     chdb_category_type,
-    design_unstack_column_expr,
 )
 
 
@@ -333,7 +332,6 @@ class TestMeltOperations:
 class TestStackUnstack:
     """Test stack()/unstack() operations."""
 
-    @design_unstack_column_expr
     def test_unstack_after_groupby(self):
         """Test unstack after groupby aggregation."""
         pd_df = pd.DataFrame({
