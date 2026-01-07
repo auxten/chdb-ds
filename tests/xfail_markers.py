@@ -240,10 +240,11 @@ def limit_query_variable_scope(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
 
-limit_loc_conditional_assignment = pytest.mark.xfail(
-    reason="loc conditional assignment with ColumnExpr not fully supported",
-    strict=True,
-)
+# FIXED 2026-01-07: loc conditional assignment with ColumnExpr now works
+# Added DataStoreLocIndexer wrapper in pandas_compat.py
+def limit_loc_conditional_assignment(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
 
 
 # FIXED 2026-01-06: where() with DataStore condition now works
@@ -377,7 +378,7 @@ MARKER_REGISTRY = {
     # =========================================================================
     "limit_callable_index": ("fixed", "2026-01-07", "Callable as index - FIXED"),
     "limit_query_variable_scope": ("fixed", "2026-01-07", "query() @variable scope - FIXED via level parameter"),
-    "limit_loc_conditional_assignment": ("limit", None, "loc conditional assignment with ColumnExpr incomplete"),
+    # FIXED: "limit_loc_conditional_assignment" - no longer needed,
     "limit_where_condition": ("fixed", "2026-01-06", "where() with DataStore condition - FIXED"),
     "limit_str_join_array": ("limit", None, "str.join() needs Array type column"),
     # =========================================================================
