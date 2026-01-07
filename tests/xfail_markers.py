@@ -209,11 +209,14 @@ bug_extractall_multiindex = pytest.mark.xfail(
 #     strict=True,
 # )
 
-bug_where_computed_column = pytest.mark.xfail(
-    reason="BUG: where() with lazy assigned column fails with 'Unknown expression identifier'. "
-    "Fix: resolve computed columns before where execution",
-    strict=True,
-)
+# FIXED: where() with computed column now works correctly
+# bug_where_computed_column = pytest.mark.xfail(
+#     reason="BUG: where() with lazy assigned column fails with 'Unknown expression identifier'. "
+#     "Fix: resolve computed columns before where execution",
+#     strict=True,
+# )
+# Use a no-op decorator since the bug is fixed
+bug_where_computed_column = lambda f: f
 
 bug_groupby_apply_method_call = pytest.mark.xfail(
     reason="BUG: groupby.apply(lambda x: x.sum()) fails. " "Fix: ensure apply passes Series not scalar to lambda",

@@ -1186,3 +1186,94 @@ class TestWhereWithFilterCombinations:
             np.testing.assert_array_equal(
                 ds_result.reset_index(drop=True).values, pd_result.reset_index(drop=True).values
             )
+
+
+class TestWhereWithComputedColumns:
+    """Test where/mask with lazy column assignments (computed columns).
+
+    This tests the fix for the issue where where() referencing a computed column
+    would fail with 'Unknown expression identifier' because the computed column
+    hadn't been materialized before the SQL execution.
+    """
+
+    def test_where_with_computed_column_condition(self):
+        """where() condition referencing a lazy assigned column."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+        pd_df['b'] = pd_df['a'] * 2
+        pd_result = pd_df.where(pd_df['b'] > 5)
+
+        ds = DataStore({'a': [1, 2, 3, 4, 5]})
+        ds['b'] = ds['a'] * 2
+        ds_result = ds.where(ds['b'] > 5)
+
+        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+
+    def test_mask_with_computed_column_condition(self):
+        """mask() condition referencing a lazy assigned column."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]})
+        pd_df['b'] = pd_df['a'] * 2
+        pd_result = pd_df.mask(pd_df['b'] > 5, -1)
+
+        ds = DataStore({'a': [1, 2, 3, 4, 5]})
+        ds['b'] = ds['a'] * 2
+        ds_result = ds.mask(ds['b'] > 5, -1)
+
+        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+
+    def test_where_with_computed_column_and_filter(self):
+        """Filter followed by where with computed column."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
+        pd_df['b'] = pd_df['a'] * 2
+        pd_filtered = pd_df[pd_df['a'] > 2]
+        pd_result = pd_filtered.where(pd_filtered['b'] > 10)
+
+        ds = DataStore({'a': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
+        ds['b'] = ds['a'] * 2
+        ds_filtered = ds[ds['a'] > 2]
+        ds_result = ds_filtered.where(ds_filtered['b'] > 10)
+
+        # Compare with reset index since filter changes row order
+        pd.testing.assert_frame_equal(
+            ds_result.to_pandas().reset_index(drop=True), pd_result.reset_index(drop=True)
+        )
+
+    def test_where_with_multiple_computed_columns(self):
+        """where() with multiple computed columns in the condition."""
+        pd_df = pd.DataFrame({'x': [1, 2, 3, 4, 5]})
+        pd_df['y'] = pd_df['x'] + 1
+        pd_df['z'] = pd_df['x'] * pd_df['y']
+        pd_result = pd_df.where(pd_df['z'] > 6)
+
+        ds = DataStore({'x': [1, 2, 3, 4, 5]})
+        ds['y'] = ds['x'] + 1
+        ds['z'] = ds['x'] * ds['y']
+        ds_result = ds.where(ds['z'] > 6)
+
+        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+
+    def test_where_computed_column_with_other_value(self):
+        """where() with computed column and explicit other value."""
+        pd_df = pd.DataFrame({'val': [10, 20, 30, 40, 50]})
+        pd_df['doubled'] = pd_df['val'] * 2
+        pd_result = pd_df.where(pd_df['doubled'] > 50, 0)
+
+        ds = DataStore({'val': [10, 20, 30, 40, 50]})
+        ds['doubled'] = ds['val'] * 2
+        ds_result = ds.where(ds['doubled'] > 50, 0)
+
+        pd.testing.assert_frame_equal(ds_result.to_pandas(), pd_result)
+
+    def test_where_chain_with_computed_column(self):
+        """where() chained with other operations after computed column."""
+        pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5, 6, 7, 8]})
+        pd_df['b'] = pd_df['a'] + 10
+        pd_result = pd_df.where(pd_df['b'] > 13).dropna()
+
+        ds = DataStore({'a': [1, 2, 3, 4, 5, 6, 7, 8]})
+        ds['b'] = ds['a'] + 10
+        ds_result = ds.where(ds['b'] > 13).dropna()
+
+        # Compare values with reset index
+        pd.testing.assert_frame_equal(
+            ds_result.to_pandas().reset_index(drop=True), pd_result.reset_index(drop=True)
+        )
