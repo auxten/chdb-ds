@@ -14,6 +14,7 @@ except ImportError:
     CHDB_AVAILABLE = False
 
 from datastore import DataStore, Field
+from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
 
 
 # ========== SQL Generation Tests ==========
@@ -196,10 +197,6 @@ class NullExecutionTests(unittest.TestCase):
         self.assertEqual(['1', '3', '5'], lines)
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 # ========== None Comparison Tests (pandas semantics) ==========
 
 
@@ -226,10 +223,8 @@ class NoneComparisonTests(unittest.TestCase):
         pd_result = df[df['s'] != None]  # noqa: E711
         ds_result = ds[ds['s'] != None]  # noqa: E711
 
-        # pandas returns all 4 rows (including the None row)
-        self.assertEqual(len(pd_result), 4)
-        self.assertEqual(len(ds_result), 4)
-        self.assertEqual(len(ds_result), len(pd_result))
+        # Use complete comparison instead of length-only check
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_eq_none_returns_no_rows(self):
         """ds['col'] == None should return NO rows (like pandas)."""
@@ -241,10 +236,8 @@ class NoneComparisonTests(unittest.TestCase):
         pd_result = df[df['s'] == None]  # noqa: E711
         ds_result = ds[ds['s'] == None]  # noqa: E711
 
-        # pandas returns 0 rows
-        self.assertEqual(len(pd_result), 0)
-        self.assertEqual(len(ds_result), 0)
-        self.assertEqual(len(ds_result), len(pd_result))
+        # Use complete comparison instead of length-only check
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_ne_none_mask_values(self):
         """ds['col'] != None should produce all True values."""
@@ -256,16 +249,9 @@ class NoneComparisonTests(unittest.TestCase):
         pd_mask = df['s'] != None  # noqa: E711
         ds_mask = ds['s'] != None  # noqa: E711
 
-        # Force execution and check values
-        ds_mask_result = ds_mask._execute() if hasattr(ds_mask, '_execute') else ds_mask
-
-        # All should be True
-        self.assertTrue(all(pd_mask))
-        # DataStore returns scalar True when all values are True
-        if isinstance(ds_mask_result, bool):
-            self.assertTrue(ds_mask_result)
-        else:
-            self.assertTrue(all(ds_mask_result))
+        # Duck Typing: use assert_series_equal to compare mask values
+        # This triggers execution implicitly via .values access
+        assert_series_equal(ds_mask, pd_mask, check_names=False)
 
     def test_eq_none_mask_values(self):
         """ds['col'] == None should produce all False values."""
@@ -277,16 +263,9 @@ class NoneComparisonTests(unittest.TestCase):
         pd_mask = df['s'] == None  # noqa: E711
         ds_mask = ds['s'] == None  # noqa: E711
 
-        # Force execution and check values
-        ds_mask_result = ds_mask._execute() if hasattr(ds_mask, '_execute') else ds_mask
-
-        # All should be False
-        self.assertFalse(any(pd_mask))
-        # DataStore returns scalar False when all values are False
-        if isinstance(ds_mask_result, bool):
-            self.assertFalse(ds_mask_result)
-        else:
-            self.assertFalse(any(ds_mask_result))
+        # Duck Typing: use assert_series_equal to compare mask values
+        # This triggers execution implicitly via .values access
+        assert_series_equal(ds_mask, pd_mask, check_names=False)
 
     def test_none_comparison_vs_isna(self):
         """Verify that == None is different from .isna()."""
@@ -296,16 +275,16 @@ class NoneComparisonTests(unittest.TestCase):
         ds = DataStore(df)
 
         # == None returns all False (no row equals None singleton)
-        eq_none_count = len(df[df['s'] == None])  # noqa: E711
-        ds_eq_none_count = len(ds[ds['s'] == None])  # noqa: E711
-        self.assertEqual(eq_none_count, 0)
-        self.assertEqual(ds_eq_none_count, 0)
+        pd_eq_none_result = df[df['s'] == None]  # noqa: E711
+        ds_eq_none_result = ds[ds['s'] == None]  # noqa: E711
+        assert_datastore_equals_pandas(ds_eq_none_result, pd_eq_none_result)
+        self.assertEqual(len(pd_eq_none_result), 0)
 
         # .isna() returns True for actual NA values
-        isna_count = len(df[df['s'].isna()])
-        ds_isna_count = len(ds[ds['s'].isna()])
-        self.assertEqual(isna_count, 1)  # Only the None row
-        self.assertEqual(ds_isna_count, 1)
+        pd_isna_result = df[df['s'].isna()]
+        ds_isna_result = ds[ds['s'].isna()]
+        assert_datastore_equals_pandas(ds_isna_result, pd_isna_result)
+        self.assertEqual(len(pd_isna_result), 1)  # Only the None row
 
     def test_none_comparison_vs_notna(self):
         """Verify that != None is different from .notna()."""
@@ -315,16 +294,16 @@ class NoneComparisonTests(unittest.TestCase):
         ds = DataStore(df)
 
         # != None returns all True (every row differs from None singleton)
-        ne_none_count = len(df[df['s'] != None])  # noqa: E711
-        ds_ne_none_count = len(ds[ds['s'] != None])  # noqa: E711
-        self.assertEqual(ne_none_count, 4)
-        self.assertEqual(ds_ne_none_count, 4)
+        pd_ne_none_result = df[df['s'] != None]  # noqa: E711
+        ds_ne_none_result = ds[ds['s'] != None]  # noqa: E711
+        assert_datastore_equals_pandas(ds_ne_none_result, pd_ne_none_result)
+        self.assertEqual(len(pd_ne_none_result), 4)
 
         # .notna() returns True only for non-NA values
-        notna_count = len(df[df['s'].notna()])
-        ds_notna_count = len(ds[ds['s'].notna()])
-        self.assertEqual(notna_count, 3)  # Excludes the None row
-        self.assertEqual(ds_notna_count, 3)
+        pd_notna_result = df[df['s'].notna()]
+        ds_notna_result = ds[ds['s'].notna()]
+        assert_datastore_equals_pandas(ds_notna_result, pd_notna_result)
+        self.assertEqual(len(pd_notna_result), 3)  # Excludes the None row
 
     def test_none_comparison_with_numeric_column(self):
         """Test None comparison with numeric columns containing NaN."""
@@ -335,16 +314,14 @@ class NoneComparisonTests(unittest.TestCase):
         ds = DataStore(df)
 
         # != None returns all True
-        pd_ne = df[df['x'] != None]  # noqa: E711
-        ds_ne = ds[ds['x'] != None]  # noqa: E711
-        self.assertEqual(len(pd_ne), 4)
-        self.assertEqual(len(ds_ne), 4)
+        pd_ne_result = df[df['x'] != None]  # noqa: E711
+        ds_ne_result = ds[ds['x'] != None]  # noqa: E711
+        assert_datastore_equals_pandas(ds_ne_result, pd_ne_result)
 
         # == None returns all False
-        pd_eq = df[df['x'] == None]  # noqa: E711
-        ds_eq = ds[ds['x'] == None]  # noqa: E711
-        self.assertEqual(len(pd_eq), 0)
-        self.assertEqual(len(ds_eq), 0)
+        pd_eq_result = df[df['x'] == None]  # noqa: E711
+        ds_eq_result = ds[ds['x'] == None]  # noqa: E711
+        assert_datastore_equals_pandas(ds_eq_result, pd_eq_result)
 
 
 if __name__ == "__main__":
