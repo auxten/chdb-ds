@@ -1,6 +1,5 @@
 # DataStore
 
-[![CI/CD](https://github.com/auxten/chdb-ds/actions/workflows/datastore-ci.yml/badge.svg)](https://github.com/auxten/chdb-ds/actions/workflows/datastore-ci.yml)
 [![codecov](https://codecov.io/gh/auxten/chdb-ds/branch/main/graph/badge.svg)](https://codecov.io/gh/auxten/chdb-ds)
 [![PyPI version](https://badge.fury.io/py/chdb-ds.svg)](https://badge.fury.io/py/chdb-ds)
 [![Python versions](https://img.shields.io/pypi/pyversions/chdb-ds.svg)](https://pypi.org/project/chdb-ds/)
@@ -9,115 +8,6 @@
 > ⚠️ **EXPERIMENTAL**: This project is currently in experimental stage. APIs may change without notice. Not recommended for production use yet.
 
 A Pandas-like data manipulation framework powered by chDB (ClickHouse) with automatic SQL generation and execution capabilities. Query files, databases, and cloud storage with a unified interface.
-
-## Philosophy
-
-**Respect pandas expertise. Optimize with modern SQL.**
-
-DataStore is built on a simple belief: data scientists shouldn't have to choose between the familiar pandas API and the performance of modern SQL engines. Our approach:
-
-1. **Respect Pandas Experience**: We deeply respect pandas' API design and user habits. DataStore aims to let you use your existing pandas knowledge with minimal code changes.
-
-2. **Lazy Execution for Performance**: All operations are lazy by default. Cross-row operations (aggregations, groupby, filters) are compiled into chDB SQL for execution, leveraging ClickHouse's columnar engine optimizations.
-
-3. **Cache for Exploration**: Exploratory data analysis (EDA) often involves repeated queries on the same data. DataStore caches intermediate results to make your iterative analysis faster.
-
-4. **Pragmatic Compatibility**: We don't guarantee 100% pandas syntax compatibility—that's not our goal. Instead, we run extensive compatibility tests using `import datastore as pd` to ensure you can migrate existing code with **minimal changes** while gaining chDB's performance benefits.
-
-```python
-import datastore as pd  # Just change this import!
-
-df = pd.read_csv("employee_data.csv")
-
-# Multi-line operations - all lazy until result is needed
-filtered = df[(df['age'] > 25) & (df['salary'] > 50000)]
-grouped = filtered.groupby('city')['salary'].agg(['mean', 'sum', 'count'])
-sorted_df = grouped.sort_values('mean', ascending=False)
-result = sorted_df.head(10)
-
-print(result)  # Lazy execution triggered here!
-```
-
-**Full SQL compilation** - the entire pipeline compiles to a single optimized SQL query:
-```sql
-SELECT city, AVG(salary) AS mean, SUM(salary) AS sum, COUNT(salary) AS count
-FROM file('employee_data.csv', 'CSVWithNames')
-WHERE age > 25 AND salary > 50000
-GROUP BY city ORDER BY mean DESC LIMIT 10
-```
-
-All operations are executed by chDB:
-- `read_csv` → `file()` table function ✅
-- `filter` → `WHERE` clause ✅
-- `groupby().agg()` → `GROUP BY` + aggregation functions ✅
-- `sort_values` → `ORDER BY` ✅
-- `head` → `LIMIT` ✅
-
-> **Design principle**: API style must not determine execution engine. Both pandas and fluent APIs should compile to the same optimized SQL.
-
-**Why faster?** With full SQL compilation, DataStore benefits from:
-- **Columnar storage**: Read only needed columns (`city`, `salary`, `age`)
-- **Predicate pushdown**: Filter `age > 25 AND salary > 50000` during file scan
-- **Zero-copy data exchange**: No redundant copies between pandas and chDB
-- **Lazy execution**: Build entire operation chain, optimize before execution
-- **Single-pass processing**: One SQL query instead of multiple pandas operations
-- **Vectorized aggregation**: C++ based GROUP BY, AVG, SUM in chDB
-- **Early termination**: LIMIT pushdown to avoid processing all rows
-
-### Comparison with Similar Libraries
-
-| Feature | DataStore | Polars | DuckDB | Modin |
-|---------|-----------|--------|--------|-------|
-| **API Style** | pandas + fluent SQL | New API | SQL-first | pandas drop-in |
-| **Migration Effort** | Low (change import) | High (new API) | High (SQL rewrite) | Low |
-| **SQL Support** | ✅ Full ClickHouse SQL | ⚠️ Limited (SQLContext) | ✅ Full | ❌ |
-| **File Formats** | ✅ 100+ (ClickHouse) | ~10 | ~15 | via pandas |
-| **Data Sources** | ✅ 20+ (S3, DBs, Lakes) | ~5 | ~10 (extensions) | via pandas |
-| **Zero-Copy pandas** | ✅ Native | ❌ (copy required) | ✅ via Arrow | ❌ |
-| **ClickHouse Functions** | ✅ 334 (geo, IP, URL...) | ❌ | ❌ | ❌ |
-| **Lazy Execution** | ✅ Automatic | ⚠️ Manual (LazyFrame) | ✅ Automatic | ❌ Eager |
-
-**When to choose DataStore:**
-- You have existing pandas code and want minimal migration
-- You need ClickHouse's 100+ file formats or 20+ data sources
-- You want SQL power with pandas comfort
-- You need ClickHouse-specific functions (geo, URL, IP, JSON, array, etc.)
-
-**When to choose alternatives:**
-- **Polars**: Starting fresh, prefer Rust-based DataFrame library, willing to learn new API
-- **DuckDB**: Prefer SQL-first workflow, don't need pandas-style API
-- **Modin**: Need true drop-in replacement with Ray/Dask distributed backend
-
-**Prefer explicit fluent API?** Same performance, different style:
-
-```python
-from datastore import DataStore
-
-ds = DataStore.from_file("employee_data.csv")
-result = (ds
-    .filter((ds.age > 25) & (ds.salary > 50000))
-    .groupby('city')
-    .agg({'salary': ['mean', 'sum', 'count']})
-    .sort_values('salary_mean', ascending=False)
-    .head(10))
-```
-
-## Features
-
-- **Fluent API**: Pandas-like interface for data manipulation
-- **Full Pandas Compatibility**: 209 DataFrame methods + 56 str accessor + 42 dt accessor (all pandas methods covered)
-- **ClickHouse Extensions**: Additional `.arr`, `.json`, `.url`, `.ip`, `.geo` accessors with 100+ ClickHouse-specific functions
-- **Full NumPy Compatibility**: Direct use with all NumPy functions (mean, std, corrcoef, etc.)
-- **DataFrame Interchange Protocol**: Direct use with seaborn, plotly and other visualization libraries
-- **Mixed Execution Engine**: Arbitrary mixing of SQL(chDB) and pandas operations
-- **Immutable Operations**: Thread-safe method chaining
-- **Unified Interface**: Query files, databases, and cloud storage with the same API
-- **20+ Data Sources**: Local files, S3, Azure, GCS, HDFS, MySQL, PostgreSQL, MongoDB, Redis, SQLite, ClickHouse, and more
-- **Data Lake Support**: Iceberg, Delta Lake, Hudi table formats
-- **Format Auto-Detection**: Automatically detect file formats from extensions
-- **SQL Generation**: Automatic conversion to optimized SQL queries
-- **Type-Safe**: Comprehensive type hints and validation
-- **Extensible**: Easy to add custom functions and data sources
 
 ## Quick Start
 
@@ -574,6 +464,115 @@ df['grade'] = np.select(conditions, ['A', 'B', 'C'], default='F')
 
 **Execution Engine:** By default, uses chDB SQL engine. Switch to pandas via `function_config.use_pandas('when')`.
 
+## Philosophy
+
+**Respect pandas expertise. Optimize with modern SQL.**
+
+DataStore is built on a simple belief: data scientists shouldn't have to choose between the familiar pandas API and the performance of modern SQL engines. Our approach:
+
+1. **Respect Pandas Experience**: We deeply respect pandas' API design and user habits. DataStore aims to let you use your existing pandas knowledge with minimal code changes.
+
+2. **Lazy Execution for Performance**: All operations are lazy by default. Cross-row operations (aggregations, groupby, filters) are compiled into chDB SQL for execution, leveraging ClickHouse's columnar engine optimizations.
+
+3. **Cache for Exploration**: Exploratory data analysis (EDA) often involves repeated queries on the same data. DataStore caches intermediate results to make your iterative analysis faster.
+
+4. **Pragmatic Compatibility**: We don't guarantee 100% pandas syntax compatibility—that's not our goal. Instead, we run extensive compatibility tests using `import datastore as pd` to ensure you can migrate existing code with **minimal changes** while gaining chDB's performance benefits.
+
+```python
+import datastore as pd  # Just change this import!
+
+df = pd.read_csv("employee_data.csv")
+
+# Multi-line operations - all lazy until result is needed
+filtered = df[(df['age'] > 25) & (df['salary'] > 50000)]
+grouped = filtered.groupby('city')['salary'].agg(['mean', 'sum', 'count'])
+sorted_df = grouped.sort_values('mean', ascending=False)
+result = sorted_df.head(10)
+
+print(result)  # Lazy execution triggered here!
+```
+
+**Full SQL compilation** - the entire pipeline compiles to a single optimized SQL query:
+```sql
+SELECT city, AVG(salary) AS mean, SUM(salary) AS sum, COUNT(salary) AS count
+FROM file('employee_data.csv', 'CSVWithNames')
+WHERE age > 25 AND salary > 50000
+GROUP BY city ORDER BY mean DESC LIMIT 10
+```
+
+All operations are executed by chDB:
+- `read_csv` → `file()` table function ✅
+- `filter` → `WHERE` clause ✅
+- `groupby().agg()` → `GROUP BY` + aggregation functions ✅
+- `sort_values` → `ORDER BY` ✅
+- `head` → `LIMIT` ✅
+
+> **Design principle**: API style must not determine execution engine. Both pandas and fluent APIs should compile to the same optimized SQL.
+
+**Why faster?** With full SQL compilation, DataStore benefits from:
+- **Columnar storage**: Read only needed columns (`city`, `salary`, `age`)
+- **Predicate pushdown**: Filter `age > 25 AND salary > 50000` during file scan
+- **Zero-copy data exchange**: No redundant copies between pandas and chDB
+- **Lazy execution**: Build entire operation chain, optimize before execution
+- **Single-pass processing**: One SQL query instead of multiple pandas operations
+- **Vectorized aggregation**: C++ based GROUP BY, AVG, SUM in chDB
+- **Early termination**: LIMIT pushdown to avoid processing all rows
+
+### Comparison with Similar Libraries
+
+| Feature | DataStore | Polars | DuckDB | Modin |
+|---------|-----------|--------|--------|-------|
+| **API Style** | pandas + fluent SQL | New API | SQL-first | pandas drop-in |
+| **Migration Effort** | Low (change import) | High (new API) | High (SQL rewrite) | Low |
+| **SQL Support** | ✅ Full ClickHouse SQL | ⚠️ Limited (SQLContext) | ✅ Full | ❌ |
+| **File Formats** | ✅ 100+ (ClickHouse) | ~10 | ~15 | via pandas |
+| **Data Sources** | ✅ 20+ (S3, DBs, Lakes) | ~5 | ~10 (extensions) | via pandas |
+| **Zero-Copy pandas** | ✅ Native | ❌ (copy required) | ✅ via Arrow | ❌ |
+| **ClickHouse Functions** | ✅ 334 (geo, IP, URL...) | ❌ | ❌ | ❌ |
+| **Lazy Execution** | ✅ Automatic | ⚠️ Manual (LazyFrame) | ✅ Automatic | ❌ Eager |
+
+**When to choose DataStore:**
+- You have existing pandas code and want minimal migration
+- You need ClickHouse's 100+ file formats or 20+ data sources
+- You want SQL power with pandas comfort
+- You need ClickHouse-specific functions (geo, URL, IP, JSON, array, etc.)
+
+**When to choose alternatives:**
+- **Polars**: Starting fresh, prefer Rust-based DataFrame library, willing to learn new API
+- **DuckDB**: Prefer SQL-first workflow, don't need pandas-style API
+- **Modin**: Need true drop-in replacement with Ray/Dask distributed backend
+
+**Prefer explicit fluent API?** Same performance, different style:
+
+```python
+from datastore import DataStore
+
+ds = DataStore.from_file("employee_data.csv")
+result = (ds
+    .filter((ds.age > 25) & (ds.salary > 50000))
+    .groupby('city')
+    .agg({'salary': ['mean', 'sum', 'count']})
+    .sort_values('salary_mean', ascending=False)
+    .head(10))
+```
+
+## Features
+
+- **Fluent API**: Pandas-like interface for data manipulation
+- **Full Pandas Compatibility**: 209 DataFrame methods + 56 str accessor + 42 dt accessor (all pandas methods covered)
+- **ClickHouse Extensions**: Additional `.arr`, `.json`, `.url`, `.ip`, `.geo` accessors with 100+ ClickHouse-specific functions
+- **Full NumPy Compatibility**: Direct use with all NumPy functions (mean, std, corrcoef, etc.)
+- **DataFrame Interchange Protocol**: Direct use with seaborn, plotly and other visualization libraries
+- **Mixed Execution Engine**: Arbitrary mixing of SQL(chDB) and pandas operations
+- **Immutable Operations**: Thread-safe method chaining
+- **Unified Interface**: Query files, databases, and cloud storage with the same API
+- **20+ Data Sources**: Local files, S3, Azure, GCS, HDFS, MySQL, PostgreSQL, MongoDB, Redis, SQLite, ClickHouse, and more
+- **Data Lake Support**: Iceberg, Delta Lake, Hudi table formats
+- **Format Auto-Detection**: Automatically detect file formats from extensions
+- **SQL Generation**: Automatic conversion to optimized SQL queries
+- **Type-Safe**: Comprehensive type hints and validation
+- **Extensible**: Easy to add custom functions and data sources
+
 ## Supported Data Sources
 
 DataStore supports 20+ data sources through a unified interface:
@@ -1019,4 +1018,3 @@ Built with and inspired by:
 - [Pandas](https://pandas.pydata.org/) - DataFrame API design
 - [PyPika](https://github.com/kayak/pypika) - Query builder patterns
 - [SQLAlchemy](https://www.sqlalchemy.org/) - ORM and query builder concepts
-
