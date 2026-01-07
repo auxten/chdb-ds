@@ -353,20 +353,75 @@ class TestJsonArrayExtraction:
         )
         return DataStore.from_df(df)
 
-    @chdb_array_nullable
     def test_json_extract_array_raw(self, ds_json_arrays):
         """Test extracting array as raw JSON.
 
-        Note: This is blocked by chDB issue - Array cannot be inside Nullable type
+        This uses pandas fallback because chDB doesn't support Array inside Nullable type
         when the source column comes from Python() table function.
+        The fix detects this and falls back to JSON parsing in Python.
         """
         ds_json_arrays['tags_raw'] = ds_json_arrays['data'].json.json_extract_array_raw('tags')
         df = ds_json_arrays.to_df()
 
-        # Result should be array-like
+        # Result should be a list
         result = df['tags_raw'].iloc[0]
-        assert isinstance(result, (list, tuple, str))
-        assert 'python' in str(result).lower()
+        assert isinstance(result, list)
+        assert result == ['python', 'data', 'ml']
+        
+        # Check second row
+        result2 = df['tags_raw'].iloc[1]
+        assert isinstance(result2, list)
+        assert result2 == ['java', 'backend']
+
+
+    def test_json_extract_array_raw_nested_path(self, ds_json_arrays):
+        """Test extracting array from nested JSON path using pandas fallback."""
+        # Create data with nested structure
+        df = chdb.query(
+            """
+            SELECT 
+                1 as id,
+                '{"user": {"hobbies": ["reading", "coding"]}}' as data
+            UNION ALL
+            SELECT 
+                2 as id,
+                '{"user": {"hobbies": ["gaming"]}}' as data
+            ORDER BY id
+        """,
+            "DataFrame",
+        )
+        ds = DataStore.from_df(df)
+        ds['hobbies'] = ds['data'].json.json_extract_array_raw('user.hobbies')
+        result = ds.to_df()
+        
+        assert isinstance(result['hobbies'].iloc[0], list)
+        assert result['hobbies'].iloc[0] == ['reading', 'coding']
+        assert result['hobbies'].iloc[1] == ['gaming']
+
+    def test_json_extract_array_raw_missing_key(self, ds_json_arrays):
+        """Test extracting array from missing key returns None."""
+        ds_json_arrays['missing'] = ds_json_arrays['data'].json.json_extract_array_raw('nonexistent')
+        result = ds_json_arrays.to_df()
+        
+        assert result['missing'].iloc[0] is None
+        assert result['missing'].iloc[1] is None
+
+    def test_json_extract_array_raw_non_array_value(self, ds_json_arrays):
+        """Test extracting array from non-array value returns None."""
+        # Create data where 'tags' is a string, not an array
+        df = chdb.query(
+            """
+            SELECT 
+                1 as id,
+                '{"tags": "not_an_array"}' as data
+        """,
+            "DataFrame",
+        )
+        ds = DataStore.from_df(df)
+        ds['tags'] = ds['data'].json.json_extract_array_raw('tags')
+        result = ds.to_df()
+        
+        assert result['tags'].iloc[0] is None
 
 
 class TestJsonDirectSQL:

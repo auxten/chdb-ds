@@ -44,6 +44,10 @@ chdb_timedelta_type = pytest.mark.xfail(
     strict=True,
 )
 
+# FIXED (2026-01-07): json_extract_array_raw now falls back to pandas
+# The fix detects Array-returning JSON functions and uses Python JSON parsing
+# instead of SQL execution to avoid the "Array cannot be inside Nullable" error.
+# Keeping the marker for other potential uses of Array types via Python() table function.
 chdb_array_nullable = pytest.mark.xfail(
     reason="chDB: Array type cannot be inside Nullable type",
     strict=True,
