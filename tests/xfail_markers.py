@@ -202,6 +202,23 @@ bug_extractall_multiindex = pytest.mark.xfail(
     strict=True,
 )
 
+bug_null_string_comparison = pytest.mark.xfail(
+    reason="BUG: ds[ds['col'] != None] returns 0 rows, should return non-None rows. "
+    "Fix: convert != None to IS NOT NULL in DataStore layer",
+    strict=True,
+)
+
+bug_where_computed_column = pytest.mark.xfail(
+    reason="BUG: where() with lazy assigned column fails with 'Unknown expression identifier'. "
+    "Fix: resolve computed columns before where execution",
+    strict=True,
+)
+
+bug_groupby_apply_method_call = pytest.mark.xfail(
+    reason="BUG: groupby.apply(lambda x: x.sum()) fails. " "Fix: ensure apply passes Series not scalar to lambda",
+    strict=True,
+)
+
 
 # =============================================================================
 # DataStore Limitations (limit_*)
