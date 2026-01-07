@@ -530,12 +530,9 @@ limit_datastore_no_invert = pytest.mark.xfail(
 )
 
 # =============================================================================
-# chDB Non-deterministic Behavior
+# FIXED: chDB first/last now uses argMin/argMax with rowNumberInAllBlocks()
 # =============================================================================
-
-chdb_any_anylast_nondeterministic = pytest.mark.xfail(
-    reason="chDB any()/anyLast() is non-deterministic - may return arbitrary row's value instead of first/last. "
-    "ClickHouse docs explicitly state any() returns an 'arbitrary' value. "
-    "See: https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/any",
-    strict=False,  # behavior varies by environment
-)
+# chdb_any_anylast_nondeterministic - FIXED in column_expr.py (2026-01-07)
+# first() now uses argMin(value, rowNumberInAllBlocks()) instead of any()
+# last() now uses argMax(value, rowNumberInAllBlocks()) instead of anyLast()
+# This ensures pandas row-order semantics are preserved in SQL execution.
