@@ -280,7 +280,6 @@ class TestStringAccessorEdgeCases:
         assert_datastore_equals_pandas(ds_df, pd_df)
 
     @pytest.mark.xfail(reason="str.len() returns Int64 in DataStore vs float64 in pandas when NULLs present")
-    @pytest.mark.xfail(reason="str.len() returns Int64 in DataStore vs float64 in pandas when NULLs present - needs dtype conversion")
     def test_str_len_with_null(self):
         """Test str.len() with NULL values."""
         pd_df = pd.DataFrame({'text': ['hello', None, 'abc', '']})
