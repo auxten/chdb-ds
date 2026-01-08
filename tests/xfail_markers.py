@@ -568,10 +568,14 @@ pandas_version_no_dataframe_map = pytest.mark.skipif(
     PANDAS_VERSION < (2, 1), reason="DataFrame.map() was added in pandas 2.1.0 (older versions only have applymap)"
 )
 
-# include_groups parameter was added in pandas 2.2.0 for groupby.apply()
+# include_groups parameter was added in pandas 2.1.0 for groupby.apply()
+# Earlier versions don't have this parameter
 pandas_version_no_include_groups = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 2), reason="groupby.apply(include_groups=...) parameter was added in pandas 2.2.0"
+    PANDAS_VERSION < (2, 1), reason="groupby.apply(include_groups=...) parameter was added in pandas 2.1.0"
 )
+
+# Whether include_groups parameter is available
+PANDAS_HAS_INCLUDE_GROUPS = PANDAS_VERSION >= (2, 1)
 
 # DataFrame.first()/last() with offset string was deprecated in pandas 2.1.0
 # The FutureWarning is only emitted in pandas 2.1+
@@ -591,3 +595,39 @@ pandas_version_nullable_int_dtype = pytest.mark.skipif(
 pandas_version_nullable_bool_sql = pytest.mark.skipif(
     PANDAS_VERSION < (2, 1), reason="Nullable boolean SQL handling differs in pandas < 2.1"
 )
+
+
+# =============================================================================
+# Pandas Version Utility Functions
+# These are helper functions for version-compatible test code
+# =============================================================================
+
+
+def skip_if_old_pandas(reason: str = "Requires pandas 2.1+"):
+    """
+    Decorator to skip test on older pandas versions (< 2.1).
+
+    Usage:
+        @skip_if_old_pandas("Nullable Int64 dtype preservation differs in pandas < 2.1")
+        def test_something():
+            ...
+    """
+    import unittest
+
+    return unittest.skipIf(PANDAS_VERSION < (2, 1), reason)
+
+
+def groupby_apply_compat(grouped, func, **kwargs):
+    """
+    Call groupby.apply() with version-compatible parameters.
+
+    In pandas 2.1+, include_groups=False is needed to exclude groupby columns
+    from apply function. Earlier versions don't have this parameter.
+
+    Usage:
+        pd_result = groupby_apply_compat(df.groupby('category'), lambda x: x.sum())
+    """
+    if PANDAS_HAS_INCLUDE_GROUPS:
+        return grouped.apply(func, include_groups=False, **kwargs)
+    else:
+        return grouped.apply(func, **kwargs)

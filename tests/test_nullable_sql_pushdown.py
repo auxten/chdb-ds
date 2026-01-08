@@ -30,13 +30,8 @@ from tests.test_utils import assert_datastore_equals_pandas
 from tests.xfail_markers import (
     pandas_version_nullable_bool_sql,
     pandas_version_nullable_int_dtype,
-    PANDAS_VERSION,
+    skip_if_old_pandas,
 )
-
-
-def skip_if_old_pandas(reason="Requires pandas 2.1+"):
-    """Decorator to skip test on older pandas versions."""
-    return unittest.skipIf(PANDAS_VERSION < (2, 1), reason)
 
 
 class TestNullableBooleanSQLPushdown(unittest.TestCase):
@@ -253,6 +248,7 @@ class TestIsNullIsNotNullConditions(unittest.TestCase):
     Tests that require exact dtype match are skipped on pandas < 2.1.
     """
 
+    @skip_if_old_pandas("Nullable Int64 dtype preservation differs in pandas < 2.1")
     def test_isnull_filter(self):
         """Test isnull() filter works correctly."""
         df = pd.DataFrame({'int_col': pd.array([1, 2, pd.NA, 4, pd.NA], dtype='Int64'), 'val': [10, 20, 30, 40, 50]})

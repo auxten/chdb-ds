@@ -31,6 +31,7 @@ import io
 import datastore as ds
 from datastore.lazy_ops import detect_simple_aggregation, LazyApply
 from tests.test_utils import assert_datastore_equals_pandas
+from tests.xfail_markers import groupby_apply_compat
 
 
 class TestAggregationPatternDetection(unittest.TestCase):
@@ -175,6 +176,7 @@ class TestGroupByApplySQLExecution(unittest.TestCase):
         self.handler.setFormatter(logging.Formatter('%(message)s'))
 
         from datastore.config import get_logger
+
         self.logger = get_logger()
         self.original_level = self.logger.level
         self.logger.setLevel(logging.DEBUG)
@@ -190,81 +192,60 @@ class TestGroupByApplySQLExecution(unittest.TestCase):
 
     def test_apply_sum(self):
         """Test groupby().apply(lambda x: x.sum())."""
-        pd_result = self.pd_df.groupby('category').apply(
-            lambda x: x.sum(), include_groups=False
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), lambda x: x.sum())
         ds_result = self.ds_df.groupby('category').apply(lambda x: x.sum())
 
         # Use assert_datastore_equals_pandas for proper comparison
         # Note: groupby results have category as index, check_row_order=False for groupby
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
-            check_row_order=False,
-            check_index=True,
-            msg="groupby.apply(sum) should match pandas"
+            ds_result, pd_result, check_row_order=False, check_index=True, msg="groupby.apply(sum) should match pandas"
         )
 
         # Verify SQL was used (check logs for SQL markers)
         logs = self.get_logs()
         self.assertTrue(
             '[SQL' in logs or 'SQL' in logs or 'Executing' in logs,
-            f"Expected SQL execution in logs. Got:\n{logs[:500]}"
+            f"Expected SQL execution in logs. Got:\n{logs[:500]}",
         )
 
     def test_apply_mean(self):
         """Test groupby().apply(lambda x: x.mean())."""
-        pd_result = self.pd_df.groupby('category').apply(
-            lambda x: x.mean(), include_groups=False
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), lambda x: x.mean())
         ds_result = self.ds_df.groupby('category').apply(lambda x: x.mean())
 
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
-            check_row_order=False,
-            check_index=True,
-            msg="groupby.apply(mean) should match pandas"
+            ds_result, pd_result, check_row_order=False, check_index=True, msg="groupby.apply(mean) should match pandas"
         )
 
     def test_apply_max(self):
         """Test groupby().apply(lambda x: x.max())."""
-        pd_result = self.pd_df.groupby('category').apply(
-            lambda x: x.max(), include_groups=False
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), lambda x: x.max())
         ds_result = self.ds_df.groupby('category').apply(lambda x: x.max())
 
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
-            check_row_order=False,
-            check_index=True,
-            msg="groupby.apply(max) should match pandas"
+            ds_result, pd_result, check_row_order=False, check_index=True, msg="groupby.apply(max) should match pandas"
         )
 
     def test_apply_min(self):
         """Test groupby().apply(lambda x: x.min())."""
-        pd_result = self.pd_df.groupby('category').apply(
-            lambda x: x.min(), include_groups=False
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), lambda x: x.min())
         ds_result = self.ds_df.groupby('category').apply(lambda x: x.min())
 
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
-            check_row_order=False,
-            check_index=True,
-            msg="groupby.apply(min) should match pandas"
+            ds_result, pd_result, check_row_order=False, check_index=True, msg="groupby.apply(min) should match pandas"
         )
 
     def test_apply_count(self):
         """Test groupby().apply(lambda x: x.count())."""
-        pd_result = self.pd_df.groupby('category').apply(
-            lambda x: x.count(), include_groups=False
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), lambda x: x.count())
         ds_result = self.ds_df.groupby('category').apply(lambda x: x.count())
 
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
+            ds_result,
+            pd_result,
             check_row_order=False,
             check_index=True,
-            msg="groupby.apply(count) should match pandas"
+            msg="groupby.apply(count) should match pandas",
         )
 
 
@@ -282,18 +263,15 @@ class TestGroupByApplyMultipleColumns(unittest.TestCase):
 
     def test_apply_sum_multiple_groupby(self):
         """Test groupby on multiple columns with apply(lambda x: x.sum())."""
-        pd_result = self.pd_df.groupby(['region', 'category']).apply(
-            lambda x: x.sum(), include_groups=False
-        )
-        ds_result = self.ds_df.groupby(['region', 'category']).apply(
-            lambda x: x.sum()
-        )
+        pd_result = groupby_apply_compat(self.pd_df.groupby(['region', 'category']), lambda x: x.sum())
+        ds_result = self.ds_df.groupby(['region', 'category']).apply(lambda x: x.sum())
 
         assert_datastore_equals_pandas(
-            ds_result, pd_result,
+            ds_result,
+            pd_result,
             check_row_order=False,
             check_index=True,
-            msg="groupby on multiple columns with apply(sum) should match pandas"
+            msg="groupby on multiple columns with apply(sum) should match pandas",
         )
 
 
@@ -315,6 +293,7 @@ class TestGroupByApplyFallback(unittest.TestCase):
         self.handler.setFormatter(logging.Formatter('%(message)s'))
 
         from datastore.config import get_logger
+
         self.logger = get_logger()
         self.original_level = self.logger.level
         self.logger.setLevel(logging.DEBUG)
@@ -330,10 +309,11 @@ class TestGroupByApplyFallback(unittest.TestCase):
 
     def test_complex_function_fallback(self):
         """Test that complex functions fall back to Pandas and still work."""
+
         def top_2(x):
             return x.nlargest(2, 'value')
 
-        pd_result = self.pd_df.groupby('category').apply(top_2, include_groups=False)
+        pd_result = groupby_apply_compat(self.pd_df.groupby('category'), top_2)
         ds_result = self.ds_df.groupby('category').apply(top_2)
 
         # pandas groupby.apply with nlargest returns MultiIndex result
@@ -343,17 +323,17 @@ class TestGroupByApplyFallback(unittest.TestCase):
         # Use assert_datastore_equals_pandas for proper comparison
         # check_row_order=False because groupby order may vary
         assert_datastore_equals_pandas(
-            ds_result, pd_result_flat,
+            ds_result,
+            pd_result_flat,
             check_row_order=False,
             check_index=False,
-            msg="groupby.apply(top_2) should match pandas"
+            msg="groupby.apply(top_2) should match pandas",
         )
 
         # Verify Pandas fallback was used (not SQL)
         logs = self.get_logs()
         self.assertTrue(
-            '[Pandas]' in logs or 'Apply' in logs,
-            f"Expected Pandas execution for complex function. Got:\n{logs[:500]}"
+            '[Pandas]' in logs or 'Apply' in logs, f"Expected Pandas execution for complex function. Got:\n{logs[:500]}"
         )
 
 
@@ -375,6 +355,7 @@ class TestGroupByApplySQLVerification(unittest.TestCase):
         self.handler.setFormatter(logging.Formatter('%(message)s'))
 
         from datastore.config import get_logger
+
         self.logger = get_logger()
         self.original_level = self.logger.level
         self.logger.setLevel(logging.DEBUG)
@@ -404,14 +385,12 @@ class TestGroupByApplySQLVerification(unittest.TestCase):
 
         # Verify the LazyApply indicates SQL engine
         apply = LazyApply(lambda x: x.sum(), groupby_cols=['category'])
-        self.assertEqual(apply.execution_engine(), 'SQL',
-                        "Simple sum aggregation should use SQL engine")
+        self.assertEqual(apply.execution_engine(), 'SQL', "Simple sum aggregation should use SQL engine")
 
     def test_pandas_fallback_for_complex(self):
         """Verify Pandas is used for complex aggregations."""
         apply = LazyApply(lambda x: x.nlargest(2), groupby_cols=['category'])
-        self.assertEqual(apply.execution_engine(), 'Pandas',
-                        "Complex aggregation should use Pandas engine")
+        self.assertEqual(apply.execution_engine(), 'Pandas', "Complex aggregation should use Pandas engine")
 
 
 if __name__ == '__main__':
