@@ -405,8 +405,17 @@ def _assert_series_equals(
     )
 
     if not check_order:
-        ds_values = np.sort(ds_values)
-        pd_values = np.sort(pd_values)
+        # Use pandas Series sorting to properly handle NA values
+        # np.sort fails on arrays with pd.NA ("boolean value of NA is ambiguous")
+        try:
+            ds_values = pd.Series(ds_values).sort_values(na_position='last').values
+            pd_values = pd.Series(pd_values).sort_values(na_position='last').values
+        except TypeError:
+            # Fallback for mixed types that can't be sorted
+            ds_values = np.array([str(x) if pd.notna(x) else '' for x in ds_values])
+            pd_values = np.array([str(x) if pd.notna(x) else '' for x in pd_values])
+            ds_values = np.sort(ds_values)
+            pd_values = np.sort(pd_values)
 
     _assert_array_equal(ds_values, pd_values, f"{prefix}Series values don't match", rtol, atol)
 
