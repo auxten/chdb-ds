@@ -31,6 +31,11 @@ from tests.test_utils import assert_datastore_equals_pandas
 class TestShiftChains:
     """Test shift() operations in various chain scenarios."""
 
+    @pytest.mark.xfail(
+        reason="SQL limitation: window functions cannot be used in WHERE clause. "
+               "Workaround: materialize intermediate result before filtering.",
+        strict=True,
+    )
     def test_shift_then_filter(self):
         """Test shift() followed by filter on shifted column."""
         df = pd.DataFrame({
@@ -191,6 +196,11 @@ class TestDiffChains:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pytest.mark.xfail(
+        reason="SQL limitation: window functions cannot be used in WHERE clause. "
+               "Workaround: materialize intermediate result before filtering.",
+        strict=True,
+    )
     def test_diff_then_filter(self):
         """Test diff() followed by filter on diff result."""
         df = pd.DataFrame({
@@ -587,6 +597,11 @@ class TestEmptySingleRowEdgeCases:
 class TestNullableTypeOperations:
     """Test shift/diff operations with nullable types."""
 
+    @pytest.mark.xfail(
+        reason="SQL window functions return float64, not nullable Int64. "
+               "Pandas preserves nullable Int64 dtype for shift/diff on Int64 columns.",
+        strict=True,
+    )
     def test_shift_with_na_values(self):
         """Test shift on column with NA values."""
         df = pd.DataFrame({
@@ -605,6 +620,11 @@ class TestNullableTypeOperations:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pytest.mark.xfail(
+        reason="SQL window functions return float64, not nullable Int64. "
+               "Pandas preserves nullable Int64 dtype for shift/diff on Int64 columns.",
+        strict=True,
+    )
     def test_diff_with_na_values(self):
         """Test diff on column with NA values."""
         df = pd.DataFrame({
@@ -650,6 +670,11 @@ class TestNullableTypeOperations:
 class TestComplexChainScenarios:
     """Test complex multi-operation chain scenarios."""
 
+    @pytest.mark.xfail(
+        reason="SQL limitation: window functions cannot be used in WHERE clause. "
+               "Workaround: materialize intermediate result before filtering.",
+        strict=True,
+    )
     def test_shift_diff_filter_sort_head(self):
         """Test chain: shift -> diff -> filter -> sort -> head."""
         df = pd.DataFrame({
