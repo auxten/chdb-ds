@@ -207,15 +207,17 @@ class TestStrAccessorMetadataPreservation(unittest.TestCase):
     """Test that str accessor metadata is properly preserved on ColumnExpr."""
 
     def test_str_extract_has_metadata(self):
-        """str.extract result should have _str_accessor_method metadata."""
+        """str.extract result should have operation descriptor metadata."""
         ds = DataStore({'text': ['a1', 'b2']})
         result = ds['text'].str.extract(r'([a-z])(\d)', expand=False)
 
-        # Check metadata exists
-        self.assertEqual(result._str_accessor_method, 'extract')
-        self.assertIsNotNone(result._str_source_expr)
-        self.assertEqual(result._str_accessor_args, (r'([a-z])(\d)',))
-        self.assertEqual(result._str_accessor_kwargs, {'flags': 0, 'expand': False})
+        # Check new operation descriptor metadata exists
+        self.assertEqual(result._op_type, 'accessor')
+        self.assertEqual(result._op_accessor, 'str')
+        self.assertEqual(result._op_method, 'extract')
+        self.assertIsNotNone(result._op_source)
+        self.assertEqual(result._op_args, (r'([a-z])(\d)',))
+        self.assertEqual(result._op_kwargs, {'flags': 0, 'expand': False})
 
     def test_str_extractall_executes_correctly(self):
         """str.extractall should execute correctly and match pandas behavior."""
@@ -235,25 +237,29 @@ class TestStrAccessorMetadataPreservation(unittest.TestCase):
         np.testing.assert_array_equal(ds_result[1].values, pd_result[1].values)
 
     def test_str_split_expand_true_has_metadata(self):
-        """str.split with expand=True should have _str_accessor_method metadata."""
+        """str.split with expand=True should have operation descriptor metadata."""
         ds = DataStore({'text': ['a b', 'c d']})
         result = ds['text'].str.split(' ', expand=True)
 
-        # Check metadata exists
-        self.assertEqual(result._str_accessor_method, 'split')
-        self.assertIsNotNone(result._str_source_expr)
-        self.assertIn('expand', result._str_accessor_kwargs)
-        self.assertTrue(result._str_accessor_kwargs['expand'])
+        # Check new operation descriptor metadata exists
+        self.assertEqual(result._op_type, 'accessor')
+        self.assertEqual(result._op_accessor, 'str')
+        self.assertEqual(result._op_method, 'split')
+        self.assertIsNotNone(result._op_source)
+        self.assertIn('expand', result._op_kwargs)
+        self.assertTrue(result._op_kwargs['expand'])
 
     def test_str_wrap_has_metadata(self):
-        """str.wrap result should have _str_accessor_method metadata."""
+        """str.wrap result should have operation descriptor metadata."""
         ds = DataStore({'text': ['hello world']})
         result = ds['text'].str.wrap(5)
 
-        # Check metadata exists
-        self.assertEqual(result._str_accessor_method, 'wrap')
-        self.assertIsNotNone(result._str_source_expr)
-        self.assertEqual(result._str_accessor_args, (5,))
+        # Check new operation descriptor metadata exists
+        self.assertEqual(result._op_type, 'accessor')
+        self.assertEqual(result._op_accessor, 'str')
+        self.assertEqual(result._op_method, 'wrap')
+        self.assertIsNotNone(result._op_source)
+        self.assertEqual(result._op_args, (5,))
 
 
 class TestStrAccessorChainedWithOtherOps(unittest.TestCase):
