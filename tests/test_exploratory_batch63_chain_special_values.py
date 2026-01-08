@@ -21,7 +21,10 @@ from tests.test_utils import (
     get_dataframe,
     get_series,
 )
-from tests.xfail_markers import chdb_duplicate_column_rename
+from tests.xfail_markers import (
+    chdb_duplicate_column_rename,
+    pandas_version_nullable_int_dtype,
+)
 
 
 class TestComplexLazyChains:
@@ -647,8 +650,13 @@ class TestStringColumnEdgeCases:
 class TestMixedTypeOperations:
     """Test operations with mixed types."""
 
+    @pandas_version_nullable_int_dtype
     def test_numeric_comparison_with_none(self):
-        """Test numeric comparison with None values."""
+        """Test numeric comparison with None values.
+
+        Note: Nullable Int64 dtype preservation differs between pandas versions.
+        In older pandas + chDB combinations, filtering removes NA and may return float64.
+        """
         pd_df = pd.DataFrame({
             'a': pd.array([1, 2, None, 4, None], dtype=pd.Int64Dtype()),
             'b': [10, 20, 30, 40, 50]

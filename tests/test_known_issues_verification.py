@@ -41,15 +41,13 @@ from tests.xfail_markers import (
 # SECTION 1: Data Types - SQL Operations
 # =============================================================================
 
+
 class TestDataTypesSQLOperations:
     """Tests for data type issues during SQL operations."""
 
     def test_categorical_type_read_only_works(self):
         """Categorical type works for read-only access (no SQL execution)."""
-        df = pd.DataFrame({
-            'cat_col': pd.Categorical(['a', 'b', 'c']),
-            'value': [1, 2, 3]
-        })
+        df = pd.DataFrame({'cat_col': pd.Categorical(['a', 'b', 'c']), 'value': [1, 2, 3]})
         ds = DataStore(df)
 
         # Read-only access works (no SQL execution triggered)
@@ -58,10 +56,7 @@ class TestDataTypesSQLOperations:
     @chdb_category_type
     def test_categorical_type_fails_in_sql(self):
         """Categorical type fails when SQL operations are needed."""
-        df = pd.DataFrame({
-            'cat_col': pd.Categorical(['a', 'b', 'c']),
-            'value': [1, 2, 3]
-        })
+        df = pd.DataFrame({'cat_col': pd.Categorical(['a', 'b', 'c']), 'value': [1, 2, 3]})
         ds = DataStore(df)
 
         # SQL operation (filter) fails
@@ -70,10 +65,7 @@ class TestDataTypesSQLOperations:
 
     def test_timedelta_type_read_only_works(self):
         """Timedelta type works for read-only access."""
-        df = pd.DataFrame({
-            'td_col': pd.to_timedelta(['1 day', '2 days', '3 days']),
-            'value': [1, 2, 3]
-        })
+        df = pd.DataFrame({'td_col': pd.to_timedelta(['1 day', '2 days', '3 days']), 'value': [1, 2, 3]})
         ds = DataStore(df)
 
         # Read-only access works
@@ -84,10 +76,7 @@ class TestDataTypesSQLOperations:
     @chdb_timedelta_type
     def test_timedelta_type_fails_in_sql(self):
         """Timedelta type fails when SQL operations are needed."""
-        df = pd.DataFrame({
-            'td_col': pd.to_timedelta(['1 day', '2 days', '3 days']),
-            'value': [1, 2, 3]
-        })
+        df = pd.DataFrame({'td_col': pd.to_timedelta(['1 day', '2 days', '3 days']), 'value': [1, 2, 3]})
         ds = DataStore(df)
 
         # SQL operation (filter) fails
@@ -115,6 +104,7 @@ class TestDataTypesSQLOperations:
 # SECTION 2: Fixed Issues (Verification Tests)
 # =============================================================================
 
+
 class TestFixedIssues:
     """Tests verifying issues that are now FIXED."""
 
@@ -138,7 +128,10 @@ class TestFixedIssues:
 
         # Both should return 0.0
         assert pd_sum == 0.0
-        assert repr(ds_sum) == 'np.float64(0.0)'
+        # numpy scalar repr differs between versions:
+        # - older: '0.0'
+        # - newer: 'np.float64(0.0)'
+        assert float(ds_sum) == 0.0
 
     def test_index_preserved_after_filter(self):
         """Index is now preserved after SQL execution."""
@@ -195,6 +188,7 @@ class TestFixedIssues:
 # =============================================================================
 # SECTION 3: P1 Bugs (High Priority - To Be Fixed)
 # =============================================================================
+
 
 class TestP1Bugs:
     """P1 bugs that should be fixed soon."""
@@ -267,6 +261,7 @@ class TestP1Bugs:
 # SECTION 4: P2 Bugs (Medium Priority)
 # =============================================================================
 
+
 class TestP2Bugs:
     """P2 bugs to be fixed."""
 
@@ -287,6 +282,7 @@ class TestP2Bugs:
 # SECTION 5: P3 Issues (Low Priority / Design Decisions)
 # =============================================================================
 
+
 class TestP3Issues:
     """P3 issues - lower priority or design decisions."""
 
@@ -303,11 +299,7 @@ class TestP3Issues:
 
     def test_unstack_now_available(self):
         """unstack() now available on ColumnExpr."""
-        df = pd.DataFrame({
-            'cat1': ['A', 'A', 'B', 'B'],
-            'cat2': ['X', 'Y', 'X', 'Y'],
-            'value': [1, 2, 3, 4]
-        })
+        df = pd.DataFrame({'cat1': ['A', 'A', 'B', 'B'], 'cat2': ['X', 'Y', 'X', 'Y'], 'value': [1, 2, 3, 4]})
         ds = DataStore(df)
 
         # pandas
@@ -334,6 +326,7 @@ class TestP3Issues:
 # =============================================================================
 # SECTION 6: Dtype Differences (Values Correct)
 # =============================================================================
+
 
 class TestDtypeDifferences:
     """Tests where values are correct but dtype differs - NOT bugs."""

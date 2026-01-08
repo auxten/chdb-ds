@@ -175,10 +175,15 @@ class TestColumnExprMaskWhere:
         ds_result = ds['a'].mask(ds['a'] > 2)
 
         # NaN comparison needs special handling
-        pd_arr = pd_result.to_numpy()
-        ds_arr = ds_result.to_pandas().to_numpy()
-        np.testing.assert_array_equal(np.isnan(pd_arr), np.isnan(ds_arr))
-        np.testing.assert_array_equal(pd_arr[~np.isnan(pd_arr)], ds_arr[~np.isnan(ds_arr)])
+        # Use pd.isna instead of np.isnan for better compatibility with different dtypes
+        pd_isna = pd.isna(pd_result)
+        ds_isna = pd.isna(ds_result.to_pandas())
+        np.testing.assert_array_equal(pd_isna.to_numpy(), ds_isna.to_numpy())
+        # Compare non-NA values
+        np.testing.assert_array_equal(
+            pd_result[~pd_isna].to_numpy(),
+            ds_result.to_pandas()[~ds_isna].to_numpy()
+        )
 
     def test_series_mask_with_other(self):
         """Series.mask() with replacement value"""

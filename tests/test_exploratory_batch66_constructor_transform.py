@@ -21,6 +21,7 @@ from tests.test_utils import (
     get_dataframe,
     get_series,
 )
+from tests.xfail_markers import pandas_version_no_include_groups
 
 
 class TestConstructorEdgeCases:
@@ -180,8 +181,12 @@ class TestGroupByApply:
         except AttributeError:
             pytest.skip("apply not implemented in DataStore groupby")
 
+    @pandas_version_no_include_groups
     def test_apply_returning_dataframe(self):
-        """Test groupby apply returning DataFrame."""
+        """Test groupby apply returning DataFrame.
+
+        Note: include_groups parameter was added in pandas 2.2.0.
+        """
         pd_df = pd.DataFrame({
             'group': ['A', 'A', 'B', 'B'],
             'value': [1, 2, 3, 4]

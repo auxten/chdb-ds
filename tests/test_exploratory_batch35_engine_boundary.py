@@ -17,6 +17,10 @@ import numpy as np
 from datastore import DataStore
 import datastore as ds
 from tests.test_utils import assert_datastore_equals_pandas
+from tests.xfail_markers import (
+    pandas_version_nullable_int_dtype,
+    pandas_version_nullable_bool_sql,
+)
 
 
 # =============================================================================
@@ -112,8 +116,16 @@ class TestMultipleEngineSwitches:
 
 
 class TestNullableTypesInChains:
-    """Test nullable types through complex operation chains."""
+    """Test nullable types through complex operation chains.
 
+    Note: Nullable integer dtype (Int64) preservation differs between pandas versions:
+    - pandas 2.0.x: May return float64 for SQL operations with NULL/NA values
+    - pandas 2.1+: Better nullable type preservation
+
+    These tests are skipped on older pandas versions where dtype mismatch is expected.
+    """
+
+    @pandas_version_nullable_int_dtype
     def test_nullable_int_through_filter_chain(self):
         """Test nullable Int64 through multiple filters."""
         data = {'a': pd.array([1, 2, pd.NA, 4, 5, pd.NA, 7, 8], dtype='Int64'), 'b': list(range(8))}
@@ -132,6 +144,7 @@ class TestNullableTypesInChains:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_nullable_bool_sql
     def test_nullable_bool_in_where_chain(self):
         """Test nullable boolean in filter operation chain."""
         data = {
@@ -151,6 +164,7 @@ class TestNullableTypesInChains:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_nullable_int_dtype
     def test_nullable_in_groupby_agg_chain(self):
         """Test nullable types through groupby -> aggregation -> filter chain."""
         data = {

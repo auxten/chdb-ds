@@ -17,6 +17,7 @@ Marker Naming Conventions:
     - limit_*    : DataStore limitations (features not yet implemented)
     - design_*   : Intentional behavioral differences from pandas
     - deprecated_*: Deprecated pandas features
+    - pandas_version_*: Pandas version-specific API differences
 
 When a bug is fixed or limitation is resolved, remove the marker from this file
 and update all tests that use it.
@@ -25,6 +26,10 @@ and update all tests that use it.
 from typing import List
 
 import pytest
+import pandas as pd
+
+# Get pandas version for conditional markers
+PANDAS_VERSION = tuple(int(x) for x in pd.__version__.split('.')[:2])
 
 
 # =============================================================================
@@ -228,17 +233,20 @@ bug_where_computed_column = lambda f: f
 # Features not yet implemented
 # =============================================================================
 
+
 # FIXED 2026-01-07: Callable as index now supported via __getitem__ callable handling
 # limit_callable_index was an xfail marker for a limitation that has been fixed
 def limit_callable_index(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
 
+
 # FIXED 2026-01-07: query() @variable scope now works via level parameter
 # limit_query_variable_scope was an xfail marker for a bug that has been fixed
 def limit_query_variable_scope(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
+
 
 # FIXED 2026-01-07: loc conditional assignment with ColumnExpr now works
 # Added DataStoreLocIndexer wrapper in pandas_compat.py
@@ -272,6 +280,7 @@ design_datetime_fillna_nat = pytest.mark.xfail(
     reason="Design decision: Pandas where/mask replaces datetime with 0/-1, DataStore uses NaT (semantically clearer)",
     strict=True,
 )
+
 
 # FIXED: unstack() is now implemented on ColumnExpr
 def design_unstack_column_expr(func):
@@ -545,4 +554,40 @@ chdb_python_table_rownumber_nondeterministic = pytest.mark.xfail(
     "Row numbers depend on parallel block distribution, causing first()/last() to return wrong values. "
     "Stable with file-based sources (Parquet, CSV). See: https://github.com/chdb-io/chdb/issues/469",
     strict=False,  # May pass sometimes due to non-deterministic nature
+)
+
+
+# =============================================================================
+# Pandas Version-Specific Markers (pandas_version_*)
+# These handle API differences between pandas versions
+# =============================================================================
+
+# DataFrame.map() was added in pandas 2.1.0, before that only applymap() existed
+# In pandas 2.1+, applymap() is deprecated in favor of map()
+pandas_version_no_dataframe_map = pytest.mark.skipif(
+    PANDAS_VERSION < (2, 1), reason="DataFrame.map() was added in pandas 2.1.0 (older versions only have applymap)"
+)
+
+# include_groups parameter was added in pandas 2.2.0 for groupby.apply()
+pandas_version_no_include_groups = pytest.mark.skipif(
+    PANDAS_VERSION < (2, 2), reason="groupby.apply(include_groups=...) parameter was added in pandas 2.2.0"
+)
+
+# DataFrame.first()/last() with offset string was deprecated in pandas 2.1.0
+# The FutureWarning is only emitted in pandas 2.1+
+pandas_version_first_last_offset_warning = pytest.mark.skipif(
+    PANDAS_VERSION < (2, 1), reason="DataFrame.first()/last() with offset FutureWarning only in pandas 2.1+"
+)
+
+# Nullable integer types (Int64) behavior differs:
+# - In pandas 2.0.x with older Python: some operations return float64 for compatibility
+# - In pandas 2.1+: better nullable type preservation
+pandas_version_nullable_int_dtype = pytest.mark.skipif(
+    PANDAS_VERSION < (2, 1), reason="Nullable Int64 dtype handling improved in pandas 2.1.0"
+)
+
+# Nullable boolean SQL pushdown has issues in older pandas + chDB combinations
+# The boolean type conversion in SQL differs by version
+pandas_version_nullable_bool_sql = pytest.mark.skipif(
+    PANDAS_VERSION < (2, 1), reason="Nullable boolean SQL handling differs in pandas < 2.1"
 )

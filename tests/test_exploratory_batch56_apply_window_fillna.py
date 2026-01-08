@@ -14,7 +14,11 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas
-from tests.xfail_markers import limit_groupby_series_param, chdb_median_in_where
+from tests.xfail_markers import (
+    limit_groupby_series_param,
+    chdb_median_in_where,
+    pandas_version_no_dataframe_map,
+)
 
 
 # ========== Apply/Applymap Edge Cases ==========
@@ -128,8 +132,13 @@ class TestApplyEdgeCases:
 
 
 class TestApplymapEdgeCases:
-    """Test applymap() / map() with various scenarios."""
+    """Test applymap() / map() with various scenarios.
 
+    Note: DataFrame.map() was added in pandas 2.1.0. In pandas 2.0.x only applymap() exists.
+    These tests use map() and are skipped on older pandas versions.
+    """
+
+    @pandas_version_no_dataframe_map
     def test_applymap_basic(self):
         """Basic applymap/map functionality."""
         pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
@@ -140,6 +149,7 @@ class TestApplymapEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_no_dataframe_map
     def test_applymap_type_change(self):
         """applymap that changes type (int -> str)."""
         pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
@@ -150,6 +160,7 @@ class TestApplymapEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_no_dataframe_map
     def test_applymap_with_na_handling(self):
         """applymap with NA values."""
         pd_df = pd.DataFrame({'a': [1.0, np.nan, 3.0], 'b': [4.0, 5.0, np.nan]})
@@ -160,6 +171,7 @@ class TestApplymapEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_no_dataframe_map
     def test_applymap_chained_operations(self):
         """applymap in chained operations."""
         pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
@@ -170,6 +182,7 @@ class TestApplymapEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_no_dataframe_map
     def test_applymap_string_columns(self):
         """applymap on string columns."""
         pd_df = pd.DataFrame({'a': ['abc', 'def', 'ghi'], 'b': ['xyz', 'uvw', 'rst']})

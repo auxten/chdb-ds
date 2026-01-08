@@ -11,7 +11,11 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import chdb_mask_dtype_nullable
+from tests.xfail_markers import (
+    chdb_mask_dtype_nullable,
+    pandas_version_no_include_groups,
+    pandas_version_first_last_offset_warning,
+)
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -109,20 +113,26 @@ class TestGroupByFilter:
 
 
 class TestGroupByApply:
-    """Test groupby apply edge cases."""
+    """Test groupby apply edge cases.
 
+    Note: The include_groups parameter was added in pandas 2.2.0.
+    Tests that use include_groups are skipped on older pandas versions.
+    """
+
+    @pandas_version_no_include_groups
     def test_apply_returns_scalar(self):
         """Test groupby apply that returns scalar per group."""
         pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
         ds_df = DataStore(pd_df.copy())
 
-        # DataStore groupby.apply doesn't support include_groups parameter currently
+        # include_groups parameter was added in pandas 2.2.0
         pd_result = pd_df.groupby('category').apply(lambda x: x['value'].sum(), include_groups=False)
         ds_result = ds_df.groupby('category').apply(lambda x: x['value'].sum())
 
         ds_series = get_series(ds_result)
         assert_series_equal(ds_series, pd_result)
 
+    @pandas_version_no_include_groups
     def test_apply_returns_series(self):
         """Test groupby apply that returns Series per group."""
         pd_df = pd.DataFrame({'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]})
@@ -634,8 +644,13 @@ class TestMapApply:
 
 
 class TestFirstLastOffset:
-    """Test first/last with offset parameter."""
+    """Test first/last with offset parameter.
 
+    Note: DataFrame.first()/last() with offset was deprecated in pandas 2.1.0.
+    In older pandas versions, no FutureWarning is emitted.
+    """
+
+    @pandas_version_first_last_offset_warning
     def test_first_with_offset(self):
         """Test first with DateOffset."""
         pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=pd.date_range('2023-01-01', periods=5, freq='D'))
@@ -648,6 +663,7 @@ class TestFirstLastOffset:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
+    @pandas_version_first_last_offset_warning
     def test_last_with_offset(self):
         """Test last with DateOffset."""
         pd_df = pd.DataFrame({'a': [1, 2, 3, 4, 5]}, index=pd.date_range('2023-01-01', periods=5, freq='D'))
