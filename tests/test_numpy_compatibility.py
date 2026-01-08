@@ -517,5 +517,178 @@ class TestNumpyEdgeCases(unittest.TestCase):
         self.assertAlmostEqual(result, expected)
 
 
+class TestColumnExprBooleanOpsWithNumpyArray(unittest.TestCase):
+    """
+    Test that ColumnExpr boolean operations (&, |, ^) work with numpy arrays.
+    
+    This is critical for compatibility with libraries like seaborn that use
+    numpy arrays for boolean masking, e.g.:
+        data[row & col & hue & self._not_na]
+    where self._not_na is a numpy ndarray.
+    
+    Regression test for: TypeError: Cannot AND ColumnExpr with ndarray
+    """
+
+    def setUp(self):
+        """Set up test data."""
+        self.df = pd.DataFrame({
+            'a': [1, 2, 3, 4, 5],
+            'b': ['x', 'y', 'z', 'x', 'y'],
+            'c': [10, 20, 30, 40, 50]
+        })
+        self.ds = DataStore.from_df(self.df)
+
+    def test_column_expr_and_ndarray(self):
+        """Test ColumnExpr & ndarray returns ColumnExpr and works correctly."""
+        # pandas
+        pd_mask = self.df['a'] > 2
+        np_mask = np.array([True, True, False, True, False])
+        pd_combined = pd_mask & np_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore
+        ds_mask = self.ds['a'] > 2
+        ds_combined = ds_mask & np_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify combined mask returns ColumnExpr
+        from datastore.column_expr import ColumnExpr
+        self.assertIsInstance(ds_combined, ColumnExpr)
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+        np.testing.assert_array_equal(ds_result['c'].values, pd_result['c'].values)
+
+    def test_ndarray_and_column_expr(self):
+        """Test ndarray & ColumnExpr (reverse order)."""
+        # pandas
+        pd_mask = self.df['a'] > 2
+        np_mask = np.array([True, True, False, True, False])
+        pd_combined = np_mask & pd_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore - note: numpy __and__ takes precedence, result is ndarray
+        ds_mask = self.ds['a'] > 2
+        ds_combined = np_mask & ds_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+
+    def test_column_expr_or_ndarray(self):
+        """Test ColumnExpr | ndarray works correctly."""
+        # pandas
+        pd_mask = self.df['a'] > 4
+        np_mask = np.array([True, False, False, False, False])
+        pd_combined = pd_mask | np_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore
+        ds_mask = self.ds['a'] > 4
+        ds_combined = ds_mask | np_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+
+    def test_column_expr_xor_ndarray(self):
+        """Test ColumnExpr ^ ndarray works correctly."""
+        # pandas
+        pd_mask = self.df['a'] > 2
+        np_mask = np.array([True, True, True, True, True])
+        pd_combined = pd_mask ^ np_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore
+        ds_mask = self.ds['a'] > 2
+        ds_combined = ds_mask ^ np_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+
+    def test_seaborn_facetgrid_pattern(self):
+        """
+        Test the exact pattern used by seaborn's FacetGrid.facet_data():
+            data[row & col & hue & self._not_na]
+        where row, col, hue can be ColumnExpr and self._not_na is ndarray.
+        """
+        ds = DataStore({
+            'Pclass': [1, 2, 3, 1, 2, 3],
+            'Survived': [1, 0, 1, 0, 1, 0],
+            'Sex': ['male', 'female', 'male', 'female', 'male', 'female'],
+            'Embarked': ['S', 'C', 'Q', 'S', 'C', 'Q']
+        })
+        df = pd.DataFrame({
+            'Pclass': [1, 2, 3, 1, 2, 3],
+            'Survived': [1, 0, 1, 0, 1, 0],
+            'Sex': ['male', 'female', 'male', 'female', 'male', 'female'],
+            'Embarked': ['S', 'C', 'Q', 'S', 'C', 'Q']
+        })
+        
+        # Simulate seaborn's mask creation pattern
+        # row = (ds['Embarked'] == 'S')  # ColumnExpr
+        # col = all True (numpy array)
+        # hue = (ds['Sex'] == 'male')   # ColumnExpr
+        # not_na = numpy array of True
+        
+        pd_row = df['Embarked'] == 'S'
+        pd_col = np.ones(len(df), dtype=bool)
+        pd_hue = df['Sex'] == 'male'
+        not_na = np.array([True, True, True, True, True, True])
+        
+        ds_row = ds['Embarked'] == 'S'
+        ds_col = np.ones(len(ds), dtype=bool)
+        ds_hue = ds['Sex'] == 'male'
+        
+        # The seaborn pattern: data[row & col & hue & self._not_na]
+        pd_combined = pd_row & pd_col & pd_hue & not_na
+        pd_result = df[pd_combined]
+        
+        ds_combined = ds_row & ds_col & ds_hue & not_na
+        ds_result = ds[ds_combined]
+        
+        # Verify results match
+        self.assertEqual(len(ds_result), len(pd_result))
+        np.testing.assert_array_equal(ds_result['Pclass'].values, pd_result['Pclass'].values)
+        np.testing.assert_array_equal(ds_result['Survived'].values, pd_result['Survived'].values)
+        np.testing.assert_array_equal(ds_result['Sex'].values, pd_result['Sex'].values)
+        np.testing.assert_array_equal(ds_result['Embarked'].values, pd_result['Embarked'].values)
+
+    def test_column_expr_and_pandas_series(self):
+        """Test ColumnExpr & pd.Series works correctly."""
+        # pandas
+        pd_mask = self.df['a'] > 2
+        series_mask = pd.Series([True, True, False, True, False])
+        pd_combined = pd_mask & series_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore
+        ds_mask = self.ds['a'] > 2
+        ds_combined = ds_mask & series_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+
+    def test_chained_boolean_ops_with_mixed_types(self):
+        """Test chaining multiple boolean ops with mixed ColumnExpr and ndarray."""
+        # pandas
+        pd_mask1 = self.df['a'] > 1
+        pd_mask2 = self.df['a'] < 5
+        np_mask = np.array([True, True, True, True, False])
+        pd_combined = pd_mask1 & pd_mask2 & np_mask
+        pd_result = self.df[pd_combined]
+        
+        # DataStore
+        ds_mask1 = self.ds['a'] > 1
+        ds_mask2 = self.ds['a'] < 5
+        ds_combined = ds_mask1 & ds_mask2 & np_mask
+        ds_result = self.ds[ds_combined]
+        
+        # Verify results match
+        np.testing.assert_array_equal(ds_result['a'].values, pd_result['a'].values)
+
+
 if __name__ == '__main__':
     unittest.main()
