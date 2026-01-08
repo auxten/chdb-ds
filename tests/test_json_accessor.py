@@ -121,7 +121,8 @@ class TestJsonNestedPaths:
     def test_nested_path_extraction(self, ds_nested_json):
         """Test extracting values from nested JSON paths."""
         ds_nested_json['username'] = ds_nested_json['data'].json.json_extract_string('user.name')
-        df = ds_nested_json.to_df()
+        # Sort by id for deterministic comparison (row order may vary with Python() table function)
+        df = ds_nested_json.to_df().sort_values('id')
 
         expected = ['Alice', 'Bob']
         assert list(df['username']) == expected
@@ -129,7 +130,8 @@ class TestJsonNestedPaths:
     def test_deeply_nested_path(self, ds_nested_json):
         """Test extracting deeply nested values."""
         ds_nested_json['city'] = ds_nested_json['data'].json.json_extract_string('user.address.city')
-        df = ds_nested_json.to_df()
+        # Sort by id for deterministic comparison (row order may vary with Python() table function)
+        df = ds_nested_json.to_df().sort_values('id')
 
         expected = ['NYC', 'LA']
         assert list(df['city']) == expected
