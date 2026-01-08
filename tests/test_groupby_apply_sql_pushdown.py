@@ -336,29 +336,17 @@ class TestGroupByApplyFallback(unittest.TestCase):
         pd_result = self.pd_df.groupby('category').apply(top_2, include_groups=False)
         ds_result = self.ds_df.groupby('category').apply(top_2)
 
-        # Convert results to comparable format
         # pandas groupby.apply with nlargest returns MultiIndex result
-        # DataStore should match the same behavior
+        # DataStore doesn't preserve the MultiIndex, so we reset for comparison
+        pd_result_flat = pd_result.reset_index(drop=True)
 
-        # Get the values from both results
-        pd_values = pd_result['value'].values
-        ds_df = ds_result._get_df() if hasattr(ds_result, '_get_df') else ds_result
-
-        # Handle the case where ds_result might be a DataFrame directly
-        if isinstance(ds_df, pd.DataFrame):
-            ds_values = ds_df['value'].values
-        else:
-            ds_values = np.asarray(ds_df['value'].values)
-
-        # Verify same number of rows (2 per category = 4 total)
-        self.assertEqual(len(ds_values), len(pd_values),
-                        f"Row count mismatch: DataStore={len(ds_values)}, pandas={len(pd_values)}")
-
-        # Verify same values (order may differ due to groupby)
-        np.testing.assert_array_equal(
-            np.sort(ds_values),
-            np.sort(pd_values),
-            err_msg="Values should match between DataStore and pandas"
+        # Use assert_datastore_equals_pandas for proper comparison
+        # check_row_order=False because groupby order may vary
+        assert_datastore_equals_pandas(
+            ds_result, pd_result_flat,
+            check_row_order=False,
+            check_index=False,
+            msg="groupby.apply(top_2) should match pandas"
         )
 
         # Verify Pandas fallback was used (not SQL)
