@@ -369,12 +369,11 @@ class TestJsonArrayExtraction:
         result = df['tags_raw'].iloc[0]
         assert isinstance(result, list)
         assert result == ['python', 'data', 'ml']
-        
+
         # Check second row
         result2 = df['tags_raw'].iloc[1]
         assert isinstance(result2, list)
         assert result2 == ['java', 'backend']
-
 
     def test_json_extract_array_raw_nested_path(self, ds_json_arrays):
         """Test extracting array from nested JSON path using pandas fallback."""
@@ -395,7 +394,7 @@ class TestJsonArrayExtraction:
         ds = DataStore.from_df(df)
         ds['hobbies'] = ds['data'].json.json_extract_array_raw('user.hobbies')
         result = ds.to_df()
-        
+
         assert isinstance(result['hobbies'].iloc[0], list)
         assert result['hobbies'].iloc[0] == ['reading', 'coding']
         assert result['hobbies'].iloc[1] == ['gaming']
@@ -404,7 +403,7 @@ class TestJsonArrayExtraction:
         """Test extracting array from missing key returns None."""
         ds_json_arrays['missing'] = ds_json_arrays['data'].json.json_extract_array_raw('nonexistent')
         result = ds_json_arrays.to_df()
-        
+
         assert result['missing'].iloc[0] is None
         assert result['missing'].iloc[1] is None
 
@@ -422,7 +421,7 @@ class TestJsonArrayExtraction:
         ds = DataStore.from_df(df)
         ds['tags'] = ds['data'].json.json_extract_array_raw('tags')
         result = ds.to_df()
-        
+
         assert result['tags'].iloc[0] is None
 
 

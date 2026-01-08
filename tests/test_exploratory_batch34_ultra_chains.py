@@ -356,9 +356,7 @@ class TestMultiJoinOperations:
         ds_result = ds_result[['a', 'b', 'd']]
         ds_result = ds_result.assign(total=ds_result['b'] + ds_result['d'])
 
-        # Row order may be non-deterministic with Python() table function on some platforms
-        # (see chdb_python_table_rownumber_nondeterministic in xfail_markers.py)
-        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 # =============================================================================

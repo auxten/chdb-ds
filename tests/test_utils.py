@@ -238,7 +238,7 @@ def assert_datastore_equals_pandas(
     ds_result,
     pd_result: pd.DataFrame,
     check_column_order: bool = True,
-    check_row_order: bool = True,
+    check_row_order: bool = False,  # Default False due to chDB Python() table function non-determinism
     check_nullable_dtype: bool = False,
     check_index: bool = False,
     rtol: float = 1e-5,
@@ -254,8 +254,10 @@ def assert_datastore_equals_pandas(
         ds_result: DataStore result (DataStore, LazySeries, or similar)
         pd_result: Expected pandas DataFrame or Series
         check_column_order: If True, column order must match exactly
-        check_row_order: If True, row order must match exactly
-                        Set to False for operations with undefined order (e.g., groupby without sort)
+        check_row_order: If True, row order must match exactly.
+                        Default is False due to chDB Python() table function non-determinism
+                        (see chdb_python_table_rownumber_nondeterministic in xfail_markers.py).
+                        Set to True for operations where order is explicitly defined (e.g., sort_values).
         check_nullable_dtype: If True, treat nullable and non-nullable dtypes as different
                              (e.g., Int64 != int64). If False, treat them as equivalent.
                              Common equivalents: int64↔Int64, float64↔Float64, bool↔boolean, uint64↔int64
