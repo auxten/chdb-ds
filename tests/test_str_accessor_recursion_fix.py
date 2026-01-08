@@ -262,6 +262,188 @@ class TestStrAccessorMetadataPreservation(unittest.TestCase):
         self.assertEqual(result._op_args, (5,))
 
 
+class TestGroupbyNthRecursionFix(unittest.TestCase):
+    """Test that groupby().nth() doesn't cause recursion when used with column assignment."""
+
+    def test_groupby_nth_column_assignment_no_recursion(self):
+        """groupby().nth() in column assignment should not cause RecursionError."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['nth_val'] = pd_df.groupby('category')['value'].nth(0)
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['nth_val'] = ds_df.groupby('category')['value'].nth(0)
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_nth_negative_index(self):
+        """groupby().nth() with negative index should work."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['last_val'] = pd_df.groupby('category')['value'].nth(-1)
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['last_val'] = ds_df.groupby('category')['value'].nth(-1)
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_nth_multiple_groups(self):
+        """groupby().nth() with multiple groupby columns should work."""
+        data = {
+            'cat1': ['A', 'A', 'A', 'B', 'B', 'B'],
+            'cat2': ['X', 'X', 'Y', 'X', 'Y', 'Y'],
+            'value': [1, 2, 3, 4, 5, 6],
+        }
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['nth_val'] = pd_df.groupby(['cat1', 'cat2'])['value'].nth(0)
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['nth_val'] = ds_df.groupby(['cat1', 'cat2'])['value'].nth(0)
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_nth_has_metadata(self):
+        """groupby().nth() result should have operation descriptor metadata."""
+        ds = DataStore({'category': ['A', 'B'], 'value': [1, 2]})
+        result = ds.groupby('category')['value'].nth(0)
+
+        # Check operation descriptor metadata exists
+        self.assertEqual(result._op_type, 'groupby_nth')
+        self.assertIsNotNone(result._op_source)
+        self.assertEqual(result._op_groupby_cols, ['category'])
+
+
+class TestGroupbySizeRecursionFix(unittest.TestCase):
+    """Test that groupby().size() doesn't cause recursion when used with column assignment."""
+
+    def test_groupby_size_column_assignment_no_recursion(self):
+        """groupby().size() in column assignment should not cause RecursionError.
+
+        Note: size() returns a Series indexed by groupby cols, so column assignment
+        results in NaN for non-matching indices (expected pandas behavior).
+        """
+        data = {'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['size_col'] = pd_df.groupby('category').size()
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['size_col'] = ds_df.groupby('category').size()
+
+        # Compare results - both should have NaN because size() index doesn't match
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_size_standalone_execution(self):
+        """groupby().size() standalone should work without recursion."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_result = pd_df.groupby('category').size()
+
+        # DataStore operations
+        ds_df = DataStore(data)
+        ds_result = ds_df.groupby('category').size()
+
+        # Compare results
+        pd.testing.assert_series_equal(
+            ds_result._execute() if hasattr(ds_result, '_execute') else ds_result,
+            pd_result,
+        )
+
+
+class TestGroupbyCumcountRecursionFix(unittest.TestCase):
+    """Test that groupby().cumcount() doesn't cause recursion when used with column assignment."""
+
+    def test_groupby_cumcount_column_assignment_no_recursion(self):
+        """groupby().cumcount() in column assignment should not cause RecursionError."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['cumcount'] = pd_df.groupby('category').cumcount()
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['cumcount'] = ds_df.groupby('category').cumcount()
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_cumcount_descending(self):
+        """groupby().cumcount(ascending=False) should work without recursion."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['cumcount_desc'] = pd_df.groupby('category').cumcount(ascending=False)
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['cumcount_desc'] = ds_df.groupby('category').cumcount(ascending=False)
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+
+class TestGroupbyTransformRecursionFix(unittest.TestCase):
+    """Test that groupby().transform() doesn't cause recursion when used with column assignment."""
+
+    def test_groupby_transform_column_assignment_no_recursion(self):
+        """groupby().transform() in column assignment should not cause RecursionError."""
+        data = {'category': ['A', 'A', 'B', 'B'], 'value': [1, 2, 3, 4]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['mean_val'] = pd_df.groupby('category')['value'].transform('mean')
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['mean_val'] = ds_df.groupby('category')['value'].transform('mean')
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_transform_sum(self):
+        """groupby().transform('sum') should work without recursion."""
+        data = {'category': ['A', 'A', 'B', 'B', 'A'], 'value': [1, 2, 3, 4, 5]}
+
+        # pandas operations
+        pd_df = pd.DataFrame(data)
+        pd_df['group_sum'] = pd_df.groupby('category')['value'].transform('sum')
+
+        # DataStore operations (mirror of pandas)
+        ds_df = DataStore(data)
+        ds_df['group_sum'] = ds_df.groupby('category')['value'].transform('sum')
+
+        # Compare results
+        assert_datastore_equals_pandas(ds_df, pd_df)
+
+    def test_groupby_transform_has_metadata(self):
+        """groupby().transform() result should have operation descriptor metadata."""
+        ds = DataStore({'category': ['A', 'B'], 'value': [1, 2]})
+        result = ds.groupby('category')['value'].transform('mean')
+
+        # Check operation descriptor metadata exists
+        self.assertEqual(result._op_type, 'groupby_transform')
+        self.assertIsNotNone(result._op_source)
+        self.assertEqual(result._op_groupby_cols, ['category'])
+
+
 class TestStrAccessorChainedWithOtherOps(unittest.TestCase):
     """Test str accessor with other operations to ensure no recursion."""
 
