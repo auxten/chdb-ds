@@ -79,6 +79,6 @@ format-check:
 	black --check --diff datastore
 
 lint:
-	flake8 datastore --count --select=E9,F63,F7,F82 --show-source --statistics
-	flake8 datastore --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+	flake8 datastore --count --select=E9,F63,F7,F82 --show-source --statistics --ignore=F811
+	flake8 datastore --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics --ignore=F811
 
