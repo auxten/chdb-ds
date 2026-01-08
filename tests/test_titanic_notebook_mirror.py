@@ -791,3 +791,411 @@ class TestCompleteWorkflow:
 
         # Compare entire DataFrame
         assert_datastore_equals_pandas(ds, pd_df)
+
+
+# ============================================================================
+# Additional tests from titanic-data-science-solutions.ipynb notebook
+# ============================================================================
+
+
+class TestAgeGuessingPattern:
+    """
+    Tests for the age guessing pattern from cell-48 of notebook.
+    This is a complex pattern that iterates over Sex/Pclass combinations
+    to fill Age NaN values.
+    """
+
+    def test_filter_sex_pclass_age_median(self, titanic_pd_df):
+        """
+        Pattern: guess_df = dataset[(dataset['Sex'] == i) & (dataset['Pclass'] == j+1)]['Age'].dropna()
+                 age_guess = guess_df.median()
+        From cell-48 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        # Convert Sex to numeric first (as done in notebook)
+        pd_df['Sex'] = pd_df['Sex'].map({'female': 1, 'male': 0}).astype(int)
+
+        ds = DataStore(titanic_pd_df.copy())
+        ds['Sex'] = ds['Sex'].map({'female': 1, 'male': 0}).astype(int)
+
+        # Test one combination: male (0) and Pclass 1
+        pd_result = pd_df[(pd_df['Sex'] == 0) & (pd_df['Pclass'] == 1)]['Age'].dropna().median()
+        ds_result = ds[(ds['Sex'] == 0) & (ds['Pclass'] == 1)]['Age'].dropna().median()
+
+        assert abs(float(ds_result) - pd_result) < 1e-5
+
+    def test_age_guessing_all_combinations(self, titanic_pd_df):
+        """
+        Test age guessing for all Sex/Pclass combinations (2x3=6 combinations).
+        From cell-48 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        pd_df['Sex'] = pd_df['Sex'].map({'female': 1, 'male': 0}).astype(int)
+
+        ds = DataStore(titanic_pd_df.copy())
+        ds['Sex'] = ds['Sex'].map({'female': 1, 'male': 0}).astype(int)
+
+        for i in range(0, 2):  # Sex: 0=male, 1=female
+            for j in range(0, 3):  # Pclass: 1, 2, 3
+                pd_guess = pd_df[(pd_df['Sex'] == i) & (pd_df['Pclass'] == j+1)]['Age'].dropna().median()
+                ds_guess = ds[(ds['Sex'] == i) & (ds['Pclass'] == j+1)]['Age'].dropna().median()
+
+                # Handle potential NaN if no matching rows
+                if pd.isna(pd_guess):
+                    assert pd.isna(ds_guess) or float(ds_guess) != float(ds_guess)  # NaN check
+                else:
+                    assert abs(float(ds_guess) - pd_guess) < 1e-5, \
+                        f"Mismatch for Sex={i}, Pclass={j+1}: DS={ds_guess}, PD={pd_guess}"
+
+
+class TestAgeBandGroupBy:
+    """Tests for AgeBand groupby operations from cell-50 of notebook."""
+
+    @pytest.mark.xfail(reason="chDB does not support CATEGORY dtype from pd.cut in groupby operations")
+    def test_ageband_survived_groupby_mean_sort(self, titanic_pd_df):
+        """
+        train_df['AgeBand'] = pd.cut(train_df['Age'], 5)
+        train_df[['AgeBand', 'Survived']].groupby(['AgeBand'], as_index=False).mean()
+            .sort_values(by='AgeBand', ascending=True)
+        From cell-50 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        pd_df['AgeBand'] = pd.cut(pd_df['Age'], 5)
+
+        ds = DataStore(titanic_pd_df.copy())
+        ds['AgeBand'] = pd.cut(ds['Age'], 5)
+
+        pd_result = (
+            pd_df[['AgeBand', 'Survived']]
+            .groupby(['AgeBand'], as_index=False)
+            .mean()
+            .sort_values(by='AgeBand', ascending=True)
+        )
+        ds_result = (
+            ds[['AgeBand', 'Survived']]
+            .groupby(['AgeBand'], as_index=False)
+            .mean()
+            .sort_values(by='AgeBand', ascending=True)
+        )
+
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=True)
+
+
+class TestFareBandGroupBy:
+    """Tests for FareBand groupby operations from cell-71 of notebook."""
+
+    @pytest.mark.xfail(reason="chDB does not support CATEGORY dtype from pd.qcut in groupby operations")
+    def test_fareband_survived_groupby_mean_sort(self, titanic_pd_df):
+        """
+        train_df['FareBand'] = pd.qcut(train_df['Fare'], 4)
+        train_df[['FareBand', 'Survived']].groupby(['FareBand'], as_index=False).mean()
+            .sort_values(by='FareBand', ascending=True)
+        From cell-71 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        pd_df['FareBand'] = pd.qcut(pd_df['Fare'], 4)
+
+        ds = DataStore(titanic_pd_df.copy())
+        ds['FareBand'] = pd.qcut(ds['Fare'], 4)
+
+        pd_result = (
+            pd_df[['FareBand', 'Survived']]
+            .groupby(['FareBand'], as_index=False)
+            .mean()
+            .sort_values(by='FareBand', ascending=True)
+        )
+        ds_result = (
+            ds[['FareBand', 'Survived']]
+            .groupby(['FareBand'], as_index=False)
+            .mean()
+            .sort_values(by='FareBand', ascending=True)
+        )
+
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=True)
+
+
+class TestMLDataPreparation:
+    """
+    Tests for ML model data preparation patterns from cell-77 of notebook.
+    This involves splitting features (X) and target (Y) from the dataset.
+    """
+
+    def test_drop_survived_for_features(self, titanic_pd_df):
+        """
+        X_train = train_df.drop("Survived", axis=1)
+        From cell-77 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # First prepare the data similar to notebook
+        pd_df = pd_df.drop(['Ticket', 'Cabin', 'Name', 'PassengerId'], axis=1)
+        ds = ds.drop(['Ticket', 'Cabin', 'Name', 'PassengerId'], axis=1)
+
+        pd_result = pd_df.drop("Survived", axis=1)
+        ds_result = ds.drop("Survived", axis=1)
+
+        assert_datastore_equals_pandas(ds_result, pd_result)
+
+    def test_select_target_column(self, titanic_pd_df, titanic_ds):
+        """
+        Y_train = train_df["Survived"]
+        From cell-77 of notebook.
+        """
+        pd_result = titanic_pd_df["Survived"]
+        ds_result = titanic_ds["Survived"]
+
+        assert_series_equal(ds_result, pd_result, check_names=False)
+
+    def test_train_test_split_shapes(self, titanic_pd_df):
+        """
+        Test that X_train.shape, Y_train.shape produce correct shapes.
+        From cell-77 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # Prepare data
+        pd_df = pd_df.drop(['Ticket', 'Cabin', 'Name', 'PassengerId'], axis=1)
+        ds = ds.drop(['Ticket', 'Cabin', 'Name', 'PassengerId'], axis=1)
+
+        pd_X = pd_df.drop("Survived", axis=1)
+        pd_Y = pd_df["Survived"]
+
+        ds_X = ds.drop("Survived", axis=1)
+        ds_Y = ds["Survived"]
+
+        assert ds_X.shape == pd_X.shape
+        assert len(ds_Y) == len(pd_Y)
+
+
+class TestDataFrameCreation:
+    """
+    Tests for creating new DataFrames from scratch.
+    Similar to patterns used in cell-81 (coeff_df) and cell-97 (models).
+    """
+
+    def test_create_dataframe_from_columns(self, titanic_pd_df):
+        """
+        coeff_df = pd.DataFrame(train_df.columns.delete(0))
+        From cell-81 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # Create DataFrame from columns (without first column)
+        pd_columns = pd_df.columns.delete(0)
+        ds_columns = ds.columns.delete(0)
+
+        # Compare the column values
+        np.testing.assert_array_equal(ds_columns, pd_columns)
+
+    def test_create_model_comparison_dataframe(self):
+        """
+        Test creating a comparison DataFrame similar to cell-97.
+        models = pd.DataFrame({
+            'Model': ['Model1', 'Model2'],
+            'Score': [80.0, 85.0]
+        })
+        """
+        pd_df = pd.DataFrame({
+            'Model': ['LogisticRegression', 'RandomForest', 'SVM'],
+            'Score': [80.36, 86.76, 83.84]
+        })
+        ds = DataStore({
+            'Model': ['LogisticRegression', 'RandomForest', 'SVM'],
+            'Score': [80.36, 86.76, 83.84]
+        })
+
+        assert_datastore_equals_pandas(ds, pd_df)
+
+    def test_dataframe_sort_values(self):
+        """
+        models.sort_values(by='Score', ascending=False)
+        From cell-97 of notebook.
+        """
+        pd_df = pd.DataFrame({
+            'Model': ['LogisticRegression', 'RandomForest', 'SVM'],
+            'Score': [80.36, 86.76, 83.84]
+        })
+        ds = DataStore({
+            'Model': ['LogisticRegression', 'RandomForest', 'SVM'],
+            'Score': [80.36, 86.76, 83.84]
+        })
+
+        pd_result = pd_df.sort_values(by='Score', ascending=False)
+        ds_result = ds.sort_values(by='Score', ascending=False)
+
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=True)
+
+
+class TestSubmissionDataFrame:
+    """
+    Tests for creating submission DataFrame pattern from cell-98 of notebook.
+    """
+
+    def test_create_submission_dataframe(self, titanic_pd_df):
+        """
+        submission = pd.DataFrame({
+            "PassengerId": test_df["PassengerId"],
+            "Survived": Y_pred
+        })
+        From cell-98 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # Simulate Y_pred as simple array
+        y_pred = np.array([0, 1, 0, 1, 1] * (len(pd_df) // 5 + 1))[:len(pd_df)]
+
+        pd_submission = pd.DataFrame({
+            "PassengerId": pd_df["PassengerId"],
+            "Survived": y_pred
+        })
+        ds_submission = DataStore({
+            "PassengerId": ds["PassengerId"],
+            "Survived": y_pred
+        })
+
+        assert_datastore_equals_pandas(ds_submission, pd_submission)
+
+
+class TestMultipleLocAssignments:
+    """
+    Tests for multiple consecutive loc[] assignments.
+    From cell-52 of notebook (Age banding).
+    """
+
+    def test_multiple_loc_age_banding(self, titanic_pd_df):
+        """
+        Test multiple consecutive loc[] conditional assignments for age banding.
+        dataset.loc[dataset['Age'] <= 16, 'Age'] = 0
+        dataset.loc[(dataset['Age'] > 16) & (dataset['Age'] <= 32), 'Age'] = 1
+        ...
+        From cell-52 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        # Fill NaN first
+        pd_df['Age'] = pd_df['Age'].fillna(pd_df['Age'].median())
+
+        ds = DataStore(titanic_pd_df.copy())
+        ds['Age'] = ds['Age'].fillna(float(titanic_pd_df['Age'].median()))
+
+        # Multiple consecutive loc assignments
+        pd_df.loc[pd_df['Age'] <= 16, 'Age'] = 0
+        pd_df.loc[(pd_df['Age'] > 16) & (pd_df['Age'] <= 32), 'Age'] = 1
+        pd_df.loc[(pd_df['Age'] > 32) & (pd_df['Age'] <= 48), 'Age'] = 2
+        pd_df.loc[(pd_df['Age'] > 48) & (pd_df['Age'] <= 64), 'Age'] = 3
+        pd_df.loc[pd_df['Age'] > 64, 'Age'] = 4
+
+        ds.loc[ds['Age'] <= 16, 'Age'] = 0
+        ds.loc[(ds['Age'] > 16) & (ds['Age'] <= 32), 'Age'] = 1
+        ds.loc[(ds['Age'] > 32) & (ds['Age'] <= 48), 'Age'] = 2
+        ds.loc[(ds['Age'] > 48) & (ds['Age'] <= 64), 'Age'] = 3
+        ds.loc[ds['Age'] > 64, 'Age'] = 4
+
+        assert_datastore_equals_pandas(ds, pd_df)
+
+    def test_multiple_loc_fare_banding(self, titanic_pd_df):
+        """
+        Test multiple consecutive loc[] conditional assignments for fare banding.
+        From cell-73 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # Fare banding
+        pd_df.loc[pd_df['Fare'] <= 7.91, 'Fare'] = 0
+        pd_df.loc[(pd_df['Fare'] > 7.91) & (pd_df['Fare'] <= 14.454), 'Fare'] = 1
+        pd_df.loc[(pd_df['Fare'] > 14.454) & (pd_df['Fare'] <= 31), 'Fare'] = 2
+        pd_df.loc[pd_df['Fare'] > 31, 'Fare'] = 3
+
+        ds.loc[ds['Fare'] <= 7.91, 'Fare'] = 0
+        ds.loc[(ds['Fare'] > 7.91) & (ds['Fare'] <= 14.454), 'Fare'] = 1
+        ds.loc[(ds['Fare'] > 14.454) & (ds['Fare'] <= 31), 'Fare'] = 2
+        ds.loc[ds['Fare'] > 31, 'Fare'] = 3
+
+        assert_datastore_equals_pandas(ds, pd_df)
+
+
+class TestShapeAfterOperations:
+    """
+    Tests for shape property after various operations.
+    From cell-32 of notebook showing before/after shapes.
+    """
+
+    def test_shape_after_drop(self, titanic_pd_df):
+        """
+        print("Before", train_df.shape, test_df.shape)
+        train_df = train_df.drop(['Ticket', 'Cabin'], axis=1)
+        "After", train_df.shape
+        From cell-32 of notebook.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        # Before shapes
+        assert ds.shape == pd_df.shape
+
+        # After drop
+        pd_df = pd_df.drop(['Ticket', 'Cabin'], axis=1)
+        ds = ds.drop(['Ticket', 'Cabin'], axis=1)
+
+        # After shapes
+        assert ds.shape == pd_df.shape
+        assert ds.shape[1] == pd_df.shape[1]  # Check column count specifically
+
+    def test_shape_after_adding_columns(self, titanic_pd_df):
+        """
+        Test shape changes after adding new columns.
+        """
+        pd_df = titanic_pd_df.copy()
+        ds = DataStore(titanic_pd_df.copy())
+
+        initial_cols = pd_df.shape[1]
+
+        # Add FamilySize
+        pd_df['FamilySize'] = pd_df['SibSp'] + pd_df['Parch'] + 1
+        ds['FamilySize'] = ds['SibSp'] + ds['Parch'] + 1
+
+        assert ds.shape[1] == pd_df.shape[1] == initial_cols + 1
+
+        # Add IsAlone
+        pd_df['IsAlone'] = 0
+        ds['IsAlone'] = 0
+
+        assert ds.shape[1] == pd_df.shape[1] == initial_cols + 2
+
+
+class TestCombineDataFramesList:
+    """
+    Tests for combining DataFrames in a list pattern.
+    combine = [train_df, test_df] from cell-4 of notebook.
+    """
+
+    def test_dataframe_list_iteration(self, titanic_pd_df):
+        """
+        Test iterating over a list of DataFrames/DataStores.
+        for dataset in combine:
+            dataset['NewCol'] = ...
+        From cell-34, 36, 38, etc. of notebook.
+        """
+        pd_df1 = titanic_pd_df.head(100).copy()
+        pd_df2 = titanic_pd_df.tail(100).copy()
+
+        ds1 = DataStore(pd_df1.copy())
+        ds2 = DataStore(pd_df2.copy())
+
+        pd_combine = [pd_df1, pd_df2]
+        ds_combine = [ds1, ds2]
+
+        # Apply operation to both
+        for pd_dataset in pd_combine:
+            pd_dataset['FamilySize'] = pd_dataset['SibSp'] + pd_dataset['Parch'] + 1
+
+        for ds_dataset in ds_combine:
+            ds_dataset['FamilySize'] = ds_dataset['SibSp'] + ds_dataset['Parch'] + 1
+
+        # Verify both DataStores match pandas
+        assert_datastore_equals_pandas(ds_combine[0], pd_combine[0])
+        assert_datastore_equals_pandas(ds_combine[1], pd_combine[1])
