@@ -1,192 +1,192 @@
-# xfail 标记分析归类
+# xfail Marker Analysis
 
-> 生成日期: 2026-01-14
+> Generated: 2026-01-14
 > 
-> 本文档对 `tests/xfail_markers.py` 中所有活跃的 xfail 标记进行分类分析。
+> This document categorizes all active xfail markers in `tests/xfail_markers.py`.
 
 ---
 
-## 📊 总览
+## Overview
 
-| 类别 | 标记数量 | 测试用例数 | 状态 |
-|------|----------|-----------|------|
-| **chdb 引擎限制** | 25 | 54 | ❌ 无法在 DataStore 层修复 |
-| **DataStore Bug** | 0 | 0 | ✅ 全部修复 |
-| **DataStore 限制** | 1 | 1 | 🔧 可实现 |
-| **设计决策** | 1 | 2 | ✅ 有意为之 |
-| **废弃特性** | 1 | 1 | ⏳ pandas 演进 |
-| **已修复 (no-op)** | 13+ | 15+ | ✅ 保留用于 import 兼容 |
-| **合计** | **28 活跃** | **58 + 15** | |
+| Category | Marker Count | Test Cases | Status |
+|----------|--------------|------------|--------|
+| **chDB Engine Limitations** | 25 | 54 | Cannot fix at DataStore layer |
+| **DataStore Bug** | 0 | 0 | All fixed |
+| **DataStore Limitations** | 1 | 1 | Can be implemented |
+| **Design Decisions** | 1 | 2 | Intentional |
+| **Deprecated Features** | 1 | 1 | pandas evolution |
+| **Fixed (no-op)** | 13+ | 15+ | Kept for import compatibility |
+| **Total** | **28 active** | **58 + 15** | |
 
-**测试影响**: 约 73 个测试用例被标记（58 个活跃 xfail + 15 个 no-op），分布在 32 个测试文件中。
+**Test Impact**: ~73 test cases marked (58 active xfail + 15 no-op), distributed across 32 test files.
 
 ---
 
-## 1️⃣ chDB 引擎限制 (chdb_*) — 无法在 DataStore 层修复
+## 1. chDB Engine Limitations (chdb_*) - Cannot Fix at DataStore Layer
 
-这些是 chDB/ClickHouse 引擎本身的限制，DataStore 无法绕过。
+These are limitations of the chDB/ClickHouse engine itself that DataStore cannot work around.
 
-### 类型支持 (4个)
+### Type Support (4)
 
-| 标记 | 原因 | 备注 |
-|------|------|------|
-| `chdb_category_type` | chDB 不支持 CATEGORY numpy 类型 | 只读访问可以工作 |
-| `chdb_timedelta_type` | chDB 不支持 TIMEDELTA numpy 类型 | 只读访问可以工作 |
-| `chdb_array_nullable` | Array 类型不能在 Nullable 中 | JSON 相关函数受影响 |
-| `chdb_array_string_conversion` | numpy array 在 SQL 中被转换为字符串 | 影响 array accessor |
+| Marker | Reason | Notes |
+|--------|--------|-------|
+| `chdb_category_type` | chDB does not support CATEGORY numpy type | Read-only access works |
+| `chdb_timedelta_type` | chDB does not support TIMEDELTA numpy type | Read-only access works |
+| `chdb_array_nullable` | Array type cannot be inside Nullable | Affects JSON-related functions |
+| `chdb_array_string_conversion` | numpy array is converted to string in SQL | Affects array accessor |
 
-### 函数缺失 (4个)
+### Missing Functions (4)
 
-| 标记 | 原因 | pandas 等效 |
-|------|------|-------------|
-| `chdb_no_product_function` | 不支持 `product()` 聚合函数 | `df.prod()` |
-| `chdb_no_normalize_utf8` | 没有 `normalizeUTF8NFD` 函数 | `str.normalize()` |
-| `chdb_no_quantile_array` | `quantile` 不支持数组参数 | `quantile([0.25, 0.75])` |
-| `chdb_median_in_where` | WHERE 子句中聚合函数需要子查询 | `df[df['x'] > df['x'].median()]` |
+| Marker | Reason | pandas Equivalent |
+|--------|--------|-------------------|
+| `chdb_no_product_function` | Does not support `product()` aggregate function | `df.prod()` |
+| `chdb_no_normalize_utf8` | No `normalizeUTF8NFD` function | `str.normalize()` |
+| `chdb_no_quantile_array` | `quantile` does not support array parameter | `quantile([0.25, 0.75])` |
+| `chdb_median_in_where` | Aggregate functions in WHERE clause need subquery | `df[df['x'] > df['x'].median()]` |
 
-### 字符串/Unicode (2个)
+### String/Unicode (2)
 
-| 标记 | 原因 |
-|------|------|
-| `chdb_unicode_filter` | SQL 过滤器中 Unicode 字符串有编码问题 |
-| `chdb_strip_whitespace` | `str.strip()` 不能处理所有空白类型 |
+| Marker | Reason |
+|--------|--------|
+| `chdb_unicode_filter` | Unicode strings have encoding issues in SQL filters |
+| `chdb_strip_whitespace` | `str.strip()` cannot handle all whitespace types |
 
-### 日期时间 (5个)
+### DateTime (5)
 
-| 标记 | 原因 | strict |
-|------|------|--------|
-| `chdb_datetime_range_comparison` | Python() 表函数给日期添加本地时区偏移，导致日期范围比较偏差 | True |
-| `chdb_datetime_extraction_conflict` | 多个 dt 提取导致列名冲突 | True |
-| `chdb_dt_month_type` | `dt.month` 在 SQL 和 DataFrame 间返回类型不一致 | True |
-| `chdb_no_day_month_name` | `day_name()`/`month_name()` 未在 SQL 映射中实现 | True |
-| `chdb_strftime_format_difference` | `strftime('%M')` 返回月份名而非分钟数 | True |
+| Marker | Reason | strict |
+|--------|--------|--------|
+| `chdb_datetime_range_comparison` | Python() table function adds local timezone offset to dates, causing date range comparison deviation | True |
+| `chdb_datetime_extraction_conflict` | Multiple dt extractions cause column name conflicts | True |
+| `chdb_dt_month_type` | `dt.month` returns inconsistent types between SQL and DataFrame | True |
+| `chdb_no_day_month_name` | `day_name()`/`month_name()` not implemented in SQL mapping | True |
+| `chdb_strftime_format_difference` | `strftime('%M')` returns month name instead of minute number | True |
 
-> **注**: `chdb_datetime_timezone` (dt.year 等日期提取) 已在 chDB 4.0.0b3 中修复。
+> **Note**: `chdb_datetime_timezone` (dt.year and other date extractions) was fixed in chDB 4.0.0b3.
 
-### SQL 行为 (3个)
+### SQL Behavior (3)
 
-| 标记 | 原因 |
-|------|------|
-| `chdb_duplicate_column_rename` | SQL 自动重命名重复列名 |
-| `chdb_case_bool_conversion` | CASE WHEN 不能在 Bool 与 Int64/String 间转换 |
-| `chdb_alias_shadows_column_in_where` | 复杂 groupby 链中 SELECT alias 可能遮蔽原列名 |
+| Marker | Reason |
+|--------|--------|
+| `chdb_duplicate_column_rename` | SQL automatically renames duplicate column names |
+| `chdb_case_bool_conversion` | CASE WHEN cannot convert between Bool and Int64/String |
+| `chdb_alias_shadows_column_in_where` | SELECT alias may shadow original column name in complex groupby chains |
 
-### 字符串方法限制 (3个)
+### String Method Limitations (3)
 
-| 标记 | 原因 | pandas 方法 |
-|------|------|-------------|
-| `chdb_pad_no_side_param` | `str.pad()` 只支持左填充，无 `side` 参数 | `str.pad(side='right')` |
-| `chdb_center_implementation` | `str.center()` 实现使用 rightPad 而非正确居中 | `str.center()` |
-| `chdb_startswith_no_tuple` | `startswith/endswith` 不支持 tuple 参数 | `str.startswith(('a', 'b'))` |
+| Marker | Reason | pandas Method |
+|--------|--------|---------------|
+| `chdb_pad_no_side_param` | `str.pad()` only supports left padding, no `side` parameter | `str.pad(side='right')` |
+| `chdb_center_implementation` | `str.center()` implementation uses rightPad instead of proper centering | `str.center()` |
+| `chdb_startswith_no_tuple` | `startswith/endswith` does not support tuple parameter | `str.startswith(('a', 'b'))` |
 
-### dtype 差异 (3个)
+### dtype Differences (3)
 
-> **注意**: 这些情况下 **值是正确的**，仅数据类型与 pandas 不同。DataStore 返回的类型在语义上可能更正确。
+> **Note**: In these cases **values are correct**, only the data type differs from pandas. The types returned by DataStore may be semantically more correct.
 
-| 标记 | 原因 | DataStore 返回 | pandas 返回 |
-|------|------|----------------|-------------|
-| `chdb_nat_returns_nullable_int` | NaT 处理 | Nullable Int32 | float64 |
+| Marker | Reason | DataStore Returns | pandas Returns |
+|--------|--------|-------------------|----------------|
+| `chdb_nat_returns_nullable_int` | NaT handling | Nullable Int32 | float64 |
 | `chdb_replace_none_dtype` | `replace(None)` | Nullable Int64 | object |
-| `chdb_mask_dtype_nullable` | `mask/where` 对 int | Nullable Int64 | float64 |
+| `chdb_mask_dtype_nullable` | `mask/where` on int | Nullable Int64 | float64 |
 
-### chDB Bug (1个)
+### chDB Bug (1)
 
-| 标记 | 原因 | Issue |
-|------|------|-------|
-| `chdb_python_table_noncontiguous_index` | Python() 表函数对非连续索引返回错误数据 | [#478](https://github.com/chdb-io/chdb/issues/478) |
-
----
-
-## 2️⃣ DataStore Bug (bug_*) — 应该修复
-
-这些是 DataStore 的 bug，应该被修复以匹配 pandas 行为。
-
-| 标记 | 原因 | 状态 |
-|------|------|------|
-| ~~`bug_extractall_multiindex`~~ | `extractall` 返回 MultiIndex DataFrame | ✅ 已修复 (2026-01-14) |
-
-> **注**: `bug_extractall_multiindex` 已修复，MultiIndex 现在通过 `DataStore.from_df()` 正确保留。
+| Marker | Reason | Issue |
+|--------|--------|-------|
+| `chdb_python_table_noncontiguous_index` | Python() table function returns wrong data for non-contiguous index | [#478](https://github.com/chdb-io/chdb/issues/478) |
 
 ---
 
-## 3️⃣ DataStore 限制 (limit_*) — 未实现的功能
+## 2. DataStore Bug (bug_*) - Should Be Fixed
 
-这些是 DataStore 尚未实现的功能。
+These are DataStore bugs that should be fixed to match pandas behavior.
 
-| 标记 | 原因 | 优先级 | 变通方案 |
-|------|------|--------|----------|
-| `limit_str_join_array` | `str.join()` 需要 Array 类型列 | 低 | 使用 pandas fallback |
+| Marker | Reason | Status |
+|--------|--------|--------|
+| ~~`bug_extractall_multiindex`~~ | `extractall` returns MultiIndex DataFrame | Fixed (2026-01-14) |
 
-> **注**: `limit_datastore_index_setter` 和 `limit_groupby_series_param` 已修复，详见已修复标记部分。
-
----
-
-## 4️⃣ 设计决策 (design_*) — 有意的行为差异
-
-这些是有意识的设计决定，不是需要修复的 bug。
-
-| 标记 | 原因 | 说明 |
-|------|------|------|
-| `design_datetime_fillna_nat` | datetime `where/mask` 使用 NaT 而非 0/-1 | pandas 用 0/-1 替代，DataStore 使用 NaT 语义更清晰 |
+> **Note**: `bug_extractall_multiindex` has been fixed, MultiIndex is now correctly preserved via `DataStore.from_df()`.
 
 ---
 
-## 5️⃣ 废弃特性 (deprecated_*)
+## 3. DataStore Limitations (limit_*) - Unimplemented Features
 
-pandas 已废弃的功能。
+These are features not yet implemented in DataStore.
 
-| 标记 | 原因 | pandas 版本 |
-|------|------|-------------|
-| `deprecated_fillna_downcast` | `fillna(downcast=...)` 参数已废弃 | pandas 2.x |
+| Marker | Reason | Priority | Workaround |
+|--------|--------|----------|------------|
+| `limit_str_join_array` | `str.join()` requires Array type column | Low | Use pandas fallback |
 
----
-
-## 6️⃣ Pandas 版本兼容 (pandas_version_*)
-
-> **注意**: 这些是 `skipif` 标记，不是 `xfail`。用于处理不同 pandas 版本间的 API 差异。
-
-| 标记 | 条件 | 说明 |
-|------|------|------|
-| `pandas_version_no_dataframe_map` | pandas < 2.1 | `DataFrame.map()` 在 2.1+ 添加 |
-| `pandas_version_no_include_groups` | pandas < 2.1 | `groupby.apply(include_groups=...)` 在 2.1+ 添加 |
-| `pandas_version_nullable_int_dtype` | pandas < 2.1 | Nullable Int64 处理在 2.1+ 改进 |
-| `pandas_version_nullable_bool_sql` | pandas < 2.1 | Nullable bool SQL 处理差异 |
+> **Note**: `limit_datastore_index_setter` and `limit_groupby_series_param` have been fixed, see Fixed Markers section.
 
 ---
 
-## 🎯 修复优先级建议
+## 4. Design Decisions (design_*) - Intentional Behavior Differences
 
-### 高优先级
-无（所有高优先级 bug 已修复）
+These are conscious design decisions, not bugs to be fixed.
 
-### 中优先级
-无（所有中优先级已修复）
-
-### 低优先级 (可考虑 pandas fallback)
-1. **日期时间相关** (`chdb_datetime_*`): 问题最多的领域，可增加 fallback
-2. **字符串方法** (`chdb_pad_*`, `chdb_center_*`): 使用场景较少
+| Marker | Reason | Explanation |
+|--------|--------|-------------|
+| `design_datetime_fillna_nat` | datetime `where/mask` uses NaT instead of 0/-1 | pandas uses 0/-1 replacement, DataStore uses NaT which is semantically clearer |
 
 ---
 
-## 📁 已修复标记 (参考)
+## 5. Deprecated Features (deprecated_*)
 
-以下标记已修复，在 `xfail_markers.py` 中保留为 no-op 函数以保持 import 兼容性：
+Features deprecated by pandas.
 
-- `chdb_nullable_int64_comparison` - chDB 4.0.0b3 修复
-- `chdb_null_in_groupby` - dropna 参数实现
+| Marker | Reason | pandas Version |
+|--------|--------|----------------|
+| `deprecated_fillna_downcast` | `fillna(downcast=...)` parameter is deprecated | pandas 2.x |
+
+---
+
+## 6. Pandas Version Compatibility (pandas_version_*)
+
+> **Note**: These are `skipif` markers, not `xfail`. Used to handle API differences between different pandas versions.
+
+| Marker | Condition | Explanation |
+|--------|-----------|-------------|
+| `pandas_version_no_dataframe_map` | pandas < 2.1 | `DataFrame.map()` added in 2.1+ |
+| `pandas_version_no_include_groups` | pandas < 2.1 | `groupby.apply(include_groups=...)` added in 2.1+ |
+| `pandas_version_nullable_int_dtype` | pandas < 2.1 | Nullable Int64 handling improved in 2.1+ |
+| `pandas_version_nullable_bool_sql` | pandas < 2.1 | Nullable bool SQL handling differences |
+
+---
+
+## Fix Priority Recommendations
+
+### High Priority
+None (all high priority bugs have been fixed)
+
+### Medium Priority
+None (all medium priority have been fixed)
+
+### Low Priority (consider pandas fallback)
+1. **DateTime related** (`chdb_datetime_*`): Most problematic area, can add fallback
+2. **String methods** (`chdb_pad_*`, `chdb_center_*`): Less common use cases
+
+---
+
+## Fixed Markers (Reference)
+
+The following markers have been fixed and are kept as no-op functions in `xfail_markers.py` for import compatibility:
+
+- `chdb_nullable_int64_comparison` - Fixed in chDB 4.0.0b3
+- `chdb_null_in_groupby` - dropna parameter implemented
 - `chdb_nan_sum_behavior` - fillna(0) workaround
-- `chdb_string_plus_operator` - 自动转换为 concat()
-- `chdb_datetime_timezone` - dt.year/month/day 提取在 chDB 4.0.0b3 中修复
-- `bug_groupby_first_last` - chDB any()/anyLast() 现在保序
-- `bug_groupby_index` - groupby 现在正确保留 index
-- `bug_index_not_preserved` - lazy 执行现在保留 index 信息
-- `bug_extractall_multiindex` - MultiIndex 通过 DataStore.from_df() 正确保留 (2026-01-14)
-- `limit_datastore_index_setter` - index 属性 setter 已实现 (2026-01-14)
-- `limit_groupby_series_param` - groupby 现在支持 ColumnExpr/LazySeries 参数 (2026-01-14)
-- `limit_callable_index` - callable 作为索引已支持
-- `limit_query_variable_scope` - query() @variable 已支持
-- `limit_loc_conditional_assignment` - loc 条件赋值已支持
-- `limit_where_condition` - where() 条件已支持
-- `design_unstack_column_expr` - unstack() 已实现
-- `chdb_python_table_rownumber_nondeterministic` - _row_id 虚拟列解决
-- `limit_datastore_no_invert` - `__invert__` 方法已添加到 PandasCompatMixin
+- `chdb_string_plus_operator` - Auto-converted to concat()
+- `chdb_datetime_timezone` - dt.year/month/day extraction fixed in chDB 4.0.0b3
+- `bug_groupby_first_last` - chDB any()/anyLast() now preserves order
+- `bug_groupby_index` - groupby now correctly preserves index
+- `bug_index_not_preserved` - lazy execution now preserves index info
+- `bug_extractall_multiindex` - MultiIndex correctly preserved via DataStore.from_df() (2026-01-14)
+- `limit_datastore_index_setter` - index property setter implemented (2026-01-14)
+- `limit_groupby_series_param` - groupby now supports ColumnExpr/LazySeries parameter (2026-01-14)
+- `limit_callable_index` - callable as index now supported
+- `limit_query_variable_scope` - query() @variable now supported
+- `limit_loc_conditional_assignment` - loc conditional assignment now supported
+- `limit_where_condition` - where() condition now supported
+- `design_unstack_column_expr` - unstack() implemented
+- `chdb_python_table_rownumber_nondeterministic` - Solved with _row_id virtual column
+- `limit_datastore_no_invert` - `__invert__` method added to PandasCompatMixin
