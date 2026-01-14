@@ -126,9 +126,24 @@ chdb_strip_whitespace = pytest.mark.xfail(
 # )
 
 # Datetime
-chdb_datetime_timezone = pytest.mark.xfail(
-    reason="chDB adds timezone to datetime, causing boundary comparison differences",
-    strict=False,  # behavior varies by Python/chDB version
+# FIXED (2026-01-14): dt.year/month/day extraction now works correctly in chDB 4.0.0b3
+# The original issue was year extraction at timezone boundaries, which is now fixed.
+# chdb_datetime_timezone = pytest.mark.xfail(
+#     reason="chDB adds timezone to datetime, causing boundary comparison differences",
+#     strict=False,  # behavior varies by Python/chDB version
+# )
+def chdb_datetime_timezone(func):
+    """FIXED (chDB 4.0.0b3): Datetime extraction (dt.year etc) now works correctly."""
+    return func
+
+
+# NOTE: Date range comparison still has issues due to Python() table function timezone offset
+# When pandas DataFrame dates are loaded via Python() table function, local timezone offset is added.
+# Workaround: use toTimezone(date, 'UTC') in SQL comparisons
+chdb_datetime_range_comparison = pytest.mark.xfail(
+    reason="chDB Python() table function adds local timezone offset to dates, "
+    "causing date range boundary comparisons to be off by timezone offset (e.g., +8 hours for UTC+8)",
+    strict=True,
 )
 
 chdb_datetime_extraction_conflict = pytest.mark.xfail(
@@ -367,7 +382,8 @@ MARKER_REGISTRY = {
     "chdb_unicode_filter": ("chdb", None, "Unicode in SQL filter has encoding issues"),
     "chdb_strip_whitespace": ("chdb", None, "strip() doesn't handle all whitespace types"),
     # Datetime
-    "chdb_datetime_timezone": ("chdb", None, "Timezone handling differs by version"),
+    "chdb_datetime_timezone": ("fixed", "2026-01-14", "dt.year/month/day extraction - FIXED in chDB 4.0.0b3"),
+    "chdb_datetime_range_comparison": ("chdb", None, "Python() table function adds local timezone offset to dates"),
     "chdb_datetime_extraction_conflict": ("chdb", None, "Multiple datetime extractions cause column name conflict"),
     "chdb_dt_month_type": ("chdb", None, "dt.month type inconsistency between SQL and DataFrame"),
     # SQL Behavior
@@ -539,22 +555,38 @@ chdb_alias_shadows_column_in_where = pytest.mark.xfail(
     reason="chDB: In complex chains with groupby, SELECT alias may still shadow original column"
 )
 
-# NOTE: ~column works but ~DataStore (entire DataFrame invert) does not
-limit_datastore_no_invert = pytest.mark.xfail(
-    reason="DataStore does not implement __invert__ (~) operator for entire DataFrame (column invert ~ds['col'] works)"
+# FIXED 2026-01-14: __invert__ (~) operator for entire DataFrame now implemented
+# Added __invert__ method to PandasCompatMixin in pandas_compat.py
+def limit_datastore_no_invert(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
+
+# =============================================================================
+# chDB bug: Python() table function returns incorrect data for non-contiguous index
+# See: https://github.com/chdb-io/chdb/issues/478
+# When a DataFrame has non-contiguous index (e.g., after slicing with step),
+# chDB returns incorrect data from the original DataFrame instead of the sliced data.
+# Workaround: reset_index(drop=True) before querying with Python() table function.
+# =============================================================================
+
+chdb_python_table_noncontiguous_index = pytest.mark.xfail(
+    reason="chDB bug #478: Python() table function returns incorrect data for DataFrames with non-contiguous index. "
+    "See: https://github.com/chdb-io/chdb/issues/478",
+    strict=True,
 )
 
 # =============================================================================
-# chDB Bug: rowNumberInAllBlocks() non-deterministic with Python() table function
+# FIXED (chDB v4.0.0b5): rowNumberInAllBlocks() non-deterministic with Python() table function
 # See: https://github.com/chdb-io/chdb/issues/469
+# Fixed by using _row_id virtual column instead of rowNumberInAllBlocks()
+# _row_id is a built-in deterministic virtual column in chDB v4.0.0b5+ that
+# provides the 0-based row number from the original DataFrame.
 # =============================================================================
 
-chdb_python_table_rownumber_nondeterministic = pytest.mark.xfail(
-    reason="chDB Bug: rowNumberInAllBlocks() is non-deterministic with Python() table function. "
-    "Row numbers depend on parallel block distribution, causing first()/last() to return wrong values. "
-    "Stable with file-based sources (Parquet, CSV). See: https://github.com/chdb-io/chdb/issues/469",
-    strict=False,  # May pass sometimes due to non-deterministic nature
-)
+
+def chdb_python_table_rownumber_nondeterministic(func):
+    """FIXED (chDB v4.0.0b5): _row_id virtual column is now deterministic."""
+    return func
 
 
 # =============================================================================

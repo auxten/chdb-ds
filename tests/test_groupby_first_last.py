@@ -7,10 +7,12 @@ work correctly with groupby operations.
 Implementation Note:
 - first() uses argMin(value, rowNumberInAllBlocks()) to get the first value by row order
 - last() uses argMax(value, rowNumberInAllBlocks()) to get the last value by row order
+- For Python() table function, connection.py replaces rowNumberInAllBlocks() with _row_id
+  (deterministic, available in chDB v4.0.0b5+)
+- For file sources (Parquet, CSV), rowNumberInAllBlocks() works correctly as-is
 
-KNOWN ISSUE: rowNumberInAllBlocks() is non-deterministic with Python() table function
-See: https://github.com/chdb-io/chdb/issues/469
-These tests are marked xfail until the chDB bug is fixed.
+FIXED (chDB v4.0.0b5): The _row_id virtual column is now deterministic.
+The xfail markers are now no-ops for backward compatibility.
 """
 
 import unittest
@@ -126,15 +128,13 @@ class TestGroupByFirstLast(unittest.TestCase):
 
 class TestRowNumberInAllBlocksBug(unittest.TestCase):
     """
-    Test case to reproduce chDB bug #469:
-    rowNumberInAllBlocks() is non-deterministic with Python() table function.
+    Test case that originally reproduced chDB bug #469:
+    rowNumberInAllBlocks() was non-deterministic with Python() table function.
+
+    FIXED (chDB v4.0.0b5): The _row_id virtual column is now deterministic.
+    connection.py replaces rowNumberInAllBlocks() with _row_id for Python() table function.
 
     See: https://github.com/chdb-io/chdb/issues/469
-
-    This test uses large data to increase probability of triggering the bug.
-    The bug occurs when data is distributed across multiple blocks in parallel,
-    causing rowNumberInAllBlocks() to assign different row numbers to the same
-    logical rows across executions.
     """
 
     @chdb_python_table_rownumber_nondeterministic

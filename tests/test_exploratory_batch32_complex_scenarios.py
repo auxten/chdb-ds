@@ -11,7 +11,7 @@ Focus areas:
 """
 
 import pytest
-from tests.xfail_markers import chdb_datetime_timezone, chdb_dt_month_type
+from tests.xfail_markers import chdb_datetime_range_comparison, chdb_dt_month_type
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -255,7 +255,7 @@ class TestDateTimeEdgeCases:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @chdb_datetime_timezone
+    @chdb_datetime_range_comparison
     def test_date_between_filter(self):
         """Test filtering dates between two values."""
         dates = pd.date_range('2023-01-01', periods=31, freq='D')

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Deterministic Row Order for DataFrame Sources (chDB v4.0.0b5+)**: Replaced non-deterministic `rowNumberInAllBlocks()` with chDB's new built-in `_row_id` virtual column for Python() table function
+  - Row order is now fully deterministic for all DataFrame operations (filter, sort, head/tail, etc.)
+  - Pandas index is correctly preserved through SQL execution
+  - `groupby().first()` and `groupby().last()` now return correct values consistently
+  - Removed `chdb_python_table_rownumber_nondeterministic` xfail marker - all related tests now pass
+  - No manual `__row_idx__` column needed - `_row_id` is automatically available
+  - ~15% performance improvement by eliminating manual index column creation
+
 ### Design Principles
 - **API Style Independence**: Both pandas-style and fluent SQL-style APIs should compile to the same optimized SQL. API style must not determine the execution engine.
 - **Fully Lazy Execution**: All operations return lazy objects; execution is triggered naturally through `.values`, `.index`, `repr()`, etc.

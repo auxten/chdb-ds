@@ -184,7 +184,7 @@ class TestDatetimeLimitations:
         ds = DataStore(df)
         
         pd_year = df['ts'].dt.year.tolist()
-        ds_year = ds['ts'].dt.year._get_df().tolist()
+        ds_year = list(ds['ts'].dt.year.values)
         
         # Should be [2024, 2023], not affected by timezone
         assert pd_year == ds_year

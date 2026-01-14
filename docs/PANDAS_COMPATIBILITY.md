@@ -472,12 +472,25 @@ This cannot be expressed as a per-row SQL expression. It requires executing the 
 
 ## Key Differences from Pandas
 
-### 1. Row Ordering is Not Guaranteed
+### 1. Row Ordering Behavior
 
-**Important**: Unlike pandas, DataStore uses ClickHouse as its underlying SQL engine, which does **not guarantee row order** by default. This means:
+DataStore has different row ordering guarantees depending on the data source:
+
+**For DataFrame sources (in-memory):** Row order IS preserved. DataStore uses chDB's built-in `_row_id` virtual column (available in chDB v4.0.0b5+) to maintain original row order and pandas index:
 
 ```python
-# ❌ Order may vary between executions
+# ✅ Row order is preserved for DataFrame sources
+df = pd.DataFrame({'id': [1, 2, 3], 'value': [10, 20, 30]})
+ds = DataStore(df)
+result = ds[ds['value'] > 10]
+# Result preserves original row order and pandas index
+assert list(result.index) == [1, 2]  # Original indices preserved
+```
+
+**For file sources (CSV, Parquet):** Row order is NOT guaranteed unless you explicitly specify ORDER BY:
+
+```python
+# ❌ Order may vary between executions for file sources
 ds = DataStore.from_file("data.csv")
 result = ds.filter(ds.value > 50).to_df()
 # Row order is NOT guaranteed to match the original file order
@@ -487,11 +500,12 @@ result = ds.filter(ds.value > 50).order_by('id').to_df()
 # Rows are ordered by 'id' column
 ```
 
-**Why?** ClickHouse is optimized for analytical workloads and may return rows in any order for better performance. This is standard SQL behavior - without `ORDER BY`, result order is undefined.
+**Why the difference?** For DataFrame sources, chDB provides a deterministic `_row_id` virtual column that represents the 0-based row position from the original DataFrame. For file sources, ClickHouse may return rows in any order for better performance (standard SQL behavior).
 
 **Impact on comparisons**:
-- When comparing results, sort both DataFrames first or use set-based comparisons
-- Use `df.sort_values('col').reset_index(drop=True)` before `pd.testing.assert_frame_equal()`
+- For DataFrame sources: Results should match pandas behavior including row order
+- For file sources: Sort both DataFrames first or use set-based comparisons
+- Use `df.sort_values('col').reset_index(drop=True)` before `pd.testing.assert_frame_equal()` for file sources
 
 ### 2. Immutability
 DataStore operations are immutable - `inplace=True` is not supported:
