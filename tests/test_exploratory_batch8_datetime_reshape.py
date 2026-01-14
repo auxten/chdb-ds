@@ -571,12 +571,12 @@ class TestDateTimeChainedOps:
 
         assert len(ds_result) == len(pd_result)
 
-    @chdb_datetime_extraction_conflict
     def test_dt_multiple_extractions(self):
         """Test multiple datetime extractions in one query."""
-        dates = pd.date_range('2023-01-01 10:30:45', periods=5, freq='H')
+        dates = pd.date_range('2023-01-01 10:30:45', periods=5, freq='h')
         pd_df = pd.DataFrame({'ts': dates})
-        ds_df = DataStore(pd_df)
+        # NOTE: Must use .copy() to avoid shared DataFrame modification between pandas and DataStore
+        ds_df = DataStore(pd_df.copy())
 
         # Extract year, month, day, hour all together
         pd_df['year'] = pd_df['ts'].dt.year

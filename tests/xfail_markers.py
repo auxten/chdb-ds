@@ -146,15 +146,17 @@ chdb_datetime_range_comparison = pytest.mark.xfail(
     strict=True,
 )
 
-chdb_datetime_extraction_conflict = pytest.mark.xfail(
-    reason="chDB column name conflict with multiple datetime extractions",
-    strict=True,
-)
+# FIXED (2026-01-14): Test was using shared DataFrame reference, causing column conflicts
+# Fix: Use DataStore(pd_df.copy()) to avoid shared modification
+def chdb_datetime_extraction_conflict(func):
+    """FIXED: Issue was test code not using .copy(), not chDB limitation."""
+    return func
 
-chdb_dt_month_type = pytest.mark.xfail(
-    reason="chDB type mismatch: dt.month returns different types in SQL vs DataFrame",
-    strict=True,
-)
+# FIXED (2026-01-14): Test was using shared DataFrame reference, causing type conflicts
+# Fix: Use DataStore(pd_df.copy()) to avoid shared modification
+def chdb_dt_month_type(func):
+    """FIXED: Issue was test code not using .copy(), not chDB type mismatch."""
+    return func
 
 # SQL
 chdb_duplicate_column_rename = pytest.mark.xfail(
@@ -221,10 +223,11 @@ def bug_index_not_preserved(func):
     return func
 
 
-bug_extractall_multiindex = pytest.mark.xfail(
-    reason="extractall returns MultiIndex DataFrame, index info lost through lazy execution",
-    strict=True,
-)
+# FIXED 2026-01-14: MultiIndex is now preserved in DataStore.from_df()
+# bug_extractall_multiindex was an xfail marker for a bug that has been fixed
+def bug_extractall_multiindex(func):
+    """FIXED: MultiIndex is now preserved through DataStore.from_df() for extractall."""
+    return func
 
 # FIXED: None comparison now matches pandas semantics
 # bug_null_string_comparison = pytest.mark.xfail(
@@ -396,8 +399,8 @@ MARKER_REGISTRY = {
     # =========================================================================
     # DataStore Bugs (should be fixed)
     # =========================================================================
-    "bug_index_not_preserved": ("bug", None, "Index info lost through lazy SQL execution"),
-    "bug_extractall_multiindex": ("bug", None, "MultiIndex lost in extractall due to lazy execution"),
+    "bug_index_not_preserved": ("fixed", None, "Index info lost through lazy SQL execution - FIXED"),
+    "bug_extractall_multiindex": ("fixed", "2026-01-14", "MultiIndex lost in extractall - FIXED via DataStore.from_df()"),
     # =========================================================================
     # DataStore Limitations (not yet implemented)
     # =========================================================================
@@ -484,23 +487,25 @@ def chdb_integer_column_names(func):
 
 
 # =============================================================================
-# chDB limitation: datetime method not implemented
+# FIXED (2026-01-14): day_name/month_name now implemented via dateName() function
 # =============================================================================
 
-chdb_no_day_month_name = pytest.mark.xfail(
-    reason="chDB limitation: day_name/month_name methods not implemented in SQL mapping",
-    strict=True,
-)
+
+# No-op decorator for import compatibility
+def chdb_no_day_month_name(func):
+    """FIXED: day_name/month_name now implemented via dateName() SQL function."""
+    return func
 
 
 # =============================================================================
-# chDB limitation: strftime format codes differ from pandas
+# FIXED (2026-01-14): strftime now uses pandas fallback for correct format codes
 # =============================================================================
 
-chdb_strftime_format_difference = pytest.mark.xfail(
-    reason="chDB limitation: strftime %M format returns month name instead of minutes",
-    strict=True,
-)
+
+# No-op decorator for import compatibility
+def chdb_strftime_format_difference(func):
+    """FIXED: strftime now uses pandas fallback to ensure correct format code behavior."""
+    return func
 
 
 # =============================================================================
@@ -534,21 +539,20 @@ chdb_startswith_no_tuple = pytest.mark.xfail(
 
 
 # =============================================================================
-# DataStore limitation: index property has no setter
+# FIXED 2026-01-14: index property setter now implemented
+# Added index.setter to PandasCompatMixin in pandas_compat.py
 # =============================================================================
 
-limit_datastore_index_setter = pytest.mark.xfail(
-    reason="DataStore limitation: index property does not have a setter",
-    strict=True,
-)
+def limit_datastore_index_setter(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
 
-# DataStore Limitations: groupby does not support Series/ColumnExpr as parameter
-limit_groupby_series_param = pytest.mark.xfail(
-    reason="DataStore groupby does not support ColumnExpr/Series as groupby parameter. "
-    "Use column name after assigning the expression to a column instead: "
-    "ds['col'] = ds['date'].dt.year; ds.groupby('col')...",
-    strict=True,
-)
+# FIXED 2026-01-14: groupby now supports ColumnExpr/LazySeries as parameter
+# Modified groupby() method in core.py to auto-assign expressions to temp columns
+
+def limit_groupby_series_param(func):
+    """No-op decorator for previously failing test that is now fixed."""
+    return func
 
 # NOTE: Simple alias cases work but complex chains with groupby still have issues
 chdb_alias_shadows_column_in_where = pytest.mark.xfail(

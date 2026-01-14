@@ -11,14 +11,14 @@
 | 类别 | 标记数量 | 测试用例数 | 状态 |
 |------|----------|-----------|------|
 | **chdb 引擎限制** | 25 | 54 | ❌ 无法在 DataStore 层修复 |
-| **DataStore Bug** | 1 | 0 | ⚠️ 应修复（定义了但未使用） |
-| **DataStore 限制** | 3 | 4 | 🔧 可实现 |
+| **DataStore Bug** | 0 | 0 | ✅ 全部修复 |
+| **DataStore 限制** | 1 | 1 | 🔧 可实现 |
 | **设计决策** | 1 | 2 | ✅ 有意为之 |
 | **废弃特性** | 1 | 1 | ⏳ pandas 演进 |
-| **已修复 (no-op)** | 10+ | 13 | ✅ 保留用于 import 兼容 |
-| **合计** | **31 活跃** | **61 + 13** | |
+| **已修复 (no-op)** | 13+ | 15+ | ✅ 保留用于 import 兼容 |
+| **合计** | **28 活跃** | **58 + 15** | |
 
-**测试影响**: 约 74 个测试用例被标记（61 个活跃 xfail + 13 个 no-op），分布在 32 个测试文件中。
+**测试影响**: 约 73 个测试用例被标记（58 个活跃 xfail + 15 个 no-op），分布在 32 个测试文件中。
 
 ---
 
@@ -101,9 +101,11 @@
 
 这些是 DataStore 的 bug，应该被修复以匹配 pandas 行为。
 
-| 标记 | 原因 | 修复建议 |
-|------|------|----------|
-| `bug_extractall_multiindex` | `extractall` 返回 MultiIndex DataFrame，索引信息在 lazy 执行中丢失 | 实现 MultiIndex 在 lazy 执行中的保留和传递 |
+| 标记 | 原因 | 状态 |
+|------|------|------|
+| ~~`bug_extractall_multiindex`~~ | `extractall` 返回 MultiIndex DataFrame | ✅ 已修复 (2026-01-14) |
+
+> **注**: `bug_extractall_multiindex` 已修复，MultiIndex 现在通过 `DataStore.from_df()` 正确保留。
 
 ---
 
@@ -114,8 +116,8 @@
 | 标记 | 原因 | 优先级 | 变通方案 |
 |------|------|--------|----------|
 | `limit_str_join_array` | `str.join()` 需要 Array 类型列 | 低 | 使用 pandas fallback |
-| `limit_datastore_index_setter` | `index` 属性没有 setter | 中 | 使用 `set_index()` |
-| `limit_groupby_series_param` | `groupby` 不支持 Series/ColumnExpr 参数 | 中 | 先 assign 到列，再 groupby 列名 |
+
+> **注**: `limit_datastore_index_setter` 和 `limit_groupby_series_param` 已修复，详见已修复标记部分。
 
 ---
 
@@ -155,15 +157,14 @@ pandas 已废弃的功能。
 ## 🎯 修复优先级建议
 
 ### 高优先级
-1. **`bug_extractall_multiindex`**: MultiIndex 在 lazy 执行中的保留，影响 `str.extractall()` 的完整功能
+无（所有高优先级 bug 已修复）
 
 ### 中优先级
-2. **`limit_groupby_series_param`**: 支持 `groupby(ds['col'].dt.year)` 语法
-3. **`limit_datastore_index_setter`**: 支持 `ds.index = ...` 赋值
+无（所有中优先级已修复）
 
 ### 低优先级 (可考虑 pandas fallback)
-4. **日期时间相关** (`chdb_datetime_*`): 问题最多的领域，可增加 fallback
-5. **字符串方法** (`chdb_pad_*`, `chdb_center_*`): 使用场景较少
+1. **日期时间相关** (`chdb_datetime_*`): 问题最多的领域，可增加 fallback
+2. **字符串方法** (`chdb_pad_*`, `chdb_center_*`): 使用场景较少
 
 ---
 
@@ -179,6 +180,9 @@ pandas 已废弃的功能。
 - `bug_groupby_first_last` - chDB any()/anyLast() 现在保序
 - `bug_groupby_index` - groupby 现在正确保留 index
 - `bug_index_not_preserved` - lazy 执行现在保留 index 信息
+- `bug_extractall_multiindex` - MultiIndex 通过 DataStore.from_df() 正确保留 (2026-01-14)
+- `limit_datastore_index_setter` - index 属性 setter 已实现 (2026-01-14)
+- `limit_groupby_series_param` - groupby 现在支持 ColumnExpr/LazySeries 参数 (2026-01-14)
 - `limit_callable_index` - callable 作为索引已支持
 - `limit_query_variable_scope` - query() @variable 已支持
 - `limit_loc_conditional_assignment` - loc 条件赋值已支持
