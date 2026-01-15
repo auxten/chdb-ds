@@ -293,8 +293,9 @@ class TestStackUnstack:
 
         pd_result = pd_df.stack()
         ds_result = ds_df.stack()
-        # Stack returns a Series, compare values
-        assert len(ds_result) == len(pd_result)
+        # Stack returns a Series - compare values (index differs: DataStore uses 0,1 vs pandas x,y)
+        # Values should match in same order: [1, 3, 2, 4] for columns A,B rows 0,1
+        assert_series_equal(ds_result, pd_result, check_index=False, check_names=False)
 
 
 class TestComplexAggregations:
@@ -443,10 +444,9 @@ class TestTransposeEdgeCases:
 
         pd_result = pd_df.T
         ds_result = ds_df.T
-        # Transpose may have integer column names which chDB doesn't handle well
-        # Just verify shape and values
-        assert len(ds_result) == len(pd_result)
-        assert len(ds_result.columns) == len(pd_result.columns)
+        # Transpose produces DataFrame with integer column names (0, 1, 2)
+        # Rows become a, b and columns become 0, 1, 2
+        assert_datastore_equals_pandas(ds_result, pd_result, check_index=True)
 
     def test_transpose_mixed_types(self):
         """Test transpose preserves data (mixed types)"""
@@ -461,8 +461,8 @@ class TestTransposeEdgeCases:
 
         pd_result = pd_df.T.T  # Double transpose should return to original
         ds_result = ds_df.T.T
-        # After double transpose, should be back to original structure
-        assert len(ds_result) == len(pd_result)
+        # After double transpose, should be back to original structure with same values
+        assert_datastore_equals_pandas(ds_result, pd_result)
 
 
 class TestValueCountsEdgeCases:
@@ -479,8 +479,10 @@ class TestValueCountsEdgeCases:
 
         pd_result = pd_df['col'].value_counts(dropna=False)
         ds_result = ds_df['col'].value_counts(dropna=False)
-        # value_counts order may differ for ties
-        assert len(ds_result) == len(pd_result)
+        # Compare sorted by index to handle different tie-ordering
+        pd_sorted = pd_result.sort_index(na_position='last')
+        ds_sorted = ds_result.sort_index(na_position='last')
+        assert_series_equal(ds_sorted, pd_sorted)
 
     def test_value_counts_normalize(self):
         """Test value_counts with normalize=True"""
@@ -684,5 +686,6 @@ class TestNlargestNsmallest:
 
         pd_result = pd_df.nsmallest(2, 'value')
         ds_result = ds_df.nsmallest(2, 'value')
-        # With ties, order may vary
-        assert len(ds_result) == len(pd_result)
+        # With ties, the exact rows returned should match (both get rows with value=10)
+        # Order within ties can vary, so check_row_order=False for ties on same value
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
