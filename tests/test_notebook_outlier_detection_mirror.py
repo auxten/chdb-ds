@@ -18,11 +18,6 @@ Operations tested from the notebook:
 Design Principle:
     Tests use natural execution triggers following the lazy execution design.
     Mirror Code Pattern: DataStore and pandas operations must be identical.
-
-Note:
-    Fixtures use .copy() on DataFrames created from numpy arrays to work around
-    a chDB Python() table function memory issue where DataFrames sharing memory
-    with numpy arrays get incorrect column data.
 """
 
 import pytest
@@ -42,8 +37,8 @@ def outlier_df():
     """
     Sample data mimicking outlier detection dataset structure.
 
-    Note: .copy() is used to work around a chDB Python() table function issue
-    where DataFrames created directly from 2D numpy arrays get corrupted data.
+    Note: DataFrame is created from a 2D numpy array. DataStore automatically
+    handles the memory layout issue with chDB's Python() table function.
     """
     np.random.seed(42)
 
@@ -61,8 +56,7 @@ def outlier_df():
     labels[100:] = 1  # The last 10 points are outliers
 
     # Create a DataFrame from the data
-    # Use .copy() to ensure DataFrame owns its memory (workaround for chDB bug)
-    df = pd.DataFrame(combined_data, columns=['Feature 1', 'Feature 2']).copy()
+    df = pd.DataFrame(combined_data, columns=['Feature 1', 'Feature 2'])
     df['Outlier'] = labels
 
     return df
