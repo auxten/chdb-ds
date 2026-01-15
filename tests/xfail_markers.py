@@ -17,7 +17,6 @@ Marker Naming Conventions:
     - limit_*    : DataStore limitations (features not yet implemented)
     - design_*   : Intentional behavioral differences from pandas
     - deprecated_*: Deprecated pandas features
-    - pandas_version_*: Pandas version-specific API differences
 
 When a bug is fixed or limitation is resolved, remove the marker from this file
 and update all tests that use it.
@@ -28,8 +27,6 @@ from typing import List
 import pytest
 import pandas as pd
 
-# Get pandas version for conditional markers
-PANDAS_VERSION = tuple(int(x) for x in pd.__version__.split('.')[:2])
 
 
 # =============================================================================
@@ -615,76 +612,59 @@ def chdb_python_table_rownumber_nondeterministic(func):
 
 
 # =============================================================================
-# Pandas Version-Specific Markers (pandas_version_*)
-# These handle API differences between pandas versions
+# Legacy Pandas Version Markers (kept as no-ops for import compatibility)
+# Since pandas >= 2.1.0 is now required, these are no longer needed
 # =============================================================================
 
-# DataFrame.map() was added in pandas 2.1.0, before that only applymap() existed
-# In pandas 2.1+, applymap() is deprecated in favor of map()
-pandas_version_no_dataframe_map = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 1), reason="DataFrame.map() was added in pandas 2.1.0 (older versions only have applymap)"
-)
 
-# include_groups parameter was added in pandas 2.1.0 for groupby.apply()
-# Earlier versions don't have this parameter
-pandas_version_no_include_groups = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 1), reason="groupby.apply(include_groups=...) parameter was added in pandas 2.1.0"
-)
-
-# Whether include_groups parameter is available
-PANDAS_HAS_INCLUDE_GROUPS = PANDAS_VERSION >= (2, 1)
-
-# DataFrame.first()/last() with offset string was deprecated in pandas 2.1.0
-# The FutureWarning is only emitted in pandas 2.1+
-pandas_version_first_last_offset_warning = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 1), reason="DataFrame.first()/last() with offset FutureWarning only in pandas 2.1+"
-)
-
-# Nullable integer types (Int64) behavior differs:
-# - In pandas 2.0.x with older Python: some operations return float64 for compatibility
-# - In pandas 2.1+: better nullable type preservation
-pandas_version_nullable_int_dtype = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 1), reason="Nullable Int64 dtype handling improved in pandas 2.1.0"
-)
-
-# Nullable boolean SQL pushdown has issues in older pandas + chDB combinations
-# The boolean type conversion in SQL differs by version
-pandas_version_nullable_bool_sql = pytest.mark.skipif(
-    PANDAS_VERSION < (2, 1), reason="Nullable boolean SQL handling differs in pandas < 2.1"
-)
+def pandas_version_no_dataframe_map(func):
+    """No-op: pandas >= 2.1.0 now required, DataFrame.map() always available."""
+    return func
 
 
-# =============================================================================
-# Pandas Version Utility Functions
-# These are helper functions for version-compatible test code
-# =============================================================================
+def pandas_version_no_include_groups(func):
+    """No-op: pandas >= 2.1.0 now required, include_groups always available."""
+    return func
+
+
+def pandas_version_first_last_offset_warning(func):
+    """No-op: pandas >= 2.1.0 now required."""
+    return func
+
+
+def pandas_version_nullable_int_dtype(func):
+    """No-op: pandas >= 2.1.0 now required."""
+    return func
+
+
+def pandas_version_nullable_bool_sql(func):
+    """No-op: pandas >= 2.1.0 now required."""
+    return func
+
+
+def pandas_version_cut_array_protocol(func):
+    """No-op: pandas >= 2.1.0 now required."""
+    return func
 
 
 def skip_if_old_pandas(reason: str = "Requires pandas 2.1+"):
     """
-    Decorator to skip test on older pandas versions (< 2.1).
+    No-op decorator: pandas >= 2.1.0 now required.
 
-    Usage:
-        @skip_if_old_pandas("Nullable Int64 dtype preservation differs in pandas < 2.1")
-        def test_something():
-            ...
+    Kept for import compatibility with existing tests.
     """
-    import unittest
 
-    return unittest.skipIf(PANDAS_VERSION < (2, 1), reason)
+    def decorator(func):
+        return func
+
+    return decorator
 
 
 def groupby_apply_compat(grouped, func, **kwargs):
     """
-    Call groupby.apply() with version-compatible parameters.
-
-    In pandas 2.1+, include_groups=False is needed to exclude groupby columns
-    from apply function. Earlier versions don't have this parameter.
+    Call groupby.apply() with include_groups=False.
 
     Usage:
         pd_result = groupby_apply_compat(df.groupby('category'), lambda x: x.sum())
     """
-    if PANDAS_HAS_INCLUDE_GROUPS:
-        return grouped.apply(func, include_groups=False, **kwargs)
-    else:
-        return grouped.apply(func, **kwargs)
+    return grouped.apply(func, include_groups=False, **kwargs)

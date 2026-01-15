@@ -872,58 +872,21 @@ result = (ds
 
 ## Pandas Version Compatibility
 
-DataStore requires **pandas >= 2.0.0** but full feature support varies by version:
+DataStore requires **pandas >= 2.1.0** and **Python >= 3.9**.
 
-### pandas 2.0.x (Python 3.8 compatible)
-
-Limited support - some features require newer pandas:
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `DataFrame.map()` | ❌ Not available | Use `applymap()` instead (deprecated in 2.1+) |
-| `groupby.apply(include_groups=...)` | ❌ Not available | Parameter added in pandas 2.2.0 |
-| `first()`/`last()` with offset | ⚠️ No FutureWarning | Deprecation warning added in 2.1.0 |
-| Nullable Int64 dtype preservation | ⚠️ May differ | chDB SQL may return `float64` instead of `Int64` |
-| Nullable Boolean SQL operations | ⚠️ May fail | Type conversion issues with older versions |
-
-### pandas 2.1.x
-
-Good support with some limitations:
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `DataFrame.map()` | ✅ Available | Replacement for `applymap()` |
-| `first()`/`last()` deprecation | ✅ FutureWarning | Warns about offset string usage |
-| Nullable type handling | ✅ Improved | Better dtype preservation |
-| `groupby.apply(include_groups=...)` | ❌ Not available | Parameter added in 2.2.0 |
-
-### pandas 2.2.x and later
-
-Full feature support:
+### Supported Features
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | `DataFrame.map()` | ✅ Available | Recommended over `applymap()` |
 | `groupby.apply(include_groups=...)` | ✅ Available | Control group column inclusion |
-| All nullable types | ✅ Full support | Best dtype preservation |
-
-### Version-Specific Test Markers
-
-Tests that require specific pandas versions use skipif markers:
-
-```python
-from tests.xfail_markers import (
-    pandas_version_no_dataframe_map,      # Skips if pandas < 2.1
-    pandas_version_no_include_groups,     # Skips if pandas < 2.2
-    pandas_version_nullable_int_dtype,    # Skips Int64 dtype tests on older pandas
-)
-```
+| Nullable type handling | ✅ Full support | Best dtype preservation |
+| `first()`/`last()` deprecation | ✅ FutureWarning | Warns about offset string usage |
 
 ### Recommendations
 
-1. **For Python 3.8**: Use pandas 2.0.x, be aware of nullable type differences
-2. **For Python 3.9+**: Use pandas 2.2+ for full feature support
-3. **For production**: Pin specific pandas version to ensure consistent behavior
+1. **For production**: Pin specific pandas version to ensure consistent behavior
+2. **For best performance**: Use pandas 2.2+ for latest optimizations
 
 ## Getting Help
 

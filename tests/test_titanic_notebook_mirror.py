@@ -35,6 +35,7 @@ import pandas as pd
 import numpy as np
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas, assert_series_equal
+from tests.xfail_markers import pandas_version_cut_array_protocol
 
 
 # ============================================================================
@@ -573,7 +574,7 @@ class TestCrosstabOperation:
 class TestCutQcutOperations:
     """Tests for pd.cut and pd.qcut operations from the notebook."""
 
-    
+    @pandas_version_cut_array_protocol
     def test_pd_cut_age_band(self, titanic_pd_df):
         """
         train_df['AgeBand'] = pd.cut(train_df['Age'], 5)
@@ -587,7 +588,7 @@ class TestCutQcutOperations:
 
         assert_datastore_equals_pandas(ds, pd_df)
 
-    
+    @pandas_version_cut_array_protocol
     def test_pd_qcut_fare_band(self, titanic_pd_df):
         """
         train_df['FareBand'] = pd.qcut(train_df['Fare'], 4)
