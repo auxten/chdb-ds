@@ -221,14 +221,8 @@ class TestNumpyIntegration:
         combined = np.vstack([data, outliers])
 
         # Create from dict (column by column) - the reliable way
-        pd_df = pd.DataFrame({
-            'Feature 1': combined[:, 0],
-            'Feature 2': combined[:, 1]
-        })
-        ds_df = DataStore({
-            'Feature 1': combined[:, 0],
-            'Feature 2': combined[:, 1]
-        })
+        pd_df = pd.DataFrame({'Feature 1': combined[:, 0], 'Feature 2': combined[:, 1]})
+        ds_df = DataStore({'Feature 1': combined[:, 0], 'Feature 2': combined[:, 1]})
 
         assert_datastore_equals_pandas(ds_df, pd_df)
 
