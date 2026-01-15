@@ -28,7 +28,6 @@ import pytest
 import pandas as pd
 
 
-
 # =============================================================================
 # chDB Engine Limitations (chdb_*)
 # Cannot be fixed in DataStore - inherent to chDB/ClickHouse
