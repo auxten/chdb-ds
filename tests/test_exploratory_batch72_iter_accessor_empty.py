@@ -159,9 +159,7 @@ class TestAccessorChaining:
         ds_result = ds_df['name'].str.upper().str.len()
 
         pd_result = pd_result.reset_index(drop=True)
-        ds_result = get_series(ds_result)
-        if hasattr(ds_result, 'reset_index'):
-            ds_result = ds_result.reset_index(drop=True)
+        ds_result = get_series(ds_result).reset_index(drop=True)
 
         assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
 
@@ -174,9 +172,7 @@ class TestAccessorChaining:
         ds_result = ds_df['text'].str.lower().str.replace('l', 'X')
 
         pd_result = pd_result.reset_index(drop=True)
-        ds_result = get_series(ds_result)
-        if hasattr(ds_result, 'reset_index'):
-            ds_result = ds_result.reset_index(drop=True)
+        ds_result = get_series(ds_result).reset_index(drop=True)
 
         assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
 
@@ -189,9 +185,7 @@ class TestAccessorChaining:
         ds_result = ds_df['s'].str.strip().str.upper()
 
         pd_result = pd_result.reset_index(drop=True)
-        ds_result = get_series(ds_result)
-        if hasattr(ds_result, 'reset_index'):
-            ds_result = ds_result.reset_index(drop=True)
+        ds_result = get_series(ds_result).reset_index(drop=True)
 
         assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
 
@@ -204,9 +198,7 @@ class TestAccessorChaining:
         ds_result = ds_df['name'].str[:3].str.upper()
 
         pd_result = pd_result.reset_index(drop=True)
-        ds_result = get_series(ds_result)
-        if hasattr(ds_result, 'reset_index'):
-            ds_result = ds_result.reset_index(drop=True)
+        ds_result = get_series(ds_result).reset_index(drop=True)
 
         assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
 
@@ -219,9 +211,7 @@ class TestAccessorChaining:
         ds_result = ds_df[ds_df['text'].str.startswith('a')]['text'].str.upper()
 
         pd_result = pd_result.reset_index(drop=True)
-        ds_result = get_series(ds_result)
-        if hasattr(ds_result, 'reset_index'):
-            ds_result = ds_result.reset_index(drop=True)
+        ds_result = get_series(ds_result).reset_index(drop=True)
 
         assert_series_equal(ds_result, pd_result, check_names=False, check_dtype=False)
 
@@ -379,18 +369,8 @@ class TestAllNullsEdgeCases:
         pd_result = pd_df['val'].sum()
         ds_result = ds_df['val'].sum()
 
-        # Get scalar value from DataStore result
-        ds_val = ds_result
-        if hasattr(ds_val, '_execute'):
-            ds_val = ds_val._execute()
-        if hasattr(ds_val, 'item'):
-            try:
-                ds_val = ds_val.item()
-            except (ValueError, TypeError):
-                pass
-        if isinstance(ds_val, (pd.Series, pd.DataFrame)):
-            if len(ds_val) == 1:
-                ds_val = ds_val.iloc[0]
+        # Use float() to trigger execution and extract scalar value naturally
+        ds_val = float(ds_result)
 
         # pandas returns 0.0 for all-null sum, chDB may return NULL
         # Both 0 and NaN/None are acceptable behaviors
@@ -407,18 +387,8 @@ class TestAllNullsEdgeCases:
         pd_result = pd_df['val'].mean()
         ds_result = ds_df['val'].mean()
 
-        # Get scalar value from DataStore result
-        ds_val = ds_result
-        if hasattr(ds_val, '_execute'):
-            ds_val = ds_val._execute()
-        if hasattr(ds_val, 'item'):
-            try:
-                ds_val = ds_val.item()
-            except (ValueError, TypeError):
-                pass
-        if isinstance(ds_val, (pd.Series, pd.DataFrame)):
-            if len(ds_val) == 1:
-                ds_val = ds_val.iloc[0]
+        # Use float() to trigger execution and extract scalar value naturally
+        ds_val = float(ds_result)
 
         # Both should be NaN for all-null mean
         assert pd.isna(pd_result)
