@@ -128,7 +128,7 @@ class TestFunctionAvailabilityLimitations:
         # If this passes, normalize is now supported
         assert len(result) == 2
 
-    @chdb_no_quantile_array
+    # xfail removed: quantile with array now works
     def test_quantile_array_param(self):
         """Check if chDB now supports quantile with array parameter."""
         df = pd.DataFrame({'val': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})

@@ -156,7 +156,7 @@ class TestStatisticalEdgeCases:
         assert pd_result == 2.5
         assert ds_result == 2.5
 
-    @chdb_no_quantile_array
+    # xfail removed: quantile with array now works
     def test_quantile_multiple_values(self):
         """quantile() with multiple quantile values."""
         pd_df = pd.DataFrame({'A': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
