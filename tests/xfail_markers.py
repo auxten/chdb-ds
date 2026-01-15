@@ -149,7 +149,7 @@ def chdb_datetime_timezone(func):
 chdb_datetime_range_comparison = pytest.mark.xfail(
     reason="chDB Python() table function adds local timezone offset to dates, "
     "causing date range boundary comparisons to be off by timezone offset (e.g., +8 hours for UTC+8)",
-    strict=True,
+    strict=False,  # Pass in UTC (CI), fail in non-UTC timezones (e.g., UTC+8)
 )
 
 # FIXED (2026-01-14): Test was using shared DataFrame reference, causing column conflicts
