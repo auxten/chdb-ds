@@ -20,7 +20,6 @@ from tests.xfail_markers import (
     chdb_array_nullable,
     chdb_no_normalize_utf8,
     chdb_no_quantile_array,
-    chdb_strip_whitespace,
     chdb_datetime_timezone,
 )
 
@@ -157,17 +156,18 @@ class TestStringHandlingResolved:
 class TestStringHandlingLimitations:
     """Tests for remaining string handling limitations."""
 
-    @chdb_strip_whitespace
     def test_strip_all_whitespace(self):
         """Check if chDB str.strip() handles all whitespace types."""
         df = pd.DataFrame({'text': ['  hello  ', '\thello\t', '\nhello\n']})
         ds = DataStore(df)
         
         pd_result = df['text'].str.strip()
-        ds_result = ds['text'].str.strip()._get_df()
+        ds_result = ds['text'].str.strip()
         
         # Check tabs and newlines are stripped
-        for pd_val, ds_val in zip(pd_result, ds_result):
+        pd_list = pd_result.tolist()
+        ds_list = list(ds_result)
+        for pd_val, ds_val in zip(pd_list, ds_list):
             assert pd_val == ds_val
 
 

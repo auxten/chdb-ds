@@ -13,7 +13,7 @@ This batch focuses on:
 """
 
 import pytest
-from tests.xfail_markers import chdb_strip_whitespace, chdb_unicode_filter
+from tests.xfail_markers import chdb_unicode_filter
 import pandas as pd
 import numpy as np
 from datastore import DataStore
@@ -243,7 +243,6 @@ class TestUnicodeAndSpecialCharacters:
 
         assert_datastore_equals_pandas(ds_result, pd_result)
 
-    @chdb_strip_whitespace
     def test_whitespace_handling(self):
         """Whitespace in string values"""
         pd_df = pd.DataFrame({'name': ['  Alice  ', 'Bob\t', '\nCharlie'], 'id': [1, 2, 3]})

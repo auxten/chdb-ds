@@ -20,7 +20,7 @@ from datetime import datetime, date
 
 from datastore import DataStore
 from tests.test_utils import assert_datastore_equals_pandas, get_series
-from tests.xfail_markers import chdb_strip_whitespace, chdb_no_product_function
+from tests.xfail_markers import chdb_no_product_function
 
 
 class TestAggregationEdgeCases:
@@ -472,7 +472,6 @@ class TestNumericOperationEdgeCases:
 class TestStringAccessorAdvanced:
     """Test string accessor with advanced/edge cases."""
 
-    @chdb_strip_whitespace
     def test_str_strip_whitespace(self):
         """Test stripping various whitespace - chDB trimBoth only strips spaces."""
         pd_df = pd.DataFrame({'text': ['  hello  ', '\tworld\t', '\nhello world\n']})
