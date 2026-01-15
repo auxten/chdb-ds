@@ -64,6 +64,12 @@ chdb_array_string_conversion = pytest.mark.xfail(
     strict=True,
 )
 
+# NOTE: bytes/blob columns work for read-only access but are converted to strings in SQL operations
+chdb_blob_to_string_conversion = pytest.mark.xfail(
+    reason="chDB converts bytes/blob data to strings during SQL execution (filter, sort, head/tail, select)",
+    strict=True,
+)
+
 # FIXED: chDB now handles Nullable Int64 comparison correctly (resolved in recent chDB version)
 # chdb_nullable_int64_comparison = pytest.mark.xfail(
 #     reason="chDB does not handle Nullable Int64 comparison correctly - returns raw bytes",
@@ -566,18 +572,17 @@ def limit_datastore_no_invert(func):
     return func
 
 # =============================================================================
-# chDB bug: Python() table function returns incorrect data for non-contiguous index
+# FIXED (chDB v4.0.0b6): Python() table function non-contiguous index bug
 # See: https://github.com/chdb-io/chdb/issues/478
-# When a DataFrame has non-contiguous index (e.g., after slicing with step),
-# chDB returns incorrect data from the original DataFrame instead of the sliced data.
-# Workaround: reset_index(drop=True) before querying with Python() table function.
+# Previously, when a DataFrame had non-contiguous index (e.g., after slicing with step),
+# chDB returned incorrect data from the original DataFrame instead of the sliced data.
+# This is now fixed in chDB 4.0.0b6.
 # =============================================================================
 
-chdb_python_table_noncontiguous_index = pytest.mark.xfail(
-    reason="chDB bug #478: Python() table function returns incorrect data for DataFrames with non-contiguous index. "
-    "See: https://github.com/chdb-io/chdb/issues/478",
-    strict=True,
-)
+
+def chdb_python_table_noncontiguous_index(func):
+    """FIXED (chDB v4.0.0b6): Non-contiguous index now correctly handled."""
+    return func
 
 # =============================================================================
 # FIXED (chDB v4.0.0b5): rowNumberInAllBlocks() non-deterministic with Python() table function

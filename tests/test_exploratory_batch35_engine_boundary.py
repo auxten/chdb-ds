@@ -522,11 +522,6 @@ class TestSliceAndIndexOperations:
 class TestWhereMaskComplexConditions:
     """Test where/mask with complex conditions and chains."""
 
-    @pytest.mark.xfail(
-        reason="Known limitation: where/mask with lazy column assignment not yet supported. "
-               "Computed columns in condition are not tracked through lazy execution chain. "
-               "See tracking/discoveries/2026-01-05_lazy_column_assignment_sql_pushdown.md"
-    )
     def test_where_with_computed_column(self):
         """Test where using a computed column condition."""
         data = {'a': [1, 2, 3, 4, 5], 'b': [5, 4, 3, 2, 1]}

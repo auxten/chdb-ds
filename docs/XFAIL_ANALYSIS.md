@@ -10,13 +10,13 @@
 
 | Category | Marker Count | Test Cases | Status |
 |----------|--------------|------------|--------|
-| **chDB Engine Limitations** | 25 | 54 | Cannot fix at DataStore layer |
+| **chDB Engine Limitations** | 24 | 54 | Cannot fix at DataStore layer |
 | **DataStore Bug** | 0 | 0 | All fixed |
 | **DataStore Limitations** | 1 | 1 | Can be implemented |
 | **Design Decisions** | 1 | 2 | Intentional |
 | **Deprecated Features** | 1 | 1 | pandas evolution |
-| **Fixed (no-op)** | 13+ | 15+ | Kept for import compatibility |
-| **Total** | **28 active** | **58 + 15** | |
+| **Fixed (no-op)** | 14+ | 15+ | Kept for import compatibility |
+| **Total** | **27 active** | **58 + 15** | |
 
 **Test Impact**: ~73 test cases marked (58 active xfail + 15 no-op), distributed across 32 test files.
 
@@ -89,11 +89,9 @@ These are limitations of the chDB/ClickHouse engine itself that DataStore cannot
 | `chdb_replace_none_dtype` | `replace(None)` | Nullable Int64 | object |
 | `chdb_mask_dtype_nullable` | `mask/where` on int | Nullable Int64 | float64 |
 
-### chDB Bug (1)
+### chDB Bug (0)
 
-| Marker | Reason | Issue |
-|--------|--------|-------|
-| `chdb_python_table_noncontiguous_index` | Python() table function returns wrong data for non-contiguous index | [#478](https://github.com/chdb-io/chdb/issues/478) |
+> **Note**: `chdb_python_table_noncontiguous_index` has been fixed in chDB 4.0.0b6, see Fixed Markers section.
 
 ---
 
@@ -190,3 +188,4 @@ The following markers have been fixed and are kept as no-op functions in `xfail_
 - `design_unstack_column_expr` - unstack() implemented
 - `chdb_python_table_rownumber_nondeterministic` - Solved with _row_id virtual column
 - `limit_datastore_no_invert` - `__invert__` method added to PandasCompatMixin
+- `chdb_python_table_noncontiguous_index` - Fixed in chDB 4.0.0b6, non-contiguous index (e.g., df[::2]) now works correctly (2026-01-15)

@@ -45,7 +45,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "chdb>=4.0.0b5",
+    "chdb>=4.0.0b6",
     "pandas>=2.0.0",
 ]
 

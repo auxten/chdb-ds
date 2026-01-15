@@ -210,7 +210,6 @@ class TestGroupByColumnSelectionFromFile:
 
         assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
-    @pytest.mark.xfail(reason="as_index=False not fully working for file-based sources - separate issue")
     def test_file_based_full_pattern_with_as_index_false(self, csv_with_mixed_types):
         """Test as_index=False with file-based source (known limitation)."""
         csv_path, pd_df = csv_with_mixed_types
