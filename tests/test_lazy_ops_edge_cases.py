@@ -288,5 +288,84 @@ class TestImmutabilityAndCopies:
         assert id_before == id_after
 
 
+class TestMemoryLayoutDetection:
+    """
+    Tests for DataFrame memory layout detection and automatic copy.
+
+    When a pandas DataFrame is created from a 2D numpy array, columns become
+    non-contiguous strided views. chDB's Python() table function cannot correctly
+    read this layout. DataStore automatically detects and copies such DataFrames.
+
+    See: https://github.com/chdb-io/chdb/issues/XXX (to be reported)
+    """
+
+    def test_needs_memory_copy_detection(self):
+        """Test _needs_memory_copy detects problematic DataFrames."""
+        import numpy as np
+        import pandas as pd
+        from datastore.lazy_ops import _needs_memory_copy
+
+        # Case 1: DataFrame from 2D numpy array - needs copy
+        data = np.random.normal(size=(5, 2))
+        df1 = pd.DataFrame(data, columns=['A', 'B'])
+        assert _needs_memory_copy(df1) is True, "2D array DataFrame should need copy"
+
+        # Case 2: DataFrame from dict - does NOT need copy
+        df2 = pd.DataFrame({'A': [1.0, 2.0, 3.0], 'B': [4.0, 5.0, 6.0]})
+        assert _needs_memory_copy(df2) is False, "Dict DataFrame should not need copy"
+
+        # Case 3: DataFrame.copy() - does NOT need copy
+        df3 = pd.DataFrame(data, columns=['A', 'B']).copy()
+        assert _needs_memory_copy(df3) is False, "Copied DataFrame should not need copy"
+
+        # Case 4: Single column - does NOT need copy
+        df4 = pd.DataFrame({'A': [1.0, 2.0, 3.0]})
+        assert _needs_memory_copy(df4) is False, "Single column should not need copy"
+
+        # Case 5: F-ordered array (columns are C-contiguous) - does NOT need copy
+        data_f = np.asfortranarray(data)
+        df5 = pd.DataFrame(data_f, columns=['A', 'B'])
+        assert _needs_memory_copy(df5) is False, "F-ordered array should not need copy"
+
+    def test_datastore_auto_copies_problematic_dataframe(self):
+        """Test DataStore automatically copies DataFrames with problematic memory layout."""
+        import numpy as np
+        import pandas as pd
+        from tests.test_utils import assert_datastore_equals_pandas
+
+        # Create DataFrame from 2D numpy array (problematic for chDB)
+        np.random.seed(42)
+        data = np.random.normal(size=(10, 2))
+        pd_df = pd.DataFrame(data, columns=['Feature1', 'Feature2'])
+
+        # DataStore should auto-detect and copy, producing correct results
+        ds = DataStore(pd_df)
+
+        # Compare results - should match
+        assert_datastore_equals_pandas(ds, pd_df)
+
+    def test_datastore_preserves_data_from_numpy_array(self):
+        """Test DataStore preserves exact values from numpy array DataFrame."""
+        import numpy as np
+        import pandas as pd
+
+        np.random.seed(123)
+        data = np.random.normal(size=(5, 3))
+        pd_df = pd.DataFrame(data, columns=['A', 'B', 'C'])
+
+        ds = DataStore(pd_df)
+
+        # Execute and verify exact values
+        ds_df = ds._get_df()
+        for i in range(5):
+            for j, col in enumerate(['A', 'B', 'C']):
+                expected = data[i, j]
+                actual = ds_df[col].iloc[i]
+                assert abs(expected - actual) < 1e-10, (
+                    f"Value mismatch at row {i}, col {col}: "
+                    f"expected {expected}, got {actual}"
+                )
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
