@@ -131,6 +131,7 @@ chdb_strip_whitespace = pytest.mark.xfail(
 #     strict=True,
 # )
 
+
 # Datetime
 # FIXED (2026-01-14): dt.year/month/day extraction now works correctly in chDB 4.0.0b3
 # The original issue was year extraction at timezone boundaries, which is now fixed.
@@ -152,17 +153,20 @@ chdb_datetime_range_comparison = pytest.mark.xfail(
     strict=False,  # Pass in UTC (CI), fail in non-UTC timezones (e.g., UTC+8)
 )
 
+
 # FIXED (2026-01-14): Test was using shared DataFrame reference, causing column conflicts
 # Fix: Use DataStore(pd_df.copy()) to avoid shared modification
 def chdb_datetime_extraction_conflict(func):
     """FIXED: Issue was test code not using .copy(), not chDB limitation."""
     return func
 
+
 # FIXED (2026-01-14): Test was using shared DataFrame reference, causing type conflicts
 # Fix: Use DataStore(pd_df.copy()) to avoid shared modification
 def chdb_dt_month_type(func):
     """FIXED: Issue was test code not using .copy(), not chDB type mismatch."""
     return func
+
 
 # SQL
 chdb_duplicate_column_rename = pytest.mark.xfail(
@@ -234,6 +238,7 @@ def bug_index_not_preserved(func):
 def bug_extractall_multiindex(func):
     """FIXED: MultiIndex is now preserved through DataStore.from_df() for extractall."""
     return func
+
 
 # FIXED: None comparison now matches pandas semantics
 # bug_null_string_comparison = pytest.mark.xfail(
@@ -406,7 +411,11 @@ MARKER_REGISTRY = {
     # DataStore Bugs (should be fixed)
     # =========================================================================
     "bug_index_not_preserved": ("fixed", None, "Index info lost through lazy SQL execution - FIXED"),
-    "bug_extractall_multiindex": ("fixed", "2026-01-14", "MultiIndex lost in extractall - FIXED via DataStore.from_df()"),
+    "bug_extractall_multiindex": (
+        "fixed",
+        "2026-01-14",
+        "MultiIndex lost in extractall - FIXED via DataStore.from_df()",
+    ),
     # =========================================================================
     # DataStore Limitations (not yet implemented)
     # =========================================================================
@@ -549,27 +558,33 @@ chdb_startswith_no_tuple = pytest.mark.xfail(
 # Added index.setter to PandasCompatMixin in pandas_compat.py
 # =============================================================================
 
+
 def limit_datastore_index_setter(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
 
+
 # FIXED 2026-01-14: groupby now supports ColumnExpr/LazySeries as parameter
 # Modified groupby() method in core.py to auto-assign expressions to temp columns
+
 
 def limit_groupby_series_param(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
+
 
 # NOTE: Simple alias cases work but complex chains with groupby still have issues
 chdb_alias_shadows_column_in_where = pytest.mark.xfail(
     reason="chDB: In complex chains with groupby, SELECT alias may still shadow original column"
 )
 
+
 # FIXED 2026-01-14: __invert__ (~) operator for entire DataFrame now implemented
 # Added __invert__ method to PandasCompatMixin in pandas_compat.py
 def limit_datastore_no_invert(func):
     """No-op decorator for previously failing test that is now fixed."""
     return func
+
 
 # =============================================================================
 # FIXED (chDB v4.0.0b6): Python() table function non-contiguous index bug
@@ -583,6 +598,7 @@ def limit_datastore_no_invert(func):
 def chdb_python_table_noncontiguous_index(func):
     """FIXED (chDB v4.0.0b6): Non-contiguous index now correctly handled."""
     return func
+
 
 # =============================================================================
 # FIXED (chDB v4.0.0b5): rowNumberInAllBlocks() non-deterministic with Python() table function
