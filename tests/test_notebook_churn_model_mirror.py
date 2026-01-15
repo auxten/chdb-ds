@@ -374,8 +374,8 @@ class TestDataFrameInfoLike:
         pd_dtypes = churn_df.dtypes
         ds_dtypes = ds.dtypes
 
-        # Compare dtypes series
-        assert list(ds_dtypes.index) == list(pd_dtypes.index)
+        # Complete dtype comparison using pd.testing.assert_series_equal
+        pd.testing.assert_series_equal(pd_dtypes, ds_dtypes)
 
     def test_shape(self, churn_df):
         """Test shape property."""
