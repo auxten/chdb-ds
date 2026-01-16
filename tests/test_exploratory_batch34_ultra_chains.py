@@ -356,7 +356,8 @@ class TestMultiJoinOperations:
         ds_result = ds_result[['a', 'b', 'd']]
         ds_result = ds_result.assign(total=ds_result['b'] + ds_result['d'])
 
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        # SQL JOIN operations don't guarantee row order without explicit ORDER BY
+        assert_datastore_equals_pandas(ds_result, pd_result, check_row_order=False)
 
 
 # =============================================================================
