@@ -1,0 +1,33 @@
+# Pre-commit hooks configuration
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Check for non-ASCII characters in source files
+  - repo: local
+    hooks:
+      - id: check-charset
+        name: check-charset
+        entry: python scripts/check_charset.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Code formatting with black
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: ['--config', 'pyproject.toml']
+        files: ^datastore/
+
+  # Linting with flake8
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        files: ^datastore/
+        # Uses setup.cfg for configuration
+
+default_language_version:
+  python: python3

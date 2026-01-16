@@ -1,22 +1,23 @@
-.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format format-check lint check-charset
+.PHONY: help install install-dev test test-coverage clean build build-release update-version upload-test upload docs format format-check lint check-charset pre-commit-install
 
 help:
 	@echo "DataStore Development Commands:"
 	@echo ""
-	@echo "  install         Install package in production mode"
-	@echo "  install-dev     Install package in development mode with dev dependencies"
-	@echo "  test            Run all tests with linting and format checks"
-	@echo "  test-coverage   Run tests with coverage report"
-	@echo "  clean           Clean build artifacts"
-	@echo "  build           Build distribution packages (dev build)"
-	@echo "  build-release   Build distribution packages with version from git tag"
-	@echo "  update-version  Update version from git tag (or pass VERSION=x.y.z)"
-	@echo "  upload-test     Upload to TestPyPI"
-	@echo "  upload          Upload to PyPI (production)"
-	@echo "  format          Format code with black (includes charset check)"
-	@echo "  format-check    Check code formatting without modifying files"
-	@echo "  check-charset   Check for non-ASCII/non-emoji characters in .md and .py files"
-	@echo "  lint            Run linting checks"
+	@echo "  install            Install package in production mode"
+	@echo "  install-dev        Install package in development mode with dev dependencies"
+	@echo "  pre-commit-install Install pre-commit hooks"
+	@echo "  test               Run all tests with linting and format checks"
+	@echo "  test-coverage      Run tests with coverage report"
+	@echo "  clean              Clean build artifacts"
+	@echo "  build              Build distribution packages (dev build)"
+	@echo "  build-release      Build distribution packages with version from git tag"
+	@echo "  update-version     Update version from git tag (or pass VERSION=x.y.z)"
+	@echo "  upload-test        Upload to TestPyPI"
+	@echo "  upload             Upload to PyPI (production)"
+	@echo "  format             Format code with black (includes charset check)"
+	@echo "  format-check       Check code formatting without modifying files"
+	@echo "  check-charset      Check for non-ASCII/non-emoji characters in .md and .py files"
+	@echo "  lint               Run linting checks"
 	@echo ""
 
 install:
@@ -24,6 +25,12 @@ install:
 
 install-dev:
 	pip install -e ".[dev]"
+	pip install pre-commit
+	pre-commit install
+
+pre-commit-install:
+	pip install pre-commit
+	pre-commit install
 
 test: lint format
 	pytest --cov=datastore --cov-report=xml --cov-report=term-missing
@@ -79,6 +86,6 @@ format-check:
 	black --check --diff datastore
 
 lint:
-	flake8 datastore --count --select=E9,F63,F7,F82 --show-source --statistics --ignore=F811
-	flake8 datastore --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics --ignore=F811
+	flake8 datastore --count --show-source --statistics
+	flake8 datastore --count --exit-zero --statistics
 
