@@ -71,17 +71,17 @@ class TestNotCondition(unittest.TestCase):
     def test_not_condition(self):
         """Test NOT condition."""
         cond = NotCondition(Field('active') == True)
-        self.assertEqual('NOT ("active" = TRUE)', cond.to_sql())
+        self.assertEqual('ifNull(NOT ("active" = TRUE), 1)', cond.to_sql())
 
     def test_not_operator(self):
         """Test ~ operator for NOT."""
         cond = ~(Field('age') > 18)
-        self.assertEqual('NOT ("age" > 18)', cond.to_sql())
+        self.assertEqual('ifNull(NOT ("age" > 18), 1)', cond.to_sql())
 
     def test_not_compound(self):
         """Test NOT on compound condition."""
         cond = ~((Field('age') > 18) & (Field('city') == 'NYC'))
-        self.assertEqual('NOT (("age" > 18 AND "city" = \'NYC\'))', cond.to_sql())
+        self.assertEqual("ifNull(NOT ((\"age\" > 18 AND \"city\" = 'NYC')), 1)", cond.to_sql())
 
 
 class TestConditionHelpers(unittest.TestCase):
