@@ -866,12 +866,16 @@ class TestAgeBandGroupBy:
         ds = DataStore(titanic_pd_df.copy())
         ds['AgeBand'] = pd.cut(ds['Age'], 5)
 
-        pd_result = (
-            pd_df[['AgeBand', 'Survived']]
-            .groupby(['AgeBand'], as_index=False)
-            .mean()
-            .sort_values(by='AgeBand', ascending=True)
-        )
+        # observed=False is deprecated for categorical groupby; will default to True in future
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='The default of observed=False is deprecated')
+            pd_result = (
+                pd_df[['AgeBand', 'Survived']]
+                .groupby(['AgeBand'], as_index=False)
+                .mean()
+                .sort_values(by='AgeBand', ascending=True)
+            )
         ds_result = (
             ds[['AgeBand', 'Survived']]
             .groupby(['AgeBand'], as_index=False)
@@ -899,12 +903,16 @@ class TestFareBandGroupBy:
         ds = DataStore(titanic_pd_df.copy())
         ds['FareBand'] = pd.qcut(ds['Fare'], 4)
 
-        pd_result = (
-            pd_df[['FareBand', 'Survived']]
-            .groupby(['FareBand'], as_index=False)
-            .mean()
-            .sort_values(by='FareBand', ascending=True)
-        )
+        # observed=False is deprecated for categorical groupby; will default to True in future
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='The default of observed=False is deprecated')
+            pd_result = (
+                pd_df[['FareBand', 'Survived']]
+                .groupby(['FareBand'], as_index=False)
+                .mean()
+                .sort_values(by='FareBand', ascending=True)
+            )
         ds_result = (
             ds[['FareBand', 'Survived']]
             .groupby(['FareBand'], as_index=False)

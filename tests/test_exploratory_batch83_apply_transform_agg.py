@@ -422,10 +422,14 @@ class TestMapApplymapEdgeCases:
             'B': [4, 5, 6]
         })
 
-        pd_result = pd_df.applymap(lambda x: x ** 2)
-        ds_result = ds_df.applymap(lambda x: x ** 2)
-
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        # applymap is deprecated in pandas 2.1+, but we test it for backward compatibility
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='DataFrame.applymap has been deprecated')
+            pd_result = pd_df.applymap(lambda x: x ** 2)
+            ds_result = ds_df.applymap(lambda x: x ** 2)
+            # Assert inside the block because DataStore is lazy
+            assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_applymap_string_operation(self):
         """applymap() with string operation"""
@@ -438,10 +442,14 @@ class TestMapApplymapEdgeCases:
             'B': ['foo', 'bar']
         })
 
-        pd_result = pd_df.applymap(str.upper)
-        ds_result = ds_df.applymap(str.upper)
-
-        assert_datastore_equals_pandas(ds_result, pd_result)
+        # applymap is deprecated in pandas 2.1+, but we test it for backward compatibility
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='DataFrame.applymap has been deprecated')
+            pd_result = pd_df.applymap(str.upper)
+            ds_result = ds_df.applymap(str.upper)
+            # Assert inside the block because DataStore is lazy
+            assert_datastore_equals_pandas(ds_result, pd_result)
 
     def test_map_alias_for_applymap(self):
         """map() should work as alias for applymap()"""
@@ -495,10 +503,15 @@ class TestComplexChains:
             'val': [10, 20, 30, 40]
         })
 
-        pd_result = pd_df.groupby('cat')['val'].apply(sum)
-        ds_result = ds_df.groupby('cat')['val'].apply(sum)
-
-        assert_series_equal(ds_result, pd_result)
+        # Using sum builtin with apply triggers a FutureWarning about np.sum behavior
+        # We test this pattern as users may use it; pandas recommends using 'sum' string instead
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='The provided callable.*is currently using')
+            pd_result = pd_df.groupby('cat')['val'].apply(sum)
+            ds_result = ds_df.groupby('cat')['val'].apply(sum)
+            # Assert inside the block because DataStore is lazy - execution happens at assertion
+            assert_series_equal(ds_result, pd_result)
 
     def test_assign_transform_filter(self):
         """Assign -> Transform -> Filter chain"""

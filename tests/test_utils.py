@@ -93,25 +93,32 @@ def assert_series_equal(
     if not isinstance(left, pd.Series):
         left = get_series(left)
 
-    pd.testing.assert_series_equal(
-        left,
-        right,
-        check_dtype=check_dtype,
-        check_index_type=check_index_type,
-        check_series_type=check_series_type,
-        check_names=check_names,
-        check_exact=check_exact,
-        check_datetimelike_compat=check_datetimelike_compat,
-        check_categorical=check_categorical,
-        check_category_order=check_category_order,
-        check_freq=check_freq,
-        check_flags=check_flags,
-        rtol=rtol,
-        atol=atol,
-        obj=obj,
-        check_index=check_index,
-        check_like=check_like,
-    )
+    # Suppress FutureWarning about None vs nan mismatch in pandas equality testing
+    # This occurs when comparing Series with mixed null representations (None vs np.nan)
+    # Both represent missing values and should be treated as equal for our tests
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='Mismatched null-like values.*found', category=FutureWarning)
+        pd.testing.assert_series_equal(
+            left,
+            right,
+            check_dtype=check_dtype,
+            check_index_type=check_index_type,
+            check_series_type=check_series_type,
+            check_names=check_names,
+            check_exact=check_exact,
+            check_datetimelike_compat=check_datetimelike_compat,
+            check_categorical=check_categorical,
+            check_category_order=check_category_order,
+            check_freq=check_freq,
+            check_flags=check_flags,
+            rtol=rtol,
+            atol=atol,
+            obj=obj,
+            check_index=check_index,
+            check_like=check_like,
+        )
 
 
 # =============================================================================

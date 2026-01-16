@@ -462,7 +462,11 @@ class TestStack:
         pd_df = data
         ds_df = DataStore(data)
 
-        pd_result = pd_df.stack(dropna=True)
+        # stack() API is deprecated in pandas; use future_stack=True in newer versions
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='The previous implementation of stack is deprecated')
+            pd_result = pd_df.stack(dropna=True)
 
         try:
             ds_result = ds_df.stack(dropna=True)

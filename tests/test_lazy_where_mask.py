@@ -1110,8 +1110,13 @@ class TestWhereWithFilterCombinations:
             ds_result = ds[ds['category'] == 'A'][ds['value'] > 20].where(ds['id'] > 3, 0)
 
             pd_filtered = df[df['category'] == 'A']
-            pd_filtered = pd_filtered[df['value'] > 20]
-            pd_result = pd_filtered.where(df['id'] > 3, 0)
+            # Note: Using original df for subsequent filters triggers UserWarning about reindexing
+            # This tests the edge case where user applies filter from original DataFrame to filtered result
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', message='Boolean Series key will be reindexed')
+                pd_filtered = pd_filtered[df['value'] > 20]
+                pd_result = pd_filtered.where(df['id'] > 3, 0)
 
             assert len(ds_result) == len(pd_result)
 
@@ -1129,7 +1134,12 @@ class TestWhereWithFilterCombinations:
 
             pd_temp = df[df['flag'] == True]
             pd_temp = pd_temp.where(df['value'] > 30, 0)
-            pd_result = pd_temp[df['id'] < 8]
+            # Note: Using original df for filter triggers UserWarning about reindexing
+            # This tests the edge case where user applies filter from original DataFrame
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', message='Boolean Series key will be reindexed')
+                pd_result = pd_temp[df['id'] < 8]
 
             assert len(ds_result) == len(pd_result)
 

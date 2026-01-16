@@ -316,18 +316,15 @@ class TestGroupByApplyFallback(unittest.TestCase):
         pd_result = groupby_apply_compat(self.pd_df.groupby('category'), top_2)
         ds_result = self.ds_df.groupby('category').apply(top_2)
 
-        # pandas groupby.apply with nlargest returns MultiIndex result
-        # DataStore doesn't preserve the MultiIndex, so we reset for comparison
-        pd_result_flat = pd_result.reset_index(drop=True)
-
-        # Use assert_datastore_equals_pandas for proper comparison
-        # check_row_order=False because groupby order may vary
+        # pandas groupby.apply returns MultiIndex result
+        # DataStore now preserves MultiIndex to match pandas behavior exactly
+        # Compare directly - both should have MultiIndex
         assert_datastore_equals_pandas(
             ds_result,
-            pd_result_flat,
+            pd_result,
             check_row_order=False,
-            check_index=False,
-            msg="groupby.apply(top_2) should match pandas",
+            check_index=True,  # Check index to verify MultiIndex is preserved
+            msg="groupby.apply(top_2) should match pandas including MultiIndex",
         )
 
         # Verify Pandas fallback was used (not SQL)

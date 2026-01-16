@@ -271,7 +271,11 @@ class TestCategorizationFunctions:
         """factorize should encode values."""
         data = ['b', 'a', 'c', 'b']
         codes, uniques = ds.factorize(data)
-        expected_codes, expected_uniques = pd.factorize(data)
+        # pd.factorize with list argument is deprecated; will require Series/Index in future
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='factorize with argument that is not')
+            expected_codes, expected_uniques = pd.factorize(data)
         np.testing.assert_array_equal(codes, expected_codes)
         np.testing.assert_array_equal(uniques, expected_uniques)
 
@@ -279,7 +283,11 @@ class TestCategorizationFunctions:
         """factorize should sort when specified."""
         data = ['b', 'a', 'c', 'b']
         codes, uniques = ds.factorize(data, sort=True)
-        expected_codes, expected_uniques = pd.factorize(data, sort=True)
+        # pd.factorize with list argument is deprecated; will require Series/Index in future
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='factorize with argument that is not')
+            expected_codes, expected_uniques = pd.factorize(data, sort=True)
         np.testing.assert_array_equal(codes, expected_codes)
         np.testing.assert_array_equal(uniques, expected_uniques)
 
@@ -294,7 +302,11 @@ class TestCategorizationFunctions:
         """value_counts should count values."""
         data = pd.Series(['a', 'b', 'a', 'a'])
         result = ds.value_counts(data)
-        expected = pd.value_counts(data)
+        # pd.value_counts is deprecated; use pd.Series(obj).value_counts() instead
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='pandas.value_counts is deprecated')
+            expected = pd.value_counts(data)
         assert_series_equal(result, expected)
 
 
