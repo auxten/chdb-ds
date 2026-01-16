@@ -919,6 +919,18 @@ Expression.wrap(Field('x'))# Field('x') (unchanged)
 
 ## Development
 
+### Setup
+
+```bash
+# Install dev dependencies and pre-commit hooks
+make install-dev
+
+# Or manually install pre-commit hooks
+make pre-commit-install
+```
+
+Pre-commit hooks will automatically run `check-charset`, `black`, and `flake8` before each commit.
+
 ### Running Tests
 
 ```bash
