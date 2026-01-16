@@ -20,11 +20,14 @@ Operations tested:
 import time
 import tempfile
 import os
+import json
+import subprocess
+from datetime import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Callable, List, Dict, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from collections import Counter, defaultdict
 
 # Import DataStore
@@ -35,6 +38,109 @@ from datastore.config import (
     get_profiler,
     reset_profiler,
 )
+
+
+def get_git_info() -> Dict[str, str]:
+    """Get current git branch, commit hash, and other info."""
+    git_info = {
+        'branch': 'unknown',
+        'commit_hash': 'unknown',
+        'commit_short': 'unknown',
+        'commit_message': 'unknown',
+        'is_dirty': False,
+    }
+    try:
+        # Get branch name
+        result = subprocess.run(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_info['branch'] = result.stdout.strip()
+
+        # Get full commit hash
+        result = subprocess.run(
+            ['git', 'rev-parse', 'HEAD'],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_info['commit_hash'] = result.stdout.strip()
+            git_info['commit_short'] = result.stdout.strip()[:7]
+
+        # Get commit message (first line)
+        result = subprocess.run(
+            ['git', 'log', '-1', '--format=%s'],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_info['commit_message'] = result.stdout.strip()[:80]
+
+        # Check if working directory is dirty
+        result = subprocess.run(
+            ['git', 'status', '--porcelain'],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            git_info['is_dirty'] = len(result.stdout.strip()) > 0
+
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+        print(f"Warning: Could not get git info: {e}")
+
+    return git_info
+
+
+def create_benchmark_output_dir(benchmark_name: str, base_dir: str = None) -> tuple:
+    """
+    Create a timestamped output directory for benchmark results.
+
+    Args:
+        benchmark_name: Name of the benchmark (e.g., 'datastore_vs_pandas')
+        base_dir: Base directory for all benchmark results
+
+    Returns:
+        tuple: (output_dir_path, metadata_dict)
+    """
+    if base_dir is None:
+        # Default to refs/benchmark_results/ relative to this script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir = os.path.join(script_dir, 'benchmark_results', benchmark_name)
+
+    # Create base directory if it doesn't exist
+    os.makedirs(base_dir, exist_ok=True)
+
+    # Get timestamp and git info
+    timestamp = datetime.now()
+    git_info = get_git_info()
+
+    # Create directory name: YYYYMMDD_HHMMSS_branch_commit
+    branch_safe = git_info['branch'].replace('/', '_').replace('\\', '_')[:20]
+    dirty_marker = '_dirty' if git_info['is_dirty'] else ''
+    dir_name = f"{timestamp.strftime('%Y%m%d_%H%M%S')}_{branch_safe}_{git_info['commit_short']}{dirty_marker}"
+
+    output_dir = os.path.join(base_dir, dir_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Prepare metadata
+    metadata = {
+        'timestamp': timestamp.isoformat(),
+        'timestamp_unix': timestamp.timestamp(),
+        'git_branch': git_info['branch'],
+        'git_commit_hash': git_info['commit_hash'],
+        'git_commit_short': git_info['commit_short'],
+        'git_commit_message': git_info['commit_message'],
+        'git_is_dirty': git_info['is_dirty'],
+        'output_dir': output_dir,
+    }
+
+    return output_dir, metadata
 
 
 @dataclass
@@ -937,7 +1043,50 @@ def print_summary(results: List[BenchmarkResult]):
         )
 
 
-def plot_benchmark_results(results: List[BenchmarkResult], output_prefix: str = 'benchmark_pandas_datastore'):
+def save_benchmark_results(
+    results: List[BenchmarkResult], output_dir: str, metadata: Dict, data_sizes: List[int], n_runs: int
+):
+    """Save benchmark results to CSV and metadata to JSON."""
+    # Convert results to serializable format
+    results_data = []
+    for r in results:
+        results_data.append(
+            {
+                'operation': r.operation,
+                'data_size': r.data_size,
+                'pandas_time_ms': r.pandas_time,
+                'datastore_time_ms': r.datastore_time,
+                'speedup': r.speedup,
+                'fastest': r.fastest,
+            }
+        )
+
+    # Save CSV (flat format for easy analysis)
+    csv_path = os.path.join(output_dir, 'benchmark_results.csv')
+    df = pd.DataFrame(results_data)
+    df['timestamp'] = metadata['timestamp']
+    df['git_branch'] = metadata['git_branch']
+    df['git_commit'] = metadata['git_commit_short']
+    df.to_csv(csv_path, index=False)
+    print(f"Results saved: {csv_path}")
+
+    # Save metadata separately
+    meta_path = os.path.join(output_dir, 'metadata.json')
+    full_metadata = {
+        **metadata,
+        'config': {
+            'data_sizes': data_sizes,
+            'n_runs': n_runs,
+        },
+    }
+    with open(meta_path, 'w') as f:
+        json.dump(full_metadata, f, indent=2)
+    print(f"Metadata saved: {meta_path}")
+
+    return csv_path
+
+
+def plot_benchmark_results(results: List[BenchmarkResult], output_dir: str = None, output_prefix: str = 'benchmark_pandas_datastore'):
     """Generate benchmark visualization plot."""
     # Set style
     plt.style.use('seaborn-v0_8-paper')
@@ -1116,12 +1265,15 @@ def plot_benchmark_results(results: List[BenchmarkResult], output_prefix: str = 
 
     plt.tight_layout()
 
-    # Save figures
-    pdf_path = f'{output_prefix}.pdf'
-    png_path = f'{output_prefix}.png'
+    # Determine output path
+    if output_dir:
+        pdf_path = os.path.join(output_dir, f'{output_prefix}.pdf')
+    else:
+        pdf_path = f'{output_prefix}.pdf'
+
+    # Save figure (PDF only)
     plt.savefig(pdf_path, dpi=300, bbox_inches='tight')
-    plt.savefig(png_path, dpi=300, bbox_inches='tight')
-    print(f"\nFigure saved: {pdf_path} and {png_path}")
+    print(f"\nFigure saved: {pdf_path}")
 
     # Print wins summary
     print("\nWins Summary by Data Size:")
@@ -1143,12 +1295,37 @@ def main():
     )
     parser.add_argument('--runs', type=int, default=5, help='Number of runs per operation')
     parser.add_argument('--no-plot', action='store_true', help='Skip plot generation')
+    parser.add_argument('--no-save', action='store_true', help='Skip saving results to file')
     parser.add_argument('--verify', action='store_true', help='Verify result consistency between Pandas and DataStore')
+    parser.add_argument('--output-dir', type=str, help='Custom output directory for results')
     args = parser.parse_args()
 
     print("=" * 60)
     print("Pandas vs DataStore (chDB Lazy Mode) Benchmark")
     print("=" * 60)
+
+    # Create output directory for results
+    if args.output_dir:
+        output_dir = args.output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        git_info = get_git_info()
+        metadata = {
+            'timestamp': datetime.now().isoformat(),
+            'timestamp_unix': datetime.now().timestamp(),
+            'git_branch': git_info['branch'],
+            'git_commit_hash': git_info['commit_hash'],
+            'git_commit_short': git_info['commit_short'],
+            'git_commit_message': git_info['commit_message'],
+            'git_is_dirty': git_info['is_dirty'],
+            'output_dir': output_dir,
+        }
+    else:
+        output_dir, metadata = create_benchmark_output_dir('datastore_vs_pandas')
+
+    print(f"Output directory: {output_dir}")
+    print(f"Git: {metadata.get('git_branch', 'unknown')}@{metadata.get('git_commit_short', 'unknown')}")
+    if metadata.get('git_is_dirty'):
+        print("Warning: Working directory has uncommitted changes")
 
     # Create temporary directory for parquet files
     temp_dir = tempfile.mkdtemp(prefix='datastore_benchmark_')
@@ -1221,9 +1398,17 @@ def main():
                 else:
                     print(f"  {op:<25}: Pandas is {1/avg_speedup:.2f}x faster on average")
 
+        # Save results to output directory
+        if not args.no_save:
+            save_benchmark_results(results, output_dir, metadata, data_sizes, args.runs)
+
         # Generate plot (unless --no-plot)
         if not args.no_plot:
-            plot_benchmark_results(results, output_prefix='benchmark_pandas_datastore')
+            plot_benchmark_results(results, output_dir=output_dir, output_prefix='benchmark_pandas_datastore')
+
+        print(f"\n{'=' * 60}")
+        print(f"Results saved to: {output_dir}")
+        print(f"{'=' * 60}")
 
     finally:
         # Cleanup temporary files
